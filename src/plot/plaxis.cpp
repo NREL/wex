@@ -5,6 +5,12 @@
 
 #include "plot/plaxis.h"
 
+#ifdef __WXOSX__
+#define my_isnan(x) std::isnan(x)
+#else
+#define my_isnan(x) wxIsNaN(x)
+#endif
+
 wxPLAxis::wxPLAxis()
 {
 	Init();
@@ -73,9 +79,9 @@ void wxPLAxis::ExtendBound( wxPLAxis *a )
 	if ( !a ) return;
 
 	// mins
-	if ( !std::isnan(a->m_min) )
+	if ( !wxIsNaN(a->m_min) )
 	{
-		if (std::isnan(m_min))
+		if (wxIsNaN(m_min))
 		{
 			m_min = a->m_min;
 		}
@@ -89,9 +95,9 @@ void wxPLAxis::ExtendBound( wxPLAxis *a )
 	}
 
 	// maxs.
-	if ( !std::isnan(a->m_max) )
+	if ( !wxIsNaN(a->m_max) )
 	{
-		if (std::isnan(m_max))
+		if (wxIsNaN(m_max))
 		{
 			m_max = a->m_max;
 		}

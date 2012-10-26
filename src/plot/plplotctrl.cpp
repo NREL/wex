@@ -1885,7 +1885,7 @@ void wxPLPlotCtrl::OnSize( wxSizeEvent & )
 void wxPLPlotCtrl::DrawLegendOutline()
 {
 	wxClientDC dc(this);
-	dc.SetLogicalFunction( wxINVERT );
+	dc.SetLogicalFunction( wxXOR );
 	dc.SetBrush( *wxTRANSPARENT_BRUSH );	
 	dc.SetPen( wxPen( *wxBLACK, 2 ) );
 	wxPoint diff = ClientToScreen(m_currentPoint) - ClientToScreen(m_anchorPoint);
@@ -1908,7 +1908,7 @@ void wxPLPlotCtrl::DrawLegendOutline()
 void wxPLPlotCtrl::UpdateHighlightRegion()
 {
 	wxClientDC dc(this);
-	dc.SetLogicalFunction( wxINVERT );
+	dc.SetLogicalFunction( wxXOR );
 	dc.SetPen( *wxTRANSPARENT_PEN );
 
 	wxCoord highlight_x = m_currentPoint.x < m_anchorPoint.x ? m_currentPoint.x : m_anchorPoint.x;
