@@ -1,3 +1,6 @@
+#include <math.h>
+#include <cmath>
+#include <numeric>
 #include <wx/datetime.h>
 
 #include "plot/plaxis.h"
@@ -70,9 +73,9 @@ void wxPLAxis::ExtendBound( wxPLAxis *a )
 	if ( !a ) return;
 
 	// mins
-	if ( !wxIsNaN(a->m_min) )
+	if ( !std::isnan(a->m_min) )
 	{
-		if (wxIsNaN(m_min))
+		if (std::isnan(m_min))
 		{
 			m_min = a->m_min;
 		}
@@ -86,9 +89,9 @@ void wxPLAxis::ExtendBound( wxPLAxis *a )
 	}
 
 	// maxs.
-	if ( !wxIsNaN(a->m_max) )
+	if ( !std::isnan(a->m_max) )
 	{
-		if (wxIsNaN(m_max))
+		if (std::isnan(m_max))
 		{
 			m_max = a->m_max;
 		}

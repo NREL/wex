@@ -9,7 +9,14 @@
  */
 
 #include <wx/wx.h>
+
+#ifdef _MSC_VER
 #include <unordered_map>
+using std::tr1::unordered_map;
+#else
+#include <tr1/unordered_map>
+using std::tr1::unordered_map;
+#endif
 
 class wxDVPlotCtrlSettings
 {
@@ -31,7 +38,7 @@ public:
 	wxString GetProperty(const wxString &prop);
 		
 private:
-	std::unordered_map<wxString, wxString, wxStringHash, wxStringEqual> m_properties;
+	unordered_map<wxString, wxString, wxStringHash, wxStringEqual> m_properties;
 };
 
 #endif
