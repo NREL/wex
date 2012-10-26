@@ -1,0 +1,500 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="plot">
+      <UniqueIdentifier>{1339c60e-65e9-4692-99d5-a862817b0af9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dview">
+      <UniqueIdentifier>{6f779a69-d3f5-4063-a6bd-4fc1d1f0748b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pdf">
+      <UniqueIdentifier>{6bb4273b-65f1-4422-a193-1d94e0660a0a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dview\Headers">
+      <UniqueIdentifier>{511344da-daf5-4cee-88ba-a9796329bfcf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dview\Sources">
+      <UniqueIdentifier>{8ee70565-4b01-4f6a-8064-03f91b4cc65f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pdf\Headers">
+      <UniqueIdentifier>{49f8090b-5c8d-41ae-86fb-546d68c7b27d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pdf\Sources">
+      <UniqueIdentifier>{1bfcd206-b627-43a3-920c-dad1887856c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="plot\Sources">
+      <UniqueIdentifier>{abd1c27b-8807-4ebc-88a3-bb8068669fa7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="plot\Headers">
+      <UniqueIdentifier>{2b7a8e3a-a656-4ae5-b13b-22fd82098c88}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\dview\dvautocolourassigner.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dview\dvcoarserainbowcolourmap.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dview\dvcolourmap.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dview\dvdcctrl.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dview\dvdmapctrl.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dview\dvfiledataset.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dview\dvfinerainbowcolourmap.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dview\dvplotctrl.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dview\dvplotctrlsettings.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dview\dvplothelper.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dview\dvpncdfctrl.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dview\dvprofilectrl.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dview\dvscatterplotctrl.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dview\dvselectionlist.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dview\dvtimeseriesctrl.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dview\dvtimeseriesdataset.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfannotation.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfarraydouble.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfarraytypes.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfbarcode.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfbookmark.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfcffdecoder.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfcffindex.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfcjkfontdata.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfcolour.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfcoonspatchmesh.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfcorefontdata.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfdc.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfdc28.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfdc29.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfdoc.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfdocdef.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfdocument.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfencoding.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfencrypt.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdffont.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdffontdata.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdffontdatacore.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdffontdataopentype.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdffontdatatruetype.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdffontdatatype0.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdffontdatatype1.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdffontdescription.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdffontdetails.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdffontextended.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdffontmacosx.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdffontmanager.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdffontparser.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdffontparsertruetype.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdffontparsertype1.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdffontsubsetcff.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdffontsubsettruetype.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdffontvolt.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfform.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfgradient.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfgraphics.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfimage.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfinfo.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdflayer.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdflinestyle.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdflinks.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfobjects.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfparser.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfpattern.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfprint.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfproperties.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfrijndael.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfshape.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfspotcolour.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdftemplate.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfutility.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pdf\pdfxml.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\pdf\wxmemdbg.h">
+      <Filter>pdf\Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\plot\plaxis.h">
+      <Filter>plot\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\plot\plhistplot.h">
+      <Filter>plot\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\plot\pllineplot.h">
+      <Filter>plot\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\plot\plplotctrl.h">
+      <Filter>plot\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\plot\plscatterplot.h">
+      <Filter>plot\Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
+      <Filter>dview\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dview\dvcoarserainbowcolourmap.cpp">
+      <Filter>dview\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dview\dvcolourmap.cpp">
+      <Filter>dview\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dview\dvdcctrl.cpp">
+      <Filter>dview\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dview\dvdmapctrl.cpp">
+      <Filter>dview\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dview\dvfiledataset.cpp">
+      <Filter>dview\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dview\dvfinerainbowcolourmap.cpp">
+      <Filter>dview\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dview\dvplotctrl.cpp">
+      <Filter>dview\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dview\dvplotctrlsettings.cpp">
+      <Filter>dview\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dview\dvplothelper.cpp">
+      <Filter>dview\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dview\dvpncdfctrl.cpp">
+      <Filter>dview\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dview\dvprofilectrl.cpp">
+      <Filter>dview\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dview\dvscatterplotctrl.cpp">
+      <Filter>dview\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dview\dvselectionlist.cpp">
+      <Filter>dview\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dview\dvtimeseriesctrl.cpp">
+      <Filter>dview\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dview\dvtimeseriesdataset.cpp">
+      <Filter>dview\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdfannotation.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdfbarcode.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdfcffdecoder.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdfcffindex.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdfcolour.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdfdc.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdfdecode.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdfdocument.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdfencoding.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdfencrypt.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdffont.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdffontdata.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdffontdatacore.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdffontdataopentype.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdffontdatatruetype.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdffontdatatype0.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdffontdatatype1.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdffontdescription.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdffontdetails.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdffontextended.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdffontmanager.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdffontparser.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdffontparsertruetype.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdffontparsertype1.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdffontsubsetcff.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdffontsubsettruetype.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdffontvolt.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdfform.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdfgradient.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdfgraphics.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdfimage.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdfkernel.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdflayer.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdfobjects.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdfocg.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdfparser.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdfpattern.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdfprint.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdfrijndael.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdftemplate.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdfutility.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pdf\pdfxml.cpp">
+      <Filter>pdf\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\plot\plaxis.cpp">
+      <Filter>plot\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\plot\plhistplot.cpp">
+      <Filter>plot\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\plot\pllineplot.cpp">
+      <Filter>plot\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\plot\plplotctrl.cpp">
+      <Filter>plot\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\plot\plscatterplot.cpp">
+      <Filter>plot\Sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\dview\preferences.xpm">
+      <Filter>dview\Sources</Filter>
+    </None>
+    <None Include="..\src\dview\zoom_fit.xpm">
+      <Filter>dview\Sources</Filter>
+    </None>
+    <None Include="..\src\dview\zoom_in.xpm">
+      <Filter>dview\Sources</Filter>
+    </None>
+    <None Include="..\src\dview\zoom_out.xpm">
+      <Filter>dview\Sources</Filter>
+    </None>
+    <None Include="..\src\pdf\pdfcjkfontdata.inc">
+      <Filter>pdf\Sources</Filter>
+    </None>
+    <None Include="..\src\pdf\pdfcmapdata.inc">
+      <Filter>pdf\Sources</Filter>
+    </None>
+    <None Include="..\src\pdf\pdfcodepagedata.inc">
+      <Filter>pdf\Sources</Filter>
+    </None>
+    <None Include="..\src\pdf\pdfcolourdata.inc">
+      <Filter>pdf\Sources</Filter>
+    </None>
+    <None Include="..\src\pdf\pdfcorefontdata.inc">
+      <Filter>pdf\Sources</Filter>
+    </None>
+    <None Include="..\src\pdf\pdfcorefontkerning.inc">
+      <Filter>pdf\Sources</Filter>
+    </None>
+    <None Include="..\src\pdf\pdfdc28.inc">
+      <Filter>pdf\Sources</Filter>
+    </None>
+    <None Include="..\src\pdf\pdfdc29.inc">
+      <Filter>pdf\Sources</Filter>
+    </None>
+    <None Include="..\src\pdf\pdfglyphnames.inc">
+      <Filter>pdf\Sources</Filter>
+    </None>
+  </ItemGroup>
+</Project>
