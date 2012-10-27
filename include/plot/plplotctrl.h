@@ -6,6 +6,12 @@
 #include <wx/menu.h>
 #include <wx/stream.h>
 
+#define PL_USE_OVERLAY 1
+
+#ifdef PL_USE_OVERLAY
+#include <wx/overlay.h>
+#endif
+
 #include "plot/plaxis.h"
 
 class wxPLDeviceMapping
@@ -185,6 +191,9 @@ private:
 	wxPoint m_currentPoint;
 	wxMenu m_contextMenu;
 	bool m_highlightMode;
+#ifdef PL_USE_OVERLAY
+	wxOverlay m_overlay;
+#endif
 	bool m_highlightErase;
 	double m_highlightLeftPercent;
 	double m_highlightRightPercent;
