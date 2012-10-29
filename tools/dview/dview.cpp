@@ -332,7 +332,7 @@ END_EVENT_TABLE()
 void TestPLPlot( wxWindow *parent )
 {
 	wxFrame *frame = new wxFrame( parent, wxID_ANY, wxT("wxPLPlotCtrl in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(850,500) );
-	frame->SetIcon( wxICON( appicon ) );
+	frame->SetIcon( wxIcon( "appicon" ) );
 		
 	wxPLPlotCtrl *plot = new wxPLPlotCtrl( frame, wxID_ANY, wxDefaultPosition, wxDefaultSize );
 	//plot->SetBackgroundColour( *wxWHITE );

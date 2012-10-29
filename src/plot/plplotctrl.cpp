@@ -1889,7 +1889,7 @@ void wxPLPlotCtrl::DrawLegendOutline()
 	wxDCOverlay overlaydc( m_overlay, &dc );
 	overlaydc.Clear();
 	dc.SetPen( wxColour( 100, 100, 100 ) );
-	dc.SetBrush( wxColour( 150, 150, 150, 64 ) );
+	dc.SetBrush( wxColour( 150, 150, 150, 150 ) );
 #else
 	dc.SetLogicalFunction( wxINVERT );
 	dc.SetPen( wxPen( *wxBLACK, 2 ) );
@@ -1921,7 +1921,7 @@ void wxPLPlotCtrl::UpdateHighlightRegion()
 	wxDCOverlay overlaydc( m_overlay, &dc );
 	overlaydc.Clear();
 	dc.SetPen( wxColour( 100, 100, 100 ) );
-	dc.SetBrush( wxColour( 150, 150, 150, 64 ) );
+	dc.SetBrush( wxColour( 150, 150, 150, 150 ) );
 #else
 	dc.SetLogicalFunction( wxINVERT );
 	dc.SetPen( *wxTRANSPARENT_PEN );
