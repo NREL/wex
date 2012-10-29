@@ -1885,9 +1885,17 @@ void wxPLPlotCtrl::OnSize( wxSizeEvent & )
 void wxPLPlotCtrl::DrawLegendOutline()
 {
 	wxClientDC dc(this);
-	dc.SetLogicalFunction( wxXOR );
-	dc.SetBrush( *wxTRANSPARENT_BRUSH );	
+#ifdef PL_USE_OVERLAY
+	wxDCOverlay overlaydc( m_overlay, &dc );
+	overlaydc.Clear();
+	dc.SetPen( wxColour( 100, 100, 100 ) );
+	dc.SetBrush( wxColour( 150, 150, 150, 64 ) );
+#else
+	dc.SetLogicalFunction( wxINVERT );
 	dc.SetPen( wxPen( *wxBLACK, 2 ) );
+	dc.SetBrush( *wxTRANSPARENT_BRUSH );
+#endif
+
 	wxPoint diff = ClientToScreen(m_currentPoint) - ClientToScreen(m_anchorPoint);
     dc.DrawRectangle( wxRect( m_legendRect.x + diff.x, m_legendRect.y + diff.y, 
 		m_legendRect.width, m_legendRect.height) );
@@ -1912,18 +1920,12 @@ void wxPLPlotCtrl::UpdateHighlightRegion()
 #ifdef PL_USE_OVERLAY
 	wxDCOverlay overlaydc( m_overlay, &dc );
 	overlaydc.Clear();
-
-	#ifdef __WXMAC__
-		dc.SetPen( *wxGREY_PEN );
-		dc.SetBrush( wxColour( 192,192,192,64 ) );
-	#else
-		dc.SetPen( *wxGREY_PEN );
-		dc.SetBrush( *wxGREY_BRUSH );
-	#endif
-
+	dc.SetPen( wxColour( 100, 100, 100 ) );
+	dc.SetBrush( wxColour( 150, 150, 150, 64 ) );
 #else
 	dc.SetLogicalFunction( wxINVERT );
 	dc.SetPen( *wxTRANSPARENT_PEN );
+	dc.SetBrush( *wxBLACK_BRUSH );
 #endif
 
 
@@ -1947,9 +1949,8 @@ void wxPLPlotCtrl::UpdateHighlightRegion()
 				highlight_width -= highlight_x + highlight_width - it->x - it->width;
 		}
 		
-#ifdef __WXMAC__
 		dc.DrawRectangle( wxRect( highlight_x, it->y, highlight_width, it->height) );
-#endif
+/*
 		dc.DrawLine( highlight_x, it->y, highlight_x, it->y+it->height );
 		dc.DrawLine( highlight_x+highlight_width, it->y, highlight_x+highlight_width, it->y+it->height );
 		dc.DrawLine( highlight_x, it->y+it->height/2, highlight_x+highlight_width, it->y+it->height/2 );
@@ -1964,6 +1965,7 @@ void wxPLPlotCtrl::UpdateHighlightRegion()
 		ar[1] = wxPoint( highlight_x+highlight_width-arrow_size, it->y+it->height/2-arrow_size/2 );
 		ar[2] = wxPoint( highlight_x+highlight_width-arrow_size, it->y+it->height/2+arrow_size/2 );
 		dc.DrawPolygon( 3, ar );
+*/
 	}
 
 	m_highlightLeftPercent = 100.0*( ((double)(highlight_x - m_plotRects[0].x)) / ( (double)m_plotRects[0].width ) );
@@ -2010,8 +2012,15 @@ void wxPLPlotCtrl::OnLeftUp( wxMouseEvent &evt )
 	{
 		m_moveLegendMode = false;
         
+#ifdef PL_USE_OVERLAY		
+		wxClientDC dc( this );
+		wxDCOverlay overlaydc( m_overlay, &dc );
+		overlaydc.Clear();      
+        m_overlay.Reset();
+#else
 		if ( m_moveLegendErase )
 			DrawLegendOutline();
+#endif
 		
 		wxSize client = GetClientSize();
 		wxPoint point = evt.GetPosition();
@@ -2082,8 +2091,10 @@ void wxPLPlotCtrl::OnMotion( wxMouseEvent &evt )
 {
 	if ( m_moveLegendMode )
 	{
+#ifndef PL_USE_OVERLAY
 		if ( m_moveLegendErase )
 			DrawLegendOutline();
+#endif
 
 		m_currentPoint = evt.GetPosition();
 

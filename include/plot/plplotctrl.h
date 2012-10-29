@@ -6,9 +6,8 @@
 #include <wx/menu.h>
 #include <wx/stream.h>
 
+#ifdef __WXOSX__
 #define PL_USE_OVERLAY 1
-
-#ifdef PL_USE_OVERLAY
 #include <wx/overlay.h>
 #endif
 
