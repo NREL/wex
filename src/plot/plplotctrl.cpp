@@ -658,8 +658,8 @@ public:
 					}
 
 					// recalculate bound height to rotated text
-					m_bounds.y = m_tickList[index].text.height()
-						+ fabs( m_tickList[index].text.width() * sin( M_PI/180*textAngle ) );
+					m_bounds.y = labeledTicks[index]->text.height()
+						+ fabs( labeledTicks[index]->text.width() * sin( M_PI/180*textAngle ) );
 				}
 			}
 		}

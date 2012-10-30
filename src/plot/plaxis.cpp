@@ -719,7 +719,6 @@ void wxPLTimeAxis::RecalculateTicksAndLabel()
 	}
 	else if( world_len < 30 * 24) // less than 30 days
 	{	
-		//m_timeLabel = "Day";
 		//About a month visible.  Just label every day.
 		wxDateTime timeKeeper2 = wxDateTime(timeKeeper.GetTicks());
 

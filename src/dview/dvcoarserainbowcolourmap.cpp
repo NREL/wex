@@ -55,12 +55,11 @@ wxSize wxDVCoarseRainbowColourMap::DrawIn(wxDC& dc, const wxRect& geom)
 	double range = mMaxVal - mMinVal;
 	double step = range / 10;
 	wxCoord maxWidth = 0, temp;
-	wxString* labels [11];
+	wxArrayString labels;
 	for (int i=0; i<11; i++)
 	{
-		labels[i] = new wxString();
-		*labels[i] = wxString::Format("%g", mMinVal + i*step);
-		dc.GetTextExtent(*labels[i], &temp, NULL);
+		labels.Add( wxString::Format("%lg", mMinVal + i*step) );
+		dc.GetTextExtent( labels[i], &temp, NULL);
 		if (temp > maxWidth)
 			maxWidth = temp;
 	}
@@ -70,10 +69,7 @@ wxSize wxDVCoarseRainbowColourMap::DrawIn(wxDC& dc, const wxRect& geom)
 	double yTextStep = colourBarHeight / 10;
 
 	for (int i=0; i<11; i++)
-	{
-		dc.DrawText(*labels[i], xTextPos, wxCoord((10-i)*yTextStep));
-		delete labels[i];
-	}
+		dc.DrawText(labels[i], xTextPos, wxCoord((10-i)*yTextStep));
 
 	wxCoord colourBarX = xTextPos - 2 - 12;
 	double colourBarStep = colourBarHeight / 10;
