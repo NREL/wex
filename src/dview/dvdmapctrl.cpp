@@ -12,9 +12,9 @@
 #include "dview/dvplothelper.h"
 #include "dview/dvdmapctrl.h"
 
-#include "zoom_in.xpm"
-#include "zoom_out.xpm"
-#include "zoom_fit.xpm"
+#include "zoom_in.binpng"
+#include "zoom_out.binpng"
+#include "zoom_fit.binpng"
 
 
 class wxDVDMapPlot : public wxPLPlottable
@@ -176,13 +176,13 @@ wxDVDMapCtrl::wxDVDMapCtrl(wxWindow* parent, wxWindowID id,
 	m_yGraphScroller = new wxScrollBar(this, ID_GRAPH_Y_SCROLLBAR, wxDefaultPosition, wxDefaultSize, wxSB_VERTICAL);
 	m_xGraphScroller = new wxScrollBar(this, ID_GRAPH_SCROLLBAR, wxDefaultPosition, wxDefaultSize, wxSB_HORIZONTAL);
 	
-	wxBitmapButton *zoom_in =  new wxBitmapButton( this, wxID_ZOOM_IN, wxBitmap(::zoom_in_xpm));
+	wxBitmapButton *zoom_in =  new wxBitmapButton( this, wxID_ZOOM_IN, wxBITMAP_PNG_FROM_DATA( zoom_in ));
 	zoom_in->SetToolTip("Zoom in");
 
-	wxBitmapButton *zoom_out = new wxBitmapButton( this, wxID_ZOOM_OUT, wxBitmap(::zoom_out_xpm));
+	wxBitmapButton *zoom_out = new wxBitmapButton( this, wxID_ZOOM_OUT, wxBITMAP_PNG_FROM_DATA( zoom_out ));
 	zoom_out->SetToolTip("Zoom out");
 
-	wxBitmapButton *zoom_fit = new wxBitmapButton( this, wxID_ZOOM_FIT, wxBitmap(::zoom_fit_xpm));
+	wxBitmapButton *zoom_fit = new wxBitmapButton( this, wxID_ZOOM_FIT, wxBITMAP_PNG_FROM_DATA( zoom_fit ));
 	zoom_fit->SetToolTip("Zoom fit");
 
 

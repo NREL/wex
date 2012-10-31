@@ -13,13 +13,14 @@
 #include <wx/gbsizer.h>
 #include <wx/tokenzr.h>
 #include <wx/statline.h>
+#include <wx/gdicmn.h>
 
 #include "plot/pllineplot.h"
 
-#include "zoom_in.xpm"
-#include "zoom_out.xpm"
-#include "zoom_fit.xpm"
-#include "preferences.xpm"
+#include "zoom_in.binpng"
+#include "zoom_out.binpng"
+#include "zoom_fit.binpng"
+#include "preferences.binpng"
 
 #include "dview/dvselectionlist.h"
 #include "dview/dvtimeseriesdataset.h"
@@ -240,19 +241,19 @@ wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id)
 	m_graphScrollBar = new wxScrollBar(this, ID_GRAPH_SCROLLBAR, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL);
 	scrollerAndZoomSizer->Add(m_graphScrollBar, 1, wxALL|wxALIGN_CENTER_VERTICAL, 3);
 
-	wxBitmapButton *zoom_in =  new wxBitmapButton( this, wxID_ZOOM_IN, wxBitmap(::zoom_in_xpm));
+	wxBitmapButton *zoom_in =  new wxBitmapButton( this, wxID_ZOOM_IN, wxBITMAP_PNG_FROM_DATA( zoom_in ));
 	zoom_in->SetToolTip("Zoom in");
 	scrollerAndZoomSizer->Add( zoom_in, 0, wxALL|wxEXPAND, 1);
 
-	wxBitmapButton *zoom_out = new wxBitmapButton( this, wxID_ZOOM_OUT, wxBitmap(::zoom_out_xpm));
+	wxBitmapButton *zoom_out = new wxBitmapButton( this, wxID_ZOOM_OUT, wxBITMAP_PNG_FROM_DATA( zoom_out ));
 	zoom_out->SetToolTip("Zoom out");
 	scrollerAndZoomSizer->Add( zoom_out, 0, wxALL|wxEXPAND, 1);
 
-	wxBitmapButton *zoom_fit = new wxBitmapButton( this, wxID_ZOOM_FIT, wxBitmap(::zoom_fit_xpm));
+	wxBitmapButton *zoom_fit = new wxBitmapButton( this, wxID_ZOOM_FIT, wxBITMAP_PNG_FROM_DATA( zoom_fit ));
 	zoom_fit->SetToolTip("Zoom fit");
 	scrollerAndZoomSizer->Add( zoom_fit , 0, wxALL|wxEXPAND, 1);
 
-	wxBitmapButton *pref_btn = new wxBitmapButton( this, wxID_PREFERENCES, wxBitmap(::preferences_xpm));
+	wxBitmapButton *pref_btn = new wxBitmapButton( this, wxID_PREFERENCES, wxBITMAP_PNG_FROM_DATA( preferences ));
 	pref_btn->SetToolTip("Edit view settings and graph scaling...");
 	scrollerAndZoomSizer->Add( pref_btn, 0, wxALL|wxEXPAND, 1);
 	
