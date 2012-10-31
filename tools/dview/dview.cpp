@@ -329,6 +329,20 @@ BEGIN_EVENT_TABLE(DViewFrame, wxFrame)
 END_EVENT_TABLE()
 
 
+class TestSideBarWidget : public wxPLSideWidgetBase
+{
+public:
+	virtual void Render( wxDC &dc, const wxRect &geom )
+	{
+		dc.GradientFillLinear( geom, *wxRED, *wxBLUE, wxSOUTH );
+	}
+	virtual wxSize CalculateBestSize()
+	{
+		return wxSize(20, 300);
+	}
+};
+
+
 void TestPLPlot( wxWindow *parent )
 {
 	wxFrame *frame = new wxFrame( parent, wxID_ANY, wxT("wxPLPlotCtrl in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(850,500) );
@@ -364,6 +378,8 @@ void TestPLPlot( wxWindow *parent )
 	//plot->SetScaleTextSize( true );
 
 	plot->ShowGrid( true, true );
+
+	plot->SetSideWidget( new TestSideBarWidget, wxPLPlotCtrl::Y_LEFT );
 		
 	plot->SetXAxis1( new wxPLLogAxis( 0.01, 100, "\\nu  (m^3/kg)" ) );		
 //	plot->SetXAxis1( new wxPLTimeAxis( 4, 200 ) );

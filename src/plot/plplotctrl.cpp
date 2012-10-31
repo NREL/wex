@@ -135,8 +135,8 @@ wxSize wxPLSideWidgetBase::GetBestSize()
 	if ( m_bestSize.x < 0 || m_bestSize.y < 0 )
 		m_bestSize = CalculateBestSize();
 
-	if ( m_bestSize.x < 0 ) m_bestSize.x = 10;
-	if ( m_bestSize.y < 0 ) m_bestSize.y = 10;
+	if ( m_bestSize.x <= 0 ) m_bestSize.x = 5;
+	if ( m_bestSize.y <= 0 ) m_bestSize.y = 5;
 	return m_bestSize;
 }
 
@@ -1058,6 +1058,18 @@ void wxPLPlotCtrl::SetSideWidget( wxPLSideWidgetBase *sw, AxisPos pos )
 	m_sideWidgets[pos] = sw;
 }
 
+wxPLSideWidgetBase *wxPLPlotCtrl::GetSideWidget( AxisPos pos )
+{
+	return m_sideWidgets[pos];
+}
+
+wxPLSideWidgetBase *wxPLPlotCtrl::ReleaseSideWidget( AxisPos pos )
+{
+	wxPLSideWidgetBase *w = m_sideWidgets[pos];
+	m_sideWidgets[pos] = 0;
+	return w;
+}
+
 void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os )
 {
 	wxTextOutputStream tt(os);
@@ -1364,9 +1376,8 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 
 	if ( m_sideWidgets[Y_RIGHT] != 0 )
 	{
-		wxSize sz = m_sideWidgets[Y_RIGHT]->GetBestSize();
-		
-		m_sideWidgets[Y_LEFT]->Render( aadc, 
+		wxSize sz = m_sideWidgets[Y_RIGHT]->GetBestSize();		
+		m_sideWidgets[Y_RIGHT]->Render( aadc, 
 			wxRect( geom.x+geom.width-sz.x, geom.y, 
 				sz.x, geom.height ) );
 

@@ -154,6 +154,8 @@ public:
 	wxMenu &GetContextMenu() { return m_contextMenu; }
 
 	void SetSideWidget( wxPLSideWidgetBase *sw, AxisPos pos = Y_RIGHT );
+	wxPLSideWidgetBase *GetSideWidget( AxisPos pos );
+	wxPLSideWidgetBase *ReleaseSideWidget( AxisPos pos );
 
 
 	void WriteDataAsText( wxUniChar sep, wxOutputStream &os );

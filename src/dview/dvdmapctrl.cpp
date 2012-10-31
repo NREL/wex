@@ -8,8 +8,7 @@
 
 #include "dview/dvtimeseriesdataset.h"
 #include "dview/dvselectionlist.h"
-#include "dview/dvcoarserainbowcolourmap.h"
-#include "dview/dvfinerainbowcolourmap.h"
+#include "dview/dvcolourmap.h"
 #include "dview/dvplothelper.h"
 #include "dview/dvdmapctrl.h"
 
@@ -103,8 +102,6 @@ enum {
 	ID_COLOURMAP_SELECTOR_CHOICE, ID_GRAPH_SCROLLBAR, ID_GRAPH_Y_SCROLLBAR,
 	ID_MIN_Z_INPUT, ID_MAX_Z_INPUT, ID_DMAP_SURFACE, ID_SYNC_CHECK, ID_RESET_MIN_MAX};
 
-enum ColourMapIndex {CMAP_COARSE_RAINBOW, CMAP_FINE_RAINBOW};
-
 static const double MIN_ZOOM_LENGTH = 7 * 24;
 
 BEGIN_EVENT_TABLE(wxDVDMapCtrl, wxPanel)
@@ -153,6 +150,8 @@ wxDVDMapCtrl::wxDVDMapCtrl(wxWindow* parent, wxWindowID id,
 	m_plotSurface->ShowGrid( false, false );
 	m_plotSurface->ShowTitle( false );
 	m_plotSurface->ShowLegend( false );
+
+	m_plotSurface->SetSideWidget( m_colourMap, wxPLPlotCtrl::Y_RIGHT );
 	
 	m_xAxis = new wxPLTimeAxis( 0, 8760 );
 	m_yAxis = new wxPLLinearAxis( 0, 24, "Hour of day" );
@@ -170,8 +169,8 @@ wxDVDMapCtrl::wxDVDMapCtrl(wxWindow* parent, wxWindowID id,
 	m_minTextBox = new wxTextCtrl(this, ID_MIN_Z_INPUT, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
 	m_maxTextBox = new wxTextCtrl(this, ID_MAX_Z_INPUT, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
 	
-	wxString choices[2] = { "Coarse Rainbow", "Fine Rainbow" };
-	m_colourMapSelector = new wxChoice(this, ID_COLOURMAP_SELECTOR_CHOICE, wxDefaultPosition, wxDefaultSize, 2, choices );
+	wxString choices[3] = { "Coarse Rainbow", "Fine Rainbow", "Grayscale" };
+	m_colourMapSelector = new wxChoice(this, ID_COLOURMAP_SELECTOR_CHOICE, wxDefaultPosition, wxDefaultSize, 3, choices );
 	m_colourMapSelector->SetSelection(0);
 
 	m_yGraphScroller = new wxScrollBar(this, ID_GRAPH_Y_SCROLLBAR, wxDefaultPosition, wxDefaultSize, wxSB_VERTICAL);
@@ -217,6 +216,7 @@ wxDVDMapCtrl::wxDVDMapCtrl(wxWindow* parent, wxWindowID id,
 
 wxDVDMapCtrl::~wxDVDMapCtrl()
 {
+	m_plotSurface->ReleaseSideWidget( wxPLPlotCtrl::Y_RIGHT );
 	delete m_colourMap;
 }
 
@@ -537,21 +537,28 @@ void wxDVDMapCtrl::SetColourMapName(const wxString& name)
 	double scaleMin = m_colourMap->GetScaleMin();
 	double scaleMax = m_colourMap->GetScaleMax();
 
+	// make sure the plot no longer sees this colourmap widget
+	m_plotSurface->ReleaseSideWidget( wxPLPlotCtrl::Y_RIGHT );
+	delete m_colourMap;
+	m_colourMap = 0;
+
 	int position = m_colourMapSelector->FindString(name);
 	switch(position)
 	{
-	case 0:
-		delete m_colourMap;
-		m_colourMap = new wxDVCoarseRainbowColourMap();
-		break;
 	case 1:
-		delete m_colourMap;
-		m_colourMap = new wxDVFineRainbowColourMap();
+		m_colourMap = new wxDVFineRainbowColourMap;
+		break;
+	case 2:
+		m_colourMap = new wxDVGrayscaleColourMap;
+		break;
+	default:
+		m_colourMap = new wxDVCoarseRainbowColourMap;
 		break;
 	}
 
 	if (position != wxNOT_FOUND)
 	{
+		m_plotSurface->SetSideWidget( m_colourMap, wxPLPlotCtrl::Y_RIGHT );
 		m_colourMap->SetScaleMinMax( scaleMin, scaleMax );
 		m_colourMapSelector->SetSelection(position);
 		m_dmap->SetColourMap( m_colourMap );

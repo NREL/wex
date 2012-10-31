@@ -12,12 +12,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\dview\dvautocolourassigner.h" />
-    <ClInclude Include="..\include\dview\dvcoarserainbowcolourmap.h" />
     <ClInclude Include="..\include\dview\dvcolourmap.h" />
     <ClInclude Include="..\include\dview\dvdcctrl.h" />
     <ClInclude Include="..\include\dview\dvdmapctrl.h" />
     <ClInclude Include="..\include\dview\dvfiledataset.h" />
-    <ClInclude Include="..\include\dview\dvfinerainbowcolourmap.h" />
     <ClInclude Include="..\include\dview\dvplotctrl.h" />
     <ClInclude Include="..\include\dview\dvplotctrlsettings.h" />
     <ClInclude Include="..\include\dview\dvplothelper.h" />
@@ -92,12 +90,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp" />
-    <ClCompile Include="..\src\dview\dvcoarserainbowcolourmap.cpp" />
     <ClCompile Include="..\src\dview\dvcolourmap.cpp" />
     <ClCompile Include="..\src\dview\dvdcctrl.cpp" />
     <ClCompile Include="..\src\dview\dvdmapctrl.cpp" />
     <ClCompile Include="..\src\dview\dvfiledataset.cpp" />
-    <ClCompile Include="..\src\dview\dvfinerainbowcolourmap.cpp" />
     <ClCompile Include="..\src\dview\dvplotctrl.cpp" />
     <ClCompile Include="..\src\dview\dvplotctrlsettings.cpp" />
     <ClCompile Include="..\src\dview\dvplothelper.cpp" />

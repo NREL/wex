@@ -33,9 +33,6 @@
     <ClInclude Include="..\include\dview\dvautocolourassigner.h">
       <Filter>dview\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\dview\dvcoarserainbowcolourmap.h">
-      <Filter>dview\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\dview\dvcolourmap.h">
       <Filter>dview\Headers</Filter>
     </ClInclude>
@@ -46,9 +43,6 @@
       <Filter>dview\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\include\dview\dvfiledataset.h">
-      <Filter>dview\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\dview\dvfinerainbowcolourmap.h">
       <Filter>dview\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\include\dview\dvplotctrl.h">
@@ -269,9 +263,6 @@
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
       <Filter>dview\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\dview\dvcoarserainbowcolourmap.cpp">
-      <Filter>dview\Sources</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\dview\dvcolourmap.cpp">
       <Filter>dview\Sources</Filter>
     </ClCompile>
@@ -282,9 +273,6 @@
       <Filter>dview\Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\src\dview\dvfiledataset.cpp">
-      <Filter>dview\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\dview\dvfinerainbowcolourmap.cpp">
       <Filter>dview\Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\src\dview\dvplotctrl.cpp">
