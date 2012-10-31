@@ -115,6 +115,30 @@ bool wxPLPlottable::ExtendMinMax(double *pxmin, double *pxmax, double *pymin, do
 	return true;
 }
 
+wxPLSideWidgetBase::wxPLSideWidgetBase()
+{
+	m_bestSize.x = m_bestSize.y = -1;
+}
+
+wxPLSideWidgetBase::~wxPLSideWidgetBase()
+{
+	// nothing to do
+}
+
+void wxPLSideWidgetBase::InvalidateBestSize()
+{
+	m_bestSize.x = m_bestSize.y = -1;
+}
+
+wxSize wxPLSideWidgetBase::GetBestSize()
+{
+	if ( m_bestSize.x < 0 || m_bestSize.y < 0 )
+		m_bestSize = CalculateBestSize();
+
+	if ( m_bestSize.x < 0 ) m_bestSize.x = 10;
+	if ( m_bestSize.y < 0 ) m_bestSize.y = 10;
+	return m_bestSize;
+}
 
 struct escape_sequence
 {
@@ -847,6 +871,9 @@ wxPLPlotCtrl::wxPLPlotCtrl( wxWindow *parent, int id, const wxPoint &pos, const 
 {
 	SetBackgroundStyle( wxBG_STYLE_CUSTOM );
 
+	for ( size_t i=0;i<4;i++ )
+		m_sideWidgets[i] = 0;
+
 	m_scaleTextSize = false;
 	m_showLegend = true;
 	m_showCoarseGrid = true;
@@ -901,6 +928,10 @@ wxPLPlotCtrl::~wxPLPlotCtrl()
 
 	for ( size_t i=0;i<m_legendItems.size(); i++ )
 		delete m_legendItems[i];
+
+	for ( size_t i=0;i<4;i++ )
+		if ( m_sideWidgets[i] != 0 )
+			delete m_sideWidgets[i];
 }
 
 void wxPLPlotCtrl::AddPlot( wxPLPlottable *p, AxisPos xap, AxisPos yap, PlotPos ppos )
@@ -1016,6 +1047,15 @@ void wxPLPlotCtrl::GetHighlightBounds( double *left, double *right )
 {
 	*left = m_highlightLeftPercent;
 	*right = m_highlightRightPercent;
+}
+
+void wxPLPlotCtrl::SetSideWidget( wxPLSideWidgetBase *sw, AxisPos pos )
+{
+	if ( m_sideWidgets[pos] != 0 
+		&& m_sideWidgets[pos] != sw )
+		delete m_sideWidgets[pos];
+
+	m_sideWidgets[pos] = sw;
 }
 
 void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os )
@@ -1270,7 +1310,7 @@ public:
 static const int text_space = 3;
 static const wxSize legend_item_box( 13, 13 );
 
-void wxPLPlotCtrl::Render( wxDC &dc, const wxRect &geom )
+void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 {
 	gcdc_ref gdc;
 	if ( wxMemoryDC *memdc = dynamic_cast<wxMemoryDC*>( &dc ) )
@@ -1309,6 +1349,30 @@ void wxPLPlotCtrl::Render( wxDC &dc, const wxRect &geom )
 
 	wxFont font_axis( font_normal );
 	font_axis.SetPointSize( font_axis.GetPointSize()-2 );
+
+
+	// draw any side widgets first and remove the space from the total plot area
+	if ( m_sideWidgets[Y_LEFT] != 0 )
+	{
+		wxSize sz = m_sideWidgets[Y_LEFT]->GetBestSize();
+		m_sideWidgets[Y_LEFT]->Render( aadc, 
+			wxRect( geom.x, geom.y, 
+				sz.x, geom.height ) );
+		geom.width -= sz.x;
+		geom.x += sz.x;
+	}
+
+	if ( m_sideWidgets[Y_RIGHT] != 0 )
+	{
+		wxSize sz = m_sideWidgets[Y_RIGHT]->GetBestSize();
+		
+		m_sideWidgets[Y_LEFT]->Render( aadc, 
+			wxRect( geom.x+geom.width-sz.x, geom.y, 
+				sz.x, geom.height ) );
+
+		geom.width -= sz.x;
+	}
+
 
 	wxRect box( geom.x+text_space, 
 		geom.y+text_space, 

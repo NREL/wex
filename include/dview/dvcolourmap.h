@@ -22,10 +22,7 @@ public:
 	void ExtendToNiceInPosDir(double* d, bool posDir);
 
 	virtual wxColour ColourForValue(double val) = 0;
-
-	//Draw in upper right corner of rect and return space used.
-	virtual wxSize DrawIn(wxDC &dc, const wxRect& geom) = 0;
-
+	
 protected:
 	double mMinVal;
 	double mMaxVal;

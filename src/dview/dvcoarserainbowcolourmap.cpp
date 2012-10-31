@@ -1,3 +1,4 @@
+#include <wx/dcmemory.h>
 
 #include "dview/dvcoarserainbowcolourmap.h"
 
@@ -40,7 +41,26 @@ wxColour wxDVCoarseRainbowColourMap::ColourForValue(double val)
 	return mColourList[position];
 }
 
-wxSize wxDVCoarseRainbowColourMap::DrawIn(wxDC& dc, const wxRect& geom)
+wxSize wxDVCoarseRainbowColourMap::CalculateBestSize()
+{
+	wxBitmap bit(100, 100);
+	wxMemoryDC dc(bit);
+	dc.SetFont( *wxNORMAL_FONT );
+	
+	double range = mMaxVal - mMinVal;
+	double step = range / 10;
+	wxCoord maxWidth = 0, temp;
+	for (int i=0; i<11; i++)
+	{
+		dc.GetTextExtent( wxString::Format("%lg", mMinVal + i*step), &temp, NULL);
+		if (temp > maxWidth)
+			maxWidth = temp;
+	}
+
+	return wxSize( 16+maxWidth, 300 );
+}
+
+void wxDVCoarseRainbowColourMap::Render(wxDC& dc, const wxRect& geom)
 {
 	wxCoord colourBarHeight = 220;
 	if (geom.height < 240)
@@ -50,8 +70,7 @@ wxSize wxDVCoarseRainbowColourMap::DrawIn(wxDC& dc, const wxRect& geom)
 
 	dc.SetFont(*wxNORMAL_FONT);
 	wxCoord charHeight = dc.GetCharHeight();
-
-
+	
 	double range = mMaxVal - mMinVal;
 	double step = range / 10;
 	wxCoord maxWidth = 0, temp;
@@ -84,9 +103,4 @@ wxSize wxDVCoarseRainbowColourMap::DrawIn(wxDC& dc, const wxRect& geom)
 	dc.SetBrush(*wxTRANSPARENT_BRUSH);
 	dc.SetPen(*wxBLACK_PEN);
 	dc.DrawRectangle(colourBarX, charHeight/2, 12, colourBarHeight+2);
-
-	wxCoord totalWidth = maxWidth + 14 + 2;
-	wxCoord totalHeight = colourBarHeight + charHeight;
-
-	return wxSize(totalWidth, totalHeight);
 }

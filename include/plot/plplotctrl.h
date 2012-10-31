@@ -68,6 +68,21 @@ public:
 	virtual bool ExtendMinMax(double *pxmin, double *pxmax, double *pymin, double *pymax) const;
 };
 
+class wxPLSideWidgetBase
+{
+public:
+	wxPLSideWidgetBase();
+	virtual ~wxPLSideWidgetBase();
+
+	virtual void Render( wxDC &, const wxRect & ) = 0;
+	virtual wxSize CalculateBestSize() = 0;
+
+	void InvalidateBestSize();
+	wxSize GetBestSize();
+
+private:
+	wxSize m_bestSize;
+};
 
 BEGIN_DECLARE_EVENT_TYPES()
 	DECLARE_EVENT_TYPE( wxEVT_PLOT_LEGEND, 0)
@@ -138,6 +153,8 @@ public:
 
 	wxMenu &GetContextMenu() { return m_contextMenu; }
 
+	void SetSideWidget( wxPLSideWidgetBase *sw, AxisPos pos = Y_RIGHT );
+
 
 	void WriteDataAsText( wxUniChar sep, wxOutputStream &os );
 
@@ -148,7 +165,7 @@ public:
 	void DeleteAxes();
 
 	void Invalidate(); // erases all cached positions and layouts, but does not issue refresh
-	void Render( wxDC &dc, const wxRect &geom ); // note: does not draw the background.  DC should be cleared with desired bg color already
+	void Render( wxDC &dc, wxRect geom ); // note: does not draw the background.  DC should be cleared with desired bg color already
 
 	class text_layout;
 	class axis_layout;
@@ -198,6 +215,8 @@ private:
 	double m_highlightRightPercent;
 	bool m_allowHighlighting;
 	std::vector< wxRect > m_plotRects;
+
+	wxPLSideWidgetBase *m_sideWidgets[4];
 
 	struct plot_data
 	{
