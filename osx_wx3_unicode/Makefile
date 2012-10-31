@@ -9,12 +9,10 @@ TARGET = ../$(LIBNAME).a
 	
 OBJECTS = \
 	dvautocolourassigner.o \
-	dvcoarserainbowcolourmap.o \
 	dvcolourmap.o \
 	dvdcctrl.o \
 	dvdmapctrl.o \
 	dvfiledataset.o \
-	dvfinerainbowcolourmap.o \
 	dvplotctrl.o \
 	dvplotctrlsettings.o \
 	dvplothelper.o \

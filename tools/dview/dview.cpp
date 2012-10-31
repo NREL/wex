@@ -481,7 +481,7 @@ public:
 
 		frame->Show();
 
-		TestPLPlot( frame );
+		//TestPLPlot( frame );
 
 		return true;
 	}
