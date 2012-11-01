@@ -17,10 +17,10 @@
 
 #include "plot/pllineplot.h"
 
-#include "zoom_in.binpng"
-#include "zoom_out.binpng"
-#include "zoom_fit.binpng"
-#include "preferences.binpng"
+#include "zoom_in.cpng"
+#include "zoom_out.cpng"
+#include "zoom_fit.cpng"
+#include "preferences.cpng"
 
 #include "dview/dvselectionlist.h"
 #include "dview/dvtimeseriesdataset.h"

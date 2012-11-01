@@ -12,9 +12,9 @@
 #include "dview/dvplothelper.h"
 #include "dview/dvdmapctrl.h"
 
-#include "zoom_in.binpng"
-#include "zoom_out.binpng"
-#include "zoom_fit.binpng"
+#include "zoom_in.cpng"
+#include "zoom_out.cpng"
+#include "zoom_fit.cpng"
 
 
 class wxDVDMapPlot : public wxPLPlottable
