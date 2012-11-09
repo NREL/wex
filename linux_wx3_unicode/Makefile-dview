@@ -1,0 +1,19 @@
+DVDIR = ../tools/dview
+VPATH = $(DVDIR)
+WEXLIB = ../wexuxwx3.a
+
+CC = gcc
+CXX = g++
+CFLAGS = -g -I. -I../include `wx-config-3 --cflags`
+CXXFLAGS = $(CFLAGS)
+LDFLAGS = `wx-config-3 --libs` `wx-config-3 --libs aui` `wx-config-3 --libs stc` -lm 
+OBJECTS  = dview.o
+TARGET = DView
+
+
+$(TARGET): $(OBJECTS) $(WEXLIB) 
+	$(CXX) -g -o $@ $^ $(LDFLAGS)
+	
+clean:
+	rm -f $(TARGET) $(OBJECTS)
+	rm -rf DView.app
