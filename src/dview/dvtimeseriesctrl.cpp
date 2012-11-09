@@ -15,17 +15,17 @@
 #include <wx/statline.h>
 #include <wx/gdicmn.h>
 
-#include "plot/pllineplot.h"
+#include "wex/plot/pllineplot.h"
 
-#include "zoom_in.cpng"
-#include "zoom_out.cpng"
-#include "zoom_fit.cpng"
-#include "preferences.cpng"
+#include "wex/icons/zoom_in.cpng"
+#include "wex/icons/zoom_out.cpng"
+#include "wex/icons/zoom_fit.cpng"
+#include "wex/icons/preferences.cpng"
 
-#include "dview/dvselectionlist.h"
-#include "dview/dvtimeseriesdataset.h"
-#include "dview/dvplothelper.h"
-#include "dview/dvtimeseriesctrl.h"
+#include "wex/dview/dvselectionlist.h"
+#include "wex/dview/dvtimeseriesdataset.h"
+#include "wex/dview/dvplothelper.h"
+#include "wex/dview/dvtimeseriesctrl.h"
 
 static const wxString NO_UNITS("ThereAreNoUnitsForThisAxis.");
 

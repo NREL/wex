@@ -25,9 +25,9 @@
 // includes
 #include <wx/tokenzr.h>
 
-#include "pdf/pdfencoding.h"
-#include "pdf/pdffontdata.h"
-#include "pdf/pdffont.h"
+#include "wex/pdf/pdfencoding.h"
+#include "wex/pdf/pdffontdata.h"
+#include "wex/pdf/pdffont.h"
 
 #include "wxmemdbg.h"
 

@@ -21,10 +21,10 @@
 #include <wx/wx.h>
 #endif
 
-#include "pdf/pdfcolour.h"
-#include "pdf/pdfpattern.h"
-#include "pdf/pdfspotcolour.h"
-#include "pdf/pdfutility.h"
+#include "wex/pdf/pdfcolour.h"
+#include "wex/pdf/pdfpattern.h"
+#include "wex/pdf/pdfspotcolour.h"
+#include "wex/pdf/pdfutility.h"
 
 #include "pdfcolourdata.inc"
 

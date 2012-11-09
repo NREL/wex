@@ -31,13 +31,13 @@
 #include "wx/txtstrm.h"
 #include <wx/zstream.h>
 
-#include "pdf/pdfcffindex.h"
-#include "pdf/pdfcffdecoder.h"
-#include "pdf/pdffontdata.h"
-#include "pdf/pdffontdatatype1.h"
-#include "pdf/pdffontparsertype1.h"
-#include "pdf/pdfencoding.h"
-#include "pdf/pdfutility.h"
+#include "wex/pdf/pdfcffindex.h"
+#include "wex/pdf/pdfcffdecoder.h"
+#include "wex/pdf/pdffontdata.h"
+#include "wex/pdf/pdffontdatatype1.h"
+#include "wex/pdf/pdffontparsertype1.h"
+#include "wex/pdf/pdfencoding.h"
+#include "wex/pdf/pdfutility.h"
 
 #include "wxmemdbg.h"
 

@@ -1,6 +1,6 @@
 
-#include "dview/dvfiledataset.h"
-//#include "dview/dview.h"
+#include "wex/dview/dvfiledataset.h"
+//#include "wex/dview/dview.h"
 
 #include <wx/wfstream.h>
 #include <wx/txtstrm.h>

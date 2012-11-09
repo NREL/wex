@@ -4,12 +4,12 @@
 #include <wx/wx.h>
 #include <wx/tokenzr.h>
 
-#include "plot/plplotctrl.h"
-#include "plot/plscatterplot.h"
+#include "wex/plot/plplotctrl.h"
+#include "wex/plot/plscatterplot.h"
 
-#include "dview/dvtimeseriesdataset.h"
-#include "dview/dvselectionlist.h"
-#include "dview/dvscatterplotctrl.h"
+#include "wex/dview/dvtimeseriesdataset.h"
+#include "wex/dview/dvselectionlist.h"
+#include "wex/dview/dvscatterplotctrl.h"
 
 static const wxString NO_UNITS("ThereAreNoUnitsForThisAxis.");
 

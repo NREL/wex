@@ -27,9 +27,9 @@
 #include <wx/filesys.h>
 #include <wx/zstream.h>
 
-#include "pdf/pdfencoding.h"
-#include "pdf/pdffontdatatype1.h"
-#include "pdf/pdffontparsertype1.h"
+#include "wex/pdf/pdfencoding.h"
+#include "wex/pdf/pdffontdatatype1.h"
+#include "wex/pdf/pdffontparsertype1.h"
 
 #include "wxmemdbg.h"
 

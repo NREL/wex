@@ -24,7 +24,7 @@
 
 // includes
 
-#include "pdf/pdfcffindex.h"
+#include "wex/pdf/pdfcffindex.h"
 
 #include "wxmemdbg.h"
 

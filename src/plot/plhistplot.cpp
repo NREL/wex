@@ -1,5 +1,5 @@
 #include <wx/dc.h>
-#include "plot/plhistplot.h"
+#include "wex/plot/plhistplot.h"
 
 wxPLHistogramPlot::wxPLHistogramPlot()
 {

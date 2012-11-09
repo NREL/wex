@@ -1,6 +1,6 @@
 #include <wx/dcbuffer.h>
 
-#include "dview/dvselectionlist.h"
+#include "wex/dview/dvselectionlist.h"
 
 
 DEFINE_EVENT_TYPE(wxEVT_DVSELECTIONLIST)

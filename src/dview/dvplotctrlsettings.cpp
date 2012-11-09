@@ -1,5 +1,5 @@
 
-#include "dview/dvplotctrlsettings.h"
+#include "wex/dview/dvplotctrlsettings.h"
 
 
 wxDVPlotCtrlSettings::wxDVPlotCtrlSettings()

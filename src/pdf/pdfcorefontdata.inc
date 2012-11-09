@@ -1,6 +1,6 @@
 /// \file pdfcorefontdata.inc Definition of the 14 Adobe core fonts.
 
-#include "pdf/pdfcorefontdata.h"
+#include "wex/pdf/pdfcorefontdata.h"
 
 /*
 

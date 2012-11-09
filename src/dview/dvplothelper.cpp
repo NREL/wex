@@ -1,5 +1,5 @@
 
-#include "dview/dvplothelper.h"
+#include "wex/dview/dvplothelper.h"
 
 
 namespace wxDVPlotHelper

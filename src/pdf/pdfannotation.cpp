@@ -21,10 +21,10 @@
 #include <wx/wx.h>
 #endif
 
-#include "pdf/pdfannotation.h"
-#include "pdf/pdfbookmark.h"
-#include "pdf/pdfdocument.h"
-#include "pdf/pdflinks.h"
+#include "wex/pdf/pdfannotation.h"
+#include "wex/pdf/pdfbookmark.h"
+#include "wex/pdf/pdfdocument.h"
+#include "wex/pdf/pdflinks.h"
 
 // ----------------------------------------------------------------------------
 // wxPdfLink: class representing internal or external links

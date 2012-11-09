@@ -24,8 +24,8 @@
 
 // includes
 
-#include "pdf/pdfobjects.h"
-#include "pdf/pdfutility.h"
+#include "wex/pdf/pdfobjects.h"
+#include "wex/pdf/pdfutility.h"
 
 #include "wxmemdbg.h"
 

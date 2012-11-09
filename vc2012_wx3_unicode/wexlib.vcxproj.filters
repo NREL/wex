@@ -39,242 +39,242 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\dview\dvautocolourassigner.h">
-      <Filter>dview\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\dview\dvcolourmap.h">
-      <Filter>dview\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\dview\dvdcctrl.h">
-      <Filter>dview\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\dview\dvdmapctrl.h">
-      <Filter>dview\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\dview\dvfiledataset.h">
-      <Filter>dview\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\dview\dvplotctrl.h">
-      <Filter>dview\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\dview\dvplotctrlsettings.h">
-      <Filter>dview\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\dview\dvplothelper.h">
-      <Filter>dview\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\dview\dvpncdfctrl.h">
-      <Filter>dview\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\dview\dvprofilectrl.h">
-      <Filter>dview\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\dview\dvscatterplotctrl.h">
-      <Filter>dview\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\dview\dvselectionlist.h">
-      <Filter>dview\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\dview\dvtimeseriesctrl.h">
-      <Filter>dview\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\dview\dvtimeseriesdataset.h">
-      <Filter>dview\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfannotation.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfarraydouble.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfarraytypes.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfbarcode.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfbookmark.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfcffdecoder.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfcffindex.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfcjkfontdata.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfcolour.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfcoonspatchmesh.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfcorefontdata.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfdc.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfdc28.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfdc29.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfdoc.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfdocdef.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfdocument.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfencoding.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfencrypt.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdffont.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdffontdata.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdffontdatacore.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdffontdataopentype.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdffontdatatruetype.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdffontdatatype0.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdffontdatatype1.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdffontdescription.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdffontdetails.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdffontextended.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdffontmacosx.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdffontmanager.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdffontparser.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdffontparsertruetype.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdffontparsertype1.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdffontsubsetcff.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdffontsubsettruetype.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdffontvolt.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfform.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfgradient.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfgraphics.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfimage.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfinfo.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdflayer.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdflinestyle.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdflinks.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfobjects.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfparser.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfpattern.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfprint.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfproperties.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfrijndael.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfshape.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfspotcolour.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdftemplate.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfutility.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\pdf\pdfxml.h">
-      <Filter>pdf\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\pdf\wxmemdbg.h">
       <Filter>pdf\Sources</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\plot\plaxis.h">
-      <Filter>plot\Headers</Filter>
+    <ClInclude Include="..\include\wex\dview\dvautocolourassigner.h">
+      <Filter>dview\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\plot\plhistplot.h">
-      <Filter>plot\Headers</Filter>
+    <ClInclude Include="..\include\wex\dview\dvcolourmap.h">
+      <Filter>dview\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\plot\pllineplot.h">
-      <Filter>plot\Headers</Filter>
+    <ClInclude Include="..\include\wex\dview\dvdcctrl.h">
+      <Filter>dview\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\plot\plplotctrl.h">
-      <Filter>plot\Headers</Filter>
+    <ClInclude Include="..\include\wex\dview\dvdmapctrl.h">
+      <Filter>dview\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\plot\plscatterplot.h">
-      <Filter>plot\Headers</Filter>
+    <ClInclude Include="..\include\wex\dview\dvfiledataset.h">
+      <Filter>dview\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\ole\activex.h">
+    <ClInclude Include="..\include\wex\dview\dvplotctrl.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\dview\dvplotctrlsettings.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\dview\dvplothelper.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\dview\dvpncdfctrl.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\dview\dvprofilectrl.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\dview\dvscatterplotctrl.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\dview\dvselectionlist.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\dview\dvtimeseriesctrl.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\dview\dvtimeseriesdataset.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\ole\activex.h">
       <Filter>ole\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\ole\excelauto.h">
+    <ClInclude Include="..\include\wex\ole\excelauto.h">
       <Filter>ole\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\ole\iehtmlwin.h">
+    <ClInclude Include="..\include\wex\ole\iehtmlwin.h">
       <Filter>ole\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfannotation.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfarraydouble.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfarraytypes.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfbarcode.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfbookmark.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfcffdecoder.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfcffindex.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfcjkfontdata.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfcolour.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfcoonspatchmesh.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfcorefontdata.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfdc.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfdc28.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfdc29.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfdoc.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfdocdef.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfdocument.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfencoding.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfencrypt.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdffont.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdffontdata.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdffontdatacore.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdffontdataopentype.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdffontdatatruetype.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdffontdatatype0.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdffontdatatype1.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdffontdescription.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdffontdetails.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdffontextended.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdffontmacosx.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdffontmanager.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdffontparser.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdffontparsertruetype.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdffontparsertype1.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdffontsubsetcff.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdffontsubsettruetype.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdffontvolt.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfform.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfgradient.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfgraphics.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfimage.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfinfo.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdflayer.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdflinestyle.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdflinks.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfobjects.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfparser.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfpattern.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfprint.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfproperties.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfrijndael.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfshape.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfspotcolour.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdftemplate.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfutility.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pdf\pdfxml.h">
+      <Filter>pdf\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\plot\plaxis.h">
+      <Filter>plot\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\plot\plhistplot.h">
+      <Filter>plot\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\plot\pllineplot.h">
+      <Filter>plot\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\plot\plplotctrl.h">
+      <Filter>plot\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\plot\plscatterplot.h">
+      <Filter>plot\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

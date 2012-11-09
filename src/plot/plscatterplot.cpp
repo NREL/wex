@@ -1,5 +1,5 @@
 #include <wx/dc.h>
-#include "plot/plscatterplot.h"
+#include "wex/plot/plscatterplot.h"
 
 
 wxPLScatterPlot::wxPLScatterPlot()

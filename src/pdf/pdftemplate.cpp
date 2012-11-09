@@ -24,11 +24,11 @@
 
 // includes
 
-#include "pdf/pdfdocument.h"
-#include "pdf/pdfobjects.h"
-#include "pdf/pdfparser.h"
-#include "pdf/pdftemplate.h"
-#include "pdf/pdfutility.h"
+#include "wex/pdf/pdfdocument.h"
+#include "wex/pdf/pdfobjects.h"
+#include "wex/pdf/pdfparser.h"
+#include "wex/pdf/pdftemplate.h"
+#include "wex/pdf/pdfutility.h"
 
 wxPdfTemplate::wxPdfTemplate(int templateId)
 {

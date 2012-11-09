@@ -26,11 +26,11 @@
 #include <wx/uri.h>
 #include <wx/url.h>
 
-#include "pdf/pdfencrypt.h"
-#include "pdf/pdfinfo.h"
-#include "pdf/pdfobjects.h"
-#include "pdf/pdfparser.h"
-#include "pdf/pdftemplate.h"
+#include "wex/pdf/pdfencrypt.h"
+#include "wex/pdf/pdfinfo.h"
+#include "wex/pdf/pdfobjects.h"
+#include "wex/pdf/pdfparser.h"
+#include "wex/pdf/pdftemplate.h"
 
 #include <wx/arrimpl.cpp>
 WX_DEFINE_OBJARRAY(wxPdfXRef);

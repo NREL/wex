@@ -1,6 +1,6 @@
 #include <wx/dcmemory.h>
 
-#include "dview/dvcolourmap.h"
+#include "wex/dview/dvcolourmap.h"
 
 wxDVColourMap::wxDVColourMap(double min, double max)
 {

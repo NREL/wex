@@ -23,9 +23,9 @@
 
 #include <wx/tokenzr.h>
 
-#include "pdf/pdfcoonspatchmesh.h"
-#include "pdf/pdfgradient.h"
-#include "pdf/pdfutility.h"
+#include "wex/pdf/pdfcoonspatchmesh.h"
+#include "wex/pdf/pdfgradient.h"
+#include "wex/pdf/pdfutility.h"
 
 // --- Gradients
 

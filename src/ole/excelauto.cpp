@@ -1,7 +1,7 @@
 #include <wx/clipbrd.h>
 #include <wx/msw/ole/oleutils.h>
 
-#include "ole/excelauto.h"
+#include "wex/ole/excelauto.h"
 
 #define xlWorksheet -4167
 #define xl3DPie -4102

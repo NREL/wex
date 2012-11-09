@@ -24,12 +24,12 @@
 
 // includes
 
-#include "pdf/pdfencoding.h"
-#include "pdf/pdffont.h"
-#include "pdf/pdffontextended.h"
-#include "pdf/pdffontdata.h"
-#include "pdf/pdffontdatatype1.h"
-#include "pdf/pdffontmanager.h"
+#include "wex/pdf/pdfencoding.h"
+#include "wex/pdf/pdffont.h"
+#include "wex/pdf/pdffontextended.h"
+#include "wex/pdf/pdffontdata.h"
+#include "wex/pdf/pdffontdatatype1.h"
+#include "wex/pdf/pdffontmanager.h"
 
 #include "wxmemdbg.h"
 

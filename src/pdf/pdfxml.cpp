@@ -25,9 +25,9 @@
 // includes
 #include <wx/sstream.h>
 
-#include "pdf/pdfdocument.h"
-#include "pdf/pdfutility.h"
-#include "pdf/pdfxml.h"
+#include "wex/pdf/pdfdocument.h"
+#include "wex/pdf/pdfutility.h"
+#include "wex/pdf/pdfxml.h"
 
 static wxString
 GetNodeContent(const wxXmlNode *node)

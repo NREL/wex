@@ -25,7 +25,7 @@
 // includes
 #include <wx/zstream.h>
 
-#include "pdf/pdffontparser.h"
+#include "wex/pdf/pdffontparser.h"
 
 #include "wxmemdbg.h"
 

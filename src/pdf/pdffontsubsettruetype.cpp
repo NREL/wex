@@ -24,8 +24,8 @@
 
 // includes
 
-#include "pdf/pdfarraytypes.h"
-#include "pdf/pdffontsubsettruetype.h"
+#include "wex/pdf/pdfarraytypes.h"
+#include "wex/pdf/pdffontsubsettruetype.h"
 
 #include "wxmemdbg.h"
 

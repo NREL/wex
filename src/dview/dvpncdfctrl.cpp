@@ -3,11 +3,11 @@
 #include <wx/wx.h>
 #include <wx/busyinfo.h>
 
-#include "plot/plplotctrl.h"
-#include "plot/plhistplot.h"
-#include "plot/pllineplot.h"
+#include "wex/plot/plplotctrl.h"
+#include "wex/plot/plhistplot.h"
+#include "wex/plot/pllineplot.h"
 
-#include "dview/dvpncdfctrl.h"
+#include "wex/dview/dvpncdfctrl.h"
 
 enum { wxID_DATA_SELECTOR_CHOICE = wxID_HIGHEST + 1, 
 	wxID_BIN_COMBO, 

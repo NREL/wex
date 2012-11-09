@@ -52,7 +52,7 @@
   code and/or adjust the licensing conditions notice accordingly.
 */
 
-#include "ole/iehtmlwin.h"
+#include "wex/ole/iehtmlwin.h"
 
 #include <wx/strconv.h>
 #include <wx/string.h>

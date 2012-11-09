@@ -3,7 +3,7 @@
 #include <numeric>
 #include <wx/datetime.h>
 
-#include "plot/plaxis.h"
+#include "wex/plot/plaxis.h"
 
 #ifdef __WXOSX__
 #define my_isnan(x) std::isnan(x)

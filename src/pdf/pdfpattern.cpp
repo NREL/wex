@@ -21,9 +21,9 @@
 #include <wx/wx.h>
 #endif
 
-//#include "pdf/pdfcolour.h"
-#include "pdf/pdfpattern.h"
-//#include "pdf/pdfutility.h"
+//#include "wex/pdf/pdfcolour.h"
+#include "wex/pdf/pdfpattern.h"
+//#include "wex/pdf/pdfutility.h"
 
 wxPdfPattern::wxPdfPattern(int index, double width, double height)
   : m_objIndex(0), m_index(index), m_width(width), m_height(height)

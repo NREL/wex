@@ -24,7 +24,7 @@
 
 // includes
 
-#include "pdf/pdfutility.h"
+#include "wex/pdf/pdfutility.h"
 
 bool wxPdfUtility::ms_seeded = false;
 int  wxPdfUtility::ms_s1     = 0;

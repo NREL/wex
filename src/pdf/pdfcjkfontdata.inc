@@ -1,6 +1,6 @@
 /// \file pdfcjkfontdata.inc Definition of the default CJK fonts.
 
-#include "pdf/pdfcjkfontdata.h"
+#include "wex/pdf/pdfcjkfontdata.h"
 
 static short cwAllHw[] =
   {

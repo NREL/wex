@@ -23,12 +23,12 @@
 
 #include <wx/tokenzr.h>
 
-#include "pdf/pdfcoonspatchmesh.h"
-#include "pdf/pdfdocument.h"
-#include "pdf/pdfgradient.h"
-#include "pdf/pdfgraphics.h"
-#include "pdf/pdfshape.h"
-#include "pdf/pdfutility.h"
+#include "wex/pdf/pdfcoonspatchmesh.h"
+#include "wex/pdf/pdfdocument.h"
+#include "wex/pdf/pdfgradient.h"
+#include "wex/pdf/pdfgraphics.h"
+#include "wex/pdf/pdfshape.h"
+#include "wex/pdf/pdfutility.h"
 
 wxPdfExtGState::wxPdfExtGState(double lineAlpha, double fillAlpha, wxPdfBlendMode blendMode)
 {

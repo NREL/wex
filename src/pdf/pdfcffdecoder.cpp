@@ -28,9 +28,9 @@
 
 // includes
 
-#include "pdf/pdfarraytypes.h"
-#include "pdf/pdfcffindex.h"
-#include "pdf/pdfcffdecoder.h"
+#include "wex/pdf/pdfarraytypes.h"
+#include "wex/pdf/pdfcffindex.h"
+#include "wex/pdf/pdfcffdecoder.h"
 
 #include "wxmemdbg.h"
 

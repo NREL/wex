@@ -21,8 +21,8 @@
 #include <wx/wx.h>
 #endif
 
-#include "pdf/pdfdocument.h"
-#include "pdf/pdfbarcode.h"
+#include "wex/pdf/pdfdocument.h"
+#include "wex/pdf/pdfbarcode.h"
 
 wxPdfBarCodeCreator::wxPdfBarCodeCreator(wxPdfDocument& document)
 {

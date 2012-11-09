@@ -25,7 +25,7 @@
 // includes
 #include <wx/string.h>
 
-#include "pdf/pdfencoding.h"
+#include "wex/pdf/pdfencoding.h"
 
 #include "wxmemdbg.h"
 

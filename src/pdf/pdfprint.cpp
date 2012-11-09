@@ -54,9 +54,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "pdf/pdfdoc.h"
-#include "pdf/pdfdc.h"
-#include "pdf/pdfprint.h"
+#include "wex/pdf/pdfdoc.h"
+#include "wex/pdf/pdfdc.h"
+#include "wex/pdf/pdfprint.h"
 #include <wx/intl.h>
 
 // ----------------------------------------------------------------------------

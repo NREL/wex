@@ -24,10 +24,10 @@
 
 // includes
 
-#include "pdf/pdfdocument.h"
-#include "pdf/pdffontdetails.h"
-#include "pdf/pdfform.h"
-#include "pdf/pdfutility.h"
+#include "wex/pdf/pdfdocument.h"
+#include "wex/pdf/pdffontdetails.h"
+#include "wex/pdf/pdfform.h"
+#include "wex/pdf/pdfutility.h"
 
 wxPdfIndirectObject::wxPdfIndirectObject(int objectId, int generationId)
 {

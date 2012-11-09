@@ -3,12 +3,12 @@
 #include <wx/dcbuffer.h>
 #include <wx/tokenzr.h>
 
-#include "plot/plplotctrl.h"
-#include "plot/pllineplot.h"
+#include "wex/plot/plplotctrl.h"
+#include "wex/plot/pllineplot.h"
 
-#include "dview/dvtimeseriesdataset.h"
-#include "dview/dvselectionlist.h"
-#include "dview/dvprofilectrl.h"
+#include "wex/dview/dvtimeseriesdataset.h"
+#include "wex/dview/dvselectionlist.h"
+#include "wex/dview/dvprofilectrl.h"
 
 static const wxString NO_UNITS("ThereAreNoUnitsForThisAxis.");
 

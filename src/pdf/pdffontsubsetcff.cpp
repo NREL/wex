@@ -28,11 +28,11 @@
 
 // includes
 
-#include "pdf/pdfarraytypes.h"
-#include "pdf/pdfcffdecoder.h"
-#include "pdf/pdfcffindex.h"
-#include "pdf/pdffontdata.h"
-#include "pdf/pdffontsubsetcff.h"
+#include "wex/pdf/pdfarraytypes.h"
+#include "wex/pdf/pdfcffdecoder.h"
+#include "wex/pdf/pdfcffindex.h"
+#include "wex/pdf/pdffontdata.h"
+#include "wex/pdf/pdffontsubsetcff.h"
 
 #include "wxmemdbg.h"
 

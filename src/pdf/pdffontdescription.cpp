@@ -24,7 +24,7 @@
 
 // includes
 
-#include "pdf/pdffontdescription.h"
+#include "wex/pdf/pdffontdescription.h"
 
 #include "wxmemdbg.h"
 

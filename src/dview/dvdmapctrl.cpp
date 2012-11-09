@@ -3,18 +3,18 @@
 #include <wx/scrolbar.h>
 #include <wx/textctrl.h>
 
-#include "plot/plplotctrl.h"
-#include "plot/plaxis.h"
+#include "wex/plot/plplotctrl.h"
+#include "wex/plot/plaxis.h"
 
-#include "dview/dvtimeseriesdataset.h"
-#include "dview/dvselectionlist.h"
-#include "dview/dvcolourmap.h"
-#include "dview/dvplothelper.h"
-#include "dview/dvdmapctrl.h"
+#include "wex/dview/dvtimeseriesdataset.h"
+#include "wex/dview/dvselectionlist.h"
+#include "wex/dview/dvcolourmap.h"
+#include "wex/dview/dvplothelper.h"
+#include "wex/dview/dvdmapctrl.h"
 
-#include "zoom_in.cpng"
-#include "zoom_out.cpng"
-#include "zoom_fit.cpng"
+#include "wex/icons/zoom_in.cpng"
+#include "wex/icons/zoom_out.cpng"
+#include "wex/icons/zoom_fit.cpng"
 
 
 class wxDVDMapPlot : public wxPLPlottable

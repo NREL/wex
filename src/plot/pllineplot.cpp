@@ -1,5 +1,5 @@
 #include <wx/dc.h>
-#include "plot/pllineplot.h"
+#include "wex/plot/pllineplot.h"
 
 static int GetWxLineStyle( wxPLLinePlot::Style sty )
 {

@@ -1,12 +1,12 @@
 #include <wx/wx.h>
 #include <wx/aui/aui.h>
 
-#include "plot/plhistplot.h"
+#include "wex/plot/plhistplot.h"
 
-#include "dview/dvplotctrl.h"
-#include "dview/dvfiledataset.h"
-#include "dview/dvselectionlist.h"
-#include "dview/dvcolourmap.h"
+#include "wex/dview/dvplotctrl.h"
+#include "wex/dview/dvfiledataset.h"
+#include "wex/dview/dvselectionlist.h"
+#include "wex/dview/dvcolourmap.h"
 
 
 enum { ID_NOTEBOOK = wxID_HIGHEST + 141 };

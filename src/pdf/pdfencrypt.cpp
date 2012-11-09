@@ -49,9 +49,9 @@
 // includes
 #include <wx/log.h>
 
-#include "pdf/pdfencrypt.h"
-#include "pdf/pdfrijndael.h"
-#include "pdf/pdfutility.h"
+#include "wex/pdf/pdfencrypt.h"
+#include "wex/pdf/pdfrijndael.h"
+#include "wex/pdf/pdfutility.h"
 
 // ----------------
 // MD5 by RSA

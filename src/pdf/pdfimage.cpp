@@ -27,9 +27,9 @@
 #include <wx/wfstream.h>
 #include <wx/zstream.h>
 
-#include "pdf/pdfdocument.h"
-#include "pdf/pdfimage.h"
-#include "pdf/pdfutility.h"
+#include "wex/pdf/pdfdocument.h"
+#include "wex/pdf/pdfimage.h"
+#include "wex/pdf/pdfutility.h"
 
 wxFileSystem* wxPdfImage::ms_fileSystem = NULL;
 

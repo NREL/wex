@@ -58,7 +58,7 @@
 #include <wx/wx.h>
 #endif
 
-#include "pdf/pdfrijndael.h"
+#include "wex/pdf/pdfrijndael.h"
 
 #include <stdio.h>
 #include <stdlib.h>

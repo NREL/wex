@@ -26,8 +26,8 @@
 
 #include <wx/zstream.h>
 
-#include "pdf/pdfobjects.h"
-#include "pdf/pdfparser.h"
+#include "wex/pdf/pdfobjects.h"
+#include "wex/pdf/pdfparser.h"
 
 // --- Flate Decode method
 

@@ -27,11 +27,11 @@
 #include <wx/filesys.h>
 #include <wx/zstream.h>
 
-#include "pdf/pdfarraytypes.h"
-#include "pdf/pdffontdataopentype.h"
-#include "pdf/pdffontparsertruetype.h"
+#include "wex/pdf/pdfarraytypes.h"
+#include "wex/pdf/pdffontdataopentype.h"
+#include "wex/pdf/pdffontparsertruetype.h"
 
-#include "pdf/pdffontsubsetcff.h"
+#include "wex/pdf/pdffontsubsetcff.h"
 
 #include "wxmemdbg.h"
 

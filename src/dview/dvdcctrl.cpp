@@ -6,11 +6,11 @@
 #include <wx/tokenzr.h>
 #include <wx/busyinfo.h>
 
-#include "plot/pllineplot.h"
+#include "wex/plot/pllineplot.h"
 
-#include "dview/dvtimeseriesdataset.h"
-#include "dview/dvselectionlist.h"
-#include "dview/dvdcctrl.h"
+#include "wex/dview/dvtimeseriesdataset.h"
+#include "wex/dview/dvselectionlist.h"
+#include "wex/dview/dvdcctrl.h"
 
 static const wxString NO_UNITS("ThereAreNoUnitsForThisAxis.");
 

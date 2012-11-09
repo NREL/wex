@@ -17,11 +17,11 @@
 #include <wx/sstream.h>
 #include <wx/dcsvg.h>
 
-#include "plot/plplotctrl.h"
-#include "pdf/pdfdc.h"
+#include "wex/plot/plplotctrl.h"
+#include "wex/pdf/pdfdc.h"
 
 #ifdef __WXMSW__
-#include "ole/excelauto.h"
+#include "wex/ole/excelauto.h"
 #endif
 
 class wxPLAxisDeviceMapping : public wxPLDeviceMapping

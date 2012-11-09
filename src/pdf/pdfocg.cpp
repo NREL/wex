@@ -24,9 +24,9 @@
 
 // includes
 
-#include "pdf/pdfdocument.h"
-#include "pdf/pdflayer.h"
-#include "pdf/pdfobjects.h"
+#include "wex/pdf/pdfdocument.h"
+#include "wex/pdf/pdflayer.h"
+#include "wex/pdf/pdfobjects.h"
 
 // --- OCG handling
 

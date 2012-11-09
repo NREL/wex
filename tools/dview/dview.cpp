@@ -23,12 +23,12 @@
 #include <wx/txtstrm.h>
 #include <wx/cmdline.h>
 
-#include "dview/dvplotctrl.h"
-#include "dview/dvfiledataset.h"
+#include "wex/dview/dvplotctrl.h"
+#include "wex/dview/dvfiledataset.h"
 
-#include "plot/plplotctrl.h"
-#include "plot/pllineplot.h"
-#include "plot/plscatterplot.h"
+#include "wex/plot/plplotctrl.h"
+#include "wex/plot/pllineplot.h"
+#include "wex/plot/plscatterplot.h"
 
 #define MAX_RECENT 25
 enum{ 

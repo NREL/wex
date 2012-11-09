@@ -52,7 +52,7 @@
   code and/or adjust the licensing conditions notice accordingly.
 */
 
-#include "ole/activex.h"
+#include "wex/ole/activex.h"
 
 
 #include <wx/strconv.h>

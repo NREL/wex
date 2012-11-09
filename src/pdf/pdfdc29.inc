@@ -14,8 +14,8 @@
 #include <wx/font.h>
 #include <wx/paper.h>
 
-#include "pdf/pdfdc.h" 
-#include "pdf/pdffontmanager.h"
+#include "wex/pdf/pdfdc.h" 
+#include "wex/pdf/pdffontmanager.h"
 
 #include <math.h>
 

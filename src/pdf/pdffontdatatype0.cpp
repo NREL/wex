@@ -24,8 +24,8 @@
 
 // includes
 
-#include "pdf/pdfencoding.h"
-#include "pdf/pdffontdatatype0.h"
+#include "wex/pdf/pdfencoding.h"
+#include "wex/pdf/pdffontdatatype0.h"
 
 #include "wxmemdbg.h"
 

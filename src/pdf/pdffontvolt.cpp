@@ -25,7 +25,7 @@
 #include <wx/wfstream.h>
 #include <wx/txtstrm.h>
 
-#include "pdf/pdffontvolt.h"
+#include "wex/pdf/pdffontvolt.h"
 
 #include "wxmemdbg.h"
 

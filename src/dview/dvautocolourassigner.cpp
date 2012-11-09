@@ -1,4 +1,4 @@
-#include "dview/dvautocolourassigner.h"
+#include "wex/dview/dvautocolourassigner.h"
 
 
 wxDVAutoColourAssigner::wxDVAutoColourAssigner()

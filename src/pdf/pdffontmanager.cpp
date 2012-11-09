@@ -32,16 +32,16 @@
 #include <wx/thread.h>
 #include <wx/xml/xml.h>
 
-#include "pdf/pdfencoding.h"
-#include "pdf/pdffontmanager.h"
-#include "pdf/pdffontdata.h"
-#include "pdf/pdffontdatacore.h"
-#include "pdf/pdffontdataopentype.h"
-#include "pdf/pdffontdatatruetype.h"
-#include "pdf/pdffontdatatype0.h"
-#include "pdf/pdffontdatatype1.h"
-#include "pdf/pdffontparsertruetype.h"
-#include "pdf/pdffontparsertype1.h"
+#include "wex/pdf/pdfencoding.h"
+#include "wex/pdf/pdffontmanager.h"
+#include "wex/pdf/pdffontdata.h"
+#include "wex/pdf/pdffontdatacore.h"
+#include "wex/pdf/pdffontdataopentype.h"
+#include "wex/pdf/pdffontdatatruetype.h"
+#include "wex/pdf/pdffontdatatype0.h"
+#include "wex/pdf/pdffontdatatype1.h"
+#include "wex/pdf/pdffontparsertruetype.h"
+#include "wex/pdf/pdffontparsertype1.h"
 
 #if defined(__WXMSW__)
   #include <wx/msw/registry.h>
@@ -58,7 +58,7 @@
     #define FC_FULLNAME "fullname"
   #endif
 #elif defined(__WXMAC__)
-  #include "pdf/pdffontmacosx.h"
+  #include "wex/pdf/pdffontmacosx.h"
 #else
 #endif
 
