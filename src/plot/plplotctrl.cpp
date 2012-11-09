@@ -18,8 +18,11 @@
 #include <wx/dcsvg.h>
 
 #include "plot/plplotctrl.h"
-
 #include "pdf/pdfdc.h"
+
+#ifdef __WXMSW__
+#include "ole/excelauto.h"
+#endif
 
 class wxPLAxisDeviceMapping : public wxPLDeviceMapping
 {
@@ -849,7 +852,7 @@ DEFINE_EVENT_TYPE( wxEVT_PLOT_DRAG_END )
 
 
 enum { ID_COPY_DATA_CLIP = wxID_HIGHEST + 1251, 
-		ID_SAVE_DATA_CSV, 
+		ID_SAVE_DATA_CSV, ID_SEND_EXCEL, 
 		ID_TO_CLIP_SCREEN, ID_TO_CLIP_SMALL, ID_TO_CLIP_NORMAL, 
 		ID_EXPORT_SCREEN, ID_EXPORT_SMALL, ID_EXPORT_NORMAL, ID_EXPORT_PDF,
 		ID_EXPORT_SVG };
@@ -903,6 +906,9 @@ wxPLPlotCtrl::wxPLPlotCtrl( wxWindow *parent, int id, const wxPoint &pos, const 
 	
 	m_contextMenu.Append( ID_COPY_DATA_CLIP, "Copy data to clipboard" );
 	m_contextMenu.Append( ID_SAVE_DATA_CSV, "Save data to CSV..." );
+#ifdef __WXMSW__
+	m_contextMenu.Append( ID_SEND_EXCEL, "Send data to Excel..." );
+#endif
 	m_contextMenu.AppendSeparator();
 	m_contextMenu.Append( ID_TO_CLIP_SCREEN, "To clipboard (as shown)" );
 	m_contextMenu.Append( ID_TO_CLIP_SMALL, "To clipboard (400x300)" );
@@ -1072,18 +1078,18 @@ wxPLSideWidgetBase *wxPLPlotCtrl::ReleaseSideWidget( AxisPos pos )
 
 void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visible_only, bool include_x )
 {
+	if ( m_plots.size() == 0 )
+		return;
+
 	wxTextOutputStream tt(os);
 	wxString sepstr(sep);
-	//tt << "none yet!";
 
-		wxString buf;
 	//We only include the x column on a plot if we are including X and if its x header is different than the previous column's.
 	std::vector<bool> includeXForPlot( m_plots.size(), false );
 	includeXForPlot[0] = true;
 	for ( size_t i=1; i<m_plots.size(); i++ )
 		includeXForPlot[i] = (m_plots[i].plot->GetXDataLabel() != m_plots[i-1].plot->GetXDataLabel());
-
-	
+		
 	size_t maxLength = 0;
 	//Do header info
 	for ( size_t i = 0; i < m_plots.size(); i++ )
@@ -1180,6 +1186,33 @@ void wxPLPlotCtrl::OnPopupMenu( wxCommandEvent &evt )
 			wxTheClipboard->Close();
 		}
 		break;
+
+	case ID_SEND_EXCEL:
+		{
+			wxExcelAutomation xl;
+			if (!xl.StartExcel())
+			{
+				wxMessageBox("Could not start Excel.");
+				return;
+			}
+
+			xl.Show( true );
+
+			if (!xl.NewWorkbook())
+			{
+				wxMessageBox("Could not create a new Excel worksheet.");
+				return;
+			}
+			
+			wxString text;
+			wxStringOutputStream sstrm( &text );
+			WriteDataAsText( '\t', sstrm );
+
+			xl.PasteNewWorksheet( "Plot Data", text );
+			xl.AutoFitColumns();
+		}
+		break;
+
 	case ID_SAVE_DATA_CSV:
 		{
 			wxFileDialog fdlg(this, "Save Graph Data", "", "graphdata", "CSV Data Files (*.csv)|*.csv", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);

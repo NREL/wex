@@ -28,6 +28,15 @@
     <Filter Include="plot\Headers">
       <UniqueIdentifier>{2b7a8e3a-a656-4ae5-b13b-22fd82098c88}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ole">
+      <UniqueIdentifier>{b948efdb-26ad-4600-bcd5-a48c7815d4a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ole\Sources">
+      <UniqueIdentifier>{f87427a2-097a-4649-8b11-0bf9e4e2803f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ole\Headers">
+      <UniqueIdentifier>{7f166dbe-e9b1-4d4e-8308-4b68d45a897d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\dview\dvautocolourassigner.h">
@@ -258,6 +267,15 @@
     <ClInclude Include="..\include\plot\plscatterplot.h">
       <Filter>plot\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\ole\activex.h">
+      <Filter>ole\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ole\excelauto.h">
+      <Filter>ole\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ole\iehtmlwin.h">
+      <Filter>ole\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
@@ -442,6 +460,15 @@
     </ClCompile>
     <ClCompile Include="..\src\plot\plscatterplot.cpp">
       <Filter>plot\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ole\activex.cpp">
+      <Filter>ole\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ole\excelauto.cpp">
+      <Filter>ole\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ole\iehtmlwin.cpp">
+      <Filter>ole\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

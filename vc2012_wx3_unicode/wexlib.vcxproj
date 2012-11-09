@@ -25,6 +25,9 @@
     <ClInclude Include="..\include\dview\dvselectionlist.h" />
     <ClInclude Include="..\include\dview\dvtimeseriesctrl.h" />
     <ClInclude Include="..\include\dview\dvtimeseriesdataset.h" />
+    <ClInclude Include="..\include\ole\activex.h" />
+    <ClInclude Include="..\include\ole\excelauto.h" />
+    <ClInclude Include="..\include\ole\iehtmlwin.h" />
     <ClInclude Include="..\include\pdf\pdfannotation.h" />
     <ClInclude Include="..\include\pdf\pdfarraydouble.h" />
     <ClInclude Include="..\include\pdf\pdfarraytypes.h" />
@@ -103,6 +106,9 @@
     <ClCompile Include="..\src\dview\dvselectionlist.cpp" />
     <ClCompile Include="..\src\dview\dvtimeseriesctrl.cpp" />
     <ClCompile Include="..\src\dview\dvtimeseriesdataset.cpp" />
+    <ClCompile Include="..\src\ole\activex.cpp" />
+    <ClCompile Include="..\src\ole\excelauto.cpp" />
+    <ClCompile Include="..\src\ole\iehtmlwin.cpp" />
     <ClCompile Include="..\src\pdf\pdfannotation.cpp" />
     <ClCompile Include="..\src\pdf\pdfbarcode.cpp" />
     <ClCompile Include="..\src\pdf\pdfcffdecoder.cpp" />
