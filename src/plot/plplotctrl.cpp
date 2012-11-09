@@ -1186,7 +1186,7 @@ void wxPLPlotCtrl::OnPopupMenu( wxCommandEvent &evt )
 			wxTheClipboard->Close();
 		}
 		break;
-
+#ifdef __WXMSW__
 	case ID_SEND_EXCEL:
 		{
 			wxExcelAutomation xl;
@@ -1212,6 +1212,7 @@ void wxPLPlotCtrl::OnPopupMenu( wxCommandEvent &evt )
 			xl.AutoFitColumns();
 		}
 		break;
+#endif
 
 	case ID_SAVE_DATA_CSV:
 		{
