@@ -8,6 +8,11 @@ LIBNAME = wexosxwx3
 TARGET = ../$(LIBNAME).a
 	
 OBJECTS = \
+	jsonreader.o \
+	jsonval.o \
+	jsonwriter.o \
+	md5.o \
+	numeric.o \
 	ribbonbook.o \
 	dvautocolourassigner.o \
 	dvcolourmap.o \

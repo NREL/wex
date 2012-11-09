@@ -288,6 +288,21 @@
     <ClInclude Include="..\include\wex\ribbonbook.h">
       <Filter>wex\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\wex\jsonreader.h">
+      <Filter>wex\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\jsonval.h">
+      <Filter>wex\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\jsonwriter.h">
+      <Filter>wex\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\md5.h">
+      <Filter>wex\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\numeric.h">
+      <Filter>wex\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
@@ -483,6 +498,21 @@
       <Filter>ole\Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ribbonbook.cpp">
+      <Filter>wex\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\jsonreader.cpp">
+      <Filter>wex\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\jsonval.cpp">
+      <Filter>wex\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\jsonwriter.cpp">
+      <Filter>wex\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\md5.cpp">
+      <Filter>wex\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\numeric.cpp">
       <Filter>wex\Sources</Filter>
     </ClCompile>
   </ItemGroup>

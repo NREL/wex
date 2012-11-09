@@ -241,7 +241,7 @@ wxRibbonNotebook::wxRibbonNotebook(wxWindow *parent, int id, const wxPoint &pos,
 	m_selectColour = wxColour(193,210,238);
 	m_textColour = *wxBLACK;
 	m_xSpacing = 4;
-	m_xOffset = 6;
+	m_xOffset = 4;
 	m_border = 0;
 	m_ribbonHeight = 52;
 

@@ -449,6 +449,7 @@ void TestPLPlot( wxWindow *parent )
 	frame->Show();
 }
 
+#include "wex/numeric.h"
 
 class DViewApp : public wxApp
 {

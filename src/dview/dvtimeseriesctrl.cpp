@@ -15,6 +15,8 @@
 #include <wx/statline.h>
 #include <wx/gdicmn.h>
 
+#include "wex/numeric.h"
+
 #include "wex/plot/pllineplot.h"
 
 #include "wex/icons/zoom_in.cpng"
@@ -33,37 +35,38 @@ class wxDVTimeSeriesSettingsDialog : public wxDialog
 {
 	wxCheckBox *mSyncCheck;
 	wxCheckBox *mAutoscaleCheck;
-	wxTextCtrl *mTopYMaxCtrl, *mTopYMinCtrl, *mBottomYMaxCtrl, *mBottomYMinCtrl;
-	wxComboBox *mLineStyleCombo;
+	wxNumericCtrl *mTopYMaxCtrl, *mTopYMinCtrl, *mBottomYMaxCtrl, *mBottomYMinCtrl;
+	wxChoice *mLineStyleCombo;
 
 public:
 	wxDVTimeSeriesSettingsDialog( wxWindow *parent, const wxString &title )
 		: wxDialog( parent, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxRESIZE_BORDER|wxDEFAULT_DIALOG_STYLE)
 	{
-		wxFlexGridSizer *yBoundSizer = new wxFlexGridSizer(2, 2, 0);
-
-		yBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Top Y Min:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
-		mTopYMinCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize);
-		yBoundSizer->Add(mTopYMinCtrl, 0, wxLEFT|wxRIGHT, 2);
-		yBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Top Y Max:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
-		mTopYMaxCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize);
-		yBoundSizer->Add(mTopYMaxCtrl, 0, wxLEFT|wxRIGHT, 2);
-
-		yBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Bottom Y Min:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
-		mBottomYMinCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize);
-		yBoundSizer->Add(mBottomYMinCtrl, 0, wxLEFT|wxRIGHT|wxBOTTOM, 2);
-		yBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Bottom Y Max:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
-		mBottomYMaxCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize);
-		yBoundSizer->Add(mBottomYMaxCtrl, 0, wxLEFT|wxRIGHT|wxBOTTOM, 2);
 		
 		mSyncCheck = new wxCheckBox(this, wxID_ANY, "Synchronize view with heat map" );
-		mAutoscaleCheck = new wxCheckBox(this, wxID_ANY, "Autoscale y1-axis");
-
+		
 		wxArrayString choices;
 		choices.Add( "Line graph");
 		choices.Add( "Stepped line graph" );
-		mLineStyleCombo = new wxComboBox( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, choices, wxCB_READONLY );
-
+		mLineStyleCombo = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, choices);
+				
+		mAutoscaleCheck = new wxCheckBox(this, wxID_ANY, "Autoscale y1-axis");
+		
+		wxFlexGridSizer *yBoundSizer = new wxFlexGridSizer(2, 2, 0);
+		yBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Top Y Min:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
+		mTopYMinCtrl = new wxNumericCtrl(this);
+		yBoundSizer->Add(mTopYMinCtrl, 0, wxLEFT|wxRIGHT, 2);
+		yBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Top Y Max:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
+		mTopYMaxCtrl = new wxNumericCtrl(this);
+		yBoundSizer->Add(mTopYMaxCtrl, 0, wxLEFT|wxRIGHT, 2);
+		
+		yBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Bottom Y Min:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
+		mBottomYMinCtrl = new wxNumericCtrl(this);
+		yBoundSizer->Add(mBottomYMinCtrl, 0, wxLEFT|wxRIGHT|wxBOTTOM, 2);
+		yBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Bottom Y Max:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
+		mBottomYMaxCtrl = new wxNumericCtrl(this);
+		yBoundSizer->Add(mBottomYMaxCtrl, 0, wxLEFT|wxRIGHT|wxBOTTOM, 2);
+		
 		wxBoxSizer *boxmain = new wxBoxSizer(wxVERTICAL);
 		boxmain->Add( mSyncCheck, 0, wxALL|wxEXPAND, 10 );
 		boxmain->Add( mLineStyleCombo, 0, wxALL|wxEXPAND, 10 );
@@ -78,17 +81,17 @@ public:
 
 	void SetYBounds( double y1min, double y1max, double y2min, double y2max )
 	{
-		mTopYMinCtrl->SetValue( wxString::Format("%lg", y1min) );
-		mTopYMaxCtrl->SetValue( wxString::Format("%lg", y1max) );
-		mBottomYMinCtrl->SetValue( wxString::Format("%lg", y2min) );
-		mBottomYMaxCtrl->SetValue( wxString::Format("%lg", y2max) );
+		mTopYMinCtrl->SetValue( y1min );
+		mTopYMaxCtrl->SetValue( y1max );
+		mBottomYMinCtrl->SetValue( y2min );
+		mBottomYMaxCtrl->SetValue( y2max );
 	}
 	void GetYBounds( double *y1min, double *y1max, double *y2min, double *y2max )
 	{
-		*y1min = wxAtof( mTopYMinCtrl->GetValue() );
-		*y1max = wxAtof( mTopYMaxCtrl->GetValue() );
-		*y2min = wxAtof( mBottomYMinCtrl->GetValue() );
-		*y2max = wxAtof( mBottomYMaxCtrl->GetValue() );
+		*y1min = mTopYMinCtrl->Value();
+		*y1max = mTopYMaxCtrl->Value();
+		*y2min = mBottomYMinCtrl->Value();
+		*y2max = mBottomYMaxCtrl->Value();
 
 	}
 
@@ -342,6 +345,7 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 		m_plotSurface->GetYAxis1( wxPLPlotCtrl::PLOT_BOTTOM )->GetWorld( &y2min, &y2max );
 
 	wxDVTimeSeriesSettingsDialog dlg(  this, "View Settings" );
+	dlg.CentreOnParent();
 	dlg.SetSync( m_syncToHeatMap );
 	dlg.SetLineStyle( m_lineStyle );
 	dlg.SetAutoscale( m_autoScale );
