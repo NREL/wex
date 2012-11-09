@@ -30,6 +30,8 @@ class wxPLPlottable
 {
 protected:
 	wxString m_label;
+	wxString m_xLabel;
+	wxString m_yLabel;
 	bool m_showInLegend;
 	bool m_antiAliasing;
 
@@ -49,7 +51,11 @@ public:
 	// properties
 
 	virtual wxString GetLabel() const { return m_label; }
+	virtual wxString GetXDataLabel() const { return m_xLabel; }
+	virtual wxString GetYDataLabel() const { return m_yLabel; }
 	virtual void SetLabel( const wxString &label ) { m_label = label; }
+	virtual void SetXDataLabel( const wxString &label ) { m_xLabel = label; }
+	virtual void SetYDataLabel( const wxString &label ) { m_yLabel = label; }
 	virtual void ShowInLegend( bool b ) { m_showInLegend = b; }
 	virtual bool IsShownInLegend() { return m_showInLegend; }
 
@@ -158,7 +164,8 @@ public:
 	wxPLSideWidgetBase *ReleaseSideWidget( AxisPos pos );
 
 
-	void WriteDataAsText( wxUniChar sep, wxOutputStream &os );
+	void WriteDataAsText( wxUniChar sep, wxOutputStream &os, 
+		bool visible_only = true, bool include_x = true );
 
 	bool ShowExportDialog( wxString &exp_file_name, wxBitmapType &exp_bitmap_type );
 	bool ExportPng( const wxString &file, int width=-1, int height=-1 );

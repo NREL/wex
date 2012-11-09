@@ -23,6 +23,16 @@ public:
 	{
 	}
 
+	virtual wxString GetXDataLabel() const
+	{
+		return m_x->GetTitleWithUnits();
+	}
+
+	virtual wxString GetYDataLabel() const
+	{
+		return m_y->GetTitleWithUnits();
+	}
+
 	virtual wxRealPoint At( size_t i ) const
 	{
 		double xx = i < m_x->Length() ? m_x->At(i).y : std::numeric_limits<double>::quiet_NaN();

@@ -271,11 +271,15 @@ void wxDVPnCdfCtrl::ChangePlotDataTo(wxDVTimeSeriesDataSet* d)
 	{
 		m_pdfPlot->SetData( d->GetDataVector() ); //inefficient?
 		m_pdfPlot->SetLabel( d->GetSeriesTitle() );
+		m_pdfPlot->SetXDataLabel( m_plotSurface->GetXAxis1()->GetLabel() );
+		m_pdfPlot->SetYDataLabel( d->GetSeriesTitle() );
 	}
 	else
 	{
 		m_pdfPlot->SetLabel( wxEmptyString );
 		m_pdfPlot->SetData( std::vector<wxRealPoint>() );
+		m_pdfPlot->SetXDataLabel( wxEmptyString );
+		m_pdfPlot->SetYDataLabel( wxEmptyString );
 	}
 
 	int index = -1;
@@ -286,6 +290,9 @@ void wxDVPnCdfCtrl::ChangePlotDataTo(wxDVTimeSeriesDataSet* d)
 	if ( index < 0 )
 	{
 		m_cdfPlot->SetData( std::vector<wxRealPoint>() ); //clear the data
+		m_cdfPlot->SetLabel( wxEmptyString );
+		m_cdfPlot->SetXDataLabel( wxEmptyString );
+		m_cdfPlot->SetYDataLabel( wxEmptyString );
 	}
 	else
 	{
@@ -294,7 +301,9 @@ void wxDVPnCdfCtrl::ChangePlotDataTo(wxDVTimeSeriesDataSet* d)
 			ReadCdfFrom(*d, m_cdfPlotData[index]);
 
 		m_cdfPlot->SetData( *m_cdfPlotData[index] );
-		m_cdfPlot->SetLabel(d->GetSeriesTitle() + " PERCENTILE");
+		m_cdfPlot->SetLabel(d->GetSeriesTitle() + " " + _("Percentile"));
+		m_cdfPlot->SetXDataLabel( m_plotSurface->GetXAxis1()->GetLabel() );
+		m_cdfPlot->SetYDataLabel( m_cdfPlot->GetLabel() );
 	}
 
 	if ( d )

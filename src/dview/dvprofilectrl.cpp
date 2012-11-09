@@ -387,16 +387,24 @@ void wxDVProfileCtrl::PlotSet::CalculateProfileData( )
 			average));
 	}
 
-	static const char *Labels[13] = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC", "Annual" };
-	
 	for(int i=0; i<13; i++) //12 months and annual
 	{
+		wxString month;
+		if ( i < 12 ) month = wxDateTime::GetMonthName( (wxDateTime::Month)i );
+		else month = _("Annual");
+
 		if ( plots[i] == 0 ) plots[i] = new wxPLLinePlot;
 		plots[i]->SetThickness( 2 );
 		plots[i]->SetData( plotData[i] );
-		wxString text = Labels[i] + wxString(" ") + dataset->GetSeriesTitle();
+		wxString text = month + " " + dataset->GetSeriesTitle();
 		plots[i]->SetLabel( text );
-		//plots[i]->GetData()->SetYLabel( text + " (" + dataset->GetUnits() + ")" );
+		plots[i]->SetXDataLabel( _("Time of day") 
+			+  " (" + month + " " + _("average") + wxString(")") );
+
+		text = dataset->GetSeriesTitle();
+		if ( !dataset->GetUnits().IsEmpty() )
+			text += " (" + dataset->GetUnits() + ")";
+		plots[i]->SetYDataLabel( text );
 	}
 }
 

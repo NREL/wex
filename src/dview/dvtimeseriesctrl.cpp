@@ -125,6 +125,19 @@ public:
 	void SetStyle( Style ss ) { m_style = ss; }
 	void SetColour( const wxColour &col ) { m_colour = col; }
 
+	virtual wxString GetXDataLabel() const 
+	{
+		return _("Hours since 00:00 Jan 1");
+	}
+
+	virtual wxString GetYDataLabel() const
+	{
+		wxString label = m_data->GetSeriesTitle();
+		if ( !m_data->GetUnits().IsEmpty() )
+			label += " (" + m_data->GetUnits() + ")";
+		return label;
+	}
+
 	virtual wxRealPoint At( size_t i ) const
 	{
 		return ( i < m_data->Length() )

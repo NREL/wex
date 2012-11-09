@@ -32,7 +32,19 @@ public:
 
 	void SetData( wxDVTimeSeriesDataSet *d ) { m_data = d; }
 	void SetColourMap( wxDVColourMap *c ) { m_colourMap = c; }
+	
+	virtual wxString GetXDataLabel() const 
+	{
+		return _("Hours since 00:00 Jan 1");
+	}
 
+	virtual wxString GetYDataLabel() const
+	{
+		wxString label = m_data->GetSeriesTitle();
+		if ( !m_data->GetUnits().IsEmpty() )
+			label += " (" + m_data->GetUnits() + ")";
+		return label;
+	}
 	
 	virtual wxRealPoint At( size_t i ) const
 	{

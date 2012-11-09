@@ -124,6 +124,8 @@ void wxDVDCCtrl::CalculateDCPlotData( PlotSet *p)
 		pd.push_back( wxRealPoint(i * d->GetTimeStep(), sortedData[len-i-1]) );
 	
 	p->plot = new wxPLLinePlot( pd, d->GetSeriesTitle() + " (" + d->GetUnits() + ")" );
+	p->plot->SetXDataLabel( _("Hours equaled or exceeded" ));
+	p->plot->SetYDataLabel( p->plot->GetLabel() );
 
 	wxEndBusyCursor();
 }

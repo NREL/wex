@@ -15,7 +15,7 @@ wxDVTimeSeriesDataSet::~wxDVTimeSeriesDataSet()
 /* Helper Functions */
 wxString wxDVTimeSeriesDataSet::GetTitleWithUnits()
 {
-	return (GetSeriesTitle() + " (" + GetUnits() + ")");
+	return GetSeriesTitle() + " (" + GetUnits() + ")";
 }
 
 wxRealPoint wxDVTimeSeriesDataSet::operator[] (size_t i) const
