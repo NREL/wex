@@ -19,6 +19,8 @@
 #include "wex/dview/dvscatterplotctrl.h"
 #include "wex/dview/dvplotctrlsettings.h"
 
+class wxRibbonNotebook;
+
 class wxDVPlotCtrl : public wxPanel
 {
 public:
@@ -47,12 +49,12 @@ public:
 	void SelectDataOnBlankTabs();
 
 	//Event Handlers
-	void OnPageChanging( wxAuiNotebookEvent& e );
+	void OnPageChanging( wxNotebookEvent& e );
 	
 private:
 	std::vector<wxDVTimeSeriesDataSet*> m_dataSets;
 
-	wxAuiNotebook *m_plotNotebook;
+	wxRibbonNotebook *m_plotNotebook;
 	wxDVTimeSeriesCtrl *m_timeSeries;
 	wxDVDMapCtrl *m_dMap;
 	wxDVProfileCtrl *m_profilePlots;

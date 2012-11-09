@@ -37,6 +37,15 @@
     <Filter Include="ole\Headers">
       <UniqueIdentifier>{7f166dbe-e9b1-4d4e-8308-4b68d45a897d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="wex">
+      <UniqueIdentifier>{37250ffd-cc90-4e12-b8e3-2fb220a1d0f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="wex\Headers">
+      <UniqueIdentifier>{2798e152-c448-4086-a0f9-95e484fe00a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="wex\Sources">
+      <UniqueIdentifier>{0e3367e4-fb39-4a0d-84f4-4f013df69811}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\pdf\wxmemdbg.h">
@@ -276,6 +285,9 @@
     <ClInclude Include="..\include\wex\plot\plscatterplot.h">
       <Filter>plot\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\wex\ribbonbook.h">
+      <Filter>wex\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
@@ -470,20 +482,11 @@
     <ClCompile Include="..\src\ole\iehtmlwin.cpp">
       <Filter>ole\Sources</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\ribbonbook.cpp">
+      <Filter>wex\Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\src\dview\preferences.xpm">
-      <Filter>dview\Sources</Filter>
-    </None>
-    <None Include="..\src\dview\zoom_fit.xpm">
-      <Filter>dview\Sources</Filter>
-    </None>
-    <None Include="..\src\dview\zoom_in.xpm">
-      <Filter>dview\Sources</Filter>
-    </None>
-    <None Include="..\src\dview\zoom_out.xpm">
-      <Filter>dview\Sources</Filter>
-    </None>
     <None Include="..\src\pdf\pdfcjkfontdata.inc">
       <Filter>pdf\Sources</Filter>
     </None>

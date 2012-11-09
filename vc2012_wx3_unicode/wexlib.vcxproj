@@ -89,6 +89,7 @@
     <ClInclude Include="..\include\wex\plot\pllineplot.h" />
     <ClInclude Include="..\include\wex\plot\plplotctrl.h" />
     <ClInclude Include="..\include\wex\plot\plscatterplot.h" />
+    <ClInclude Include="..\include\wex\ribbonbook.h" />
     <ClInclude Include="..\src\pdf\wxmemdbg.h" />
   </ItemGroup>
   <ItemGroup>
@@ -156,12 +157,9 @@
     <ClCompile Include="..\src\plot\pllineplot.cpp" />
     <ClCompile Include="..\src\plot\plplotctrl.cpp" />
     <ClCompile Include="..\src\plot\plscatterplot.cpp" />
+    <ClCompile Include="..\src\ribbonbook.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\src\dview\preferences.xpm" />
-    <None Include="..\src\dview\zoom_fit.xpm" />
-    <None Include="..\src\dview\zoom_in.xpm" />
-    <None Include="..\src\dview\zoom_out.xpm" />
     <None Include="..\src\pdf\pdfcjkfontdata.inc" />
     <None Include="..\src\pdf\pdfcmapdata.inc" />
     <None Include="..\src\pdf\pdfcodepagedata.inc" />

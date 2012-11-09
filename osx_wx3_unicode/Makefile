@@ -1,4 +1,4 @@
-VPATH = ../src/dview ../src/plot ../src/pdf
+VPATH = ../src/dview ../src/plot ../src/pdf ../src
 CC = gcc
 CXX = g++
 CFLAGS = -fPIC -Wall -O2 `wx-config-3 --cflags` -I../include
@@ -8,6 +8,7 @@ LIBNAME = wexosxwx3
 TARGET = ../$(LIBNAME).a
 	
 OBJECTS = \
+	ribbonbook.o \
 	dvautocolourassigner.o \
 	dvcolourmap.o \
 	dvdcctrl.o \
