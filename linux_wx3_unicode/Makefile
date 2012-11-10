@@ -8,6 +8,11 @@ LIBNAME = wexuxwx3
 TARGET = ../$(LIBNAME).a
 	
 OBJECTS = \
+	jsonreader.o \
+	jsonval.o \
+	jsonwriter.o \
+	md5.o \
+	numeric.o \
 	ribbonbook.o \
 	dvautocolourassigner.o \
 	dvcolourmap.o \
@@ -75,5 +80,17 @@ OBJECTS = \
 $(TARGET) : $(OBJECTS)
 	ar rs $@ $^
 
+DEPENDS = $(OBJECTS:.o=.d)
+
+-include $(DEPENDS)
+
+%.d: %.cpp
+	$(CXX) -MM $(CFLAGS) $^ > $*.d
+	@cp -f $*.d $*.d.tmp
+	@sed -e 's/.*://' -e 's/\\$$//' < $*.d.tmp | fmt -1 | \
+	  sed -e 's/^ *//' -e 's/$$/:/' >> $*.d
+	@rm -f $*.d.tmp
+
 clean:
-	rm -rf $(OBJECTS) $(TARGET)
+	rm -rf *.o *.d $(TARGET)
+
