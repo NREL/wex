@@ -52,7 +52,10 @@ public:
 	 : wxFrame( 0, wxID_ANY, "Data Viewer", wxDefaultPosition, wxSize(800,600) )
 	{	
 		mRecentCount = 0;
+
+#ifdef __WXMSW__
 		SetIcon( wxIcon("appicon") );
+#endif
 
 		wxMenuBar *menubar = new wxMenuBar;
 		mRecentMenu = new wxMenu;
