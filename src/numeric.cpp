@@ -1,5 +1,7 @@
 #include "wex/numeric.h"
 
+#include <wx/wx.h>
+
 #include <wx/numformatter.h>
 #include <wx/valtext.h>
 
@@ -38,7 +40,7 @@ void wxNumericCtrl::OnTextEnter( wxCommandEvent &evt )
 		enterpress.SetEventObject( this );
 		enterpress.SetString( GetValue() );
 		GetEventHandler()->ProcessEvent(enterpress);
-		//evt.Skip();
+		evt.Skip();
 	}
 }
 
