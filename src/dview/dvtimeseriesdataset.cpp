@@ -94,3 +94,56 @@ std::vector<wxRealPoint> wxDVTimeSeriesDataSet::GetDataVector()
 		pp.push_back( At(i) );
 	return pp;
 }
+
+
+
+// ******** Array data set *********** //
+
+
+wxDVArrayDataSet::wxDVArrayDataSet( const wxString &var, const std::vector<double> &data )
+	: m_varLabel(var), m_pData(data)
+{
+	m_timestep=1; //hours
+	m_offset=0;
+}
+
+wxDVArrayDataSet::wxDVArrayDataSet( const wxString &var, const wxString &units, const double &timestep, const std::vector<double> &data )
+	: m_varLabel(var), m_varUnits(units), m_timestep(timestep), m_pData(data)
+{
+	m_offset=0;
+}
+
+wxDVArrayDataSet::wxDVArrayDataSet( const wxString &var, const wxString &units, const double &offset, const double &timestep, const std::vector<double> &data )
+	: m_varLabel(var), m_varUnits(units), m_offset(offset), 
+	m_timestep(timestep), m_pData(data)
+{
+}
+
+
+wxRealPoint wxDVArrayDataSet::At(size_t i) const
+{
+	if ((i<m_pData.size())&&(i>=0))
+		return wxRealPoint(m_offset+i*m_timestep, m_pData[i] );
+	else
+		return wxRealPoint(m_offset+i*m_timestep, 0.0 );
+}
+
+size_t wxDVArrayDataSet::Length() const
+{
+	return m_pData.size();
+}
+
+double wxDVArrayDataSet::GetTimeStep() const
+{
+	return m_timestep;
+}
+
+wxString wxDVArrayDataSet::GetSeriesTitle() const
+{
+	return m_varLabel;
+}
+
+wxString wxDVArrayDataSet::GetUnits() const
+{
+	return m_varUnits;
+}

@@ -50,4 +50,25 @@ public:
 	std::vector<wxRealPoint> GetDataVector();
 };
 
+class wxDVArrayDataSet : public wxDVTimeSeriesDataSet
+{
+public:
+	wxDVArrayDataSet( const wxString &var, const std::vector<double> &data );
+	wxDVArrayDataSet( const wxString &var, const wxString &units, const double &timestep, const std::vector<double> &data );
+	wxDVArrayDataSet( const wxString &var, const wxString &units, const double &offset, const double &timestep, const std::vector<double> &data );
+	
+	virtual wxRealPoint At(size_t i) const;
+	virtual size_t Length() const;
+	virtual double GetTimeStep() const;
+	virtual wxString GetSeriesTitle() const;
+	virtual wxString GetUnits() const;
+	
+private:
+	wxString m_varLabel;
+	wxString m_varUnits;
+	double m_timestep; // timestep in hours - fractional hours okay
+	double m_offset; // offset in hours from Jan1 00:00 - fractional hours okay
+	std::vector<double> m_pData;
+	
+};
 #endif

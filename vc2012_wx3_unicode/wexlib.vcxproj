@@ -25,6 +25,7 @@
     <ClInclude Include="..\include\wex\dview\dvselectionlist.h" />
     <ClInclude Include="..\include\wex\dview\dvtimeseriesctrl.h" />
     <ClInclude Include="..\include\wex\dview\dvtimeseriesdataset.h" />
+    <ClInclude Include="..\include\wex\extgrid.h" />
     <ClInclude Include="..\include\wex\jsonreader.h" />
     <ClInclude Include="..\include\wex\jsonval.h" />
     <ClInclude Include="..\include\wex\jsonwriter.h" />
@@ -112,6 +113,7 @@
     <ClCompile Include="..\src\dview\dvselectionlist.cpp" />
     <ClCompile Include="..\src\dview\dvtimeseriesctrl.cpp" />
     <ClCompile Include="..\src\dview\dvtimeseriesdataset.cpp" />
+    <ClCompile Include="..\src\extgrid.cpp" />
     <ClCompile Include="..\src\jsonreader.cpp" />
     <ClCompile Include="..\src\jsonval.cpp" />
     <ClCompile Include="..\src\jsonwriter.cpp" />
