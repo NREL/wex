@@ -83,6 +83,9 @@ $(TARGET) : $(OBJECTS)
 
 DEPENDS = $(OBJECTS:.o=.d)
 
+clean:
+	rm -rf $(OBJECTS) $(DEPENDS) $(TARGET) 
+
 -include $(DEPENDS)
 
 %.d: %.cpp
@@ -91,7 +94,4 @@ DEPENDS = $(OBJECTS:.o=.d)
 	@sed -e 's/.*://' -e 's/\\$$//' < $*.d.tmp | fmt -1 | \
 	  sed -e 's/^ *//' -e 's/$$/:/' >> $*.d
 	@rm -f $*.d.tmp
-
-clean:
-	rm -rf *.o *.d $(TARGET)
 
