@@ -231,10 +231,12 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
 		SetMarginWidth (0, lineNrMargin); 
 	
 		// set margin as unused
-		SetMarginType (1, wxSTC_MARGIN_SYMBOL);
-		SetMarginWidth (1, 1);
-		SetMarginSensitive (1, false);
 		
+		SetMarginType (1, wxSTC_MARGIN_SYMBOL);
+		SetMarginWidth (1, 16);
+		SetMarginSensitive (1, true);
+		
+
 		/*
 		// folding
 		SetMarginType( 2, wxSTC_MARGIN_SYMBOL );
@@ -686,8 +688,6 @@ void wxCodeEditCtrl::JumpToLine( int line, bool highlight )
 		
 	if (highlight)
 	{
-		MarkerDeleteAll(0);
-		MarkerAdd(line, 0);
 		SetSelection(PositionFromLine(line), GetLineEndPosition(line)+1);
 	}
 }
@@ -710,7 +710,14 @@ void wxCodeEditCtrl::PutLine()
 	
 void wxCodeEditCtrl::OnMarginClick( wxStyledTextEvent &evt )
 {
-    if (evt.GetMargin() == 2)
+	if (evt.GetMargin() == 1 )
+	{
+		int line = LineFromPosition(evt.GetPosition());
+
+		if ( MarkerGet( line ) ) MarkerDelete( line, 0 );
+		else MarkerAdd( line, 0);
+	}
+	else if (evt.GetMargin() == 2)
 	{
         int lineClick = LineFromPosition (evt.GetPosition());
         int levelClick = GetFoldLevel (lineClick);
