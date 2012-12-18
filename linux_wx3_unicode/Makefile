@@ -8,6 +8,7 @@ LIBNAME = wexuxwx3
 TARGET = ../$(LIBNAME).a
 	
 OBJECTS = \
+	codeedit.o \
 	extgrid.o \
 	jsonreader.o \
 	jsonval.o \

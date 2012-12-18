@@ -3,9 +3,11 @@
 #include <wx/stc/stc.h>
 #include <wx/webview.h>
 
-#include "plot/plplotctrl.h"
-#include "plot/pllineplot.h"
-#include "plot/plscatterplot.h"
+#include "wex/plot/plplotctrl.h"
+#include "wex/plot/pllineplot.h"
+#include "wex/plot/plscatterplot.h"
+
+#include "wex/codeedit.h"
 
 
 
@@ -210,16 +212,30 @@ public:
 		TextLayoutDemo *tldemo = new TextLayoutDemo( frame2 );
 		frame2->Show();
 		*/
-
-		wxLogWindow *log = new wxLogWindow( frame , "Log");
-		wxLog::SetActiveTarget(log);
-		log->Show();
-		
+				
 		plot->SetAllowHighlighting( true );
 
-
-			
+		
 		frame->Show();
+
+		wxFrame *editor = new wxFrame( 0, wxID_ANY, "Code Editor", wxDefaultPosition, wxSize(600,500) );
+		wxCodeEditCtrl *code = new wxCodeEditCtrl( editor );
+		code->SetLanguage( wxCodeEditCtrl::CPP );
+		code->EnableCallTips( true );
+		code->AddCallTip( "main", "int main(int argc, char *argv[])\n\nMain start of the program." );
+		code->AddCallTip( "max", "double max(double a, double b)\n\nReturns the larger of two numbers.");
+		code->AddCallTip( "min", "double min(double a, double b)\n\nReturns the smaller of two numbers.");
+		code->SetKnownIdentifiers( "main min max ");
+	
+
+		editor->Show();
+
+
+#ifdef _DEBUG
+		wxLogWindow *log = new wxLogWindow( editor , "Log");
+		wxLog::SetActiveTarget(log);
+		log->Show();
+#endif
 
 		return true;
 	}
