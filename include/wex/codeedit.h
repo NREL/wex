@@ -1,6 +1,7 @@
 #ifndef __codedit_h
 #define __codedit_h
 
+#include <wx/vector.h>
 #include <unordered_map>
 #include <wx/fdrepdlg.h>
 #include <wx/stc/stc.h>
@@ -10,8 +11,6 @@ class wxCodeEditCtrl : public wxStyledTextCtrl
 public:
 	wxCodeEditCtrl( wxWindow *parent, int id = wxID_ANY, 
 		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize );
-
-	
 	virtual ~wxCodeEditCtrl();	
 
 	enum Language { NONE, CPP, C, LK, VBA, HTML, TEXT, TRNSYS, PYTHON };
@@ -20,13 +19,23 @@ public:
 	void SetLanguage( Language lang );
 	Language GetLanguage();
 	static Language GetLanguage( const wxString &fileName );
+	void SetKnownIdentifiers( const wxString &names ); // space separated list of identifiers to highlight
 
 	void EnableCallTips( bool en );
 	void ClearCallTips();
 	void ConfigureCallTips( wxUniChar start, wxUniChar end, bool case_sensitive );
 	void AddCallTip( const wxString &key, const wxString &value );
+	
+	void ShowBreakpoints( bool show );
+	void AddBreakpoint( int line );
+	void RemoveBreakpoint( int line );
+	void ToggleBreakpoint( int line );
+	bool HasBreakpoint( int line );
+	void ClearBreakpoints();
+	std::vector<int> GetBreakpoints();
 
-	void SetKnownIdentifiers( const wxString &names ); // space separated list of identifiers to highlight
+	void ShowLineArrow( int line );
+	void HideLineArrow();
 	  
 	void ShowFindDialog();
 	void ShowReplaceDialog();
@@ -36,7 +45,7 @@ public:
 	wxString GetFindString();
 	void SetFindString( const wxString &s );
 	
-	void JumpToLine( int line, bool highlight );
+	void SelectLine( int line );
 	void YankLine();
 	void PutLine();
 
@@ -54,11 +63,19 @@ private:
 	int m_lastFindPos;
 	int m_lastReplacePos;
 	
+	static const int m_markCircle = 0;
+	static const int m_markArrow = 1;
+	static const int m_lineNumMarginId = 0;
+	static const int m_breakpointMarginId = 1;
+	static const int m_foldingMarginId = 2;
+
 	Language m_lang;
 	bool m_callTipsEnabled;
 	wxUniChar m_ctStart, m_ctEnd;
 	bool m_ctCaseSensitive;
 	wxArrayString m_ctStack;
+	
+	std::vector<int> m_breakPoints;
 
 	std::unordered_map< wxString, wxString, wxStringHash, wxStringEqual > m_callTips;
 	wxString m_yankText;

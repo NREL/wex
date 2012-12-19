@@ -8,6 +8,7 @@
 #include "wex/plot/plscatterplot.h"
 
 #include "wex/codeedit.h"
+#include "wex/lkscript.h"
 
 
 
@@ -200,8 +201,6 @@ public:
 			wxPLPlotCtrl::Y_LEFT,
 			wxPLPlotCtrl::PLOT_TOP );
 
-
-
 		plot->GetYAxis1()->SetLabel( "Pressure (kPa)" );
 		plot->GetYAxis1()->SetColour( *wxRED );
 		plot->GetYAxis1()->SetWorld( -20, 20 );
@@ -219,14 +218,17 @@ public:
 		frame->Show();
 
 		wxFrame *editor = new wxFrame( 0, wxID_ANY, "Code Editor", wxDefaultPosition, wxSize(600,500) );
-		wxCodeEditCtrl *code = new wxCodeEditCtrl( editor );
+		wxLKScriptCtrl *code = new wxLKScriptCtrl( editor );
+		/*
 		code->SetLanguage( wxCodeEditCtrl::CPP );
 		code->EnableCallTips( true );
 		code->AddCallTip( "main", "int main(int argc, char *argv[])\n\nMain start of the program." );
 		code->AddCallTip( "max", "double max(double a, double b)\n\nReturns the larger of two numbers.");
 		code->AddCallTip( "min", "double min(double a, double b)\n\nReturns the smaller of two numbers.");
 		code->SetKnownIdentifiers( "main min max ");
-	
+
+		code->ShowBreakpoints( true );
+	*/
 
 		editor->Show();
 

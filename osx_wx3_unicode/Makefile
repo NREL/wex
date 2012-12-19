@@ -1,13 +1,19 @@
 VPATH = ../src/dview ../src/plot ../src/pdf ../src
+
+LKDIR = ../../lk
+LKLIB = lkosxwx3.a
+
 CC = gcc
 CXX = g++
-CFLAGS = -fPIC -Wall -O2 `wx-config-3 --cflags` -I../include
+CFLAGS = -fPIC -Wall -O2 `wx-config-3 --cflags` -I../include -DWEX_USE_LK $(LKDIR)
 CXXFLAGS = $(CFLAGS)
+
 
 LIBNAME = wexosxwx3
 TARGET = ../$(LIBNAME).a
 	
 OBJECTS = \
+	lkscript.o \
 	codeedit.o \
 	extgrid.o \
 	jsonreader.o \

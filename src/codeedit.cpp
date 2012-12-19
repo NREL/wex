@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include <wx/wx.h>
 #include <wx/filename.h>
 
@@ -166,10 +168,7 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
 		
 	wxFont fontsmall( font );
 	fontsmall.SetPointSize( fontsmall.GetPointSize() - 1 );
-
-    int lineNrMargin = TextWidth (wxSTC_STYLE_LINENUMBER, _T("_99999"));
-    int foldingMargin = 16;
-
+	
 	SetViewEOL( false );
     SetIndentationGuides( false );
     SetEdgeMode( wxSTC_EDGE_NONE );
@@ -179,14 +178,10 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
     SetWrapMode( wxSTC_WRAP_NONE );
 	StyleSetForeground( wxSTC_STYLE_DEFAULT, *wxBLACK );
     StyleSetBackground( wxSTC_STYLE_DEFAULT, *wxWHITE );
-    StyleSetForeground( wxSTC_STYLE_LINENUMBER, *wxLIGHT_GREY );
-    StyleSetBackground( wxSTC_STYLE_LINENUMBER, *wxWHITE );
     StyleSetForeground( wxSTC_STYLE_INDENTGUIDE, *wxLIGHT_GREY );
     SetFoldFlags(0);
 
-	//SetCaretPeriod(0);
-
-    // set spaces and indention
+    // set spaces and indentation
     SetTabWidth( 4 );
     SetUseTabs( true );
     SetTabIndents( true );
@@ -212,39 +207,40 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
     MarkerDefine( wxSTC_MARKNUM_FOLDEROPENMID, wxSTC_MARK_ARROWDOWN, *wxBLACK, *wxWHITE);
     MarkerDefine( wxSTC_MARKNUM_FOLDERMIDTAIL, wxSTC_MARK_EMPTY,     *wxBLACK, *wxBLACK);
     MarkerDefine( wxSTC_MARKNUM_FOLDERTAIL,    wxSTC_MARK_EMPTY,     *wxBLACK, *wxBLACK);
-	
+		
 	CallTipUseStyle( 30 );
 	wxFont fontnormal (*wxNORMAL_FONT) ;
 	StyleSetFont( wxSTC_STYLE_CALLTIP, fontnormal );
 	StyleSetForeground( wxSTC_STYLE_CALLTIP, *wxBLACK );
 	StyleSetBackground( wxSTC_STYLE_CALLTIP, wxColour(247,240,210) );
+		
+	// set up line number margin
+	SetMarginType( m_lineNumMarginId, wxSTC_MARGIN_NUMBER );
+	StyleSetForeground( wxSTC_STYLE_LINENUMBER, wxColour(80,80,80) );
+	StyleSetBackground( wxSTC_STYLE_LINENUMBER, wxColour(230,230,230) );
+    int lineNrMarginWidth = TextWidth (wxSTC_STYLE_LINENUMBER, _T("_99999"));
+	SetMarginWidth( m_lineNumMarginId, lineNrMarginWidth );
+
+	// breakpoint margin	
+	MarkerDefine( m_markCircle, wxSTC_MARK_CIRCLE );
+	MarkerDefine( m_markArrow, wxSTC_MARK_SHORTARROW );
+	SetMarginType( m_breakpointMarginId, wxSTC_MARGIN_SYMBOL );
+	SetMarginWidth( m_breakpointMarginId, 0 );
+	SetMarginSensitive( m_breakpointMarginId, false );
 
 	// then, apply language specific changes
 	if ( lang == CPP || lang == C || lang == LK )
 	{
 		SetLexer( wxSTC_LEX_CPP );
 
-		// set up line number margin
-		SetMarginType (0, wxSTC_MARGIN_NUMBER);
-		StyleSetForeground (wxSTC_STYLE_LINENUMBER, wxColour(120,120,120));
-		StyleSetBackground (wxSTC_STYLE_LINENUMBER, wxColour(230,230,230));
-		SetMarginWidth (0, lineNrMargin); 
-	
-		// set margin as unused
-		
-		SetMarginType (1, wxSTC_MARGIN_SYMBOL);
-		SetMarginWidth (1, 16);
-		SetMarginSensitive (1, true);
-		
-
 		/*
 		// folding
-		SetMarginType( 2, wxSTC_MARGIN_SYMBOL );
-		SetMarginMask( 2, wxSTC_MASK_FOLDERS );
-		StyleSetBackground (2, wxColour (_T("WHITE")));
+		SetMarginType( m_foldingMarginId, wxSTC_MARGIN_SYMBOL );
+		SetMarginMask( m_foldingMarginId, wxSTC_MASK_FOLDERS );
+		StyleSetBackground (m_foldingMarginId, wxColour (_T("WHITE")));
     
-		SetMarginWidth (2, 16);
-		SetMarginSensitive (2, true);
+		SetMarginWidth (m_foldingMarginId, 16);
+		SetMarginSensitive (m_foldingMarginId, true);
 		SetProperty (_T("fold"), "1");
 		SetProperty (_T("fold.comment"), "1");
 		SetProperty (_T("fold.compact"), "1");
@@ -291,7 +287,7 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
 		else if ( lang == LK )
 		{
 			SetKeyWords(wxSTC_C_DEFAULT, LKWordlist1 );
-			SetMarginWidth(2, 0);
+			SetMarginWidth(m_foldingMarginId, 0);
 			SetProperty(wxT("fold"), "0");
 		}
 		else SetKeyWords(wxSTC_C_DEFAULT, CppWordlist1);
@@ -301,11 +297,6 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
 	else if ( lang == VBA )
 	{
 		SetLexer( wxSTC_LEX_VB );
-
-		SetMarginType (0, wxSTC_MARGIN_NUMBER);
-		StyleSetForeground (wxSTC_STYLE_LINENUMBER, wxColour(120,120,120));
-		StyleSetBackground (wxSTC_STYLE_LINENUMBER, wxColour(230,230,230));
-		SetMarginWidth (0, lineNrMargin); 
 	
 		StyleSetForeground(  wxSTC_B_DEFAULT, *wxBLACK );
 		StyleSetForeground(  wxSTC_B_COMMENT, wxColour(0,190,0));
@@ -334,20 +325,14 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
 		StyleSetBackground(wxSTC_STYLE_BRACELIGHT, *wxLIGHT_GREY );
 		StyleSetForeground(wxSTC_STYLE_BRACELIGHT, *wxWHITE );
 
-		SetMarginWidth(1,10);
-		SetMarginWidth(2,0);
+		SetMarginWidth(m_foldingMarginId,0);
 		
 		m_lang = VBA;
 	}
 	else if ( lang == HTML )
 	{
 		SetLexer(wxSTC_LEX_HTML);
-
-		SetMarginType (0, wxSTC_MARGIN_NUMBER);
-		StyleSetForeground (wxSTC_STYLE_LINENUMBER, wxColour(120,120,120));
-		StyleSetBackground (wxSTC_STYLE_LINENUMBER, wxColour(230,230,230));
-		SetMarginWidth (0, lineNrMargin); 
-
+		
 		wxColour cPhpFore(0, 0, 0);
 		wxColour cPhpBack(253, 255, 223);
 		
@@ -427,12 +412,7 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
 	else if ( lang == TRNSYS )
 	{
 		SetLexer( wxSTC_LEX_SPICE );
-
-		SetMarginType (0, wxSTC_MARGIN_NUMBER);
-		StyleSetForeground (wxSTC_STYLE_LINENUMBER, wxColour(120,120,120));
-		StyleSetBackground (wxSTC_STYLE_LINENUMBER, wxColour(230,230,230));
-		SetMarginWidth (0, lineNrMargin); 
-
+		
 		StyleSetForeground(  wxSTC_SPICE_DEFAULT, *wxBLACK );
 		StyleSetForeground(  wxSTC_SPICE_COMMENTLINE, wxColour(0,190,0));
 		StyleSetForeground(  wxSTC_SPICE_NUMBER, *wxBLACK);
@@ -450,8 +430,7 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
 		SetKeyWords(0, TrnsysWordlist1);
 		SetKeyWords(1, TrnsysWordlist2);
 		SetKeyWords(2, TrnsysWordlist3);
-		SetMarginWidth(1,3);
-		SetMarginWidth(2,0);
+		SetMarginWidth(m_foldingMarginId,0);
 			
 		StyleSetBackground(wxSTC_STYLE_BRACELIGHT, *wxLIGHT_GREY );
 		StyleSetForeground(wxSTC_STYLE_BRACELIGHT, *wxWHITE );
@@ -461,26 +440,15 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
 	else if ( lang == PYTHON )
 	{	
 		SetLexer (wxSTC_LEX_PYTHON);
-
-		// set up line number margin
-		SetMarginType (0, wxSTC_MARGIN_NUMBER);
-		StyleSetForeground (wxSTC_STYLE_LINENUMBER, wxColour(120,120,120));
-		StyleSetBackground (wxSTC_STYLE_LINENUMBER, wxColour(230,230,230));
-		SetMarginWidth (0, lineNrMargin); 
-	
-		// set margin as unused
-		SetMarginType (1, wxSTC_MARGIN_SYMBOL);
-		SetMarginWidth (1, 3);
-		SetMarginSensitive (1, false);
-
+			
 		// folding
 		/*
-		SetMarginType (2, wxSTC_MARGIN_SYMBOL);
-		SetMarginMask (2, wxSTC_MASK_FOLDERS);
-		StyleSetBackground (2, wxColour (_T("WHITE")));
+		SetMarginType (m_foldingMarginId, wxSTC_MARGIN_SYMBOL);
+		SetMarginMask (m_foldingMarginId, wxSTC_MASK_FOLDERS);
+		StyleSetBackground (m_foldingMarginId, wxColour (_T("WHITE")));
     
-		SetMarginWidth (2, foldingMargin);
-		SetMarginSensitive (2, true);
+		SetMarginWidth (m_foldingMarginId, foldingMargin);
+		SetMarginSensitive (m_foldingMarginId, true);
 		SetProperty (_T("fold"), "1");
 		SetProperty (_T("fold.comment"), "1");
 		SetProperty (_T("fold.compact"), "1");
@@ -512,7 +480,7 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
 		
 		m_lang = PYTHON;
 	}
-
+	
 	Colourise(0, GetLength());
 	Refresh();
 }
@@ -573,7 +541,68 @@ void wxCodeEditCtrl::AddCallTip( const wxString &key, const wxString &value )
 
 	m_callTips[lckey] = value;
 }
-	
+
+void wxCodeEditCtrl::ShowLineArrow( int line )
+{
+	MarkerDeleteAll( m_markArrow );
+	MarkerAdd( line, m_markArrow );
+}
+
+void wxCodeEditCtrl::HideLineArrow()
+{
+	MarkerDeleteAll( m_markArrow );
+}
+
+void wxCodeEditCtrl::ShowBreakpoints( bool show )
+{
+	SetMarginWidth( m_breakpointMarginId, show ? 12 : 0 );
+	SetMarginSensitive( m_breakpointMarginId, show );
+}
+
+void wxCodeEditCtrl::AddBreakpoint( int line )
+{
+	std::vector<int>::iterator it = std::find( m_breakPoints.begin(), m_breakPoints.end(), line );
+	if ( it == m_breakPoints.end() )
+	{
+		MarkerAdd( line, m_markCircle );
+		m_breakPoints.push_back( line );
+	}
+}
+
+void wxCodeEditCtrl::RemoveBreakpoint( int line )
+{
+	std::vector<int>::iterator it = std::find( m_breakPoints.begin(), m_breakPoints.end(), line );
+	if ( it != m_breakPoints.end() )
+	{
+		MarkerDelete( line, m_markCircle );
+		m_breakPoints.erase( it );
+	}
+}
+
+void wxCodeEditCtrl::ToggleBreakpoint( int line )
+{
+	if ( HasBreakpoint( line ) )
+		RemoveBreakpoint( line );
+	else
+		AddBreakpoint( line );
+}
+
+bool wxCodeEditCtrl::HasBreakpoint( int line )
+{
+	return ( std::find( m_breakPoints.begin(), m_breakPoints.end(), line ) != m_breakPoints.end() );
+}
+
+void wxCodeEditCtrl::ClearBreakpoints()
+{
+	MarkerDeleteAll( m_markCircle );
+	m_breakPoints.clear();
+}
+
+std::vector<int> wxCodeEditCtrl::GetBreakpoints()
+{
+	return m_breakPoints;
+}
+
 void wxCodeEditCtrl::ShowFindDialog()
 {
 	if (m_findDialog && (m_findDialog->GetWindowStyle() & wxFR_REPLACEDIALOG) == 0)
@@ -680,16 +709,12 @@ void wxCodeEditCtrl::SetFindString( const wxString &s )
 	m_findData.SetFindString(s);
 }
 
-void wxCodeEditCtrl::JumpToLine( int line, bool highlight )
+void wxCodeEditCtrl::SelectLine( int line )
 {
 	line--;
-	if (line<0) line = 0;
-	GotoLine(line);
-		
-	if (highlight)
-	{
-		SetSelection(PositionFromLine(line), GetLineEndPosition(line)+1);
-	}
+	if (line < 0) line = 0;
+	GotoLine( line );
+	SetSelection(PositionFromLine(line), GetLineEndPosition(line)+1);
 }
 
 void wxCodeEditCtrl::YankLine()
@@ -710,14 +735,12 @@ void wxCodeEditCtrl::PutLine()
 	
 void wxCodeEditCtrl::OnMarginClick( wxStyledTextEvent &evt )
 {
-	if (evt.GetMargin() == 1 )
+	if (evt.GetMargin() == m_breakpointMarginId )
 	{
 		int line = LineFromPosition(evt.GetPosition());
-
-		if ( MarkerGet( line ) ) MarkerDelete( line, 0 );
-		else MarkerAdd( line, 0);
+		ToggleBreakpoint( line );
 	}
-	else if (evt.GetMargin() == 2)
+	else if (evt.GetMargin() == m_foldingMarginId)
 	{
         int lineClick = LineFromPosition (evt.GetPosition());
         int levelClick = GetFoldLevel (lineClick);
@@ -727,7 +750,7 @@ void wxCodeEditCtrl::OnMarginClick( wxStyledTextEvent &evt )
         }
     }
 	
-	evt.Skip();
+	evt.Skip(); // pass on these events to descendant classes
 }
 
 void wxCodeEditCtrl::OnCharAdded( wxStyledTextEvent &evt )
@@ -742,13 +765,12 @@ void wxCodeEditCtrl::OnCharAdded( wxStyledTextEvent &evt )
 		{
 			wxString prevline = GetLine(curline - 1);
 		
-			int prevlinelen = prevline.Length();
 			static char buf[32];
-			int i;
-			for (i=0;i<prevlinelen && i < 31 && (prevline[i] == '\t' || prevline[i] == ' '); i++)
-			{
+			size_t prevlinelen = prevline.Length();
+			size_t i;
+			for ( i=0;i<prevlinelen && i < 31 && (prevline[i] == '\t' || prevline[i] == ' '); i++)
 				buf[i] = prevline[i];
-			}
+
 			buf[i] = '\0';
 			
 			ReplaceSelection(buf);
@@ -794,12 +816,14 @@ void wxCodeEditCtrl::OnCharAdded( wxStyledTextEvent &evt )
 		if ( m_ctStack.Count() > 0 )
 			CallTipShow( GetCurrentPos(), m_ctStack.Last() );
 	}
+	
+	evt.Skip(); // pass on events to descendent classes
 }
 
 void wxCodeEditCtrl::OnUpdateUI( wxStyledTextEvent &evt )
 {
 	DoBraceMatch();
-	evt.Skip();
+	evt.Skip(); // pass on events to descendent classes
 }
 
 void wxCodeEditCtrl::OnFindDialog( wxFindDialogEvent &evt )
