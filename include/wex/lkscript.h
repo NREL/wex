@@ -21,12 +21,38 @@ public:
 
 	virtual ~wxLKScriptCtrl();
 
+	virtual void OnOutput( const wxString & );
+	
+	void RegisterLibrary( lk::fcall_t *funcs, const wxString &group = "Miscellaneous", void *user_data = 0);
+
+	wxString GetHtmlDocs();
+	void ShowHelpDialog( wxWindow *custom_parent = 0 );
+
+	bool IsScriptRunning();
+	bool IsStopFlagSet();
+	void Stop();
+	bool Execute( const wxString &run_dir = wxEmptyString );
+	
+	void UpdateInfo();
+
+	lk::env_t *GetEnvironment() { return m_env; }
 private:
 
 	void OnScriptTextChanged( wxStyledTextEvent & );
 	void OnTimer( wxTimerEvent & );
 
 	wxTimer m_timer;
+	
+	struct libdata
+	{
+		lk::fcall_t *library;
+		wxString name;
+	};
+
+	std::vector<libdata> m_libs;
+	lk::env_t *m_env;
+	bool m_scriptRunning;
+	bool m_stopScriptFlag;
 
 	DECLARE_EVENT_TABLE();
 };

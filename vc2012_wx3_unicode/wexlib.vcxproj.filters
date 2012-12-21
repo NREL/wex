@@ -312,6 +312,12 @@
     <ClInclude Include="..\include\wex\lkscript.h">
       <Filter>wex\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\wex\mtrand.h">
+      <Filter>wex\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\utils.h">
+      <Filter>wex\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
@@ -531,6 +537,9 @@
       <Filter>wex\Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\src\lkscript.cpp">
+      <Filter>wex\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\utils.cpp">
       <Filter>wex\Sources</Filter>
     </ClCompile>
   </ItemGroup>
