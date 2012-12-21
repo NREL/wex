@@ -415,10 +415,13 @@ lk::fcall_t* wexlib_lkfuncs()
 
 
 
-static bool eval_callback( int /*line*/, void *cbdata )
+static bool eval_callback( int line, void *cbdata )
 {
-	wxSafeYield( 0, true );
-	return !((wxLKScriptCtrl*)cbdata)->IsStopFlagSet();
+	wxLKScriptCtrl *sc = ((wxLKScriptCtrl*)cbdata);
+
+	if (!sc->OnEval( line )) return false;
+
+	return !sc->IsStopFlagSet();
 }
 
 enum { IDT_TIMER = wxID_HIGHEST+213 };
@@ -459,6 +462,10 @@ wxLKScriptCtrl::~wxLKScriptCtrl()
 	delete m_env;
 }
 
+bool wxLKScriptCtrl::OnEval( int line )
+{
+	return true;
+}
 
 void wxLKScriptCtrl::OnOutput( const wxString &output )
 {

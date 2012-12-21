@@ -21,6 +21,7 @@ public:
 
 	virtual ~wxLKScriptCtrl();
 
+	virtual bool OnEval( int line );
 	virtual void OnOutput( const wxString & );
 	
 	void RegisterLibrary( lk::fcall_t *funcs, const wxString &group = "Miscellaneous", void *user_data = 0);
