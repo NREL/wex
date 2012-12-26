@@ -32,11 +32,12 @@ public:
 	bool IsScriptRunning();
 	bool IsStopFlagSet();
 	void Stop();
-	bool Execute( const wxString &run_dir = wxEmptyString );
+	bool Execute( const wxString &run_dir = wxEmptyString, wxWindow *toplevel = 0 );
 	
 	void UpdateInfo();
 
 	lk::env_t *GetEnvironment() { return m_env; }
+	wxWindow *GetTopLevelWindowForScript() { return m_topLevelWindow; }
 private:
 
 	void OnScriptTextChanged( wxStyledTextEvent & );
@@ -54,6 +55,7 @@ private:
 	lk::env_t *m_env;
 	bool m_scriptRunning;
 	bool m_stopScriptFlag;
+	wxWindow *m_topLevelWindow;
 
 	DECLARE_EVENT_TABLE();
 };

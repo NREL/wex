@@ -121,7 +121,11 @@ class MyApp : public wxApp
 public:
 	bool OnInit()
 	{
-		wxFrame *frame = new wxFrame( 0, wxID_ANY, wxT("wxPLPlotCtrl in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(850,500) );
+		wxInitAllImageHandlers();
+
+		wxFrame *frame = new wxFrame( 0, wxID_ANY, 
+			wxT("wxPLPlotCtrl in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), 
+			wxDefaultPosition, wxSize(640,480) );
 		frame->SetIcon( wxICON( appicon ) );
 		
 		wxPLPlotCtrl *plot = new wxPLPlotCtrl( frame, wxID_ANY, wxDefaultPosition, wxDefaultSize );
@@ -214,12 +218,17 @@ public:
 				
 		plot->SetAllowHighlighting( true );
 
-		
 		frame->Show();
+		
+		plot->Export( "c:/Users/adobos/Desktop/plot.bmp", wxBITMAP_TYPE_BMP );
+		plot->Export( "c:/Users/adobos/Desktop/plot.jpg", wxBITMAP_TYPE_JPEG );
+		plot->Export( "c:/Users/adobos/Desktop/plot.png", wxBITMAP_TYPE_PNG );
+		plot->Export( "c:/Users/adobos/Desktop/plot.tiff", wxBITMAP_TYPE_TIFF );
 
+/*
 		wxFrame *editor = new wxFrame( 0, wxID_ANY, "Code Editor", wxDefaultPosition, wxSize(600,500) );
 		wxLKScriptCtrl *code = new wxLKScriptCtrl( editor );
-		/*
+		
 		code->SetLanguage( wxCodeEditCtrl::CPP );
 		code->EnableCallTips( true );
 		code->AddCallTip( "main", "int main(int argc, char *argv[])\n\nMain start of the program." );
@@ -228,7 +237,7 @@ public:
 		code->SetKnownIdentifiers( "main min max ");
 
 		code->ShowBreakpoints( true );
-	*/
+	
 
 		editor->Show();
 
@@ -238,7 +247,7 @@ public:
 		wxLog::SetActiveTarget(log);
 		log->Show();
 #endif
-
+*/
 		return true;
 	}
 };

@@ -38,6 +38,7 @@ OBJECTS = \
 	dvtimeseriesctrl.o \
 	dvtimeseriesdataset.o \
 	plaxis.o \
+	plbarplot.o \
 	plhistplot.o \
 	pllineplot.o \
 	plplotctrl.o \

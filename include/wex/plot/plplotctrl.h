@@ -140,6 +140,8 @@ public:
 	void SetScaleTextSize( bool scale ) { m_scaleTextSize = scale; }
 	
 	void ShowGrid( bool coarse, bool fine ) { m_showCoarseGrid = coarse; m_showFineGrid = fine; }
+	void ShowCoarseGrid( bool coarse ) { m_showCoarseGrid = coarse; }
+	void ShowFineGrid( bool fine ) { m_showFineGrid = fine; }
 	void ShowTitle( bool show ) { m_showTitle = show; }
 	void SetTitle( const wxString &title );
 	wxString GetTitle() { return m_title; }
@@ -152,6 +154,7 @@ public:
 	void ShowLegend( bool show ) { m_showLegend = show; }
 	void SetLegendReversed( bool reverse ) { m_reverseLegend = reverse; }
 	void SetLegendLocation( LegendPos pos, double xpercent = -1.0, double ypercent = -1.0 );
+	bool SetLegendLocation( const wxString &spos );
 	wxRealPoint GetLegendLocation() { return m_legendPosPercent; }
 
 	void SetAllowHighlighting( bool highlighting ) { m_allowHighlighting = highlighting; }
@@ -168,7 +171,8 @@ public:
 		bool visible_only = true, bool include_x = true );
 
 	bool ShowExportDialog( wxString &exp_file_name, wxBitmapType &exp_bitmap_type );
-	bool ExportPng( const wxString &file, int width=-1, int height=-1 );
+	bool Export( const wxString &file, wxBitmapType type = wxBITMAP_TYPE_PNG,
+		int width=-1, int height=-1 );
 	
 	void RescaleAxes();
 	void DeleteAxes();

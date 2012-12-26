@@ -1049,6 +1049,27 @@ void wxPLPlotCtrl::SetLegendLocation( LegendPos pos, double xpercent, double ype
 	m_legendPos = pos;
 }
 
+
+bool wxPLPlotCtrl::SetLegendLocation( const wxString &spos )
+{
+	wxString llpos = spos.Lower();
+	
+	if ( llpos == "northwest" ) { SetLegendLocation( NORTHWEST ); return true; }
+	if ( llpos == "northeast" ) { SetLegendLocation( NORTHEAST ); return true; }
+	if ( llpos == "southwest" ) { SetLegendLocation( SOUTHWEST ); return true; }
+	if ( llpos == "southeast" ) { SetLegendLocation( SOUTHEAST ); return true; }
+	
+	if ( llpos == "north" ) { SetLegendLocation( NORTH ); return true; }
+	if ( llpos == "south" ) { SetLegendLocation( SOUTH ); return true; }
+	if ( llpos == "east" ) { SetLegendLocation( EAST ); return true; }
+	if ( llpos == "west" ) { SetLegendLocation( WEST ); return true; }
+
+	if ( llpos == "bottom" ) { SetLegendLocation( BOTTOM ); return true; }
+	if ( llpos == "right" ) { SetLegendLocation( RIGHT ); return true; }
+
+	return false;
+}
+
 void wxPLPlotCtrl::GetHighlightBounds( double *left, double *right )
 {
 	*left = m_highlightLeftPercent;
@@ -1402,28 +1423,31 @@ bool wxPLPlotCtrl::ShowExportDialog( wxString &exp_file_name, wxBitmapType &exp_
 }
 
 
-bool wxPLPlotCtrl::ExportPng( const wxString &file, int width, int height )
+bool wxPLPlotCtrl::Export( const wxString &file, wxBitmapType type, int width, int height )
 {
 	wxSize imgSize = GetClientSize();
 	
 	bool invalidated = false;
-	if (width > 0 && width < 10000 && height > 0 && height < 10000 )
+	if (width > 10 && width < 10000 && height > 10 && height < 10000 )
 	{
 		Invalidate(); // force recalc of layout
 		invalidated = false;
 		imgSize.Set(width, height);
 	}
 
-	wxBitmap img(imgSize.GetWidth(), imgSize.GetHeight());
-	wxMemoryDC memdc(img);
+	wxBitmap bitmap( imgSize.GetWidth(), imgSize.GetHeight() );
+	wxMemoryDC memdc;
+	memdc.SelectObject( bitmap );
 
 	// initialize font and background
 	memdc.SetFont( GetFont() );
 	memdc.SetBackground( *wxWHITE_BRUSH );
 	memdc.Clear();
-	
+		
 	wxRect rect(0, 0, imgSize.GetWidth(), imgSize.GetHeight());
 	Render( memdc, rect );
+
+	memdc.SelectObject( wxNullBitmap );
 
 	if ( invalidated )
 	{
@@ -1431,7 +1455,7 @@ bool wxPLPlotCtrl::ExportPng( const wxString &file, int width, int height )
 		Refresh(); // issue redraw to on-screen to recalculate layout right away.
 	}
 
-	return img.SaveFile(file, wxBITMAP_TYPE_PNG);
+	return bitmap.SaveFile(file, type);
 }
 
 class gcdc_ref 

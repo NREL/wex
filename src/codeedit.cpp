@@ -4,50 +4,12 @@
 #include <wx/filename.h>
 
 #include "wex/codeedit.h"
-
+#include "wex/utils.h"
 
 static bool IsBrace( wxUniChar ch )
 {
 	return ch == '[' || ch == ']' || ch == '(' || ch == ')' || ch == '{' || ch == '}';
 }
-
-static wxString LimitColumnWidth( const wxString &str, int numcols )
-{
-	wxString buf;
-	int len = (int)str.Len();
-	int col=0;
-	for (int i=0;i<len;i++)
-	{
-		if (col == numcols)
-		{
-			while (i < len && str[i] != ' ' && str[i] != '\t' && str[i] != '\n')
-			{
-				buf += str[i];
-				i++;
-			}
-			
-			while (i < len && (str[i] == ' ' || str[i] == '\t'))
-				i++;
-
-			if (i<len)
-				buf += '\n';
-			col = 0;
-			i--;
-		}
-		else
-		{
-			buf += str[i];
-
-			if (str[i] == '\n')
-				col = 0;
-			else
-				col++;
-		}
-	}
-
-	return buf;
-}
-
 
 BEGIN_EVENT_TABLE (wxCodeEditCtrl, wxStyledTextCtrl)
 
@@ -664,12 +626,18 @@ int	wxCodeEditCtrl::FindNext( int frtxt_len )
 
 	m_lastFindPos = FindText(start, GetLength(), text, flags);
 	if (m_lastFindPos >= 0)
+	{
 		SetSelection(m_lastFindPos, m_lastFindPos+text.Len());
+		EnsureCaretVisible();
+	}
 	else
 	{
 		m_lastFindPos = FindText(0, GetLength(), text, flags);
 		if (m_lastFindPos >= 0)
+		{
 			SetSelection(m_lastFindPos, m_lastFindPos+text.Len());
+			EnsureCaretVisible();
+		}
 	}
 
 	return m_lastFindPos;
@@ -715,6 +683,7 @@ void wxCodeEditCtrl::SelectLine( int line )
 	if (line < 0) line = 0;
 	GotoLine( line );
 	SetSelection(PositionFromLine(line), GetLineEndPosition(line)+1);
+	EnsureCaretVisible();
 }
 
 void wxCodeEditCtrl::YankLine()
@@ -802,7 +771,7 @@ void wxCodeEditCtrl::OnCharAdded( wxStyledTextEvent &evt )
 			else
 				m_ctStack.Clear();
 
-			wxString tip = LimitColumnWidth( m_callTips[func], 80 );
+			wxString tip = wxLimitTextColumns( m_callTips[func], 80 );
 			m_ctStack.Add( tip );
 			CallTipShow( GetCurrentPos(), tip );
 		}

@@ -17,7 +17,12 @@
 #include <lk_env.h>
 #include <lk_parse.h>
 
-/*
+
+#include "wex/plot/plplotctrl.h"
+#include "wex/plot/plbarplot.h"
+#include "wex/plot/pllineplot.h"
+#include "wex/plot/plscatterplot.h"
+
 class PlotWin;
 
 static int _iplot = 1;
@@ -25,15 +30,15 @@ static PlotWin *_curplot = 0;
 
 class PlotWin : public wxFrame
 {
-	WPPlotSurface2D *m_plot;
+private:
+	wxPLPlotCtrl *m_plot;
 public:
 	PlotWin( wxWindow *parent )
-		: wxFrame( 0, wxID_ANY, 
+		: wxFrame( parent, wxID_ANY, 
 			wxString::Format("plot %d", _iplot++),
 			wxDefaultPosition, wxSize(500,400) )
 	{
-		m_plot = new WPPlotSurface2D( this );
-		m_plot->SetEnableDefaultRightClickMenu();
+		m_plot = new wxPLPlotCtrl( this, wxID_ANY );
 		m_plot->SetBackgroundColour(*wxWHITE);
 		_curplot = this;
 		Show();
@@ -51,48 +56,39 @@ public:
 		int xap, int yap)
 	{
 		if (len <= 0 ) return;
-		WPPlotDataArray *arr = new WPPlotDataArray;
-		arr->alloc( len );
+		
+		std::vector<wxRealPoint> data;
+		data.reserve( len );
 		for (int i=0;i<len;i++)
-			arr->append( PointF( x[i], y[i] ) );
+			data.push_back( wxRealPoint( x[i], y[i] ) );
 
-		WPPlottable2D *p = 0;
+		wxPLPlottable *p = 0;
 
 		switch (type )
 		{
 		case BAR:
-			p = new WPBarPlot;
-			((WPBarPlot*)p)->FillColour = col;
-			((WPBarPlot*)p)->BarWidth = thick;
+			p = new wxPLBarPlot( data, series, col );
 			break;
 		case LINE:
-			p = new WPLinePlot;
-			((WPLinePlot*)p)->LineColour =  col;
-			((WPLinePlot*)p)->LineThickness = thick;
+			p = new wxPLLinePlot( data, series, col, wxPLLinePlot::SOLID, thick, false );
 			break;
 		case SCATTER:
-			p = new WPScatterPlot;
-			((WPScatterPlot*)p)->Colour = col;
-			((WPScatterPlot*)p)->PointSize = thick;
+			p = new wxPLScatterPlot( data, series, col, thick, false );
 			break;
 		}
 
 		if (!p)
-		{
-			delete arr;
 			return;
-		}
-		arr->SetXLabel( xlab );
-		arr->SetYLabel( ylab );
-		p->SetData( arr );
-		p->SetLabel( series );
-		m_plot->Add( p, (WPPlotSurface2D::AxisPosition) xap, (WPPlotSurface2D::AxisPosition) yap );
+
+		p->SetXDataLabel( xlab );
+		p->SetYDataLabel( ylab );
+		m_plot->AddPlot( p, (wxPLPlotCtrl::AxisPos)xap, (wxPLPlotCtrl::AxisPos) yap );
 		m_plot->Refresh();
 	}
 
 	static PlotWin *Current() { return _curplot; }
 	static void NewPlot( ) { _curplot = 0; }
-	static WPPlotSurface2D *Surface()
+	static wxPLPlotCtrl *Surface()
 	{
 		if ( Current() ) return Current()->m_plot;
 		else return 0;
@@ -118,9 +114,11 @@ void fcall_plot( lk::invoke_t &cxt )
 {
 	LK_DOC("plot", "Creates an XY line, bar, or scatter plot. Options include thick, type, color, xap, yap, xlabel, ylabel, series.", "(array:x, array:y, table:options):void");
 
+	wxLKScriptCtrl *lksc = (wxLKScriptCtrl*)cxt.user_data();
+
 	PlotWin *plot = PlotWin::Current();
 	if ( plot == 0 )
-		plot = new PlotWin( 0 );
+		plot = new PlotWin( lksc->GetTopLevelWindowForScript() );
 
 	lk::vardata_t &a0 = cxt.arg(0).deref();
 	lk::vardata_t &a1 = cxt.arg(1).deref();
@@ -136,8 +134,8 @@ void fcall_plot( lk::invoke_t &cxt )
 		wxString xlab = "x";
 		wxString ylab = "y";
 		wxString series = wxEmptyString;
-		int xap = WPPlotSurface2D::XAXIS_BOTTOM;
-		int yap = WPPlotSurface2D::YAXIS_LEFT;
+		int xap = wxPLPlotCtrl::X_BOTTOM;
+		int yap = wxPLPlotCtrl::Y_LEFT;
 
 		if (cxt.arg_count() > 2 && cxt.arg(2).deref().type() == lk::vardata_t::HASH )
 		{
@@ -173,12 +171,12 @@ void fcall_plot( lk::invoke_t &cxt )
 
 			if (lk::vardata_t *arg = t.lookup("xap"))
 			{
-				if (arg->as_string() == "top") xap = WPPlotSurface2D::XAXIS_TOP;
+				if (arg->as_string() == "top") xap = wxPLPlotCtrl::X_TOP;
 			}
 
 			if ( lk::vardata_t *arg = t.lookup("yap"))
 			{
-				if (arg->as_string() == "right") yap = WPPlotSurface2D::YAXIS_RIGHT;
+				if (arg->as_string() == "right") yap = wxPLPlotCtrl::Y_RIGHT;
 			}
 
 			if ( lk::vardata_t *arg = t.lookup("series"))
@@ -211,7 +209,7 @@ void fcall_plot( lk::invoke_t &cxt )
 void fcall_plotopt( lk::invoke_t &cxt )
 {
 	LK_DOC("plotopt", "Modifies the current plot properties like title, coarse, fine, legend, legendpos, wpos, wsize", "(table:options):void");
-	WPPlotSurface2D *plot = PlotWin::Surface();
+	wxPLPlotCtrl *plot = PlotWin::Surface();
 	if (!plot) return;
 
 	bool mod = false;
@@ -223,19 +221,19 @@ void fcall_plotopt( lk::invoke_t &cxt )
 
 	if ( lk::vardata_t *arg = cxt.arg(0).lookup("coarse") )
 	{
-		plot->SetShowCoarseGrid( arg->as_boolean() );
+		plot->ShowCoarseGrid( arg->as_boolean() );
 		mod = true;
 	}
 
 	if ( lk::vardata_t *arg = cxt.arg(0).lookup("fine") )
 	{
-		plot->SetShowFineGrid( arg->as_boolean() );
+		plot->ShowFineGrid( arg->as_boolean() );
 		mod = true;
 	}
 
 	if ( lk::vardata_t *arg = cxt.arg(0).lookup("legend") )
 	{
-		plot->SetShowLegend( arg->as_boolean() );
+		plot->ShowLegend( arg->as_boolean() );
 		mod = true;
 	}
 
@@ -246,8 +244,12 @@ void fcall_plotopt( lk::invoke_t &cxt )
 		{
 			xper = arg->index(0)->as_number();
 			yper = arg->index(1)->as_number();
-			plot->SetLegendXYPercent( PointF(xper,yper) );
+			plot->SetLegendLocation( wxPLPlotCtrl::FLOATING, xper, yper);
 			mod = true;
+		}
+		else if ( arg->type() == lk::vardata_t::STRING )
+		{
+			mod = plot->SetLegendLocation( arg->as_string() );
 		}
 	}
 
@@ -277,18 +279,18 @@ void fcall_plotopt( lk::invoke_t &cxt )
 void fcall_plotpng( lk::invoke_t &cxt )
 {
 	LK_DOC( "plotpng", "Export the current plot as rendered on the screen to a PNG image file.", "(string:file name):boolean" );
-	WPPlotSurface2D *plot = PlotWin::Surface();
+	wxPLPlotCtrl *plot = PlotWin::Surface();
 	if (!plot) return;
-	cxt.result().assign( plot->ExportPng( cxt.arg(0).as_string() ) );
+	cxt.result().assign( plot->Export( cxt.arg(0).as_string() ) );
 }
 
 void fcall_axis( lk::invoke_t &cxt )
 {
 	LK_DOC("axis", "Modifies axis properties (label, showlabel, min, max, ticklabels) on the current plot.", "(string:axis name 'x1' 'y1' 'x2' 'y2', table:options):void");
 	lk_string axname = cxt.arg(0).as_string();
-	WPPlotSurface2D *plot = PlotWin::Surface();
+	wxPLPlotCtrl *plot = PlotWin::Surface();
 	if (!plot) return;
-	WPAxis *axis = 0;
+	wxPLAxis *axis = 0;
 	if (axname == "x1") axis = plot->GetXAxis1();
 	if (axname == "x2") axis = plot->GetXAxis2();
 	if (axname == "y1") axis = plot->GetYAxis1();
@@ -300,7 +302,7 @@ void fcall_axis( lk::invoke_t &cxt )
 
 	if ( lk::vardata_t *arg = cxt.arg(1).lookup("label") )
 	{
-		axis->Label = arg->as_string();
+		axis->SetLabel( arg->as_string() );
 		mod = true;
 	}
 
@@ -324,20 +326,18 @@ void fcall_axis( lk::invoke_t &cxt )
 
 	if ( lk::vardata_t *arg = cxt.arg(1).lookup("ticklabels") )
 	{
-		axis->HideTickText = !arg->as_boolean();
+		axis->ShowTickText( arg->as_boolean() );
 		mod = true;
 	}
 
 	if ( lk::vardata_t *arg = cxt.arg(1).lookup("showlabel") )
 	{
-		axis->HideLabel = !arg->as_boolean();
+		axis->ShowLabel( arg->as_boolean() );
 		mod = true;
 	}
 
 	if (mod) plot->Refresh();
 }
-
-*/
 
 void fcall_rand( lk::invoke_t &cxt )
 {
@@ -402,11 +402,11 @@ lk::fcall_t* wexlib_lkfuncs()
 		fcall_httpget,
 		fcall_httpdownload,
 		fcall_decompress,
-		/* fcall_newplot,
+		fcall_newplot,
 		fcall_plot,
 		fcall_plotopt,
 		fcall_plotpng,
-		fcall_axis, */
+		fcall_axis, 
 		fcall_rand,
 		0 };
 		
@@ -454,7 +454,8 @@ wxLKScriptCtrl::wxLKScriptCtrl( wxWindow *parent, int id,
 	StyleSetFont( 512, font );
 	StyleSetForeground( 512, *wxBLACK );
 	StyleSetBackground( 512, wxColour(255,187,187) );
-
+	
+	m_topLevelWindow = 0;
 }
 
 wxLKScriptCtrl::~wxLKScriptCtrl()
@@ -462,9 +463,9 @@ wxLKScriptCtrl::~wxLKScriptCtrl()
 	delete m_env;
 }
 
-bool wxLKScriptCtrl::OnEval( int line )
+bool wxLKScriptCtrl::OnEval( int /*line*/ )
 {
-	return true;
+	return !IsStopFlagSet();
 }
 
 void wxLKScriptCtrl::OnOutput( const wxString &output )
@@ -620,7 +621,8 @@ void wxLKScriptCtrl::Stop()
 	m_stopScriptFlag = true;
 }
 
-bool wxLKScriptCtrl::Execute( const wxString &run_dir )
+bool wxLKScriptCtrl::Execute( const wxString &run_dir,
+							 wxWindow *toplevel )
 {
 	if (m_scriptRunning)
 	{
@@ -633,6 +635,7 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir )
 
 	m_scriptRunning = true;
 	m_stopScriptFlag = false;
+	m_topLevelWindow = toplevel;
 
 	//m_stopButton->Show();
 
@@ -714,6 +717,7 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir )
 
 	m_scriptRunning = false;
 	m_stopScriptFlag = false;
+	m_topLevelWindow = 0;
 
 	return success;
 }

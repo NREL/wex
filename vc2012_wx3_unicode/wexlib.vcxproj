@@ -94,6 +94,7 @@
     <ClInclude Include="..\include\wex\pdf\pdfutility.h" />
     <ClInclude Include="..\include\wex\pdf\pdfxml.h" />
     <ClInclude Include="..\include\wex\plot\plaxis.h" />
+    <ClInclude Include="..\include\wex\plot\plbarplot.h" />
     <ClInclude Include="..\include\wex\plot\plhistplot.h" />
     <ClInclude Include="..\include\wex\plot\pllineplot.h" />
     <ClInclude Include="..\include\wex\plot\plplotctrl.h" />
@@ -171,6 +172,7 @@
     <ClCompile Include="..\src\pdf\pdfutility.cpp" />
     <ClCompile Include="..\src\pdf\pdfxml.cpp" />
     <ClCompile Include="..\src\plot\plaxis.cpp" />
+    <ClCompile Include="..\src\plot\plbarplot.cpp" />
     <ClCompile Include="..\src\plot\plhistplot.cpp" />
     <ClCompile Include="..\src\plot\pllineplot.cpp" />
     <ClCompile Include="..\src\plot\plplotctrl.cpp" />

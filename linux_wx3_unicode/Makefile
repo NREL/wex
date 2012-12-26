@@ -12,6 +12,7 @@ LIBNAME = wexuxwx3
 TARGET = ../$(LIBNAME).a
 	
 OBJECTS = \
+	utils.o \
 	lkscript.o \
 	codeedit.o \
 	extgrid.o \
@@ -36,6 +37,7 @@ OBJECTS = \
 	dvtimeseriesctrl.o \
 	dvtimeseriesdataset.o \
 	plaxis.o \
+	plbarplot.o \
 	plhistplot.o \
 	pllineplot.o \
 	plplotctrl.o \
