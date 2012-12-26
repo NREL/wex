@@ -5,7 +5,7 @@ LKLIB = lkosxwx3.a
 
 CC = gcc
 CXX = g++
-CFLAGS = -fPIC -Wall -O2 `wx-config-3 --cflags` -I../include -DWEX_USE_LK $(LKDIR)
+CFLAGS = -fPIC -Wall -O2 `wx-config-3 --cflags` -I../include -DWEX_USE_LK -I$(LKDIR)
 CXXFLAGS = $(CFLAGS)
 
 
@@ -13,6 +13,7 @@ LIBNAME = wexosxwx3
 TARGET = ../$(LIBNAME).a
 	
 OBJECTS = \
+	utils.o \
 	lkscript.o \
 	codeedit.o \
 	extgrid.o \

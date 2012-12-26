@@ -1,8 +1,15 @@
 #ifndef __codedit_h
 #define __codedit_h
 
-#include <wx/vector.h>
+#ifdef __APPLE__
+#include <tr1/unordered_map>
+using namespace std::tr1;
+#else
 #include <unordered_map>
+using namespace std;
+#endif
+
+#include <wx/vector.h>
 #include <wx/fdrepdlg.h>
 #include <wx/stc/stc.h>
 
@@ -76,8 +83,8 @@ private:
 	wxArrayString m_ctStack;
 	
 	std::vector<int> m_breakPoints;
+	unordered_map< wxString, wxString, wxStringHash, wxStringEqual > m_callTips;
 
-	std::unordered_map< wxString, wxString, wxStringHash, wxStringEqual > m_callTips;
 	wxString m_yankText;
 
     DECLARE_EVENT_TABLE()
