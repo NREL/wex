@@ -22,7 +22,7 @@ class wxDVPlotCtrlSettings
 {
 public:
 	wxDVPlotCtrlSettings();
-	wxDVPlotCtrlSettings( wxDVPlotCtrlSettings &cpy ) { m_properties = cpy.m_properties; }
+	wxDVPlotCtrlSettings( const wxDVPlotCtrlSettings &cpy ) { m_properties = cpy.m_properties; }
 	virtual ~wxDVPlotCtrlSettings();
 
 	wxDVPlotCtrlSettings &operator=(const wxDVPlotCtrlSettings &rhs)
