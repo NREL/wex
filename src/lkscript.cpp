@@ -83,6 +83,7 @@ public:
 		p->SetXDataLabel( xlab );
 		p->SetYDataLabel( ylab );
 		m_plot->AddPlot( p, (wxPLPlotCtrl::AxisPos)xap, (wxPLPlotCtrl::AxisPos) yap );
+		m_plot->RescaleAxes();
 		m_plot->Refresh();
 	}
 
@@ -218,7 +219,7 @@ void fcall_plotopt( lk::invoke_t &cxt )
 		plot->SetTitle( arg->as_string() );
 		mod = true;
 	}
-
+	
 	if ( lk::vardata_t *arg = cxt.arg(0).lookup("coarse") )
 	{
 		plot->ShowCoarseGrid( arg->as_boolean() );
@@ -286,7 +287,7 @@ void fcall_plotpng( lk::invoke_t &cxt )
 
 void fcall_axis( lk::invoke_t &cxt )
 {
-	LK_DOC("axis", "Modifies axis properties (label, showlabel, min, max, ticklabels) on the current plot.", "(string:axis name 'x1' 'y1' 'x2' 'y2', table:options):void");
+	LK_DOC("axis", "Modifies axis properties (type, label, showlabel, min, max, ticklabels) on the current plot.", "(string:axis name 'x1' 'y1' 'x2' 'y2', table:options):void");
 	lk_string axname = cxt.arg(0).as_string();
 	wxPLPlotCtrl *plot = PlotWin::Surface();
 	if (!plot) return;
@@ -299,6 +300,45 @@ void fcall_axis( lk::invoke_t &cxt )
 
 	if (cxt.arg_count() < 2 || cxt.arg(1).type() != lk::vardata_t::HASH ) return;
 	bool mod = false;
+
+	
+	if ( lk::vardata_t *arg = cxt.arg(1).lookup("type") )
+	{
+		double min, max;
+		axis->GetWorld(&min, &max);
+
+		if ( arg->as_string() == "log" )
+		{
+			if ( min <= 0 ) min = 0.001;
+			if ( max < min ) max = min+10;
+
+			wxPLLogAxis *log = new wxPLLogAxis( min, max, axis->GetLabel() );
+			log->ShowTickText( axis->IsTickTextVisible() );
+			log->ShowLabel( axis->IsLabelVisible() );
+
+			if ( axname == "x1" ) plot->SetXAxis1( log );
+			if ( axname == "x2" ) plot->SetXAxis2( log );
+			if ( axname == "y1" ) plot->SetYAxis1( log );
+			if ( axname == "y2" ) plot->SetYAxis2( log );
+
+			axis = log;
+			mod = true;
+		}
+		else if ( arg->as_string() == "linear" )
+		{
+			wxPLLinearAxis *lin = new wxPLLinearAxis( min, max, axis->GetLabel() );
+			lin->ShowTickText( axis->IsTickTextVisible() );
+			lin->ShowLabel( axis->IsLabelVisible() );
+
+			if ( axname == "x1" ) plot->SetXAxis1( lin );
+			if ( axname == "x2" ) plot->SetXAxis2( lin );
+			if ( axname == "y1" ) plot->SetYAxis1( lin );
+			if ( axname == "y2" ) plot->SetYAxis2( lin );
+
+			axis = lin;
+			mod = true;
+		}		
+	}
 
 	if ( lk::vardata_t *arg = cxt.arg(1).lookup("label") )
 	{
@@ -535,7 +575,7 @@ void wxLKScriptCtrl::OnScriptTextChanged( wxStyledTextEvent &evt )
 		AnnotationClearLine( GetCurrentLine() );
 
 		m_timer.Stop();
-		m_timer.Start( 700, true );
+		m_timer.Start( 900, true );
 		evt.Skip();
 	}
 }
@@ -548,22 +588,12 @@ void wxLKScriptCtrl::OnTimer( wxTimerEvent & )
 	int first_error_line = 0;
 	wxString output;
 
-	wxString dbgtime;
-	wxStopWatch sw;
 	wxString input = GetText();
-	dbgtime += wxString::Format("time to get text: %d ms\n", sw.Time() );
-	
-
 	lk::input_string p( input );
 	lk::parser parse( p );
-	sw.Start();
 	lk::node_t *tree = parse.script();	
-	dbgtime += wxString::Format("time to parse: %d ms\n", sw.Time() );
-
-	sw.Start();
 	if (tree) delete tree;	
-	dbgtime += wxString::Format("time to delete tree: %d ms\n", sw.Time() );
-
+	
 	if ( parse.error_count() == 0 
 		&& parse.token() == lk::lexer::END)
 	{
@@ -587,8 +617,6 @@ void wxLKScriptCtrl::OnTimer( wxTimerEvent & )
 		output += "parsing did not reach end of input";
 	else
 		output.Trim();
-
-	output += "\n" + dbgtime;
 
 	first_error_line--;
 
