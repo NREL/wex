@@ -146,7 +146,7 @@ void wxNumericCtrl::DoFormat()
 				else
 				{
 					wxString fmt;
-					fmt.Printf( "%%.%d", m_decimals );
+					fmt.Printf( "%%.%dlf", m_decimals );
 					buf.Printf( fmt, m_value );
 				}
 			}
