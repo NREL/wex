@@ -47,6 +47,7 @@ void wxDVSelectionListCtrl::FreeRowItems()
 		delete *it;
 
 	m_itemList.clear();
+	m_orderedItems.clear();
 }
 
 int wxDVSelectionListCtrl::Append(const wxString& name, const wxString& group)
@@ -61,6 +62,8 @@ int wxDVSelectionListCtrl::Append(const wxString& name, const wxString& group)
 	}
 
 	m_itemList.push_back( x );
+	x->row_index = m_itemList.size() - 1;
+
 	Organize();
 	Invalidate();
 	return m_itemList.size()-1;
@@ -334,7 +337,8 @@ void wxDVSelectionListCtrl::OnPaint(wxPaintEvent &evt)
 		if ( last_group != m_orderedItems[i]->group )
 		{
 			dc.SetFont( font_bold );
-			dc.DrawText( m_orderedItems[i]->group, m_xOffset/3, y + m_itemHeight/2-dc.GetCharHeight()/2-1 );
+			dc.DrawText( m_orderedItems[i]->group, m_xOffset/3, 
+				y + m_itemHeight/2-dc.GetCharHeight()/2-1 );
 			y += m_itemHeight;
 			last_group = m_orderedItems[i]->group;
 		}
@@ -342,7 +346,7 @@ void wxDVSelectionListCtrl::OnPaint(wxPaintEvent &evt)
 		int x = m_xOffset;
 		int yoff = (m_itemHeight-m_boxSize)/2;
 		
-		if ( IsRowSelected(i, m_radioFirstCol ? 1 : 0) )
+		if ( IsRowSelected(m_orderedItems[i]->row_index, m_radioFirstCol ? 1 : 0) )
 		{
 			dc.SetBrush( wxBrush( m_orderedItems[i]->color, wxSOLID ) );
 			dc.DrawRectangle( m_xOffset-4, 
@@ -380,27 +384,28 @@ void wxDVSelectionListCtrl::OnLeftDown(wxMouseEvent &evt)
 	int mx = vsx+evt.GetX();
 	int my = vsy+evt.GetY();
 
-	for (size_t i=0;i<m_itemList.size();i++)
+	for (size_t i=0;i<m_orderedItems.size();i++)
 	{
 		for (size_t c=0;c<m_numCols;c++)
 		{
-			if ( m_itemList[i]->geom[c].Contains( mx, my ) )
+			if ( m_orderedItems[i]->geom[c].Contains( mx, my ) )
 			{
-				if ( ! m_itemList[i]->enable[c] ) return;
+				if ( ! m_orderedItems[i]->enable[c] ) return;
 
-				m_itemList[i]->value[c] = !m_itemList[i]->value[c];
-				m_lastEventRow = i;
+				m_orderedItems[i]->value[c] = !m_orderedItems[i]->value[c];
+								
+				m_lastEventRow = m_orderedItems[i]->row_index;
 				m_lastEventCol = c;
-				m_lastEventValue = m_itemList[i]->value[c];
+				m_lastEventValue = m_orderedItems[i]->value[c];
 
-				HandleRadio( i, c );
-				HandleLineColour( i );
+				HandleRadio( m_orderedItems[i]->row_index, c );
+				HandleLineColour( m_orderedItems[i]->row_index );
 				Refresh();
 				
 				wxCommandEvent evt(wxEVT_DVSELECTIONLIST, GetId());
 				evt.SetEventObject(this);
 				GetEventHandler()->ProcessEvent(evt);
-
+				
 				return;
 			}
 		}

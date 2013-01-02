@@ -71,6 +71,7 @@ private:
 		bool value[NMAXCOLS];
 		bool enable[NMAXCOLS];
 		wxRect geom[NMAXCOLS]; // filled in by renderer
+		int row_index;
 	};
 
 	std::vector<row_item*> m_itemList;
