@@ -1,7 +1,7 @@
 #ifndef __codedit_h
 #define __codedit_h
 
-#ifdef __APPLE__
+#if defined(__APPLE__)||defined(__GNUC__)
 #include <tr1/unordered_map>
 using namespace std::tr1;
 #else
