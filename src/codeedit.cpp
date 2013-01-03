@@ -32,8 +32,13 @@ END_EVENT_TABLE()
 #define DEFAULT_FONT_SIZE 13
 #define DEFAULT_FONT_FACE "Courier New"
 #else
-#define DEFAULT_FONT_SIZE 10
-#define DEFAULT_FONT_FACE "Consolas"
+#ifdef __WXMSW___
+	#define DEFAULT_FONT_SIZE 10
+	#define DEFAULT_FONT_FACE "Consolas"
+#else
+	#define DEFAULT_FONT_SIZE 10
+	#define DEFAULT_FONT_FACE "Courier New"
+#endif
 #endif
 
 static char* CWordlist1 =
