@@ -13,7 +13,7 @@
 static const wxString NO_UNITS("ThereAreNoUnitsForThisAxis.");
 
 #if defined(_DEBUG) && defined(WIN32)
-#define VEC_ASSERT(x) {if(!(x)) _asm{int 0x03}}
+#define VEC_ASSERT(x) {if(!(x)) __debugbreak(); }
 #else
 #define VEC_ASSERT(X) assert(X)
 #endif

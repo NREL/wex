@@ -66,6 +66,7 @@
 
 
 #include <wx/setup.h>
+#include <wx/window.h>
 #include <wx/wx.h>
 #include <wx/variant.h>
 #include <wx/datetime.h>
@@ -607,7 +608,7 @@ protected:
     FuncXArray      m_methods;
     NameMap         m_methodNames;
 
-    long MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam);
+    WXLRESULT MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam);
 };
 
 // events
