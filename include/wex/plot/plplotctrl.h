@@ -173,6 +173,7 @@ public:
 	bool ShowExportDialog( wxString &exp_file_name, wxBitmapType &exp_bitmap_type );
 	bool Export( const wxString &file, wxBitmapType type = wxBITMAP_TYPE_PNG,
 		int width=-1, int height=-1 );
+	wxBitmap GetBitmap( int width=-1, int height=-1 );
 	
 	void RescaleAxes();
 	void DeleteAxes();

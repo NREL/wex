@@ -1342,17 +1342,7 @@ void wxPLPlotCtrl::OnPopupMenu( wxCommandEvent &evt )
 			else if (menuid == ID_TO_CLIP_NORMAL || menuid == ID_EXPORT_NORMAL)
 				imgSize.Set(800, 600);
 
-			wxBitmap img(imgSize.GetWidth(), imgSize.GetHeight());
-			wxMemoryDC memdc(img);
-			// initialize font and background
-			memdc.SetFont( GetFont() );
-			memdc.SetBackground( *wxWHITE_BRUSH );
-			memdc.Clear();
-			wxRect rect(0, 0, imgSize.GetWidth(), imgSize.GetHeight());
-			Invalidate();
-			Render( memdc, rect );
-			Invalidate();
-			Refresh(); // redraw on-screen version to recompute layout
+			wxBitmap img = GetBitmap( imgSize.x, imgSize.y );
 
 			if (menuid == ID_EXPORT_SCREEN ||
 				menuid == ID_EXPORT_SMALL ||
@@ -1422,8 +1412,7 @@ bool wxPLPlotCtrl::ShowExportDialog( wxString &exp_file_name, wxBitmapType &exp_
 	return false;
 }
 
-
-bool wxPLPlotCtrl::Export( const wxString &file, wxBitmapType type, int width, int height )
+wxBitmap wxPLPlotCtrl::GetBitmap( int width, int height )
 {
 	wxSize imgSize = GetClientSize();
 	
@@ -1435,17 +1424,17 @@ bool wxPLPlotCtrl::Export( const wxString &file, wxBitmapType type, int width, i
 		imgSize.Set(width, height);
 	}
 
-	wxBitmap bitmap( imgSize.GetWidth(), imgSize.GetHeight() );
-	wxMemoryDC memdc;
-	memdc.SelectObject( bitmap );
+	wxBitmap bitmap( imgSize.GetWidth(), imgSize.GetHeight(), 32 );
+	wxMemoryDC memdc( bitmap );
+	wxGCDC gdc( memdc );
 
 	// initialize font and background
-	memdc.SetFont( GetFont() );
-	memdc.SetBackground( *wxWHITE_BRUSH );
-	memdc.Clear();
+	gdc.SetFont( GetFont() );
+	gdc.SetBackground( *wxWHITE_BRUSH );
+	gdc.Clear();
 		
 	wxRect rect(0, 0, imgSize.GetWidth(), imgSize.GetHeight());
-	Render( memdc, rect );
+	Render( gdc, rect );
 
 	memdc.SelectObject( wxNullBitmap );
 
@@ -1455,7 +1444,12 @@ bool wxPLPlotCtrl::Export( const wxString &file, wxBitmapType type, int width, i
 		Refresh(); // issue redraw to on-screen to recalculate layout right away.
 	}
 
-	return bitmap.SaveFile(file, type);
+	return bitmap;
+}
+
+bool wxPLPlotCtrl::Export( const wxString &file, wxBitmapType type, int width, int height )
+{
+	return GetBitmap(width,height).SaveFile(file, type);
 }
 
 class gcdc_ref 
