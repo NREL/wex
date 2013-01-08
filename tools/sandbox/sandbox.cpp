@@ -11,7 +11,7 @@
 
 #include "wex/codeedit.h"
 #include "wex/lkscript.h"
-
+#include "wex/sched.h"
 
 
 void TestPLPlot( wxWindow *parent )
@@ -151,6 +151,7 @@ void TestDView( wxWindow *parent )
 }
 
 
+
 class MyApp : public wxApp
 {
 public:
@@ -158,6 +159,11 @@ public:
 	{
 		wxInitAllImageHandlers();
 		TestDView( 0 );
+
+		wxFrame *frm = new wxFrame(NULL, wxID_ANY, "SchedCtrl", wxDefaultPosition, wxSize(400,300));
+		wxSchedCtrl *sch = new wxSchedCtrl( frm, wxID_ANY );
+		sch->SetupTOUGrid();
+		frm->Show();
 
 		return true;
 	}

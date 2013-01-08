@@ -12,6 +12,7 @@ LIBNAME = wexuxwx3
 TARGET = ../$(LIBNAME).a
 	
 OBJECTS = \
+	sched.o \
 	utils.o \
 	lkscript.o \
 	codeedit.o \

@@ -321,6 +321,9 @@
     <ClInclude Include="..\include\wex\plot\plbarplot.h">
       <Filter>plot\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\wex\sched.h">
+      <Filter>wex\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
@@ -547,6 +550,9 @@
     </ClCompile>
     <ClCompile Include="..\src\plot\plbarplot.cpp">
       <Filter>plot\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\sched.cpp">
+      <Filter>wex\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

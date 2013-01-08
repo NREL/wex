@@ -41,6 +41,7 @@
     <ClInclude Include="..\include\wex\lkscript.h" />
     <ClInclude Include="..\include\wex\md5.h" />
     <ClInclude Include="..\include\wex\mtrand.h" />
+    <ClInclude Include="..\include\wex\sched.h" />
     <ClInclude Include="..\include\wex\numeric.h" />
     <ClInclude Include="..\include\wex\ole\activex.h" />
     <ClInclude Include="..\include\wex\ole\excelauto.h" />
@@ -133,6 +134,7 @@
     <ClCompile Include="..\src\jsonwriter.cpp" />
     <ClCompile Include="..\src\lkscript.cpp" />
     <ClCompile Include="..\src\md5.cpp" />
+    <ClCompile Include="..\src\sched.cpp" />
     <ClCompile Include="..\src\numeric.cpp" />
     <ClCompile Include="..\src\ole\activex.cpp" />
     <ClCompile Include="..\src\ole\excelauto.cpp" />
