@@ -14,7 +14,7 @@ BEGIN_EVENT_TABLE(wxSchedCtrl, wxWindow)
 	EVT_KILL_FOCUS( wxSchedCtrl::OnLostFocus )
 END_EVENT_TABLE()
 
-DEFINE_EVENT_TYPE( wxEVT_wxSchedCtrl_CHANGE )
+DEFINE_EVENT_TYPE( wxEVT_SCHEDCTRL_CHANGE )
 
 #ifndef MIN
 #define MIN(a,b) (((a)<(b))?(a):(b))
@@ -353,7 +353,7 @@ void wxSchedCtrl::OnChar(wxKeyEvent &evt)
 
 		Refresh();
 
-		wxCommandEvent change(wxEVT_wxSchedCtrl_CHANGE, this->GetId() );
+		wxCommandEvent change(wxEVT_SCHEDCTRL_CHANGE, this->GetId() );
 		change.SetEventObject( this );
 		GetEventHandler()->ProcessEvent(change);
 	}
