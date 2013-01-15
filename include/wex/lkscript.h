@@ -1,8 +1,6 @@
 #ifndef __lkscript_h
 #define __lkscript_h
 
-#ifdef WEX_USE_LK
-
 #include <wx/wx.h>
 #include <wx/thread.h>
 
@@ -59,13 +57,6 @@ private:
 
 	DECLARE_EVENT_TABLE();
 };
-
-
-
-
-
-
-#endif // WEX_USE_LK
 
 #endif
 
