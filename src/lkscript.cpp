@@ -1,5 +1,3 @@
-#ifdef WEX_USE_LK
-
 #include <wx/app.h>
 #include <wx/thread.h>
 #include <wx/html/htmlwin.h>
@@ -750,4 +748,3 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 	return success;
 }
 
-#endif // WEX_USE_LK
