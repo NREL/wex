@@ -867,14 +867,14 @@ public:
     return rval;
   }
 
-  virtual void DoDrawLines(int n, wxPoint points[],
+  virtual void DoDrawLines(int n, const wxPoint points[],
                            wxCoord xoffset, wxCoord yoffset)
   {
     m_dc.DoDrawLines(n, points,xoffset, yoffset);
     UpdateBoundingBox();
   }
 
-  virtual void DoDrawPolygon(int n, wxPoint points[],
+  virtual void DoDrawPolygon(int n, const wxPoint points[],
                              wxCoord xoffset, wxCoord yoffset,
                              wxPolygonFillMode fillStyle = wxODDEVEN_RULE)
   {
@@ -1209,14 +1209,14 @@ protected:
     m_dc.DoGetSizeMM(w,h);
   }
 
-  virtual void DoDrawLines(int n, wxPoint points[],
+  virtual void DoDrawLines(int n, const wxPoint points[],
                            wxCoord xoffset, wxCoord yoffset)
   {
     m_dc.DoDrawLines(n, points,xoffset, yoffset);
     UpdateBoundingBox();
   }
 
-  virtual void DoDrawPolygon(int n, wxPoint points[],
+  virtual void DoDrawPolygon(int n, const wxPoint points[],
                              wxCoord xoffset, wxCoord yoffset,
                              int fillStyle = wxODDEVEN_RULE)
   {
