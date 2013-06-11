@@ -18,13 +18,6 @@ BEGIN_EVENT_TABLE (wxCodeEditCtrl, wxStyledTextCtrl)
     EVT_STC_CHARADDED( wxID_ANY, wxCodeEditCtrl::OnCharAdded )
 	EVT_STC_UPDATEUI( wxID_ANY, wxCodeEditCtrl::OnUpdateUI )
 	
-	// find dialog
-	EVT_FIND( wxID_ANY, wxCodeEditCtrl::OnFindDialog )
-    EVT_FIND_NEXT( wxID_ANY, wxCodeEditCtrl::OnFindDialog )
-    EVT_FIND_REPLACE( wxID_ANY, wxCodeEditCtrl::OnFindDialog )
-    EVT_FIND_REPLACE_ALL( wxID_ANY, wxCodeEditCtrl::OnFindDialog )
-    EVT_FIND_CLOSE( wxID_ANY, wxCodeEditCtrl::OnFindDialog )
-
 END_EVENT_TABLE()
 
 
@@ -570,54 +563,8 @@ std::vector<int> wxCodeEditCtrl::GetBreakpoints()
 	return m_breakPoints;
 }
 
-void wxCodeEditCtrl::ShowFindDialog()
+int	wxCodeEditCtrl::FindNext( const wxString &text, int frtxt_len, bool match_case, bool whole_word )
 {
-	if (m_findDialog && (m_findDialog->GetWindowStyle() & wxFR_REPLACEDIALOG) == 0)
-	{
-		m_findDialog->SetFocus();
-		m_findDialog->Show();
-	}
-	else
-	{
-		if (GetSelectionEnd() - GetSelectionStart() > 0)
-			m_findData.SetFindString( this->GetSelectedText() );
-
-		if (m_findDialog) delete m_findDialog;
-		m_findDialog = new wxFindReplaceDialog(this, &m_findData, "Find text", wxFR_NOUPDOWN);
-		m_findDialog->Show();
-	}
-
-	m_lastFindPos = GetCurrentPos();
-}
-
-void wxCodeEditCtrl::ShowReplaceDialog()
-{
-	if (m_findDialog && (m_findDialog->GetWindowStyle() & wxFR_REPLACEDIALOG))
-		m_findDialog->SetFocus();
-	else
-	{
-		if (GetSelectionEnd() - GetSelectionStart() > 0)
-			m_findData.SetFindString( this->GetSelectedText() );
-
-		if (m_findDialog) delete m_findDialog;
-		m_findDialog = new wxFindReplaceDialog(this, &m_findData, "Find and replace", wxFR_NOUPDOWN|wxFR_REPLACEDIALOG);
-	}
-	
-	m_findDialog->Show();
-}
-
-void wxCodeEditCtrl::HideFindReplaceDialog()
-{
-	if (m_findDialog)
-	{
-		delete m_findDialog;
-		m_findDialog = 0;
-	}
-}
-
-int	wxCodeEditCtrl::FindNext( int frtxt_len )
-{
-	wxString text = m_findData.GetFindString();
 	if (frtxt_len < 0) frtxt_len = text.Len();
 
 	int start = m_lastFindPos >= 0 ? m_lastFindPos+frtxt_len : 0;
@@ -626,10 +573,10 @@ int	wxCodeEditCtrl::FindNext( int frtxt_len )
 
 	int flags = 0;
 	
-	if (m_findData.GetFlags() & wxFR_WHOLEWORD)
+	if ( whole_word )
 		flags |= wxSTC_FIND_WHOLEWORD;
 	
-	if (m_findData.GetFlags() & wxFR_MATCHCASE)
+	if ( match_case)
 		flags |= wxSTC_FIND_MATCHCASE;
 
 	m_lastFindPos = FindText(start, GetLength(), text, flags);
@@ -651,19 +598,20 @@ int	wxCodeEditCtrl::FindNext( int frtxt_len )
 	return m_lastFindPos;
 }
 
-int wxCodeEditCtrl::ReplaceNext( bool stop_at_find )
+int wxCodeEditCtrl::ReplaceNext( const wxString &text, const wxString &replace, bool stop_at_find, 
+			bool match_case, bool whole_word )
 {
 	bool cur_selected = false;
-	if (m_findData.GetFlags() & wxFR_MATCHCASE)
+	if ( match_case )
 		cur_selected = (GetSelectedText() == m_findData.GetFindString() );
 	else
 		cur_selected = (GetSelectedText().Lower() == m_findData.GetFindString().Lower());
 
 	if (!cur_selected)
 	{
-		cur_selected = (FindNext() >= 0);
-		if (stop_at_find)
-			return cur_selected? m_lastFindPos : -1;
+		cur_selected = (FindNext( text, -1, match_case, whole_word ) >= 0);
+		if ( stop_at_find )
+			return cur_selected ? m_lastFindPos : -1;
 	}
 
 	if (!cur_selected)
@@ -671,18 +619,37 @@ int wxCodeEditCtrl::ReplaceNext( bool stop_at_find )
 		return -1;
 	}
 
-	ReplaceSelection( m_findData.GetReplaceString() );
-	return FindNext(m_findData.GetReplaceString().Len());
+	ReplaceSelection( replace );
+	return FindNext( text, replace.Len(), match_case, whole_word );
 }
 
-wxString wxCodeEditCtrl::GetFindString()
+int wxCodeEditCtrl::ReplaceAll( const wxString &text, const wxString &replace, 
+			bool match_case, bool whole_word, bool show_message )
 {
-	return m_findData.GetFindString();
-}
+	bool start_at_top = false;
+	int count = 0;
 
-void wxCodeEditCtrl::SetFindString( const wxString &s )
-{
-	m_findData.SetFindString(s);
+	if (ReplaceNext( text, replace, false, match_case, whole_word ) >= 0)
+	{
+		m_lastReplacePos = GetSelectionStart();
+		int last_pos = GetSelectionStart();
+
+		while (ReplaceNext( text, replace, false, match_case, whole_word ) >= 0)
+		{
+			if (GetSelectionStart() < last_pos)
+				start_at_top = true;
+
+			last_pos = GetSelectionStart();
+
+			if (start_at_top && last_pos >= m_lastReplacePos)
+				break;
+
+			count++;
+		}
+	}
+
+	if (show_message) wxMessageBox( wxString::Format( "%d instances replaced.", count ) );
+	return count;
 }
 
 void wxCodeEditCtrl::SelectLine( int line )
@@ -801,58 +768,6 @@ void wxCodeEditCtrl::OnUpdateUI( wxStyledTextEvent &evt )
 {
 	DoBraceMatch();
 	evt.Skip(); // pass on events to descendent classes
-}
-
-void wxCodeEditCtrl::OnFindDialog( wxFindDialogEvent &evt )
-{
-    wxEventType type = evt.GetEventType();
-wxMessageBox(wxString::Format("event type %d in find dialog issued", (int)type));
-
-    if ( type == wxEVT_COMMAND_FIND || type == wxEVT_COMMAND_FIND_NEXT )
-    {
-		if ( FindNext() < 0)
-			wxMessageBox("Error: '" + m_findData.GetFindString() + "' could not be found.","Notice");
-    }
-    else if ( type == wxEVT_COMMAND_FIND_REPLACE )
-    {
-		if ( ReplaceNext(true) < 0)
-			wxMessageBox("Error: '" + m_findData.GetFindString() + "' could not be found for replacement.","Notice");
-    }
-	else if ( type == wxEVT_COMMAND_FIND_REPLACE_ALL )
-	{
-		bool start_at_top = false;
-		int count = 0;
-
-		if (ReplaceNext() >= 0)
-		{
-			m_lastReplacePos = GetSelectionStart();
-			int last_pos = GetSelectionStart();
-
-			while (ReplaceNext() >= 0)
-			{
-				if (GetSelectionStart() < last_pos)
-					start_at_top = true;
-
-				last_pos = GetSelectionStart();
-
-				if (start_at_top && last_pos >= m_lastReplacePos)
-					break;
-
-				count++;
-			}
-		}
-
-		wxMessageBox( wxString::Format( "%d instances replaced.", count ) );
-	}
-    else if ( type == wxEVT_COMMAND_FIND_CLOSE )
-    {
-        wxFindReplaceDialog *dlg = evt.GetDialog();
-
-		if ( dlg == m_findDialog )
-            m_findDialog = 0;
-
-        dlg->Destroy();
-    }
 }
 
 void wxCodeEditCtrl::DoBraceMatch()

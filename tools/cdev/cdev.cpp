@@ -82,8 +82,8 @@ void DestroyOutputWindow()
 
 
 
-enum { ID_CODEEDITOR = wxID_HIGHEST+1, ID_RUN, ID_COMPILE, ID_OUTPUT_WINDOW,
-	ID_FIND, ID_FIND_NEXT, ID_REPLACE, ID_REPLACE_NEXT };
+enum { ID_CODEEDITOR = wxID_HIGHEST+1, ID_FIND_TEXT, ID_REPLACE_TEXT, ID_OUTPUT_WINDOW,
+	ID_FIND, ID_FIND_NEXT, ID_REPLACE, ID_REPLACE_NEXT, ID_REPLACE_ALL };
 
 static int __ndoc = 0;
 
@@ -92,6 +92,12 @@ class EditorWindow : public wxFrame
 {
 private:
 	static int __s_numEditorWindows;
+	
+	wxPanel *m_findPanel;
+	wxTextCtrl *m_findText, *m_replaceText;
+	wxCheckBox *m_matchCase, *m_wholeWord;
+	wxStaticText *m_replaceLabel;
+	wxButton *m_replaceNextButton, *m_replaceAllButton;
 	
 	wxCodeEditCtrl *m_editor;
 	wxString m_fileName;
@@ -132,27 +138,52 @@ public:
 		edit_menu->Append( ID_FIND_NEXT, "Find next\tCtrl-G" );
 		edit_menu->Append( ID_REPLACE, "Replace...\tCtrl-H" );
 		edit_menu->Append( ID_REPLACE_NEXT, "Replace next\tCtrl-J" );
-
-		wxMenu *act_menu = new wxMenu;
-		act_menu->Append( ID_RUN, "Run\tF5" );
-		act_menu->Append( ID_COMPILE, "Compile\tF7" );
-		act_menu->AppendSeparator();
-		act_menu->Append( ID_OUTPUT_WINDOW, "Show output window\tF6" );
 		
 		wxMenu *help_menu = new wxMenu;
 		help_menu->Append( wxID_ABOUT, "About" );
-		help_menu->Append( wxID_HELP, "Script reference\tF1");
+		help_menu->Append( wxID_HELP, "Help\tF1");
 
 		wxMenuBar *menu_bar = new wxMenuBar;
 		menu_bar->Append( file_menu, "File" );
 		menu_bar->Append( edit_menu, "Edit" );
-		menu_bar->Append( act_menu, "Actions" );
 		menu_bar->Append( help_menu, "Help" );
 		
-		SetMenuBar( menu_bar );
+		SetMenuBar( menu_bar );		
 		
 		m_editor = new wxCodeEditCtrl( this, ID_CODEEDITOR );
 		m_editor->SetLanguage( wxCodeEditCtrl::CPP );
+		
+		
+		m_findPanel = new wxPanel( this );
+		
+		m_findText = new wxTextCtrl( m_findPanel, ID_FIND_TEXT, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER  );
+		m_replaceText = new wxTextCtrl( m_findPanel, ID_REPLACE_TEXT, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER   );
+		m_matchCase = new wxCheckBox( m_findPanel, wxID_ANY, "Match case" );
+		m_wholeWord = new wxCheckBox( m_findPanel, wxID_ANY, "Whole word" );
+		
+		
+		wxBoxSizer *find_sizer = new wxBoxSizer( wxHORIZONTAL );
+		find_sizer->Add( new wxStaticText( m_findPanel, wxID_ANY, "   Search for:"), 0, wxALL|wxALIGN_CENTER_VERTICAL, 3 );
+		find_sizer->Add( m_findText, 0, wxALL|wxEXPAND, 3 );
+		find_sizer->Add( new wxButton( m_findPanel, ID_FIND_NEXT, "Find next" ), 0, wxALL|wxEXPAND, 3 );
+		
+		find_sizer->Add( m_replaceLabel = new wxStaticText( m_findPanel, wxID_ANY, "   Replace with:"), 0, wxALL|wxALIGN_CENTER_VERTICAL, 3 );
+		find_sizer->Add( m_replaceText, 0, wxALL|wxEXPAND, 3 );
+		find_sizer->Add( m_replaceNextButton = new wxButton( m_findPanel, ID_REPLACE_NEXT, "Replace next" ), 0, wxALL|wxEXPAND, 3 );
+		find_sizer->Add( m_replaceAllButton = new wxButton( m_findPanel, ID_REPLACE_ALL, "Replace all" ), 0, wxALL|wxEXPAND, 3 );
+		
+		find_sizer->Add( m_matchCase, 0, wxALL|wxALIGN_CENTER_VERTICAL, 3 );
+		find_sizer->Add( m_wholeWord, 0, wxALL|wxALIGN_CENTER_VERTICAL, 3 );
+		
+		m_findPanel->SetSizer( find_sizer );
+		
+		wxBoxSizer *main_sizer = new wxBoxSizer( wxVERTICAL );
+		main_sizer->Add( m_findPanel, 0, wxALL|wxEXPAND, 0 );
+		main_sizer->Add( m_editor, 1, wxALL|wxEXPAND, 0 );		
+
+		m_findPanel->Show( false );
+		SetSizer( main_sizer );
+		
 		m_editor->SetFocus();
 	}
 
@@ -174,6 +205,7 @@ public:
 									"|HTML and PHP Files (*.html;*.htm;*.php)|*.html;*.htm;*.php"
 									"|VBA Script Files (*.vb;*.vba)|*.vb;*.vba"
 									"|Python Script Files (*.py)|*.py"
+									"|TRNSYS Input Files (*.trd;*.trdsrc;*.dck)|*.trd;*.trdsrc;*.dck"
 									"|All Files (*.*)|*.*",
 									  wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_CHANGE_DIR);
 
@@ -219,13 +251,57 @@ public:
 		case wxID_COPY: m_editor->Copy(); break;
 		case wxID_PASTE: m_editor->Paste(); break;
 		case wxID_SELECTALL: m_editor->SelectAll(); break;
-		case ID_FIND: m_editor->ShowFindDialog(); break;
-		case ID_FIND_NEXT: m_editor->FindNext(); break;
-		case ID_REPLACE: m_editor->ShowReplaceDialog(); break;
-		case ID_REPLACE_NEXT: m_editor->ReplaceNext(); break;
+		
+		case ID_FIND:
+			m_replaceText->Hide();
+			m_replaceNextButton->Hide();
+			m_replaceAllButton->Hide();
+			m_replaceLabel->Hide();
+			m_findPanel->Show();
+			Layout();
+			m_findText->SetFocus();
+			m_findText->SelectAll();
+			break;
+			
+		case ID_REPLACE:
+			m_replaceText->Show();
+			m_replaceNextButton->Show();
+			m_replaceAllButton->Show();
+			m_replaceLabel->Show();
+			m_findPanel->Show();
+			Layout();
+			m_findText->SetFocus();
+			m_findText->SelectAll();
+			break;
+		
+		case ID_FIND_TEXT: // handle enter press on text widget too
+		case ID_FIND_NEXT:
+			m_editor->FindNext( m_findText->GetValue(), -1,
+				m_matchCase->GetValue(), m_wholeWord->GetValue() );
+			m_editor->SetFocus();
+			if ( evt.GetId() == ID_FIND_TEXT )
+			{
+				m_findPanel->Hide();
+				Layout();
+			}
+			break;
+		
+		case ID_REPLACE_TEXT: // handle enter press on text widget too
+		case ID_REPLACE_NEXT:
+			m_editor->ReplaceNext( m_findText->GetValue(), m_replaceText->GetValue(), false,
+				m_matchCase->GetValue(), m_wholeWord->GetValue() );	
+			m_editor->SetFocus();			
+			break;
+			
+		case ID_REPLACE_ALL:
+			m_editor->ReplaceAll( m_findText->GetValue(), m_replaceText->GetValue(),
+				m_matchCase->GetValue(), m_wholeWord->GetValue() );	
+			break;
+		
 		case wxID_ABOUT:
 			wxMessageBox("Cdev - simple editor tool for Mac OS X");
 			break;
+			
 		case wxID_HELP:
 			{
 				wxFrame *frm = new wxFrame( this, wxID_ANY, "Cdev Help", wxDefaultPosition, wxSize(800, 700) );
@@ -237,6 +313,7 @@ public:
 				frm->Show();
 			}
 			break;
+			
 		case wxID_EXIT:
 			{
 				wxWindowList wl = ::wxTopLevelWindows;
@@ -247,12 +324,6 @@ public:
 
 				Close();
 			}
-			break;
-		case ID_RUN:
-			wxMessageBox("No run command implemented yet");
-			break;
-		case ID_COMPILE:
-			wxMessageBox("No compile command implemented yet");
 			break;
 		case ID_OUTPUT_WINDOW:
 			ShowOutputWindow();
@@ -278,6 +349,17 @@ public:
 			return Write( dlg.GetPath() );
 		else
 			return false;
+	}
+	
+	void OnCharHook( wxKeyEvent &evt )
+	{
+		if (evt.GetKeyCode() == WXK_ESCAPE )
+		{
+			m_findPanel->Hide();
+			Layout();
+		}
+		else
+			evt.Skip();			
 	}
 
 	
@@ -392,15 +474,20 @@ BEGIN_EVENT_TABLE( EditorWindow, wxFrame )
 	EVT_MENU( wxID_COPY, EditorWindow::OnCommand )
 	EVT_MENU( wxID_PASTE, EditorWindow::OnCommand )
 	EVT_MENU( wxID_SELECTALL, EditorWindow::OnCommand )
+	
 	EVT_MENU( ID_FIND, EditorWindow::OnCommand )
 	EVT_MENU( ID_FIND_NEXT, EditorWindow::OnCommand )
 	EVT_MENU( ID_REPLACE, EditorWindow::OnCommand )
 	EVT_MENU( ID_REPLACE_NEXT, EditorWindow::OnCommand )
-
 	
-	EVT_MENU( ID_RUN, EditorWindow::OnCommand )
-	EVT_MENU( ID_COMPILE, EditorWindow::OnCommand )
+	EVT_TEXT_ENTER( ID_FIND_TEXT, EditorWindow::OnCommand )
+	EVT_TEXT_ENTER( ID_REPLACE_TEXT, EditorWindow::OnCommand )
+	EVT_BUTTON( ID_FIND_NEXT, EditorWindow::OnCommand )
+	EVT_BUTTON( ID_REPLACE_NEXT, EditorWindow::OnCommand )
+
 	EVT_MENU( ID_OUTPUT_WINDOW, EditorWindow::OnCommand )
+	
+	EVT_CHAR_HOOK( EditorWindow::OnCharHook )
 
 	EVT_CLOSE( EditorWindow::CloseEventHandler )
 END_EVENT_TABLE()

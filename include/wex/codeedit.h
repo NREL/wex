@@ -43,14 +43,13 @@ public:
 
 	void ShowLineArrow( int line );
 	void HideLineArrow();
-	  
-	void ShowFindDialog();
-	void ShowReplaceDialog();
-	void HideFindReplaceDialog();
-	int	FindNext( int frtxt_len = -1 );
-	int ReplaceNext( bool stop_at_find = false );
-	wxString GetFindString();
-	void SetFindString( const wxString &s );
+	
+	int	FindNext( const wxString &text, int fr_text_len = -1, /* used internally by replace - typically -1 is OK */ 
+			bool match_case = true, bool whole_word = false );
+	int ReplaceNext( const wxString &text, const wxString &replace, bool stop_at_find = false, 
+			bool match_case = true, bool whole_word = false  );	
+	int ReplaceAll( const wxString &text, const wxString &replace, 
+			bool match_case = true, bool whole_word = false, bool show_message = true );
 	
 	void SelectLine( int line );
 	void YankLine();
@@ -60,7 +59,6 @@ private:
 	void OnMarginClick( wxStyledTextEvent &evt );
     void OnCharAdded( wxStyledTextEvent &evt );
 	void OnUpdateUI( wxStyledTextEvent &evt );
-	void OnFindDialog( wxFindDialogEvent &evt );
 
 	void DoBraceMatch();
 	bool FindMatchingBracePosition( int &braceAtCaret, int &braceOpposite, bool sloppy );
