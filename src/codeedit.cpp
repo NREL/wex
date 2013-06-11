@@ -573,18 +573,21 @@ std::vector<int> wxCodeEditCtrl::GetBreakpoints()
 void wxCodeEditCtrl::ShowFindDialog()
 {
 	if (m_findDialog && (m_findDialog->GetWindowStyle() & wxFR_REPLACEDIALOG) == 0)
+	{
 		m_findDialog->SetFocus();
+		m_findDialog->Show();
+	}
 	else
 	{
 		if (GetSelectionEnd() - GetSelectionStart() > 0)
 			m_findData.SetFindString( this->GetSelectedText() );
 
 		if (m_findDialog) delete m_findDialog;
-		m_findDialog = new wxFindReplaceDialog(this, &m_findData, "Find Text", wxFR_NOUPDOWN);
+		m_findDialog = new wxFindReplaceDialog(this, &m_findData, "Find text", wxFR_NOUPDOWN);
+		m_findDialog->Show();
 	}
 
 	m_lastFindPos = GetCurrentPos();
-	m_findDialog->Show();
 }
 
 void wxCodeEditCtrl::ShowReplaceDialog()
@@ -597,7 +600,7 @@ void wxCodeEditCtrl::ShowReplaceDialog()
 			m_findData.SetFindString( this->GetSelectedText() );
 
 		if (m_findDialog) delete m_findDialog;
-		m_findDialog = new wxFindReplaceDialog(this, &m_findData, "Find & Replace", wxFR_NOUPDOWN|wxFR_REPLACEDIALOG);
+		m_findDialog = new wxFindReplaceDialog(this, &m_findData, "Find and replace", wxFR_NOUPDOWN|wxFR_REPLACEDIALOG);
 	}
 	
 	m_findDialog->Show();
@@ -803,6 +806,7 @@ void wxCodeEditCtrl::OnUpdateUI( wxStyledTextEvent &evt )
 void wxCodeEditCtrl::OnFindDialog( wxFindDialogEvent &evt )
 {
     wxEventType type = evt.GetEventType();
+wxMessageBox(wxString::Format("event type %d in find dialog issued", (int)type));
 
     if ( type == wxEVT_COMMAND_FIND || type == wxEVT_COMMAND_FIND_NEXT )
     {
