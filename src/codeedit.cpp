@@ -2,9 +2,129 @@
 
 #include <wx/wx.h>
 #include <wx/filename.h>
+#include <wx/minifram.h>
 
 #include "wex/codeedit.h"
 #include "wex/utils.h"
+
+enum { ID_FIND_TEXT = wxID_HIGHEST+1, ID_FIND_NEXT,
+	ID_REPLACE_TEXT, ID_REPLACE_NEXT, ID_REPLACE_ALL };
+
+class FRDialog : public wxFrame
+{
+	wxCodeEditCtrl *m_editor;
+	wxTextCtrl *m_findText, *m_replaceText;
+	wxCheckBox *m_matchCase, *m_wholeWord;
+	wxStaticText *m_replaceLabel;
+	wxButton *m_replaceNextButton, *m_replaceAllButton;
+
+public:
+	FRDialog( wxCodeEditCtrl *parent )
+		: wxFrame( parent, wxID_ANY, "Find & Replace", wxDefaultPosition, wxDefaultSize,
+			wxFRAME_FLOAT_ON_PARENT|wxFRAME_TOOL_WINDOW|wxCLOSE_BOX|wxCAPTION|wxSYSTEM_MENU )
+	{
+		SetBackgroundColour( *wxWHITE );
+		m_editor = parent;
+
+		m_findText = new wxTextCtrl( this, ID_FIND_TEXT, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER  );
+		m_replaceText = new wxTextCtrl( this, ID_REPLACE_TEXT, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER   );
+		m_matchCase = new wxCheckBox( this, wxID_ANY, "Match case" );
+		m_wholeWord = new wxCheckBox( this, wxID_ANY, "Whole word" );
+		
+		
+		wxFlexGridSizer *find_sizer = new wxFlexGridSizer( 3, 0, 0 );
+		find_sizer->AddGrowableCol(1);
+		find_sizer->Add( new wxStaticText( this, wxID_ANY, "   Search for:"), 0, wxALL|wxALIGN_CENTER_VERTICAL, 3 );
+		find_sizer->Add( m_findText, 0, wxALL|wxEXPAND, 3 );
+		find_sizer->Add( new wxButton( this, ID_FIND_NEXT, "Find next" ), 0, wxALL|wxEXPAND, 3 );
+				
+		find_sizer->Add( m_replaceLabel = new wxStaticText( this, wxID_ANY, "   Replace with:"), 0, wxALL|wxALIGN_CENTER_VERTICAL, 3 );
+		find_sizer->Add( m_replaceText, 0, wxALL|wxEXPAND, 3 );
+		find_sizer->Add( m_replaceNextButton = new wxButton( this, ID_REPLACE_NEXT, "Replace next" ), 0, wxALL|wxEXPAND, 3 );
+		
+		find_sizer->Add( m_matchCase, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+		find_sizer->Add( m_wholeWord, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+		find_sizer->Add( m_replaceAllButton = new wxButton( this, ID_REPLACE_ALL, "Replace all" ), 0, wxALL|wxEXPAND, 3 );
+
+		SetSizer( find_sizer );
+		Fit();
+	
+	}
+
+	void OnCharHook( wxKeyEvent &evt )
+	{
+		if ( evt.GetKeyCode() == WXK_ESCAPE )
+			Hide();
+		else
+			evt.Skip();
+	}
+
+	void FindNext()
+	{
+		m_editor->FindNext( m_findText->GetValue(), -1,
+			m_matchCase->GetValue(), m_wholeWord->GetValue() );
+		m_editor->SetFocus();
+	}
+
+	void ReplaceNext()
+	{
+		m_editor->ReplaceNext( m_findText->GetValue(), m_replaceText->GetValue(), false,
+			m_matchCase->GetValue(), m_wholeWord->GetValue() );	
+		m_editor->SetFocus();	
+	}
+
+	void ReplaceAll()
+	{
+		m_editor->ReplaceAll( m_findText->GetValue(), m_replaceText->GetValue(),
+			m_matchCase->GetValue(), m_wholeWord->GetValue() );	
+	}
+
+	void SelectAll()
+	{
+		m_findText->SetFocus();
+		m_findText->SelectAll();		
+	}
+
+	void OnCommand( wxCommandEvent &evt )
+	{
+		switch( evt.GetId() )
+		{
+		case ID_FIND_TEXT: // handle enter press on text widget too
+		case ID_FIND_NEXT:
+			FindNext();
+			break;
+		
+		case ID_REPLACE_TEXT: // handle enter press on text widget too
+		case ID_REPLACE_NEXT:		
+			ReplaceNext();
+			break;
+			
+		case ID_REPLACE_ALL:
+			ReplaceAll();
+			break;
+		}
+	}
+
+	void OnClose( wxCloseEvent &evt )
+	{
+		Hide();
+	}
+
+	DECLARE_EVENT_TABLE();
+
+};
+
+BEGIN_EVENT_TABLE( FRDialog, wxFrame )
+	EVT_CLOSE( FRDialog::OnClose )
+	EVT_CHAR_HOOK( FRDialog::OnCharHook )
+	EVT_TEXT_ENTER( ID_FIND_TEXT, FRDialog::OnCommand )
+	EVT_TEXT_ENTER( ID_REPLACE_TEXT, FRDialog::OnCommand )
+	EVT_BUTTON( ID_FIND_NEXT, FRDialog::OnCommand )
+	EVT_BUTTON( ID_REPLACE_NEXT, FRDialog::OnCommand )
+	EVT_BUTTON( ID_REPLACE_ALL, FRDialog::OnCommand )
+END_EVENT_TABLE()
+
+
 
 static bool IsBrace( wxUniChar ch )
 {
@@ -82,7 +202,7 @@ wxCodeEditCtrl::wxCodeEditCtrl( wxWindow *parent, int id,
 		const wxPoint &pos, const wxSize &size )
 		: wxStyledTextCtrl( parent, id, pos, size, wxBORDER_NONE )
 {
-	m_findDialog = 0;
+	m_frDialog = new FRDialog( this );
 	m_lastFindPos = m_lastReplacePos = -1;
 
 	m_callTipsEnabled = false;
@@ -91,12 +211,6 @@ wxCodeEditCtrl::wxCodeEditCtrl( wxWindow *parent, int id,
 	m_ctEnd = ')';
 	
 	SetScrollWidthTracking( true );
-}
-
-wxCodeEditCtrl::~wxCodeEditCtrl()
-{
-	if ( m_findDialog != 0 )
-		m_findDialog->Destroy();
 }
 
 void wxCodeEditCtrl::SetLanguage( const wxString &fileName )
@@ -563,6 +677,28 @@ std::vector<int> wxCodeEditCtrl::GetBreakpoints()
 	return m_breakPoints;
 }
 
+void wxCodeEditCtrl::ShowFindReplaceDialog()
+{
+	m_frDialog->Show();
+	m_frDialog->SetFocus();
+	m_frDialog->SelectAll();
+}
+
+void wxCodeEditCtrl::FindNext()
+{
+	m_frDialog->FindNext();
+}
+
+void wxCodeEditCtrl::ReplaceNext()
+{
+	m_frDialog->ReplaceNext();
+}
+
+void wxCodeEditCtrl::ReplaceAll()
+{
+	m_frDialog->ReplaceAll();
+}
+
 int	wxCodeEditCtrl::FindNext( const wxString &text, int frtxt_len, bool match_case, bool whole_word )
 {
 	if (frtxt_len < 0) frtxt_len = text.Len();
@@ -603,9 +739,9 @@ int wxCodeEditCtrl::ReplaceNext( const wxString &text, const wxString &replace, 
 {
 	bool cur_selected = false;
 	if ( match_case )
-		cur_selected = (GetSelectedText() == m_findData.GetFindString() );
+		cur_selected = (GetSelectedText() == text );
 	else
-		cur_selected = (GetSelectedText().Lower() == m_findData.GetFindString().Lower());
+		cur_selected = (GetSelectedText().Lower() == text.Lower());
 
 	if (!cur_selected)
 	{
@@ -626,27 +762,9 @@ int wxCodeEditCtrl::ReplaceNext( const wxString &text, const wxString &replace, 
 int wxCodeEditCtrl::ReplaceAll( const wxString &text, const wxString &replace, 
 			bool match_case, bool whole_word, bool show_message )
 {
-	bool start_at_top = false;
 	int count = 0;
-
-	if (ReplaceNext( text, replace, false, match_case, whole_word ) >= 0)
-	{
-		m_lastReplacePos = GetSelectionStart();
-		int last_pos = GetSelectionStart();
-
-		while (ReplaceNext( text, replace, false, match_case, whole_word ) >= 0)
-		{
-			if (GetSelectionStart() < last_pos)
-				start_at_top = true;
-
-			last_pos = GetSelectionStart();
-
-			if (start_at_top && last_pos >= m_lastReplacePos)
-				break;
-
-			count++;
-		}
-	}
+	while ( ReplaceNext( text, replace, false, match_case, whole_word ) >= 0 )
+		count++;
 
 	if (show_message) wxMessageBox( wxString::Format( "%d instances replaced.", count ) );
 	return count;

@@ -13,12 +13,13 @@ using namespace std;
 #include <wx/fdrepdlg.h>
 #include <wx/stc/stc.h>
 
+class FRDialog;
+
 class wxCodeEditCtrl : public wxStyledTextCtrl
 {
 public:
 	wxCodeEditCtrl( wxWindow *parent, int id = wxID_ANY, 
 		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize );
-	virtual ~wxCodeEditCtrl();	
 
 	enum Language { NONE, CPP, C, LK, VBA, HTML, TEXT, TRNSYS, PYTHON };
 
@@ -43,6 +44,11 @@ public:
 
 	void ShowLineArrow( int line );
 	void HideLineArrow();
+
+	void ShowFindReplaceDialog();
+	void FindNext();
+	void ReplaceNext();
+	void ReplaceAll();
 	
 	int	FindNext( const wxString &text, int fr_text_len = -1, /* used internally by replace - typically -1 is OK */ 
 			bool match_case = true, bool whole_word = false );
@@ -63,8 +69,6 @@ private:
 	void DoBraceMatch();
 	bool FindMatchingBracePosition( int &braceAtCaret, int &braceOpposite, bool sloppy );
 	
-	wxFindReplaceDialog *m_findDialog;
-	wxFindReplaceData m_findData;
 	int m_lastFindPos;
 	int m_lastReplacePos;
 	
@@ -74,6 +78,7 @@ private:
 	static const int m_breakpointMarginId = 1;
 	static const int m_foldingMarginId = 2;
 
+	FRDialog *m_frDialog;
 	Language m_lang;
 	bool m_callTipsEnabled;
 	wxUniChar m_ctStart, m_ctEnd;
