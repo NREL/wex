@@ -13,6 +13,8 @@
 #include "wex/lkscript.h"
 #include "wex/sched.h"
 
+#include "wex/metro.h"
+
 
 void TestPLPlot( wxWindow *parent )
 {
@@ -158,12 +160,23 @@ public:
 	bool OnInit()
 	{
 		wxInitAllImageHandlers();
-		TestDView( 0 );
+		//TestDView( 0 );
 
 		wxFrame *frm = new wxFrame(NULL, wxID_ANY, "SchedCtrl", wxDefaultPosition, wxSize(400,300));
+		frm->SetBackgroundColour( *wxWHITE );
+		
+		wxBoxSizer *sizer = new wxBoxSizer( wxVERTICAL );
+		sizer->Add( new wxMetroButton( frm, wxID_ANY, "Go >>"), 0, wxALL, 3 );
+		sizer->Add( new wxMetroButton( frm, wxID_ANY, "Test button"), 0, wxALL, 3 );
+
 		wxSchedCtrl *sch = new wxSchedCtrl( frm, wxID_ANY );
-		sch->SetupTOUGrid();
+		sch->SetupTOUGrid();		
+		sizer->Add( sch, 1, wxALL|wxEXPAND, 5 );
+
+		frm->SetSizer( sizer );
 		frm->Show();
+
+		
 
 		return true;
 	}
