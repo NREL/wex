@@ -162,6 +162,26 @@ public:
 		wxInitAllImageHandlers();
 		//TestDView( 0 );
 
+		wxFrame *fr1 = new wxFrame(NULL, wxID_ANY, "Metro Notebook", wxDefaultPosition, wxSize(800,400));
+
+		wxBoxSizer *sizer = new wxBoxSizer( wxVERTICAL );
+		wxMetroNotebook *nb = new wxMetroNotebook( fr1, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxMNB_REVERSED );
+		nb->AddPage( new wxPanel( nb ), "Case 1: PV" );
+		nb->AddPage( new wxPanel( nb ), "Case 2: PV+debt" );
+		nb->AddPage( new wxPanel( nb ), "Wind system" );
+		nb->AddPage( new wxPanel( nb ), "solar water heat" );
+		sizer->Add( nb, 1, wxALL|wxEXPAND, 0 );
+		nb = new wxMetroNotebook( fr1, wxID_ANY, wxDefaultPosition, wxDefaultSize );
+		nb->AddPage( new wxPanel( nb ), "Base Case" );
+		nb->AddPage( new wxPanel( nb ), "Parametrics" );
+		nb->AddPage( new wxPanel( nb ), "Sensitivities" );
+		nb->AddPage( new wxPanel( nb ), "Statistics" );
+		nb->AddPage( new wxPanel( nb ), "Scripting" );
+		sizer->Add( nb, 1, wxALL|wxEXPAND, 0 );
+		fr1->SetSizer(sizer);
+		fr1->Show();
+
+		/*
 		wxFrame *frm = new wxFrame(NULL, wxID_ANY, "SchedCtrl", wxDefaultPosition, wxSize(400,300));
 		frm->SetBackgroundColour( *wxWHITE );
 		
@@ -169,13 +189,14 @@ public:
 		sizer->Add( new wxMetroButton( frm, wxID_ANY, "Go >>"), 0, wxALL, 3 );
 		sizer->Add( new wxMetroButton( frm, wxID_ANY, "Test button"), 0, wxALL, 3 );
 
+
 		wxSchedCtrl *sch = new wxSchedCtrl( frm, wxID_ANY );
 		sch->SetupTOUGrid();		
 		sizer->Add( sch, 1, wxALL|wxEXPAND, 5 );
 
 		frm->SetSizer( sizer );
 		frm->Show();
-
+		*/
 		
 
 		return true;
