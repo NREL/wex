@@ -17,23 +17,39 @@ public:
 	static wxColour Background();
 	static wxColour Foreground();
 	static wxColour HoverColour();
+	static wxColour DimHoverColour();
+	static wxColour LightHoverColour();
 	static wxColour AccentColour();
 	static wxColour TextColour();
 	static wxColour HighlightColour();
 	static wxColour SelectColour();
+
+	static wxBitmap LeftArrow();
+	static wxBitmap DownArrow();
+	static wxBitmap RightArrow();
+	static wxBitmap UpArrow();
 };
+
+#define wxMB_RIGHTARROW 0x01
+#define wxMB_LEFTARROW 0x02
+#define wxMB_DOWNARROW 0x04
+#define wxMB_UPARROW 0x08
+#define wxMB_ALIGNLEFT 0x10
 
 class wxMetroButton : public wxWindow
 {
 public:
-	wxMetroButton(wxWindow *parent, int id, const wxString &label,
-			const wxPoint &pos=wxDefaultPosition, const wxSize &sz=wxDefaultSize);
-
+	wxMetroButton(wxWindow *parent, int id, const wxString &label, const wxBitmap &bitmap = wxNullBitmap,
+			const wxPoint &pos=wxDefaultPosition, const wxSize &sz=wxDefaultSize,
+			long style = 0);
+	
 	wxSize DoGetBestSize() const;
 private:
 	wxString m_label;
+	wxBitmap m_bitmap;
 	int m_state;
 	bool m_pressed;
+	long m_style;
 
 	void OnPaint(wxPaintEvent &evt);
 	void OnResize(wxSizeEvent &evt);
@@ -41,6 +57,7 @@ private:
 	void OnLeftUp(wxMouseEvent &evt);
 	void OnEnter(wxMouseEvent &evt);
 	void OnLeave(wxMouseEvent &evt);
+	void OnMotion(wxMouseEvent &evt);
 
 	DECLARE_EVENT_TABLE()
 };
@@ -51,16 +68,12 @@ class wxMetroNotebookRenderer;
 
 // sends EVT_NOTEBOOK_PAGE_CHANGED event
 
-#define wxMNB_REVERSED 0x01
-#define wxMNB_NEWTAB 0x02
-
 class wxMetroNotebook : public wxPanel
 {
 	friend class wxMetroNotebookRenderer;
 public:
 	wxMetroNotebook(wxWindow *parent, int id=-1, 
-		const wxPoint &pos=wxDefaultPosition, const wxSize &sz=wxDefaultSize,
-		long style = 0 );
+		const wxPoint &pos=wxDefaultPosition, const wxSize &sz=wxDefaultSize );
 
 	void AddPage(wxWindow *win, const wxString &text, bool active=false);
 	void AddScrolledPage(wxWindow *win, const wxString &text, bool active=false);
@@ -77,7 +90,6 @@ public:
 private:
 	wxMetroNotebookRenderer *m_renderer;	
 	wxSimplebook *m_flipper;
-	long m_style;
 	int m_tabHeight;
 
 	int m_xSpacing, m_xOffset, m_xPadding, m_yPadding;

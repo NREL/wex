@@ -16,6 +16,9 @@
 #include "wex/metro.h"
 
 
+#include "demo_bitmap.cpng"
+
+
 void TestPLPlot( wxWindow *parent )
 {
 	wxFrame *frame = new wxFrame( parent, wxID_ANY, wxT("wxPLPlotCtrl in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(850,500) );
@@ -165,7 +168,7 @@ public:
 		wxFrame *fr1 = new wxFrame(NULL, wxID_ANY, "Metro Notebook", wxDefaultPosition, wxSize(800,400));
 
 		wxBoxSizer *sizer = new wxBoxSizer( wxVERTICAL );
-		wxMetroNotebook *nb = new wxMetroNotebook( fr1, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxMNB_REVERSED );
+		wxMetroNotebook *nb = new wxMetroNotebook( fr1, wxID_ANY, wxDefaultPosition, wxDefaultSize );
 		nb->AddPage( new wxPanel( nb ), "Case 1: PV" );
 		nb->AddPage( new wxPanel( nb ), "Case 2: PV+debt" );
 		nb->AddPage( new wxPanel( nb ), "Wind system" );
@@ -181,13 +184,27 @@ public:
 		fr1->SetSizer(sizer);
 		fr1->Show();
 
-		/*
 		wxFrame *frm = new wxFrame(NULL, wxID_ANY, "SchedCtrl", wxDefaultPosition, wxSize(400,300));
 		frm->SetBackgroundColour( *wxWHITE );
 		
-		wxBoxSizer *sizer = new wxBoxSizer( wxVERTICAL );
-		sizer->Add( new wxMetroButton( frm, wxID_ANY, "Go >>"), 0, wxALL, 3 );
+		wxBoxSizer *tools = new wxBoxSizer( wxHORIZONTAL );
+		tools->Add( new wxMetroButton( frm, wxID_ANY, wxEmptyString, wxBITMAP_PNG_FROM_DATA( demo_bitmap ), wxDefaultPosition, wxDefaultSize, wxMB_DOWNARROW), 0, wxALL|wxEXPAND, 0 );
+		tools->Add( new wxMetroButton( frm, wxID_ANY, wxEmptyString, wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_LEFTARROW), 0, wxALL|wxEXPAND, 0 );
+		tools->Add( new wxMetroButton( frm, wxID_ANY, "photovoltaic #1"), 0, wxALL|wxEXPAND, 0 );
+		tools->Add( new wxMetroButton( frm, wxID_ANY, "solar water"), 0, wxALL|wxEXPAND, 0 );
+		tools->Add( new wxMetroButton( frm, wxID_ANY, "power tower"), 0, wxALL|wxEXPAND, 0 );		
+		tools->Add( new wxMetroButton( frm, wxID_ANY, wxEmptyString, wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_RIGHTARROW), 0, wxALL|wxEXPAND, 0 );
+		
+		sizer = new wxBoxSizer( wxVERTICAL );
+		sizer->Add( tools, 0, wxALL|wxEXPAND, 0 );
+		sizer->Add( new wxMetroButton( frm, wxID_ANY, "Start", wxBITMAP_PNG_FROM_DATA( demo_bitmap ), wxDefaultPosition, wxDefaultSize, wxMB_RIGHTARROW), 0, wxALL, 3 );
+		sizer->Add( new wxMetroButton( frm, wxID_ANY, "Stretched Start", wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_RIGHTARROW), 0, wxALL|wxEXPAND, 3 );
 		sizer->Add( new wxMetroButton( frm, wxID_ANY, "Test button"), 0, wxALL, 3 );
+		sizer->Add( new wxMetroButton( frm, wxID_ANY, "Popup menu", wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_DOWNARROW), 0, wxALL, 3 );
+		sizer->Add( new wxMetroButton( frm, wxID_ANY, "Left align label", wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_ALIGNLEFT), 0, wxEXPAND|wxALL, 3 );
+		sizer->Add( new wxMetroButton( frm, wxID_ANY, "Left align arrow", wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_ALIGNLEFT|wxMB_RIGHTARROW), 0, wxEXPAND|wxALL, 3 );
+		sizer->Add( new wxMetroButton( frm, wxID_ANY, wxEmptyString, wxBITMAP_PNG_FROM_DATA( demo_bitmap ), wxDefaultPosition, wxDefaultSize), 0, wxALL, 3 );
+		
 
 
 		wxSchedCtrl *sch = new wxSchedCtrl( frm, wxID_ANY );
@@ -196,7 +213,7 @@ public:
 
 		frm->SetSizer( sizer );
 		frm->Show();
-		*/
+		
 		
 
 		return true;

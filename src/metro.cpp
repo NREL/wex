@@ -3,10 +3,15 @@
 #include <wx/dcbuffer.h>
 #include <wx/simplebook.h>
 #include <wx/scrolwin.h>
+#include <wx/menu.h>
 
 #include <algorithm>
-
 #include "wex/metro.h"
+
+#include "wex/icons/up_arrow_13.cpng"
+#include "wex/icons/down_arrow_13.cpng"
+#include "wex/icons/left_arrow_13.cpng"
+#include "wex/icons/right_arrow_13.cpng"
 
 wxFont wxMetroTheme::NormalFont( int size )
 {
@@ -49,6 +54,16 @@ wxColour wxMetroTheme::HoverColour()
 	return wxColour( 0, 88, 153 ); // "outlook.com" blue hover colour
 }
 
+wxColour wxMetroTheme::DimHoverColour()
+{
+	return wxColour( 0, 107, 186 );
+}
+
+wxColour wxMetroTheme::LightHoverColour()
+{
+	return wxColour( 231, 232, 238 );
+}
+
 wxColour wxMetroTheme::AccentColour()
 {
 	return wxColour( 255, 148, 0 ); // "nrel orange" colour
@@ -56,7 +71,7 @@ wxColour wxMetroTheme::AccentColour()
 
 wxColour wxMetroTheme::TextColour()
 {
-	return wxColour( 140, 140, 140 ); // "medium gray"
+	return wxColour( 135, 135, 135 ); // "medium gray"
 }
 
 wxColour wxMetroTheme::HighlightColour()
@@ -69,6 +84,34 @@ wxColour wxMetroTheme::SelectColour()
 	return wxColour(193,210,238);
 }
 
+wxBitmap wxMetroTheme::LeftArrow()
+{
+static wxBitmap icon;
+	if ( icon.IsNull() ) icon = wxBITMAP_PNG_FROM_DATA( left_arrow_13 );
+	return icon;
+}
+
+wxBitmap wxMetroTheme::DownArrow()
+{
+static wxBitmap icon;
+	if ( icon.IsNull() ) icon = wxBITMAP_PNG_FROM_DATA( down_arrow_13 );
+	return icon;
+}
+
+wxBitmap wxMetroTheme::RightArrow()
+{
+static wxBitmap icon;
+	if ( icon.IsNull() ) icon = wxBITMAP_PNG_FROM_DATA( right_arrow_13 );
+	return icon;
+}
+
+wxBitmap wxMetroTheme::UpArrow()
+{
+static wxBitmap icon;
+	if ( icon.IsNull() ) icon = wxBITMAP_PNG_FROM_DATA( up_arrow_13 );
+	return icon;
+}
+
 
 
 BEGIN_EVENT_TABLE(wxMetroButton, wxWindow)
@@ -79,21 +122,22 @@ BEGIN_EVENT_TABLE(wxMetroButton, wxWindow)
 	EVT_LEFT_UP(wxMetroButton::OnLeftUp)
 	EVT_ENTER_WINDOW(wxMetroButton::OnEnter)
 	EVT_LEAVE_WINDOW(wxMetroButton::OnLeave)
+	EVT_MOTION(wxMetroButton::OnMotion)
 END_EVENT_TABLE()
 
 
-wxMetroButton::wxMetroButton(wxWindow *parent, int id, const wxString &label, const wxPoint &pos, const wxSize &sz)
-	: wxWindow(parent, id, pos, sz)
+wxMetroButton::wxMetroButton(wxWindow *parent, int id, const wxString &label, const wxBitmap &bitmap,
+	const wxPoint &pos, const wxSize &sz, long style)
+	: wxWindow(parent, id, pos, sz), m_label( label ), m_bitmap( bitmap ), m_style( style )
 {
 	SetBackgroundStyle(wxBG_STYLE_CUSTOM);
-	m_label = label;
 	m_state = 0;  // state: 0=normal, 1=hover, 2=click
 	m_pressed = false;
 
-	SetBackgroundColour( wxMetroTheme::Background() );
-	SetForegroundColour( wxMetroTheme::Foreground() );
-	SetFont( wxMetroTheme::NormalFont() );
+	SetFont( wxMetroTheme::NormalFont(11) );
 }
+
+#define MB_SPACE 6
 
 wxSize wxMetroButton::DoGetBestSize() const
 {
@@ -101,7 +145,38 @@ wxSize wxMetroButton::DoGetBestSize() const
 	dc.SetFont( GetFont() );
 	int tw, th;
 	dc.GetTextExtent( m_label, &tw, &th );
-	return wxSize( tw + 20, th + 10 );
+	
+	wxBitmap icon(wxNullBitmap);
+
+	if ( m_style & wxMB_RIGHTARROW )
+		icon = wxMetroTheme::RightArrow();
+	else if ( m_style & wxMB_DOWNARROW )
+		icon = wxMetroTheme::DownArrow();
+	else if ( m_style & wxMB_UPARROW )
+		icon = wxMetroTheme::UpArrow();
+	else if ( m_style & wxMB_LEFTARROW )
+		icon = wxMetroTheme::LeftArrow();
+
+	if ( !icon.IsNull() )
+	{
+		tw += icon.GetWidth() + 6;
+		if ( icon.GetHeight() > th )
+			th = icon.GetHeight();
+	}
+
+	if ( !m_bitmap.IsNull() )
+	{
+		tw += m_bitmap.GetWidth() + ( tw > 0 ? MB_SPACE : 0 );
+		if ( m_bitmap.GetHeight() > th )
+			th = m_bitmap.GetHeight();
+	}
+
+	int xspace = 0;
+	if ( !m_label.IsEmpty() ) xspace = 20;
+	else if ( !m_bitmap.IsNull() ) xspace = 10;
+	else if ( !icon.IsNull() ) xspace = 5;
+
+	return wxSize( tw + xspace, th + 10 );
 }
 
 void wxMetroButton::OnPaint(wxPaintEvent &)
@@ -110,19 +185,83 @@ void wxMetroButton::OnPaint(wxPaintEvent &)
 	int cwidth, cheight;
 	GetClientSize(&cwidth, &cheight);
 
-	dc.SetBrush( wxBrush( m_state == 1 ? wxMetroTheme::HighlightColour() : GetBackgroundColour() ) ) ;
-	dc.SetPen( wxPen( GetForegroundColour(), 3) );
-	dc.DrawRectangle(0,0,cwidth,cheight);
+	dc.SetBackground( m_state > 0 ? wxMetroTheme::HoverColour() : wxMetroTheme::Foreground() );
+	dc.Clear();
 
 	int tw, th;
 	dc.GetTextExtent( m_label, &tw, &th );
+
+	wxBitmap icon(wxNullBitmap);
+	int xoffset_icon = 0;	
+	int yoffset_icon = 0;
+	int icon_width = 0;
+	int icon_height = 0;
+
+	if ( m_style & wxMB_RIGHTARROW )
+		icon = wxMetroTheme::RightArrow();	
+	else if ( m_style & wxMB_DOWNARROW )
+	{
+		icon = wxMetroTheme::DownArrow();
+		yoffset_icon++;
+	}
+	else if ( m_style & wxMB_UPARROW )
+		icon = wxMetroTheme::UpArrow();
+	else if ( m_style & wxMB_LEFTARROW )
+		icon = wxMetroTheme::LeftArrow();
+	
+	int xoffset = 0;
+	if ( !icon.IsNull() )
+	{
+		int space = ( tw > 0 ? MB_SPACE : 0 );
+		tw += icon.GetWidth() + space;
+		xoffset -= icon.GetWidth() + space;
+		icon_width = icon.GetWidth();
+		icon_height = icon.GetHeight();
+	}
+
+	int bit_width = 0;
+	int bit_height = 0;
+	int bit_space = 0;
+	if ( !m_bitmap.IsNull() )
+	{
+		bit_width = m_bitmap.GetWidth();
+		bit_height = m_bitmap.GetHeight();
+		tw += bit_width + MB_SPACE;
+		xoffset -= bit_width + MB_SPACE;
+		bit_space = MB_SPACE/2;
+	}
+
 	dc.SetFont( GetFont() );
-	dc.SetTextForeground( GetForegroundColour() );
+	dc.SetTextForeground( m_state == 1 ? wxMetroTheme::HighlightColour() : wxMetroTheme::Background() );
+	
+	int yoffset = 0;
+	if ( !m_label.IsEmpty() && m_state == 2 )
+		yoffset++;
+	else if ( m_state == 2 && m_style & wxMB_LEFTARROW )
+		xoffset_icon--;
+	else if ( m_state ==2 && m_style & wxMB_RIGHTARROW )
+		xoffset_icon++;
+	else if ( m_state == 2 && m_style & wxMB_DOWNARROW )
+		yoffset_icon++;
 
-	int offset = 0;
-	if ( m_state == 2 ) offset = 1;
+	int bit_x = cwidth/2 - tw/2;
+	int text_x = bit_x + bit_width + bit_space;
+	int icon_x = cwidth/2 + tw/2 - icon.GetWidth();
 
-	dc.DrawText( m_label, cwidth/2 - tw/2+offset, cheight/2 - th/2+offset );
+	if ( m_style & wxMB_ALIGNLEFT )
+	{
+		bit_x = 10;
+		text_x = bit_x + bit_width + bit_space;
+		icon_x = 10 + tw - icon.GetWidth();
+	}
+
+	if ( !m_bitmap.IsNull() )
+		dc.DrawBitmap( m_bitmap, bit_x, cheight/2 - bit_height/2 );
+
+	dc.DrawText( m_label, text_x, cheight/2 - th/2+yoffset );
+	
+	if ( !icon.IsNull() )
+		dc.DrawBitmap( icon, icon_x+xoffset_icon, cheight/2 - icon_height/2 + yoffset_icon );
 }
 
 void wxMetroButton::OnResize(wxSizeEvent &)
@@ -173,9 +312,19 @@ void wxMetroButton::OnLeave(wxMouseEvent &)
 	Refresh();
 }
 
+void wxMetroButton::OnMotion( wxMouseEvent &)
+{
+	if ( m_state != 1 )
+	{
+		m_state = 1;
+		Refresh();
+	}
+}
 
 
 
+
+enum { ID_TAB0 = wxID_HIGHEST+142 };
 
 
 class wxMetroNotebookRenderer : public wxWindow
@@ -224,21 +373,10 @@ private:
 		int nwin = m_notebook->m_flipper->GetPageCount();
 		m_widths.resize( nwin );
 		
-		bool dark = (m_notebook->m_style & wxMNB_REVERSED);
-
-		wxColour bg = m_notebook->GetBackgroundColour();
-		wxColour fg = m_notebook->GetForegroundColour();
-
-		wxColour col_bg = dark ? fg : bg;
-		wxColour col_fg = dark ? bg : fg;
-		wxColour col_text = dark ? *wxWHITE : wxMetroTheme::TextColour();
-		wxColour col_sel = dark ? *wxWHITE : fg;
-		wxColour col_hover = dark ? wxMetroTheme::HoverColour() : wxMetroTheme::SelectColour();
-
 		dc.SetFont( m_notebook->GetFont() );
 		int CharHeight = dc.GetCharHeight();
 
-		dc.SetBackground( col_bg );
+		dc.SetBackground( m_notebook->GetBackgroundColour() );
 		dc.Clear();
 
 		int selIdx = m_notebook->m_flipper->GetSelection();
@@ -262,17 +400,8 @@ private:
 				break;
 			}
 
-			if ( dark && ( i == m_hoverIdx || i == selIdx ) )
-			{
-				dc.SetPen( wxPen( col_hover, 1 ) );
-				dc.SetBrush( wxBrush( col_hover ) );
-				dc.DrawRectangle( x, 0, m_widths[i], cheight );
-			}
-
-			if ( dark )
-				dc.SetTextForeground( i == selIdx ? col_sel : col_text );
-			else
-				dc.SetTextForeground( i == selIdx ? col_sel : ( i==m_hoverIdx ? col_hover : col_text ) );
+			dc.SetTextForeground( i == selIdx ? m_notebook->GetForegroundColour() 
+				: ( i==m_hoverIdx ? wxMetroTheme::SelectColour() : wxMetroTheme::TextColour() ) );
 			
 			dc.DrawText( m_notebook->m_pageList[i].text, x + padding, cheight/2-CharHeight/2-1 );
 			x += m_widths[i] + m_notebook->m_xSpacing;
@@ -288,32 +417,21 @@ private:
 			dc.GetTextExtent( "...", &txtw, &txth );
 
 			m_dotdotWidth = txtw;
-
-			if ( dark && m_dotdotHover )
-			{
-				dc.SetPen( wxPen( col_hover, 1 ) );
-				dc.SetBrush( wxBrush( col_hover ) );
-				dc.DrawRectangle( cwidth - m_dotdotWidth - padding, 0, m_dotdotWidth + padding, cheight );
-			}
-
-			if ( dark )
-				dc.SetTextForeground( col_text );
-			else
-				dc.SetTextForeground( m_dotdotHover ? col_hover : col_text );
+			dc.SetTextForeground( m_dotdotHover ?  wxMetroTheme::SelectColour() : wxMetroTheme::TextColour() );
 
 			dc.DrawText( "...", cwidth - m_dotdotWidth - padding/2, cheight/2 - txth/2-1 );
 
 		}
 
-		if ( !dark )
-		{
-			dc.SetPen( wxPen( wxMetroTheme::TextColour() ));
-			dc.DrawLine( 0, cheight-2, cwidth, cheight-2);
-		}
+		dc.SetPen( wxPen( wxMetroTheme::TextColour() ));
+		dc.DrawLine( 0, cheight-2, cwidth, cheight-2);
 	}
 	
 	void OnLeftDown(wxMouseEvent &evt)
-	{	
+	{
+		int cwidth, cheight;
+		GetClientSize(&cwidth, &cheight);
+
 		int mouse_x = evt.GetX();
 		int x = m_xStart;
 		for (size_t i=0;i<m_widths.size() && i < m_nTabsShown;i++)
@@ -328,6 +446,19 @@ private:
 				return;
 			}
 			x += m_widths[i] + m_notebook->m_xSpacing;
+		}
+
+		if ( m_dotdotWidth > 0 && mouse_x > cwidth - m_dotdotWidth - m_notebook->m_xPadding )
+		{
+			wxMenu menu;
+			
+			int nwin = m_notebook->m_flipper->GetPageCount();
+			for ( int i=0;i<nwin;i++)
+				menu.AppendCheckItem( ID_TAB0+i, m_notebook->m_pageList[i].text );
+			
+			menu.Check( ID_TAB0+m_notebook->GetSelection(), true );
+
+			PopupMenu( &menu );
 		}
 	}
 
@@ -371,25 +502,38 @@ private:
 		{
 			if (mouse_x >= x && mouse_x < x+m_widths[i] && m_pressIdx == (int)i)
 			{
-				wxNotebookEvent evt(wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGING, m_notebook->GetId() );
-				evt.SetEventObject(m_notebook);
-				evt.SetOldSelection( m_notebook->GetSelection() );
-				evt.SetSelection(i);
-				m_notebook->ProcessEvent(evt);
-
-				m_notebook->m_flipper->ChangeSelection(i);
-				Refresh();
-
-				// fire EVT_NOTEBOOK_PAGE_CHANGED
-				wxNotebookEvent evt2(wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED, m_notebook->GetId() );
-				evt2.SetEventObject(m_notebook);
-				evt2.SetSelection(i);
-				m_notebook->ProcessEvent(evt2);
-
+				SwitchPage( i );
 				return;
 			}
 			x += m_widths[i] + m_notebook->m_xSpacing;
 		}
+	}
+
+	void SwitchPage( size_t i )
+	{	
+		if ( i == m_notebook->GetSelection() ) return;
+		
+		wxNotebookEvent evt(wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGING, m_notebook->GetId() );
+		evt.SetEventObject(m_notebook);
+		evt.SetOldSelection( m_notebook->GetSelection() );
+		evt.SetSelection(i);
+		m_notebook->ProcessEvent(evt);
+
+		if ( !evt.IsAllowed() ) return; // abort the selection if the changing event was vetoed.
+
+		m_notebook->m_flipper->ChangeSelection(i);
+		Refresh();
+
+		// fire EVT_NOTEBOOK_PAGE_CHANGED
+		wxNotebookEvent evt2(wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED, m_notebook->GetId() );
+		evt2.SetEventObject(m_notebook);
+		evt2.SetSelection(i);
+		m_notebook->ProcessEvent(evt2);
+	}
+
+	void OnMenu( wxCommandEvent &evt )
+	{
+		SwitchPage( evt.GetId() - ID_TAB0 );
 	}
 
 	void OnLeave(wxMouseEvent &)
@@ -409,6 +553,7 @@ BEGIN_EVENT_TABLE(wxMetroNotebookRenderer, wxWindow)
 	EVT_PAINT( wxMetroNotebookRenderer::OnPaint )
 	EVT_SIZE( wxMetroNotebookRenderer::OnSize )
 	EVT_LEAVE_WINDOW( wxMetroNotebookRenderer::OnLeave )
+	EVT_MENU_RANGE( ID_TAB0, ID_TAB0+100, wxMetroNotebookRenderer::OnMenu )
 END_EVENT_TABLE()
 
 /************* wxMetroNotebook ************** */
@@ -417,10 +562,9 @@ BEGIN_EVENT_TABLE(wxMetroNotebook, wxPanel)
 	EVT_SIZE( wxMetroNotebook::OnSize )
 END_EVENT_TABLE()
 
-wxMetroNotebook::wxMetroNotebook(wxWindow *parent, int id, const wxPoint &pos, const wxSize &sz, long style)
+wxMetroNotebook::wxMetroNotebook(wxWindow *parent, int id, const wxPoint &pos, const wxSize &sz)
 	: wxPanel(parent, id, pos, sz, wxCLIP_CHILDREN)
 {
-	m_style = style;
 	m_xSpacing = 2;
 	m_xOffset = 2;
 	m_xPadding = 10;
