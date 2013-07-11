@@ -8,27 +8,54 @@
 #include <wx/window.h>
 
 
+class wxMetroThemeProvider
+{
+public:
+	virtual ~wxMetroThemeProvider();
+	virtual wxFont Font( int style, int size );
+	virtual wxColour Colour( int id );
+	virtual wxBitmap Bitmap( int id );
+};
+
+
+enum {
+	// fonts
+	wxMT_NORMAL,
+	wxMT_LIGHT, 
+	wxMT_SEMIBOLD,
+
+	// colors
+	wxMT_FOREGROUND,
+	wxMT_BACKGROUND,
+	wxMT_HOVER,
+	wxMT_DIMHOVER,
+	wxMT_LIGHTHOVER,
+	wxMT_ACCENT,
+	wxMT_TEXT,
+	wxMT_ACTIVE,
+	wxMT_SELECT,
+	wxMT_HIGHLIGHT,
+
+	// bitmaps
+	wxMT_LEFTARROW,
+	wxMT_RIGHTARROW,
+	wxMT_DOWNARROW,
+	wxMT_UPARROW
+};
+
 class wxMetroTheme
 {
 public:
-	static wxFont NormalFont( int size = -1 );
-	static wxFont LightFont( int size = -1 );
+	static void SetTheme( wxMetroThemeProvider *theme );
+	static wxMetroThemeProvider &GetTheme();
 
-	static wxColour Background();
-	static wxColour Foreground();
-	static wxColour HoverColour();
-	static wxColour DimHoverColour();
-	static wxColour LightHoverColour();
-	static wxColour AccentColour();
-	static wxColour TextColour();
-	static wxColour HighlightColour();
-	static wxColour SelectColour();
-
-	static wxBitmap LeftArrow();
-	static wxBitmap DownArrow();
-	static wxBitmap RightArrow();
-	static wxBitmap UpArrow();
+	static wxFont Font( int style = wxMT_NORMAL, int size = -1 );
+	static wxColour Colour( int id );
+	static wxBitmap Bitmap( int id );
 };
+
+
+// widget styles for
 
 #define wxMB_RIGHTARROW 0x01
 #define wxMB_LEFTARROW 0x02
@@ -65,9 +92,13 @@ private:
 
 class wxSimplebook;
 
-#define wxMTB_LIGHTTHEME 0x01
+
+// styles for wxMetroTabList, wxMetroNotebook
+#define wxMT_LIGHTTHEME 0x01
+#define wxMT_MENUBUTTONS 0x02
 
 // issues wxEVT_LISTBOX when a new item is selected
+// issues wxEVT_BUTTON when a menu button is clicked
 class wxMetroTabList : public wxWindow
 {
 public:
@@ -103,9 +134,9 @@ protected:
 	int m_pressIdx;
 	int m_hoverIdx;
 	long m_style;
+	bool m_buttonHover;
 
-
-	void DoLayout();
+	bool IsOverButton( int mouse_x, size_t i );
 
 	void OnMenu( wxCommandEvent & );
 	void OnSize( wxSizeEvent & );
@@ -121,8 +152,6 @@ protected:
 };
 
 // sends EVT_NOTEBOOK_PAGE_CHANGED event
-
-#define wxMNB_LIGHTTHEME 0x01
 
 class wxMetroNotebook : public wxPanel
 {

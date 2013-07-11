@@ -14,106 +14,103 @@
 #include "wex/icons/left_arrow_13.cpng"
 #include "wex/icons/right_arrow_13.cpng"
 
-wxFont wxMetroTheme::NormalFont( int size )
+static wxMetroThemeProvider g_basicTheme;
+static wxMetroThemeProvider *g_otherTheme = 0;
+
+void wxMetroTheme::SetTheme( wxMetroThemeProvider *theme )
+{
+	if ( g_otherTheme == theme ) return;
+	if ( g_otherTheme != 0 ) delete g_otherTheme;
+	g_otherTheme = theme;
+}
+
+wxMetroThemeProvider &wxMetroTheme::GetTheme()
+{
+	if ( g_otherTheme != 0 ) return *g_otherTheme;
+	else return g_basicTheme;
+}
+
+wxFont wxMetroTheme::Font( int style, int size )
+{
+	return GetTheme().Font( style, size );
+}
+
+wxColour wxMetroTheme::Colour( int id )
+{
+	return GetTheme().Colour( id );
+}
+
+wxBitmap wxMetroTheme::Bitmap( int id )
+{
+	return GetTheme().Bitmap( id );
+}
+
+
+
+wxMetroThemeProvider::~wxMetroThemeProvider()
+{
+	 // nothing here
+}
+
+wxFont wxMetroThemeProvider::Font( int style, int size )
 {
 	wxFont font( wxSystemSettings::GetFont( wxSYS_DEFAULT_GUI_FONT ) );
 
 	if ( size > 1 )
 		font.SetPointSize( size );
 
-	if ( wxFontEnumerator::IsValidFacename( "Segoe UI" ) )
-		font.SetFaceName( "Segoe UI" );
+	wxString face = "Segoe UI";
+	if ( style == wxMT_LIGHT ) face = "Segoe UI Light";
+	else if ( style == wxMT_SEMIBOLD ) face = "Segoe UI Semibold";
+
+	if ( wxFontEnumerator::IsValidFacename( face ) )
+		font.SetFaceName( face );
 
 	return font;
 }
 
-wxFont wxMetroTheme::LightFont( int size )
+wxColour wxMetroThemeProvider::Colour( int id )
 {
-	wxFont font( wxSystemSettings::GetFont( wxSYS_DEFAULT_GUI_FONT ) );
-
-	if ( size > 1 )
-		font.SetPointSize( size );
-
-	if ( wxFontEnumerator::IsValidFacename( "Segoe UI Light" ) )
-		font.SetFaceName( "Segoe UI Light" );
-
-	return font;
+	switch( id )
+	{
+	case wxMT_FOREGROUND: return wxColour( 0, 114, 198 );
+	case wxMT_BACKGROUND:  return *wxWHITE;
+	case wxMT_HOVER: return wxColour( 0, 88, 153 );
+	case wxMT_DIMHOVER: return wxColour( 0, 107, 186 );
+	case wxMT_LIGHTHOVER: return wxColour( 231, 232, 238 );
+	case wxMT_ACCENT: return wxColour( 255, 148, 0 );
+	case wxMT_TEXT: return wxColour( 135, 135, 135 ); 
+	case wxMT_ACTIVE: return wxColour( 0, 114, 198 );
+	case wxMT_SELECT:  return wxColour(193,210,238);
+	case wxMT_HIGHLIGHT: return wxColour(224,232,246);
+	default: return wxNullColour;
+	}
 }
 
-wxColour wxMetroTheme::Background()
+wxBitmap wxMetroThemeProvider::Bitmap( int id )
 {
-	return *wxWHITE;
+static wxBitmap left_arrow;
+	if ( left_arrow.IsNull() ) left_arrow = wxBITMAP_PNG_FROM_DATA( left_arrow_13 );
+	
+static wxBitmap down_arrow;
+	if ( down_arrow.IsNull() ) down_arrow = wxBITMAP_PNG_FROM_DATA( down_arrow_13 );
+	
+static wxBitmap right_arrow;
+	if ( right_arrow.IsNull() ) right_arrow = wxBITMAP_PNG_FROM_DATA( right_arrow_13 );
+	
+static wxBitmap up_arrow;
+	if ( up_arrow.IsNull() ) up_arrow = wxBITMAP_PNG_FROM_DATA( up_arrow_13 );
+
+	switch ( id )
+	{
+	case wxMT_LEFTARROW: return left_arrow;
+	case wxMT_RIGHTARROW: return right_arrow;
+	case wxMT_UPARROW: return up_arrow;
+	case wxMT_DOWNARROW: return down_arrow;
+	default: return wxNullBitmap;
+	}
 }
 
-wxColour wxMetroTheme::Foreground()
-{
-	return wxColour( 0, 114, 198 ); // "outlook.com" blue colour
-	//return wxColour(217,0,115); // fuschia theme
-}
-
-wxColour wxMetroTheme::HoverColour()
-{
-	return wxColour( 0, 88, 153 ); // "outlook.com" blue hover colour
-	// return wxColour(227,64,150); // fuschia theme
-}
-
-wxColour wxMetroTheme::DimHoverColour()
-{
-	return wxColour( 0, 107, 186 );
-}
-
-wxColour wxMetroTheme::LightHoverColour()
-{
-	return wxColour( 231, 232, 238 );
-}
-
-wxColour wxMetroTheme::AccentColour()
-{
-	return wxColour( 255, 148, 0 ); // "nrel orange" colour
-}
-
-wxColour wxMetroTheme::TextColour()
-{
-	return wxColour( 135, 135, 135 ); // "medium gray"
-}
-
-wxColour wxMetroTheme::HighlightColour()
-{
-	return wxColour(224,232,246);
-}
-
-wxColour wxMetroTheme::SelectColour()
-{
-	return wxColour(193,210,238);
-}
-
-wxBitmap wxMetroTheme::LeftArrow()
-{
-static wxBitmap icon;
-	if ( icon.IsNull() ) icon = wxBITMAP_PNG_FROM_DATA( left_arrow_13 );
-	return icon;
-}
-
-wxBitmap wxMetroTheme::DownArrow()
-{
-static wxBitmap icon;
-	if ( icon.IsNull() ) icon = wxBITMAP_PNG_FROM_DATA( down_arrow_13 );
-	return icon;
-}
-
-wxBitmap wxMetroTheme::RightArrow()
-{
-static wxBitmap icon;
-	if ( icon.IsNull() ) icon = wxBITMAP_PNG_FROM_DATA( right_arrow_13 );
-	return icon;
-}
-
-wxBitmap wxMetroTheme::UpArrow()
-{
-static wxBitmap icon;
-	if ( icon.IsNull() ) icon = wxBITMAP_PNG_FROM_DATA( up_arrow_13 );
-	return icon;
-}
 
 
 
@@ -137,7 +134,7 @@ wxMetroButton::wxMetroButton(wxWindow *parent, int id, const wxString &label, co
 	m_state = 0;  // state: 0=normal, 1=hover, 2=click
 	m_pressed = false;
 
-	SetFont( wxMetroTheme::NormalFont(11) );
+	SetFont( wxMetroTheme::Font( wxMT_NORMAL, 11) );
 }
 
 #define MB_SPACE 6
@@ -152,13 +149,13 @@ wxSize wxMetroButton::DoGetBestSize() const
 	wxBitmap icon(wxNullBitmap);
 
 	if ( m_style & wxMB_RIGHTARROW )
-		icon = wxMetroTheme::RightArrow();
+		icon = wxMetroTheme::Bitmap( wxMT_RIGHTARROW );
 	else if ( m_style & wxMB_DOWNARROW )
-		icon = wxMetroTheme::DownArrow();
+		icon = wxMetroTheme::Bitmap( wxMT_DOWNARROW );
 	else if ( m_style & wxMB_UPARROW )
-		icon = wxMetroTheme::UpArrow();
+		icon = wxMetroTheme::Bitmap( wxMT_UPARROW );
 	else if ( m_style & wxMB_LEFTARROW )
-		icon = wxMetroTheme::LeftArrow();
+		icon = wxMetroTheme::Bitmap( wxMT_LEFTARROW );
 
 	if ( !icon.IsNull() )
 	{
@@ -188,7 +185,9 @@ void wxMetroButton::OnPaint(wxPaintEvent &)
 	int cwidth, cheight;
 	GetClientSize(&cwidth, &cheight);
 
-	dc.SetBackground( m_state > 0 ? wxMetroTheme::HoverColour() : wxMetroTheme::Foreground() );
+	dc.SetBackground( m_state > 0 
+		? wxMetroTheme::Colour( wxMT_HOVER ) 
+		: wxMetroTheme::Colour( wxMT_FOREGROUND ) );
 	dc.Clear();
 
 	int tw, th;
@@ -201,16 +200,16 @@ void wxMetroButton::OnPaint(wxPaintEvent &)
 	int icon_height = 0;
 
 	if ( m_style & wxMB_RIGHTARROW )
-		icon = wxMetroTheme::RightArrow();	
+		icon = wxMetroTheme::Bitmap( wxMT_RIGHTARROW );	
 	else if ( m_style & wxMB_DOWNARROW )
 	{
-		icon = wxMetroTheme::DownArrow();
+		icon = wxMetroTheme::Bitmap( wxMT_DOWNARROW );
 		yoffset_icon++;
 	}
 	else if ( m_style & wxMB_UPARROW )
-		icon = wxMetroTheme::UpArrow();
+		icon = wxMetroTheme::Bitmap( wxMT_UPARROW );
 	else if ( m_style & wxMB_LEFTARROW )
-		icon = wxMetroTheme::LeftArrow();
+		icon = wxMetroTheme::Bitmap( wxMT_LEFTARROW );
 	
 	int xoffset = 0;
 	if ( !icon.IsNull() )
@@ -241,7 +240,9 @@ void wxMetroButton::OnPaint(wxPaintEvent &)
 	}
 
 	dc.SetFont( GetFont() );
-	dc.SetTextForeground( m_state == 1 ? wxMetroTheme::HighlightColour() : wxMetroTheme::Background() );
+	dc.SetTextForeground( m_state == 1 
+		? wxMetroTheme::Colour( wxMT_HIGHLIGHT ) 
+		: wxMetroTheme::Colour( wxMT_BACKGROUND ) );
 	
 	int yoffset = 0;
 	if ( !m_label.IsEmpty() && m_state == 2 )
@@ -362,10 +363,11 @@ wxMetroTabList::wxMetroTabList( wxWindow *parent, int id,
 	m_dotdotHover = false;
 	m_pressIdx = -1;
 	m_hoverIdx = -1;
+	m_buttonHover = false;
 	m_style = style;
 	m_selection = 0;
 
-	SetFont( wxMetroTheme::LightFont( 16 ) );
+	SetFont( wxMetroTheme::Font( wxMT_LIGHT, 16 ) );
 }
 
 void wxMetroTabList::Append( const wxString &label )
@@ -418,6 +420,10 @@ wxSize wxMetroTabList::DoGetBestSize() const
 
 	int width = 0;
 
+	int button_width = 0;
+	if ( m_style & wxMT_MENUBUTTONS )
+		button_width = wxMetroTheme::Bitmap( wxMT_DOWNARROW ).GetWidth() + TB_SPACE + TB_SPACE;
+
 	for ( size_t i=0;i<m_items.size(); i++ )
 	{
 		int tw, th;
@@ -442,14 +448,24 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 	int cwidth, cheight;
 	GetClientSize(&cwidth, &cheight);
 	
-	bool light = ( m_style & wxMTB_LIGHTTHEME );
+	bool light = ( m_style & wxMT_LIGHTTHEME );
 
-	dc.SetBackground( light ? *wxWHITE : wxMetroTheme::Foreground() );
+	dc.SetBackground( light ? *wxWHITE : wxMetroTheme::Colour( wxMT_FOREGROUND ) );
 	dc.Clear();
 
 	int x = TB_SPACE;
 
 	m_dotdotWidth = 0;
+	
+	wxBitmap button_icon( wxNullBitmap );
+	int button_width = 0;
+	int button_height = 0;
+	if ( m_style & wxMT_MENUBUTTONS )
+	{
+		button_icon = wxMetroTheme::Bitmap( wxMT_DOWNARROW );
+		button_width = button_icon.GetWidth() + TB_SPACE + TB_SPACE;
+		button_height = button_icon.GetHeight();
+	}
 	
 	dc.SetFont( GetFont() );
 	int CharHeight = dc.GetCharHeight();
@@ -458,7 +474,7 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 		int txtw, txth;
 		dc.GetTextExtent( m_items[i].label, &txtw, &txth );
 		m_items[i].x_start = x;
-		m_items[i].width = txtw+TB_XPADDING+TB_XPADDING;
+		m_items[i].width = txtw+TB_XPADDING+TB_XPADDING + button_width;
 		x += m_items[i].width + TB_SPACE;
 
 		if ( i > 0 && x > cwidth - 25 ) // 25 approximates width of '...'	
@@ -471,7 +487,7 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 	int dotdot_height = 0;
 	if ( m_dotdotWidth > 0 )
 	{
-		wxFont font( wxMetroTheme::NormalFont(18) );
+		wxFont font( wxMetroTheme::Font( wxMT_NORMAL, 18) );
 		font.SetWeight( wxFONTWEIGHT_BOLD );
 		dc.SetFont( font );
 		dc.GetTextExtent( "...", &m_dotdotWidth, &dotdot_height );
@@ -507,21 +523,43 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 
 		if ( !light )
 		{
-			wxColour col( i==m_hoverIdx||i==m_selection ? wxMetroTheme::HoverColour() : wxMetroTheme::Foreground() );
+			wxColour col( i==m_hoverIdx||i==m_selection 
+				? wxMetroTheme::Colour( wxMT_HOVER ) 
+				: wxMetroTheme::Colour( wxMT_FOREGROUND ) );
 			dc.SetPen( wxPen(col, 1) );
 			dc.SetBrush( wxBrush(col) );
 			dc.DrawRectangle( m_items[i].x_start, 0, m_items[i].width, cheight );
+
+			if ( button_width > 0
+				&& m_hoverIdx == i
+				&&  m_buttonHover  )
+			{
+				dc.SetPen( wxPen( wxMetroTheme::Colour( wxMT_DIMHOVER ), 1 ) );
+				dc.SetBrush( wxBrush( wxMetroTheme::Colour( wxMT_DIMHOVER ) ) );
+				dc.DrawRectangle( m_items[i].x_start + m_items[i].width - button_width - TB_XPADDING + TB_SPACE,
+					0, button_width + TB_XPADDING - TB_SPACE, cheight );
+			}
 		}
 
 		wxColour text( *wxWHITE );
 		if ( light )
 		{
-			text = ( i == (int)m_selection ? wxMetroTheme::Foreground() 
-				: ( i==m_hoverIdx ? wxMetroTheme::SelectColour() : wxMetroTheme::TextColour() ) );
+			text = ( i == (int)m_selection 
+				? wxMetroTheme::Colour( wxMT_FOREGROUND ) 
+				: ( i==m_hoverIdx 
+					? wxMetroTheme::Colour( wxMT_SELECT ) 
+					: wxMetroTheme::Colour( wxMT_TEXT ) ) );
 		}
 
 		dc.SetTextForeground( text );			
 		dc.DrawText( m_items[i].label, m_items[i].x_start + TB_XPADDING, cheight/2-CharHeight/2-1 );
+
+		if ( button_width > 0 )
+		{	
+			dc.DrawBitmap( button_icon, 
+				m_items[i].x_start + m_items[i].width - TB_SPACE - button_width, 
+				cheight/2-button_height/2+1 );
+		}
 
 	}
 
@@ -529,21 +567,24 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 	{
 		if ( !light && m_dotdotHover )
 		{
-			dc.SetPen( wxPen(wxMetroTheme::HoverColour(), 1) );
-			dc.SetBrush( wxBrush(wxMetroTheme::HoverColour()) );
+			dc.SetPen( wxPen(wxMetroTheme::Colour( wxMT_HOVER ), 1) );
+			dc.SetBrush( wxBrush(wxMetroTheme::Colour( wxMT_HOVER ) ) );
 			dc.DrawRectangle( cwidth - m_dotdotWidth, 0, m_dotdotWidth, cheight );
 		}
 
-		wxFont font( wxMetroTheme::NormalFont(18) );
+		wxFont font( wxMetroTheme::Font( wxMT_NORMAL, 18) );
 		font.SetWeight( wxFONTWEIGHT_BOLD );
 		dc.SetFont( font );
-		dc.SetTextForeground( light ? (m_dotdotHover ?  wxMetroTheme::SelectColour() : wxMetroTheme::TextColour()) : *wxWHITE );
+		dc.SetTextForeground( light 
+			? (m_dotdotHover ?  wxMetroTheme::Colour( wxMT_SELECT ) : wxMetroTheme::Colour( wxMT_TEXT )) 
+			: *wxWHITE );
+
 		dc.DrawText( "...", cwidth - m_dotdotWidth + TB_SPACE, cheight/2 - dotdot_height/2-1 );
 	}
 
 	if ( light )
 	{
-		dc.SetPen( wxPen( wxMetroTheme::TextColour() ));
+		dc.SetPen( wxPen( wxMetroTheme::Colour( wxMT_TEXT ) ));
 		dc.DrawLine( 0, cheight-2, cwidth, cheight-2);
 	}
 }
@@ -560,6 +601,17 @@ void wxMetroTabList::OnLeftDown(wxMouseEvent &evt)
 			&& mouse_x >= m_items[i].x_start 
 			&& mouse_x < m_items[i].x_start + m_items[i].width)
 		{
+			if ( m_style & wxMT_MENUBUTTONS 
+				&& IsOverButton( mouse_x, i ) )
+			{
+				wxCommandEvent evt( wxEVT_BUTTON, GetId() );
+				evt.SetEventObject( this );
+				evt.SetInt( i );
+				evt.SetString( m_items[i].label );
+				ProcessEvent( evt );
+				return;
+			}
+
 			m_pressIdx = i;
 			if (this->HasCapture())
 				this->ReleaseMouse();
@@ -586,6 +638,7 @@ void wxMetroTabList::OnMouseMove(wxMouseEvent &evt)
 	int cwidth, cheight;
 	GetClientSize(&cwidth, &cheight);
 	m_hoverIdx = -1;
+	m_buttonHover = false;
 	int mouse_x = evt.GetX();
 
 	bool was_hovering = m_dotdotHover;
@@ -597,6 +650,9 @@ void wxMetroTabList::OnMouseMove(wxMouseEvent &evt)
 			&& mouse_x >= m_items[i].x_start 
 			&& mouse_x < m_items[i].x_start + m_items[i].width)
 		{
+			if ( m_style & wxMT_MENUBUTTONS && IsOverButton( mouse_x, i ) )
+				m_buttonHover = true;
+
 			if (m_hoverIdx != (int)i)
 				Refresh();
 			m_hoverIdx = i;
@@ -606,6 +662,18 @@ void wxMetroTabList::OnMouseMove(wxMouseEvent &evt)
 
 	if ( m_dotdotHover != was_hovering )
 		Refresh();
+}
+
+bool wxMetroTabList::IsOverButton( int mouse_x, size_t i )
+{
+	if ( m_style & wxMT_MENUBUTTONS )
+	{
+		int button_width = wxMetroTheme::Bitmap( wxMT_DOWNARROW ).GetWidth() + TB_SPACE + TB_SPACE;
+		if ( mouse_x > m_items[i].x_start + m_items[i].width - button_width - TB_XPADDING + TB_SPACE )
+			return true;
+	}
+
+	return false;
 }
 
 void wxMetroTabList::OnLeftUp(wxMouseEvent &evt)
@@ -620,6 +688,9 @@ void wxMetroTabList::OnLeftUp(wxMouseEvent &evt)
 			&& mouse_x >= m_items[i].x_start 
 			&& mouse_x < m_items[i].x_start + m_items[i].width)
 		{
+			if ( IsOverButton( mouse_x, i ) )
+				return;
+
 			SwitchPage( i );
 			return;
 		}
@@ -663,8 +734,7 @@ END_EVENT_TABLE()
 wxMetroNotebook::wxMetroNotebook(wxWindow *parent, int id, const wxPoint &pos, const wxSize &sz, long style)
 	: wxPanel(parent, id, pos, sz)
 {
-	long tabsty = ( style & wxMNB_LIGHTTHEME ) ? wxMTB_LIGHTTHEME : 0;
-	m_list = new wxMetroTabList(this, ID_TABLIST, wxDefaultPosition, wxDefaultSize, tabsty );
+	m_list = new wxMetroTabList(this, ID_TABLIST, wxDefaultPosition, wxDefaultSize, style );
 	m_flipper = new wxSimplebook( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE );
 
 	wxBoxSizer *sizer = new wxBoxSizer( wxVERTICAL );
@@ -672,9 +742,9 @@ wxMetroNotebook::wxMetroNotebook(wxWindow *parent, int id, const wxPoint &pos, c
 	sizer->Add( m_flipper, 0, wxALL|wxEXPAND, 0 );
 	SetSizer( sizer );
 
-	SetBackgroundColour( wxMetroTheme::Background() );
-	SetForegroundColour( wxMetroTheme::Foreground() );
-	SetFont( wxMetroTheme::LightFont(14) );
+	SetBackgroundColour( wxMetroTheme::Colour( wxMT_BACKGROUND ) );
+	SetForegroundColour( wxMetroTheme::Colour( wxMT_FOREGROUND ) );
+	SetFont( wxMetroTheme::Font( wxMT_LIGHT, 14) );
 	
 }
 
