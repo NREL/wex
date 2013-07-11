@@ -64,16 +64,71 @@ private:
 
 
 class wxSimplebook;
-class wxMetroNotebookRenderer;
+
+#define wxMTB_LIGHTTHEME 0x01
+
+// issues wxEVT_LISTBOX when a new item is selected
+class wxMetroTabList : public wxWindow
+{
+public:
+	wxMetroTabList( wxWindow *parent, int id = wxID_ANY,
+		const wxPoint &pos = wxDefaultPosition,
+		const wxSize &size = wxDefaultSize,
+		long style = 0 );
+
+	void Append( const wxString &label );
+	void Insert( const wxString &label, size_t pos );
+	void Remove( const wxString &label );
+	int Find( const wxString &label );
+	void Clear();
+	void SetSelection( size_t idx );
+	size_t GetSelection();
+	
+	wxSize DoGetBestSize() const;
+
+protected:
+	struct item
+	{
+		item( const wxString &l ) : label(l), x_start(0), width(0), shown(true) { }
+		wxString label;
+		int x_start;
+		int width;
+		bool shown;
+	};
+
+	std::vector<item> m_items;
+	int m_dotdotWidth;
+	bool m_dotdotHover;
+	int m_selection;
+	int m_pressIdx;
+	int m_hoverIdx;
+	long m_style;
+
+
+	void DoLayout();
+
+	void OnMenu( wxCommandEvent & );
+	void OnSize( wxSizeEvent & );
+	void OnPaint( wxPaintEvent & );
+	void OnLeftDown( wxMouseEvent & );
+	void OnLeftUp( wxMouseEvent & );
+	void OnLeave( wxMouseEvent & );
+	void OnMouseMove( wxMouseEvent & );
+
+	void SwitchPage( size_t i );
+
+	DECLARE_EVENT_TABLE();
+};
 
 // sends EVT_NOTEBOOK_PAGE_CHANGED event
 
+#define wxMNB_LIGHTTHEME 0x01
+
 class wxMetroNotebook : public wxPanel
 {
-	friend class wxMetroNotebookRenderer;
 public:
 	wxMetroNotebook(wxWindow *parent, int id=-1, 
-		const wxPoint &pos=wxDefaultPosition, const wxSize &sz=wxDefaultSize );
+		const wxPoint &pos=wxDefaultPosition, const wxSize &sz=wxDefaultSize, long style = 0 );
 
 	void AddPage(wxWindow *win, const wxString &text, bool active=false);
 	void AddScrolledPage(wxWindow *win, const wxString &text, bool active=false);
@@ -88,11 +143,8 @@ public:
 	void SetText(int id, const wxString &text);
 
 private:
-	wxMetroNotebookRenderer *m_renderer;	
+	wxMetroTabList *m_list;	
 	wxSimplebook *m_flipper;
-	int m_tabHeight;
-
-	int m_xSpacing, m_xOffset, m_xPadding, m_yPadding;
 
 	struct page_info
 	{
@@ -102,8 +154,11 @@ private:
 
 	std::vector<page_info> m_pageList;
 
-	void Reposition();
 	void OnSize(wxSizeEvent &evt);
+	void UpdateTabList();
+	void OnTabList( wxCommandEvent & );
+	void SwitchPage( size_t i );
+	void ComputeScrolledWindows();
 
 	DECLARE_EVENT_TABLE()
 };

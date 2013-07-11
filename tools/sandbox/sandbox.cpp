@@ -15,7 +15,8 @@
 
 #include "wex/metro.h"
 
-
+#include "wex/icons/cirplus.cpng"
+#include "wex/icons/qmark.cpng"
 #include "demo_bitmap.cpng"
 
 
@@ -176,7 +177,7 @@ public:
 		nb->AddPage( new wxPanel( nb ), "Wind system" );
 		nb->AddPage( new wxPanel( nb ), "solar water heat" );
 		sizer->Add( nb, 1, wxALL|wxEXPAND, 0 );
-		nb = new wxMetroNotebook( fr1, wxID_ANY, wxDefaultPosition, wxDefaultSize );
+		nb = new wxMetroNotebook( fr1, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxMNB_LIGHTTHEME );
 		nb->AddPage( new wxPanel( nb ), "Base Case" );
 		nb->AddPage( new wxPanel( nb ), "Parametrics" );
 		nb->AddPage( new wxPanel( nb ), "Sensitivities" );
@@ -191,11 +192,14 @@ public:
 		
 		wxBoxSizer *tools = new wxBoxSizer( wxHORIZONTAL );
 		tools->Add( new wxMetroButton( frm, wxID_ANY, wxEmptyString, wxBITMAP_PNG_FROM_DATA( demo_bitmap ), wxDefaultPosition, wxDefaultSize, wxMB_DOWNARROW), 0, wxALL|wxEXPAND, 0 );
-		tools->Add( new wxMetroButton( frm, wxID_ANY, wxEmptyString, wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_LEFTARROW), 0, wxALL|wxEXPAND, 0 );
-		tools->Add( new wxMetroButton( frm, wxID_ANY, "photovoltaic #1"), 0, wxALL|wxEXPAND, 0 );
-		tools->Add( new wxMetroButton( frm, wxID_ANY, "solar water"), 0, wxALL|wxEXPAND, 0 );
-		tools->Add( new wxMetroButton( frm, wxID_ANY, "power tower"), 0, wxALL|wxEXPAND, 0 );		
-		tools->Add( new wxMetroButton( frm, wxID_ANY, wxEmptyString, wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_RIGHTARROW), 0, wxALL|wxEXPAND, 0 );
+		tools->Add( new wxMetroButton( frm, wxID_ANY, "New", wxBITMAP_PNG_FROM_DATA( cirplus ), wxDefaultPosition, wxDefaultSize), 0, wxALL|wxEXPAND, 0 );
+		wxMetroTabList *tabs = new wxMetroTabList( frm );
+		tabs->Append( "photovoltaic #1" );
+		tabs->Append( "solar water" );
+		tabs->Append( "power tower steam" );
+		tools->Add( tabs, 1, wxALL|wxEXPAND, 0 );		
+		tools->Add( new wxMetroButton( frm, wxID_ANY, wxEmptyString, wxBITMAP_PNG_FROM_DATA(qmark), wxDefaultPosition, wxDefaultSize), 0, wxALL|wxEXPAND, 0 );
+		tools->Add( new wxMetroButton( frm, wxID_ANY, wxEmptyString, wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_DOWNARROW), 0, wxALL|wxEXPAND, 0 );
 		
 		sizer = new wxBoxSizer( wxVERTICAL );
 		sizer->Add( tools, 0, wxALL|wxEXPAND, 0 );

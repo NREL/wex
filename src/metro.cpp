@@ -4,6 +4,7 @@
 #include <wx/simplebook.h>
 #include <wx/scrolwin.h>
 #include <wx/menu.h>
+#include <wx/sizer.h>
 
 #include <algorithm>
 #include "wex/metro.h"
@@ -47,11 +48,13 @@ wxColour wxMetroTheme::Background()
 wxColour wxMetroTheme::Foreground()
 {
 	return wxColour( 0, 114, 198 ); // "outlook.com" blue colour
+	//return wxColour(217,0,115); // fuschia theme
 }
 
 wxColour wxMetroTheme::HoverColour()
 {
 	return wxColour( 0, 88, 153 ); // "outlook.com" blue hover colour
+	// return wxColour(227,64,150); // fuschia theme
 }
 
 wxColour wxMetroTheme::DimHoverColour()
@@ -159,7 +162,7 @@ wxSize wxMetroButton::DoGetBestSize() const
 
 	if ( !icon.IsNull() )
 	{
-		tw += icon.GetWidth() + 6;
+		tw += icon.GetWidth() + ( tw > 0 ? MB_SPACE : 0 );
 		if ( icon.GetHeight() > th )
 			th = icon.GetHeight();
 	}
@@ -222,12 +225,18 @@ void wxMetroButton::OnPaint(wxPaintEvent &)
 	int bit_width = 0;
 	int bit_height = 0;
 	int bit_space = 0;
+	int yoffset_bit = 0;
 	if ( !m_bitmap.IsNull() )
 	{
 		bit_width = m_bitmap.GetWidth();
 		bit_height = m_bitmap.GetHeight();
-		tw += bit_width + MB_SPACE;
-		xoffset -= bit_width + MB_SPACE;
+		tw += bit_width;
+		xoffset -= bit_width;
+		if ( !icon.IsNull() || !m_label.IsEmpty() )
+		{
+			tw += MB_SPACE;
+			xoffset -= MB_SPACE;
+		}
 		bit_space = MB_SPACE/2;
 	}
 
@@ -243,6 +252,8 @@ void wxMetroButton::OnPaint(wxPaintEvent &)
 		xoffset_icon++;
 	else if ( m_state == 2 && m_style & wxMB_DOWNARROW )
 		yoffset_icon++;
+	else if ( m_state == 2 && !m_bitmap.IsNull() && m_label.IsEmpty() && icon.IsNull() )
+		yoffset_bit++;
 
 	int bit_x = cwidth/2 - tw/2;
 	int text_x = bit_x + bit_width + bit_space;
@@ -256,7 +267,7 @@ void wxMetroButton::OnPaint(wxPaintEvent &)
 	}
 
 	if ( !m_bitmap.IsNull() )
-		dc.DrawBitmap( m_bitmap, bit_x, cheight/2 - bit_height/2 );
+		dc.DrawBitmap( m_bitmap, bit_x, cheight/2 - bit_height/2 + yoffset_bit );
 
 	dc.DrawText( m_label, text_x, cheight/2 - th/2+yoffset );
 	
@@ -327,258 +338,344 @@ void wxMetroButton::OnMotion( wxMouseEvent &)
 enum { ID_TAB0 = wxID_HIGHEST+142 };
 
 
-class wxMetroNotebookRenderer : public wxWindow
+#define TB_SPACE 2
+#define TB_XPADDING 10
+#define TB_YPADDING 12
+
+BEGIN_EVENT_TABLE(wxMetroTabList, wxWindow)
+	EVT_LEFT_DCLICK( wxMetroTabList::OnLeftDown)
+	EVT_LEFT_DOWN( wxMetroTabList::OnLeftDown )
+	EVT_LEFT_UP( wxMetroTabList::OnLeftUp)
+	EVT_MOTION(wxMetroTabList::OnMouseMove)
+	EVT_PAINT( wxMetroTabList::OnPaint )
+	EVT_SIZE( wxMetroTabList::OnSize )
+	EVT_LEAVE_WINDOW( wxMetroTabList::OnLeave )
+	EVT_MENU_RANGE( ID_TAB0, ID_TAB0+100, wxMetroTabList::OnMenu )
+END_EVENT_TABLE()
+
+wxMetroTabList::wxMetroTabList( wxWindow *parent, int id,
+	const wxPoint &pos, const wxSize &size, long style )
+	: wxWindow( parent, id, pos, size )
 {
-friend class wxMetroNotebook;
+	SetBackgroundStyle( wxBG_STYLE_PAINT );
+	m_dotdotWidth = 0;
+	m_dotdotHover = false;
+	m_pressIdx = -1;
+	m_hoverIdx = -1;
+	m_style = style;
+	m_selection = 0;
 
-private:
-	
-	wxMetroNotebook *m_notebook;
-	
-	int m_xStart;
-	std::vector<int> m_widths;
-	int m_hoverIdx;
-	int m_pressIdx;
-	int m_nTabsShown;
-	int m_dotdotWidth;
-	bool m_dotdotHover;
+	SetFont( wxMetroTheme::LightFont( 16 ) );
+}
 
-	DECLARE_EVENT_TABLE();
+void wxMetroTabList::Append( const wxString &label )
+{
+	m_items.push_back( item(label) );
+}
 
-	wxMetroNotebookRenderer( wxMetroNotebook *rn )
-		: wxWindow( rn, wxID_ANY )
+void wxMetroTabList::Insert( const wxString &label, size_t pos )
+{
+	m_items.insert( m_items.begin()+pos, item(label) );
+}
+
+void wxMetroTabList::Remove( const wxString &label )
+{
+	int idx = Find( label );
+	if ( idx >= 0 )
+		m_items.erase( m_items.begin()+idx );
+}
+
+int wxMetroTabList::Find( const wxString &label )
+{
+	for ( size_t i=0;i<m_items.size();i++ )
+		if ( m_items[i].label == label ) 
+			return i;
+
+	return -1;
+}
+
+void wxMetroTabList::Clear()
+{
+	m_items.clear();
+}
+
+void wxMetroTabList::SetSelection( size_t i )
+{
+	m_selection = i;
+	if ( m_selection >= m_items.size() )
+		m_selection = m_items.size()-1;
+}
+
+size_t wxMetroTabList::GetSelection()
+{
+	return m_selection;
+}
+
+wxSize wxMetroTabList::DoGetBestSize() const
+{
+	wxClientDC dc( const_cast<wxMetroTabList*>( this ) );
+	dc.SetFont( GetFont() );
+
+	int width = 0;
+
+	for ( size_t i=0;i<m_items.size(); i++ )
 	{
-		SetBackgroundStyle( wxBG_STYLE_CUSTOM );
-
-		m_nTabsShown = 0;
-		m_notebook = rn;
-		m_hoverIdx = -1;
-		m_pressIdx = -1;
-		m_dotdotWidth = 0;
-		m_dotdotHover = false;
+		int tw, th;
+		dc.GetTextExtent( m_items[i].label, &tw, &th );
+		width += tw + TB_SPACE + TB_XPADDING;
 	}
 
-	void OnSize(wxSizeEvent &)
+	int height = dc.GetCharHeight() + TB_YPADDING;
+
+	return wxSize( width, height );
+}
+
+void wxMetroTabList::OnSize(wxSizeEvent &)
+{
+	Refresh();
+}
+
+void wxMetroTabList::OnPaint(wxPaintEvent &)
+{
+	wxAutoBufferedPaintDC dc(this);
+
+	int cwidth, cheight;
+	GetClientSize(&cwidth, &cheight);
+	
+	bool light = ( m_style & wxMTB_LIGHTTHEME );
+
+	dc.SetBackground( light ? *wxWHITE : wxMetroTheme::Foreground() );
+	dc.Clear();
+
+	int x = TB_SPACE;
+
+	m_dotdotWidth = 0;
+	
+	dc.SetFont( GetFont() );
+	int CharHeight = dc.GetCharHeight();
+	for (size_t i=0;i<m_items.size();i++)
 	{
-		Refresh();
+		int txtw, txth;
+		dc.GetTextExtent( m_items[i].label, &txtw, &txth );
+		m_items[i].x_start = x;
+		m_items[i].width = txtw+TB_XPADDING+TB_XPADDING;
+		x += m_items[i].width + TB_SPACE;
+
+		if ( i > 0 && x > cwidth - 25 ) // 25 approximates width of '...'	
+			m_dotdotWidth = 1;
+
+		m_items[i].shown = ( m_dotdotWidth == 0 );
 	}
 
-	void OnPaint(wxPaintEvent &)
+	// compute size of '...'
+	int dotdot_height = 0;
+	if ( m_dotdotWidth > 0 )
 	{
-		wxAutoBufferedPaintDC dc(this);
+		wxFont font( wxMetroTheme::NormalFont(18) );
+		font.SetWeight( wxFONTWEIGHT_BOLD );
+		dc.SetFont( font );
+		dc.GetTextExtent( "...", &m_dotdotWidth, &dotdot_height );
+		m_dotdotWidth += TB_SPACE + TB_SPACE;
+		dc.SetFont( GetFont() ); // restore font
+	}
 
-		int cwidth, cheight;
-		GetClientSize(&cwidth, &cheight);
-		
-		int nwin = m_notebook->m_flipper->GetPageCount();
-		m_widths.resize( nwin );
-		
-		dc.SetFont( m_notebook->GetFont() );
-		int CharHeight = dc.GetCharHeight();
+	// if the selected item is not shown, shift it into place and hide any others that it might cover up
+	if ( m_dotdotWidth > 0 
+		&& m_selection >= 0 
+		&& m_selection < (int) m_items.size()
+		&& !m_items[m_selection].shown )
+	{
+		int shifted_x = cwidth - m_dotdotWidth - m_items[m_selection].width;
 
-		dc.SetBackground( m_notebook->GetBackgroundColour() );
-		dc.Clear();
-
-		int selIdx = m_notebook->m_flipper->GetSelection();
-		int x = m_notebook->m_xOffset;	
-		int padding = m_notebook->m_xPadding;
-
-		m_xStart = x;
-
-		m_dotdotWidth = 0;
-		m_nTabsShown = nwin;
-		for (int i=0;i<nwin;i++)
+		for ( int i = (int)m_items.size()-1; i >= 0; i-- )
 		{
-			int txtw, txth;
-			dc.GetTextExtent( m_notebook->m_pageList[i].text, &txtw, &txth );
-			m_widths[i] = txtw+padding+padding;
-
-			if ( i > 0 && x+m_widths[i] > cwidth - 30 ) // 30 approximates width of '...'
-			{
-				m_dotdotWidth = 1;
-				m_nTabsShown = i;
+			if ( m_items[i].x_start + m_items[i].width >= shifted_x )
+				m_items[i].shown = false;
+			else
 				break;
-			}
-
-			dc.SetTextForeground( i == selIdx ? m_notebook->GetForegroundColour() 
-				: ( i==m_hoverIdx ? wxMetroTheme::SelectColour() : wxMetroTheme::TextColour() ) );
-			
-			dc.DrawText( m_notebook->m_pageList[i].text, x + padding, cheight/2-CharHeight/2-1 );
-			x += m_widths[i] + m_notebook->m_xSpacing;
-
 		}
 
-		if ( m_dotdotWidth > 0 )
+		m_items[m_selection].shown = true;
+		m_items[m_selection].x_start = shifted_x;
+	}
+	
+
+	// now draw all the items that have been determined to be visible
+	for ( size_t i=0; i<m_items.size(); i++ )
+	{
+		if ( !m_items[i].shown ) continue;
+
+		if ( !light )
 		{
-			wxFont font( wxMetroTheme::NormalFont(14) );
-			font.SetWeight( wxFONTWEIGHT_BOLD );
-			dc.SetFont( font );
-			int txtw, txth;
-			dc.GetTextExtent( "...", &txtw, &txth );
-
-			m_dotdotWidth = txtw;
-			dc.SetTextForeground( m_dotdotHover ?  wxMetroTheme::SelectColour() : wxMetroTheme::TextColour() );
-
-			dc.DrawText( "...", cwidth - m_dotdotWidth - padding/2, cheight/2 - txth/2-1 );
-
+			wxColour col( i==m_hoverIdx||i==m_selection ? wxMetroTheme::HoverColour() : wxMetroTheme::Foreground() );
+			dc.SetPen( wxPen(col, 1) );
+			dc.SetBrush( wxBrush(col) );
+			dc.DrawRectangle( m_items[i].x_start, 0, m_items[i].width, cheight );
 		}
 
+		wxColour text( *wxWHITE );
+		if ( light )
+		{
+			text = ( i == (int)m_selection ? wxMetroTheme::Foreground() 
+				: ( i==m_hoverIdx ? wxMetroTheme::SelectColour() : wxMetroTheme::TextColour() ) );
+		}
+
+		dc.SetTextForeground( text );			
+		dc.DrawText( m_items[i].label, m_items[i].x_start + TB_XPADDING, cheight/2-CharHeight/2-1 );
+
+	}
+
+	if ( m_dotdotWidth > 0 )
+	{
+		if ( !light && m_dotdotHover )
+		{
+			dc.SetPen( wxPen(wxMetroTheme::HoverColour(), 1) );
+			dc.SetBrush( wxBrush(wxMetroTheme::HoverColour()) );
+			dc.DrawRectangle( cwidth - m_dotdotWidth, 0, m_dotdotWidth, cheight );
+		}
+
+		wxFont font( wxMetroTheme::NormalFont(18) );
+		font.SetWeight( wxFONTWEIGHT_BOLD );
+		dc.SetFont( font );
+		dc.SetTextForeground( light ? (m_dotdotHover ?  wxMetroTheme::SelectColour() : wxMetroTheme::TextColour()) : *wxWHITE );
+		dc.DrawText( "...", cwidth - m_dotdotWidth + TB_SPACE, cheight/2 - dotdot_height/2-1 );
+	}
+
+	if ( light )
+	{
 		dc.SetPen( wxPen( wxMetroTheme::TextColour() ));
 		dc.DrawLine( 0, cheight-2, cwidth, cheight-2);
 	}
+}
 	
-	void OnLeftDown(wxMouseEvent &evt)
+void wxMetroTabList::OnLeftDown(wxMouseEvent &evt)
+{
+	int cwidth, cheight;
+	GetClientSize(&cwidth, &cheight);
+
+	int mouse_x = evt.GetX();
+	for (size_t i=0;i<m_items.size();i++)
 	{
-		int cwidth, cheight;
-		GetClientSize(&cwidth, &cheight);
-
-		int mouse_x = evt.GetX();
-		int x = m_xStart;
-		for (size_t i=0;i<m_widths.size() && i < m_nTabsShown;i++)
+		if ( m_items[i].shown
+			&& mouse_x >= m_items[i].x_start 
+			&& mouse_x < m_items[i].x_start + m_items[i].width)
 		{
-			if (mouse_x >= x && mouse_x < x+m_widths[i])
-			{
-				m_pressIdx = i;
-				if (this->HasCapture())
-					this->ReleaseMouse();
+			m_pressIdx = i;
+			if (this->HasCapture())
+				this->ReleaseMouse();
 
-				this->CaptureMouse();
-				return;
-			}
-			x += m_widths[i] + m_notebook->m_xSpacing;
-		}
-
-		if ( m_dotdotWidth > 0 && mouse_x > cwidth - m_dotdotWidth - m_notebook->m_xPadding )
-		{
-			wxMenu menu;
-			
-			int nwin = m_notebook->m_flipper->GetPageCount();
-			for ( int i=0;i<nwin;i++)
-				menu.AppendCheckItem( ID_TAB0+i, m_notebook->m_pageList[i].text );
-			
-			menu.Check( ID_TAB0+m_notebook->GetSelection(), true );
-
-			PopupMenu( &menu );
+			this->CaptureMouse();
+			return;
 		}
 	}
 
-	void OnMouseMove(wxMouseEvent &evt)
+	if ( m_selection >= 0 && m_selection < m_items.size()
+		&& m_dotdotWidth > 0 && mouse_x > cwidth - m_dotdotWidth )
 	{
-		int cwidth, cheight;
-		GetClientSize(&cwidth, &cheight);
-		m_hoverIdx = -1;
-		int mouse_x = evt.GetX();
-
-		bool was_hovering = m_dotdotHover;
-		m_dotdotHover = ( m_dotdotWidth > 0 && mouse_x > cwidth - m_dotdotWidth - m_notebook->m_xPadding );
-
-		int x = m_xStart;
-		for (size_t i=0;i<m_widths.size();i++)
-		{
-			if (mouse_x >= x && mouse_x < x+m_widths[i])
-			{
-				if (m_hoverIdx != (int)i)
-					Refresh();
-				m_hoverIdx = i;
-				return;
-			}
-			x += m_widths[i] + m_notebook->m_xSpacing;
-		}
-
-		if ( m_dotdotHover != was_hovering )
-			Refresh();
-			
-
-	}
-
-	void OnLeftUp(wxMouseEvent &evt)
-	{
-		if (m_pressIdx >= 0 && this->HasCapture())
-			this->ReleaseMouse();
-
-		int mouse_x = evt.GetX();
-		int x = m_xStart;
-		for (size_t i=0;i<m_widths.size() && i < m_nTabsShown;i++)
-		{
-			if (mouse_x >= x && mouse_x < x+m_widths[i] && m_pressIdx == (int)i)
-			{
-				SwitchPage( i );
-				return;
-			}
-			x += m_widths[i] + m_notebook->m_xSpacing;
-		}
-	}
-
-	void SwitchPage( size_t i )
-	{	
-		if ( i == m_notebook->GetSelection() ) return;
+		wxMenu menu;			
+		for ( size_t i=0;i< m_items.size();i++)
+			menu.AppendCheckItem( ID_TAB0+i, m_items[i].label );
 		
-		wxNotebookEvent evt(wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGING, m_notebook->GetId() );
-		evt.SetEventObject(m_notebook);
-		evt.SetOldSelection( m_notebook->GetSelection() );
-		evt.SetSelection(i);
-		m_notebook->ProcessEvent(evt);
-
-		if ( !evt.IsAllowed() ) return; // abort the selection if the changing event was vetoed.
-
-		m_notebook->m_flipper->ChangeSelection(i);
-		Refresh();
-
-		// fire EVT_NOTEBOOK_PAGE_CHANGED
-		wxNotebookEvent evt2(wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED, m_notebook->GetId() );
-		evt2.SetEventObject(m_notebook);
-		evt2.SetSelection(i);
-		m_notebook->ProcessEvent(evt2);
+		menu.Check( ID_TAB0+m_selection, true );
+		PopupMenu( &menu );
 	}
+}
 
-	void OnMenu( wxCommandEvent &evt )
+void wxMetroTabList::OnMouseMove(wxMouseEvent &evt)
+{
+	int cwidth, cheight;
+	GetClientSize(&cwidth, &cheight);
+	m_hoverIdx = -1;
+	int mouse_x = evt.GetX();
+
+	bool was_hovering = m_dotdotHover;
+	m_dotdotHover = ( m_dotdotWidth > 0 && mouse_x > cwidth - m_dotdotWidth );
+
+	for (size_t i=0;i<m_items.size();i++)
 	{
-		SwitchPage( evt.GetId() - ID_TAB0 );
+		if ( m_items[i].shown 
+			&& mouse_x >= m_items[i].x_start 
+			&& mouse_x < m_items[i].x_start + m_items[i].width)
+		{
+			if (m_hoverIdx != (int)i)
+				Refresh();
+			m_hoverIdx = i;
+			return;
+		}
 	}
 
-	void OnLeave(wxMouseEvent &)
-	{
-		m_pressIdx = -1;
-		m_hoverIdx = -1;
-		m_dotdotHover = false;
+	if ( m_dotdotHover != was_hovering )
 		Refresh();
-	}
-};
+}
 
-BEGIN_EVENT_TABLE(wxMetroNotebookRenderer, wxWindow)
-	EVT_LEFT_DCLICK( wxMetroNotebookRenderer::OnLeftDown)
-	EVT_LEFT_DOWN( wxMetroNotebookRenderer::OnLeftDown )
-	EVT_LEFT_UP( wxMetroNotebookRenderer::OnLeftUp)
-	EVT_MOTION(wxMetroNotebookRenderer::OnMouseMove)
-	EVT_PAINT( wxMetroNotebookRenderer::OnPaint )
-	EVT_SIZE( wxMetroNotebookRenderer::OnSize )
-	EVT_LEAVE_WINDOW( wxMetroNotebookRenderer::OnLeave )
-	EVT_MENU_RANGE( ID_TAB0, ID_TAB0+100, wxMetroNotebookRenderer::OnMenu )
-END_EVENT_TABLE()
+void wxMetroTabList::OnLeftUp(wxMouseEvent &evt)
+{
+	if (m_pressIdx >= 0 && this->HasCapture())
+		this->ReleaseMouse();
+
+	int mouse_x = evt.GetX();
+	for (size_t i=0;i<m_items.size();i++)
+	{
+		if ( m_items[i].shown 
+			&& mouse_x >= m_items[i].x_start 
+			&& mouse_x < m_items[i].x_start + m_items[i].width)
+		{
+			SwitchPage( i );
+			return;
+		}
+	}
+}
+
+void wxMetroTabList::OnMenu( wxCommandEvent &evt )
+{
+	SwitchPage( evt.GetId() - ID_TAB0 );
+}
+
+void wxMetroTabList::OnLeave(wxMouseEvent &)
+{
+	m_pressIdx = -1;
+	m_hoverIdx = -1;
+	m_dotdotHover = false;
+	Refresh();
+}
+
+void wxMetroTabList::SwitchPage( size_t i )
+{
+	m_selection = i;
+	wxCommandEvent evt( wxEVT_LISTBOX, GetId() );
+	evt.SetEventObject( this );
+	evt.SetInt( i );
+	evt.SetString( m_items[i].label );
+	ProcessEvent( evt );
+	Refresh();
+
+}
 
 /************* wxMetroNotebook ************** */
 
+enum { ID_TABLIST = wxID_HIGHEST+124 };
+
 BEGIN_EVENT_TABLE(wxMetroNotebook, wxPanel)
 	EVT_SIZE( wxMetroNotebook::OnSize )
+	EVT_LISTBOX( ID_TABLIST, wxMetroNotebook::OnTabList )
 END_EVENT_TABLE()
 
-wxMetroNotebook::wxMetroNotebook(wxWindow *parent, int id, const wxPoint &pos, const wxSize &sz)
-	: wxPanel(parent, id, pos, sz, wxCLIP_CHILDREN)
+wxMetroNotebook::wxMetroNotebook(wxWindow *parent, int id, const wxPoint &pos, const wxSize &sz, long style)
+	: wxPanel(parent, id, pos, sz)
 {
-	m_xSpacing = 2;
-	m_xOffset = 2;
-	m_xPadding = 10;
-	m_yPadding = 12;
-
-
-	m_renderer = new wxMetroNotebookRenderer(this);
+	long tabsty = ( style & wxMNB_LIGHTTHEME ) ? wxMTB_LIGHTTHEME : 0;
+	m_list = new wxMetroTabList(this, ID_TABLIST, wxDefaultPosition, wxDefaultSize, tabsty );
 	m_flipper = new wxSimplebook( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE );
+
+	wxBoxSizer *sizer = new wxBoxSizer( wxVERTICAL );
+	sizer->Add( m_list, 0, wxALL|wxEXPAND, 0 );
+	sizer->Add( m_flipper, 0, wxALL|wxEXPAND, 0 );
+	SetSizer( sizer );
 
 	SetBackgroundColour( wxMetroTheme::Background() );
 	SetForegroundColour( wxMetroTheme::Foreground() );
 	SetFont( wxMetroTheme::LightFont(14) );
 	
-	Reposition();
 }
 
 void wxMetroNotebook::AddPage(wxWindow *win, const wxString &text, bool active)
@@ -592,11 +689,13 @@ void wxMetroNotebook::AddPage(wxWindow *win, const wxString &text, bool active)
 
 	m_pageList.push_back( x );
 
-
 	if (active)
+	{
+		m_list->SetSelection( m_flipper->GetPageCount()-1 );
 		m_flipper->ChangeSelection( m_flipper->GetPageCount()-1 );
-
-	Reposition();
+	}
+	UpdateTabList();
+	ComputeScrolledWindows();
 }
 
 int wxMetroNotebook::GetPageIndex(wxWindow *win)
@@ -638,11 +737,15 @@ wxWindow *wxMetroNotebook::RemovePage( int ndx )
 	m_flipper->RemovePage(ndx);
 	m_pageList.erase( m_pageList.begin() + ndx );
 		
+	UpdateTabList();
+
 	if ( m_flipper->GetSelection() != cursel )
+	{
 		m_flipper->ChangeSelection(cursel);
+		m_list->SetSelection(cursel);
+	}
 
-	Reposition();
-
+	ComputeScrolledWindows();
 	return win;
 }
 
@@ -650,6 +753,7 @@ void wxMetroNotebook::DeletePage( int ndx )
 {
 	wxWindow *win = RemovePage( ndx );
 	if ( win != 0 ) win->Destroy();
+
 }
 
 wxWindow *wxMetroNotebook::GetPage( int index )
@@ -670,7 +774,6 @@ void wxMetroNotebook::AddScrolledPage(wxWindow *win, const wxString &text, bool 
 	
 	win->Move(0,0);
 
-
 	m_flipper->AddPage( scrollwin, text );
 
 	page_info x;
@@ -678,11 +781,15 @@ void wxMetroNotebook::AddScrolledPage(wxWindow *win, const wxString &text, bool 
 	x.scroll_win = win;
 
 	m_pageList.push_back( x );
+	UpdateTabList();
 
 	if (active)
+	{
+		m_list->SetSelection( m_flipper->GetPageCount()-1 );
 		m_flipper->ChangeSelection( m_flipper->GetPageCount()-1 );
+	}
 
-	Reposition();
+	ComputeScrolledWindows();
 }
 
 int wxMetroNotebook::GetSelection()
@@ -695,32 +802,29 @@ void wxMetroNotebook::SetText(int id, const wxString &text)
 	if ((id < (int)m_pageList.size()) && (id >= 0))
 	{
 		m_pageList[id].text = text;
-		Reposition();
+		UpdateTabList();
 	}
 }
 
 void wxMetroNotebook::SetSelection(int id)
 {
 	m_flipper->SetSelection(id);
-	Refresh();
+	m_list->SetSelection(id);
 }
 
 int wxMetroNotebook::GetPageCount()
 {
 	return m_flipper->GetPageCount();
 }
-void wxMetroNotebook::Reposition()
+
+void wxMetroNotebook::OnSize(wxSizeEvent &evt)
 {
-	int cwidth, cheight;
-	GetClientSize(&cwidth, &cheight);
-	
-	wxClientDC cdc(this);
-	cdc.SetFont( GetFont() );
-	m_tabHeight = cdc.GetCharHeight() + m_yPadding;
+	ComputeScrolledWindows();
+	evt.Skip();
+}
 
-	m_renderer->SetSize(0, 0, cwidth, m_tabHeight);
-	m_flipper->SetSize(0, m_tabHeight, cwidth, cheight-m_tabHeight);
-
+void wxMetroNotebook::ComputeScrolledWindows()
+{
 	for (size_t i=0;i<m_pageList.size();i++)
 	{
 		if ( m_pageList[i].scroll_win != 0 )
@@ -749,7 +853,43 @@ void wxMetroNotebook::Reposition()
 	}
 }
 
-void wxMetroNotebook::OnSize(wxSizeEvent &)
+void wxMetroNotebook::UpdateTabList()
 {
-	Reposition();
+	size_t sel = m_list->GetSelection();
+	m_list->Clear();
+	for (size_t i=0;i<m_pageList.size();i++)
+		m_list->Append( m_pageList[i].text );
+
+	m_list->SetSelection( sel );
+}
+
+void wxMetroNotebook::OnTabList( wxCommandEvent &evt )
+{
+	SwitchPage( evt.GetInt() );
+}
+
+void wxMetroNotebook::SwitchPage( size_t i )
+{	
+	if ( i == GetSelection() ) return;
+		
+	wxNotebookEvent evt(wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGING, GetId() );
+	evt.SetEventObject( this );
+	evt.SetOldSelection( GetSelection() );
+	evt.SetSelection(i);
+	ProcessEvent(evt);
+
+	if ( !evt.IsAllowed() )
+	{
+		m_list->SetSelection( GetSelection() );
+		return; // abort the selection if the changing event was vetoed.
+	}
+
+	m_flipper->ChangeSelection(i);
+	m_list->SetSelection(i);
+
+	// fire EVT_NOTEBOOK_PAGE_CHANGED
+	wxNotebookEvent evt2(wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED, GetId() );
+	evt2.SetEventObject( this );
+	evt2.SetSelection(i);
+	ProcessEvent(evt2);
 }
