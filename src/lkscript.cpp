@@ -474,6 +474,7 @@ wxLKScriptCtrl::wxLKScriptCtrl( wxWindow *parent, int id,
 	: wxCodeEditCtrl( parent, id, pos, size ),
 		m_timer( this, IDT_TIMER )
 {
+	m_tree = 0;
 	m_env = new lk::env_t;	
 	m_scriptRunning = false;
 	m_stopScriptFlag = false;
@@ -498,6 +499,7 @@ wxLKScriptCtrl::wxLKScriptCtrl( wxWindow *parent, int id,
 
 wxLKScriptCtrl::~wxLKScriptCtrl()
 {
+	if ( m_tree ) delete m_tree;
 	delete m_env;
 }
 
@@ -683,7 +685,7 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 	lk::input_string p( script );
 	lk::parser parse( p );
 	
-	lk::node_t *tree = parse.script();
+	m_tree = parse.script();
 				
 	wxYield();
 	bool success = false;
@@ -702,7 +704,7 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 		unsigned int ctl_id = lk::CTL_NONE;
 		wxStopWatch sw;
 		std::vector<lk_string> errors;
-		if ( lk::eval( tree, m_env, errors, result, 0, ctl_id, eval_callback, this ) )
+		if ( lk::eval( m_tree, m_env, errors, result, 0, ctl_id, eval_callback, this ) )
 		{
 			long time = sw.Time();
 			OnOutput(wxString::Format("elapsed time: %ld msec\n", time));
@@ -732,14 +734,11 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 	int i=0;
 	while ( i < parse.error_count() )
 		OnOutput( parse.error(i++) );
-
-	if (tree) delete tree;
-		
+			
 	//m_stopButton->Hide();		
 	//Layout();
 		
 	m_env->clear_objs();
-	m_env->clear_vars();
 
 	m_scriptRunning = false;
 	m_stopScriptFlag = false;

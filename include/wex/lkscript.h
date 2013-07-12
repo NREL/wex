@@ -51,6 +51,7 @@ private:
 
 	std::vector<libdata> m_libs;
 	lk::env_t *m_env;
+	lk::node_t *m_tree;
 	bool m_scriptRunning;
 	bool m_stopScriptFlag;
 	wxWindow *m_topLevelWindow;
