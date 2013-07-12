@@ -685,6 +685,7 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 	lk::input_string p( script );
 	lk::parser parse( p );
 	
+	if ( m_tree != 0 ) delete m_tree;
 	m_tree = parse.script();
 				
 	wxYield();
