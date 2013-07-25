@@ -2,6 +2,32 @@
 #include <wx/frame.h>
 #include <wx/stc/stc.h>
 #include <wx/webview.h>
+#include <wx/statbmp.h>
+
+#include "wex/icons/time.cpng"
+#include "wex/icons/dmap.cpng"
+#include "wex/icons/calendar.cpng"
+#include "wex/icons/barchart.cpng"
+#include "wex/icons/curve.cpng"
+#include "wex/icons/scatter.cpng"
+
+class PngTestApp : public wxApp
+{
+public:
+	bool OnInit()
+	{
+		wxInitAllImageHandlers();
+		wxFrame *frm = new wxFrame(NULL, wxID_ANY, "SchedCtrl", wxDefaultPosition, wxSize(300,200));
+		frm->SetBackgroundColour( *wxWHITE );
+		wxStaticBitmap *bitmap = new wxStaticBitmap( frm,  wxID_ANY, wxBITMAP_PNG_FROM_DATA( time ) );
+
+		frm->Show();
+		return true;
+	}
+};
+
+IMPLEMENT_APP( PngTestApp );
+
 
 #include "wex/plot/plplotctrl.h"
 #include "wex/plot/pllineplot.h"
@@ -17,6 +43,7 @@
 
 #include "wex/icons/cirplus.cpng"
 #include "wex/icons/qmark.cpng"
+
 #include "demo_bitmap.cpng"
 
 
@@ -158,8 +185,6 @@ void TestDView( wxWindow *parent )
 	frame->Show();
 }
 
-
-
 class MyApp : public wxApp
 {
 public:
@@ -220,4 +245,4 @@ public:
 	}
 };
 
-IMPLEMENT_APP( MyApp );
+//IMPLEMENT_APP( MyApp );
