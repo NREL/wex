@@ -818,7 +818,7 @@ wxJSONReader::StoreValue( int ch, const wxString& key, wxJSONValue& value, wxJSO
             wxLogTrace( traceMask, _T("(%s) appending value to parent array"),
                                  __PRETTY_FUNCTION__ );
             parent.Append( value );
-            const wxJSONInternalArray* arr = parent.AsArray();
+            const wxJSONInternalArray* arr = wxJSONValueAsArray( parent );
             wxJSON_ASSERT( arr );
             m_lastStored = &(arr->Last());
             m_lastStored->SetLineNo( m_lineNo );

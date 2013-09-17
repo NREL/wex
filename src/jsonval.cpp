@@ -1479,9 +1479,9 @@ wxJSONValue::AsMemoryBuff( wxMemoryBuffer& buff ) const
  If the stored value is not a map type, returns a NULL pointer.
 */
 const wxJSONInternalMap*
-wxJSONValue::AsMap() const
+wxJSONValueAsMap( const wxJSONValue &val )
 {
-    wxJSONRefData* data = GetRefData();
+    wxJSONRefData* data = val.GetRefData();
     wxJSON_ASSERT( data );
 
     const wxJSONInternalMap* v = 0;
@@ -1499,9 +1499,9 @@ wxJSONValue::AsMap() const
  If the stored value is not an array type, returns a NULL pointer.
 */
 const wxJSONInternalArray*
-wxJSONValue::AsArray() const
+wxJSONValueAsArray( const wxJSONValue &val )
 {
-    wxJSONRefData* data = GetRefData();
+    wxJSONRefData* data = val.GetRefData();
     wxJSON_ASSERT( data );
 
     const wxJSONInternalArray* v = 0;
@@ -2375,7 +2375,7 @@ wxJSONValue::Dump( bool deep, int indent ) const
     wxJSONInternalMap::const_iterator it;
     switch ( type )    {
         case wxJSONTYPE_OBJECT :
-            map = AsMap();
+            map = wxJSONValueAsMap( *this );
             size = Size();
             for ( it = map->begin(); it != map->end(); ++it )  {
                 const wxJSONValue& v = it->second;

@@ -11,25 +11,9 @@
 #if !defined( _WX_JSONREADER_H )
 #define _WX_JSONREADER_H
 
-#ifdef __GNUG__
-    #pragma interface "jsonreader.h"
-#endif
-
-// For compilers that support precompilation, includes "wx/wx.h".
-#include "wx/wxprec.h"
-
-#ifdef __BORLANDC__
-    #pragma hdrstop
-#endif
-
-// for all others, include the necessary headers (this file is usually all you
-// need because it includes almost all "standard" wxWidgets headers)
-#ifndef WX_PRECOMP
-    #include <wx/stream.h>
-    #include <wx/string.h>
-    #include <wx/arrstr.h>
-#endif
-
+#include <wx/stream.h>
+#include <wx/string.h>
+#include <wx/arrstr.h>
 
 #include "wex/json_defs.h"
 #include "wex/jsonval.h"

@@ -495,7 +495,7 @@ wxJSONWriter::DoWrite( wxOutputStream& os, const wxJSONValue& value, const wxStr
             lastChar = WriteSeparator( os );
         }
 
-        map = value.AsMap();
+        map =  wxJSONValueAsMap( value );
         size = value.Size();
         count = 0;
         for ( it = map->begin(); it != map->end(); ++it )  {
