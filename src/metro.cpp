@@ -5,6 +5,7 @@
 #include <wx/scrolwin.h>
 #include <wx/menu.h>
 #include <wx/sizer.h>
+#include <wx/event.h>
 
 #include <algorithm>
 #include "wex/metro.h"
