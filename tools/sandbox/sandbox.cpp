@@ -26,7 +26,7 @@ public:
 	}
 };
 
-IMPLEMENT_APP( PngTestApp );
+//IMPLEMENT_APP( PngTestApp );
 
 
 #include "wex/plot/plplotctrl.h"
@@ -245,4 +245,4 @@ public:
 	}
 };
 
-//IMPLEMENT_APP( MyApp );
+IMPLEMENT_APP( MyApp );
