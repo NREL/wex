@@ -79,7 +79,7 @@ wxColour wxMetroThemeProvider::Colour( int id )
 	case wxMT_HOVER: return wxColour( 0, 88, 153 );
 	case wxMT_DIMHOVER: return wxColour( 0, 107, 186 );
 	case wxMT_LIGHTHOVER: return wxColour( 231, 232, 238 );
-	case wxMT_ACCENT: return wxColour( 255, 148, 0 );
+	case wxMT_ACCENT: return wxColour( 255, 143, 50 );
 	case wxMT_TEXT: return wxColour( 135, 135, 135 ); 
 	case wxMT_ACTIVE: return wxColour( 0, 114, 198 );
 	case wxMT_SELECT:  return wxColour(193,210,238);
@@ -605,6 +605,8 @@ void wxMetroTabList::OnLeftDown(wxMouseEvent &evt)
 			if ( m_style & wxMT_MENUBUTTONS 
 				&& IsOverButton( mouse_x, i ) )
 			{
+				SwitchPage( i ); // first switch pages if we're going to fire the context menu up
+
 				wxCommandEvent evt( wxEVT_BUTTON, GetId() );
 				evt.SetEventObject( this );
 				evt.SetInt( i );
