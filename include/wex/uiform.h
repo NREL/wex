@@ -274,10 +274,6 @@ public:
 
 	void SetCopyBuffer( wxUIObjectCopyBuffer *cpbuf);
 	void SetPropertyEditor( wxUIPropertyEditor *pe );
-	bool AreObjectsSelected();
-	int GetSelectedCount();
-	wxUIObject *GetSelected(int i);
-	void ClearSelections();
 	void EnableTabOrderMode(bool b);
 
 	void Snap( int *x, int *y, int spacing = -1 );

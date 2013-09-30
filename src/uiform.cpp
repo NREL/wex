@@ -988,7 +988,6 @@ void wxUIFormData::Write( wxOutputStream &_O )
 
 bool wxUIFormData::Read( wxInputStream &_I )
 {
-	Detach();
 	DeleteAll();
 
 	wxDataInputStream in(_I);
@@ -1055,7 +1054,6 @@ void wxUIFormData::Delete( wxUIObject *obj )
 
 void wxUIFormData::DeleteAll()
 {
-	Detach();
 	for ( size_t i=0;i<m_objects.size();i++ )
 		delete m_objects[i];
 	m_objects.clear();
@@ -1298,33 +1296,11 @@ void wxUIFormEditor::EnableTabOrderMode( bool b )
 		else		
 			m_tabOrderCounter = 1;
 	}
-	ClearSelections();
+	m_selected.clear();
+	if (m_propEditor) m_propEditor->SetObject( 0 );
 	m_tabOrderMode = b;
 	Refresh();
 }
-
-void wxUIFormEditor::ClearSelections()
-{
-	m_selected.clear();
-	if (m_propEditor) m_propEditor->SetObject( 0 );
-	Refresh();
-}
-
-bool wxUIFormEditor::AreObjectsSelected()
-{
-	return m_selected.size() > 0;
-}
-
-int wxUIFormEditor::GetSelectedCount()
-{
-	return m_selected.size();
-}
-
-wxUIObject *wxUIFormEditor::GetSelected(int i)
-{
-	return m_selected[i];
-}
-
 
 int wxUIFormEditor::IsOverResizeBox(int x, int y, wxUIObject *obj)
 {
@@ -1957,7 +1933,7 @@ void wxUIFormEditor::OnPopup(wxCommandEvent &evt)
 	}
 	else if ( evt.GetId() == ID_DUPLICATE )
 	{
-		if (AreObjectsSelected())
+		if ( m_selected.size() > 0 )
 		{
 			std::vector<wxUIObject*> added;
 			
@@ -1994,7 +1970,7 @@ void wxUIFormEditor::OnPopup(wxCommandEvent &evt)
 	}
 	else if ( evt.GetId() == ID_DELETE )
 	{
-		if (AreObjectsSelected())
+		if ( m_selected.size() > 0 )
 		{
 			if (m_propEditor) m_propEditor->SetObject( 0 );
 			
@@ -2009,7 +1985,7 @@ void wxUIFormEditor::OnPopup(wxCommandEvent &evt)
 		if (wxMessageBox("Really clear the form?", "Query", wxYES_NO|wxICON_EXCLAMATION) == wxYES)
 		{
 			if (m_propEditor) m_propEditor->SetObject( 0 );
-			ClearSelections();
+			m_selected.clear();
 			m_form->DeleteAll();
 			Refresh();
 		}
@@ -2019,7 +1995,7 @@ void wxUIFormEditor::OnPopup(wxCommandEvent &evt)
 		|| evt.GetId() == ID_ALIGNRIGHT
 		|| evt.GetId() == ID_ALIGNBOTTOM )
 	{
-		if (GetSelectedCount() > 1)
+		if ( m_selected.size() > 1)
 		{
 			wxRect geom = m_selected[0]->GetGeometry();
 			for ( size_t i=1;i<m_selected.size();i++)
