@@ -340,6 +340,9 @@ public:
 	void SetFormSize( int width, int height );
 	wxSize GetFormSize();
 
+	void SetPropertyEditor( wxUIPropertyEditor *pe ) { m_editor->SetPropertyEditor(pe); }
+	void SetCopyBuffer( wxUIObjectCopyBuffer *cb ) { m_editor->SetCopyBuffer(cb); }
+
 	void UpdateScrollbars();
 private:
 	void OnPaint(wxPaintEvent &evt);
@@ -368,8 +371,6 @@ public:
 private:
 	void OnCreate( wxCommandEvent & );
 	void OnCommand( wxCommandEvent & );
-	void OnEditorSelect( wxUIFormEvent &evt );
-	void OnEditorModify( wxUIFormEvent &evt );
 
 	wxUIFormData m_form;
 	wxTextCtrl *m_txtName;

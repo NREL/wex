@@ -194,12 +194,14 @@ public:
 	{
 		wxInitAllImageHandlers();
 		//TestDView( 0 );
+
+		/*
 		
 		wxFrame *frm = new wxFrame(NULL, wxID_ANY, "SchedCtrl", wxDefaultPosition, wxSize(1100,700));
 		frm->SetBackgroundColour( *wxWHITE );
 		
 		wxBoxSizer *tools = new wxBoxSizer( wxHORIZONTAL );
-		tools->Add( new wxMetroButton( frm, wxID_ANY, wxEmptyString, wxBITMAP_PNG_FROM_DATA( demo_bitmap ), wxDefaultPosition, wxDefaultSize /*, wxMB_DOWNARROW */), 0, wxALL|wxEXPAND, 0 );
+		tools->Add( new wxMetroButton( frm, wxID_ANY, wxEmptyString, wxBITMAP_PNG_FROM_DATA( demo_bitmap ), wxDefaultPosition, wxDefaultSize ), 0, wxALL|wxEXPAND, 0 );
 		tools->Add( new wxMetroButton( frm, wxID_ANY, "New", wxBITMAP_PNG_FROM_DATA( cirplus ), wxDefaultPosition, wxDefaultSize), 0, wxALL|wxEXPAND, 0 );
 		wxMetroTabList *tabs = new wxMetroTabList( frm, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxMT_MENUBUTTONS );
 		tabs->Append( "photovoltaic #1" );
@@ -240,8 +242,8 @@ public:
 
 		frm->SetSizer( sizer );
 		frm->Show();
-
-		frm = new wxFrame( 0, wxID_ANY, "Form Editor", wxDefaultPosition, wxSize(800, 600) );
+		*/
+		wxFrame *frm = new wxFrame( 0, wxID_ANY, "Form Editor", wxDefaultPosition, wxSize(800, 600) );
 		new wxUIEditorWindow( frm, wxID_ANY );
 		frm->Show();
 

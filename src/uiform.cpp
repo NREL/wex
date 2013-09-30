@@ -369,6 +369,7 @@ static int g_idCounter = 0;
 
 wxUIObject::~wxUIObject()
 {
+	DestroyNativeWidget();
 	DeleteProperties();
 }
 
@@ -690,9 +691,7 @@ wxUIPropertyEditor::~wxUIPropertyEditor()
 }
 
 void wxUIPropertyEditor::SetObject( wxUIObject *obj )
-{	
-	m_curObject = 0;
-
+{
 	// clear the property grid
 	for ( size_t i=0;i<m_curProps.size();i++ )
 	{
@@ -702,10 +701,10 @@ void wxUIPropertyEditor::SetObject( wxUIObject *obj )
 
 	GetSizer()->Layout();
 	m_curProps.clear();
-
-	if ( obj == 0 ) return;
-
+	
 	m_curObject = obj;
+
+	if ( m_curObject == 0 ) return;
 
 	wxArrayString list = obj->Properties();
 	for ( size_t i=0; i<list.Count();i++ )
@@ -752,8 +751,8 @@ void wxUIPropertyEditor::SetObject( wxUIObject *obj )
 			x.editor = editor;
 			m_curProps.push_back( x );
 
-			GetSizer()->Add( x.label, 0, wxALL|wxALIGN_CENTRE_VERTICAL, 2 );
-			GetSizer()->Add( x.editor, 1, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 1 );
+			GetSizer()->Add( x.label, 0, wxALL|wxALIGN_CENTRE_VERTICAL, 4 );
+			GetSizer()->Add( x.editor, 1, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 0 );
 			ValueToPropGrid( x );
 		}
 	}
@@ -1049,7 +1048,6 @@ void wxUIFormData::Delete( wxUIObject *obj )
 	std::vector<wxUIObject*>::iterator it = std::find( m_objects.begin(), m_objects.end(), obj );
 	if ( it != m_objects.end() )
 	{
-		(*it)->DestroyNativeWidget();
 		delete (*it);
 		m_objects.erase( it );
 	}
@@ -1300,14 +1298,13 @@ void wxUIFormEditor::EnableTabOrderMode( bool b )
 		else		
 			m_tabOrderCounter = 1;
 	}
-	m_selected.clear();
+	ClearSelections();
 	m_tabOrderMode = b;
 	Refresh();
 }
 
 void wxUIFormEditor::ClearSelections()
 {
-
 	m_selected.clear();
 	if (m_propEditor) m_propEditor->SetObject( 0 );
 	Refresh();
@@ -1493,7 +1490,7 @@ void wxUIFormEditor::OnLeftDown(wxMouseEvent &evt)
 			Refresh();
 			
 		if (m_propEditor)
-			m_propEditor->SetObject( GetSelectedCount() == 1 ? select_obj : 0 ); 
+			m_propEditor->SetObject( m_selected.size() == 1 ? select_obj : 0 ); 
 	}
 }
 
@@ -1512,9 +1509,10 @@ void wxUIFormEditor::OnLeftUp(wxMouseEvent &)
 			rct.y += m_diffY;
 			Snap(&rct.x, &rct.y);
 			m_selected[i]->SetGeometry(rct);
-			if (m_propEditor)
-				m_propEditor->UpdatePropertyValues();
 		}
+		
+		if (m_propEditor)
+			m_propEditor->UpdatePropertyValues();
 
 		m_moveMode = false;
 		m_moveModeErase = false;
@@ -1564,6 +1562,7 @@ void wxUIFormEditor::OnLeftUp(wxMouseEvent &)
 			rct.height = 5;
 
 		m_selected[0]->SetGeometry(rct);
+
 		if (m_propEditor)
 			m_propEditor->UpdatePropertyValues();
 
@@ -1998,10 +1997,11 @@ void wxUIFormEditor::OnPopup(wxCommandEvent &evt)
 		if (AreObjectsSelected())
 		{
 			if (m_propEditor) m_propEditor->SetObject( 0 );
-
+			
 			for (size_t i=0;i<m_selected.size();i++)
 				m_form->Delete( m_selected[i] );
 			m_selected.clear();
+			Refresh();
 		}
 	}
 	else if ( evt.GetId() == ID_CLEARALL )
@@ -2214,9 +2214,6 @@ BEGIN_EVENT_TABLE(  wxUIEditorWindow, wxPanel )
 	EVT_NUMERIC( ID_HEIGHT, wxUIEditorWindow::OnCommand )
 	EVT_TEXT( ID_NAME, wxUIEditorWindow::OnCommand )
 	EVT_MENU_RANGE( ID_OBJECT0, ID_OBJECT0+100, wxUIEditorWindow::OnCreate )
-
-	EVT_UIFORM_SELECT( ID_FORM_EDITOR, wxUIEditorWindow::OnEditorSelect )
-	EVT_UIFORM_MODIFY( ID_FORM_EDITOR, wxUIEditorWindow::OnEditorModify )
 END_EVENT_TABLE()
 
 
@@ -2246,6 +2243,7 @@ wxUIEditorWindow::wxUIEditorWindow( wxWindow *parent, int id, const wxPoint &pos
 	m_propEditor = new wxUIPropertyEditor( splitter, wxID_ANY );
 	m_formDesigner = new wxUIFormDesigner( splitter, ID_FORM_EDITOR );
 	m_formDesigner->SetFormData( &m_form );
+	m_formDesigner->SetPropertyEditor( m_propEditor );
 	splitter->SplitVertically( m_propEditor, m_formDesigner, 180 );
 
 	wxBoxSizer *sizer = new wxBoxSizer( wxVERTICAL );
@@ -2307,12 +2305,4 @@ void wxUIEditorWindow::OnCommand( wxCommandEvent &evt )
 	}
 }
 
-void wxUIEditorWindow::OnEditorSelect( wxUIFormEvent &evt )
-{
-	m_propEditor->SetObject( evt.GetUIObject() );
-}
-
-void wxUIEditorWindow::OnEditorModify( wxUIFormEvent & )
-{
-}
 
