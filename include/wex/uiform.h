@@ -1,9 +1,10 @@
 #ifndef __uiform_h
 #define __uiform_h
 
+#include <vector>
+
 #include <wx/wx.h>
-#include <wx/propgrid/propgrid.h>
-#include <wx/propgrid/advprops.h>
+#include <wx/clrpicker.h>
 
 class wxUIProperty;
 
@@ -22,6 +23,7 @@ public:
 	explicit wxUIProperty( int i );
 	explicit wxUIProperty( int i, const wxArrayString &named_options );
 	explicit wxUIProperty( bool b );
+	explicit wxUIProperty( const char *str );
 	explicit wxUIProperty( const wxString &s );
 	explicit wxUIProperty( const wxColour &c );
 	explicit wxUIProperty( const wxImage &img );
@@ -29,7 +31,7 @@ public:
 
 	enum { INVALID, DOUBLE, BOOLEAN, INTEGER, COLOUR, STRING, STRINGLIST, IMAGE };
 
-	int Type();
+	int GetType();
 
 	void Set( double d );
 	void Set( bool b );
@@ -49,6 +51,8 @@ public:
 	wxString GetString();
 	wxArrayString GetStringList();
 	wxImage GetImage();
+
+	bool IsValid() { return m_type != INVALID; }
 
 	void Write( wxOutputStream & );
 	bool Read( wxInputStream & );
@@ -87,13 +91,16 @@ public:
 	virtual bool Copy( wxUIObject *rhs );
 	virtual void Draw( wxDC &dc, const wxRect &geom );
 	virtual bool IsWithin( int xx, int yy );
+	virtual bool DrawDottedBox() { return false; }
 	
 	/* methods for handling native controls */
-	virtual bool CreateNativeWidget( wxWindow *parent );
-	virtual void DestroyNativeWidget();
-	virtual wxWindow *GetNativeWidget();
-	virtual void OnNativeEvent( );
+	virtual wxWindow *CreateNativeWidget( wxWindow * ) { return 0; }
 	virtual void OnPropertyChanged( const wxString &id, wxUIProperty *p );
+	virtual void OnNativeEvent( );
+
+	void DestroyNativeWidget();
+	wxWindow *GetNativeWidget();
+	void ShowNativeWidget( bool b );
 	
 	void SetName( const wxString &name );
 	wxString GetName();
@@ -106,7 +113,7 @@ public:
 	virtual void Write( wxOutputStream & );
 	virtual bool Read( wxInputStream & );
 	
-	void Show( bool b ) { m_visible = b; }
+	virtual void Show( bool b ) { m_visible = b; }
 	bool IsVisible() { return m_visible; }
 
 protected:
@@ -117,70 +124,105 @@ private:
 	bool m_visible;
 	struct propdata { wxString name, lowered; wxUIProperty *prop; };
 	std::vector<propdata> m_properties;
+
+protected:
+	wxWindow *AssignNative( wxWindow *win );
+	wxWindow *m_nativeObject;
 	
 };
 
-class wxUIPropertyEditor : public wxPropertyGrid
+
+class wxUIPropertyEditor : public wxPanel
 {
-// Note: this class issues the EVT_PG_CHANGED( ) event
-// when a property has changed and the editor or UI needs to be updated
-// To know which property last changed, use the "GetLastChangedProperty()"
-// method, or, query the wxPGProperty's label.
 public:
 	wxUIPropertyEditor( wxWindow *parent, int id, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize );
 	virtual ~wxUIPropertyEditor();
 	
 	void SetObject( wxUIObject *obj );
 	wxUIObject *GetObject() { return m_curObject; }
-	wxString GetLastChangedProperty() { return m_lastChangedProperty; }
 	void UpdatePropertyValues();
 	
 private:
-    void OnPropertyGridChange(wxPropertyGridEvent &evt);
-    void OnPropertyGridChanging(wxPropertyGridEvent &evt);
+	void OnChange( wxCommandEvent & );
+	void OnColourPicker( wxColourPickerEvent & );
+	void OnButton( wxCommandEvent & );
 	
 	struct pgpinfo {
 		wxString name;
 		int type;
-		wxPGProperty *pgp;
+		wxWindow *label;
+		wxWindow *editor;
 	};
 	
 	void ValueToPropGrid( pgpinfo &p );
 	void PropGridToValue( pgpinfo &p );
 	
+	pgpinfo *Find( wxObject *editor );
+
+	std::vector<pgpinfo> m_curProps;
 	wxUIObject *m_curObject;
 	wxString m_lastChangedProperty;
 	
 	DECLARE_EVENT_TABLE();
 };
 
-
-
-
-class wxUIFormEvent : public wxCommandEvent
+class wxUIObjectTypeProvider
 {
 public:
-	wxUIFormEvent( wxEventType commandType = wxEVT_NULL, int id = 0);
-
-	UIObject *GetUIObject() { return m_guiobj; }
-	void SetUIObject(UIObject *o) { m_guiobj = o; }
-
-private:
-	UIObject *m_guiobj;
+	static void Register( wxUIObject *obj );
+	static std::vector<wxUIObject*> GetTypes();
+	static wxUIObject *Create( const wxString &type );
 };
 
-DECLARE_EVENT_TYPE( wxEVT_UIFORM_SELECT, -1 )
-DECLARE_EVENT_TYPE( wxEVT_UIFORM_MODIFY, -1 )
+class wxUIFormData
+{
+public:
+	wxUIFormData();
+	virtual ~wxUIFormData();
+	
+	// build/destroy native interface as needed
+	void Attach( wxWindow *form );
+	void Detach();
+	wxWindow *GetWindow() { return m_formWindow; }
+	
+	// load/save form definition
+	void Write( wxOutputStream & );
+	bool Read( wxInputStream & );
 
-typedef void (wxEvtHandler::*wxUIFormEventFunction)(wxUIFormEvent&);
+	// methods to create/edit UI objects
+	wxUIObject *Create( const wxString &type, const wxRect &geom, const wxString &name = wxEmptyString );
+	wxUIObject *Create( const wxString &type );
+	void Add( wxUIObject * );
+	void Delete( wxUIObject * );
+	void DeleteAll();
+	wxUIObject *Find( const wxString &name );
+	std::vector<wxUIObject*> GetObjects();
+	wxUIObject **GetObjects( size_t *n );
+	void Raise( wxUIObject * );
 
-#define EVT_UIFORM_GENERIC(id, type, fn) \
-    DECLARE_EVENT_TABLE_ENTRY( type, id, -1, \
-    (wxObjectEventFunction) (wxEventFunction) (wxCommandEventFunction) \
-    wxStaticCastEvent( wxUIFormEventFunction, & fn ), (wxObject *) NULL ),
+	// form properties
+	void SetName( const wxString &name );
+	wxString GetName();
+	void SetSize( int width, int height );
+	wxSize GetSize();
 
-#define EVT_UIFORM_SELECT( id, fn ) EVT_UIFORM_GENERIC( id, wxEVT_UIFORM_SELECT, fn )
-#define EVT_UIFORM_MODIFY( id, fn ) EVT_UIFORM_GENERIC( id, wxEVT_UIFORM_MODIFY, fn )
+	// virtual function to provide
+	// descendant classes ways to provide info about 
+	// labels, units, and other properties to be rendered
+	// on the actual form
+	virtual bool GetMetaData( const wxString &name,
+		wxString *label, wxString *units, bool *indicator, bool *show_labels,
+		wxColour *fore = 0, wxColour *back = 0 );
+
+protected:
+	wxString m_name;
+	int m_width;
+	int m_height;
+	std::vector< wxUIObject* > m_objects;
+
+	wxWindow *m_formWindow;
+};
+
 
 class wxUIObjectCopyBuffer
 {
@@ -197,144 +239,145 @@ private:
 	std::vector<wxUIObject*> m_copyList;
 };
 
-
-
-class wxUIFormData
+class wxUIFormEvent : public wxCommandEvent
 {
 public:
-	wxUIFormData( );
-	virtual ~wxUIFormData();
+	wxUIFormEvent( wxUIObject *uiobj, wxEventType commandType = wxEVT_NULL, int id = 0)
+		: wxCommandEvent(commandType, id), m_uiObject(uiobj) { }
+	wxUIObject *GetUIObject() { return m_uiObject; }
+	void SetUIObject(wxUIObject *o) { m_uiObject = o; }
+private:
+	wxUIObject *m_uiObject;
+};
 
-	/* for descendant interaction */
-	virtual void OnNativeEvent( UIObject *obj );
-	virtual void OnValueError( VarInfo *v );
-	virtual void OnValueChanged( VarInfo *v );
-	virtual void Read();
-	virtual void Write();
+DECLARE_EVENT_TYPE( wxEVT_UIFORM_SELECT, -1 )
+DECLARE_EVENT_TYPE( wxEVT_UIFORM_MODIFY, -1 )
 
-	/* mechanism to override control/variable data transfer 
-	   default behavior transfers variable value */
-	virtual void HandleVarToCtrl(VarInfo *v, UIObject *o);
-	virtual void HandleCtrlToVar(UIObject *o, VarInfo *v);
+typedef void (wxEvtHandler::*wxUIFormEventFunction)(wxUIFormEvent&);
 
-	void SetCopyBuffer(UIObjectCopyBuffer *cpbuf);
+#define EVT_UIFORM_GENERIC(id, type, fn) \
+    DECLARE_EVENT_TABLE_ENTRY( type, id, -1, \
+    (wxObjectEventFunction) (wxEventFunction) (wxCommandEventFunction) \
+    wxStaticCastEvent( wxUIFormEventFunction, & fn ), (wxObject *) NULL ),
 
-	void VarToCtrl(UIObject *o);
-	void CtrlToVar(UIObject *o);
-	virtual void AllVarsToCtrls();
+#define EVT_UIFORM_SELECT( id, fn ) EVT_UIFORM_GENERIC( id, wxEVT_UIFORM_SELECT, fn )
+#define EVT_UIFORM_MODIFY( id, fn ) EVT_UIFORM_GENERIC( id, wxEVT_UIFORM_MODIFY, fn )
 
-	void EnableEditMode(bool b=true);
+class wxUIFormEditor : public wxWindow
+{
+public:
+	wxUIFormEditor( wxWindow *parent, int id = wxID_ANY, 
+		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize );
 
-	void SetName(const wxString &name);
-	wxString GetName();
+	void SetFormData( wxUIFormData *form );
+	wxUIFormData *GetFormData() { return m_form; }
 
-	void SetCaption(const wxString &caption);
-	wxString GetCaption();
-
-	void SetPropEditor(PropEditor *p);
-	PropEditor *GetPropEditor();
-
-	void SetSymTab(SymTab *stab);
-	SymTab *GetSymTab();
-
-	virtual bool EditMode();
-	void SetEditMode(bool b = false);
-
-	UIObject *CreateControl(ControlInfo *ctrlinfo, 
-		int x=10, int y=10, int w=-1, int h=-1, const char *namebase=NULL);
-
-	void AddChild(UIObject *obj);
-	void RemoveChild(UIObject *obj);
-	UIObject *FindChild(const wxString &name);
-	virtual UIObject **GetChildren(int &count);
-	void RaiseChild(UIObject *obj);
-	void DeleteChildren();
-
-	void Draw(wxDC &dc);
-	virtual void RefreshView() { Refresh(); }
-
-	virtual wxWindow *GetWxParentWindow();
-
+	void SetCopyBuffer( wxUIObjectCopyBuffer *cpbuf);
+	void SetPropertyEditor( wxUIPropertyEditor *pe );
 	bool AreObjectsSelected();
 	int GetSelectedCount();
-	UIObject *GetSelected(int i);
+	wxUIObject *GetSelected(int i);
 	void ClearSelections();
-	
-	void WriteDatabase( wxOutputStream &_os );
-	bool ReadDatabase( wxInputStream &_is );
-
-	bool ReadDatabase(FILE *fp);
-
-	void ResizePanel();
-
 	void EnableTabOrderMode(bool b);
 
-	bool IsDirty();
-	void SetDirty(bool b);
+	void Snap( int *x, int *y, int spacing = -1 );
+	int Snap( int p, int spacing = -1 );
 
-	void Modified(); // sets bDirty = true and sends MODIFY event
-private:
-	void WriteObject( wxOutputStream &_os, UIObject *obj );
-	bool ReadObject( wxInputStream &_is );
+	bool IsModified() { return m_modified; }
+	void SetModified( bool b ) { m_modified = b; }
+	void Modified();
 
-	bool ReadObject(FILE *fp);
+private:	
 
 	void DrawMultiSelBox();
 	void DrawMoveResizeOutlines();
-	int IsOverResizeBox(int x, int y, UIObject *obj);
+	int IsOverResizeBox(int x, int y, wxUIObject *obj);
 	void SetResizeCursor(int pos = -1);
 
-	UIObjectCopyBuffer *mCopyBuffer;
-
-	Array<UIObject*> mSelectedItems;
-
-	wxColour mSelectColour;
-
-	wxCursor mStandardCursor;
-	wxCursor mMoveResizeCursor;
-	wxCursor mNwSeCursor;
-	wxCursor mNSCursor;
-	wxCursor mWECursor;
-	wxCursor mNeSwCursor;
-
-	int mTabOrderCounter;
-	bool bTabOrderMode;
-	bool bEditingAllowed;
-	bool bEditMode;
-	bool bMoveMode;
-	bool bMoveModeErase;
-	bool bMultiSelMode;
-	bool bMultiSelModeErase;
-	int mOrigX, mOrigY, mDiffX, mDiffY, mDiffW, mDiffH;
-	bool bResizeMode;
-	bool bResizeModeErase;
-	int mResizeBox;
-	bool bDirty;
+	bool m_moveMode;
+	bool m_moveModeErase;
+	bool m_multiSelMode;
+	bool m_multiSelModeErase;
+	bool m_resizeMode;
+	bool m_resizeModeErase;
+	int m_resizeBox;
+	int m_origX, m_origY;
+	int m_diffX, m_diffY;
+	int m_diffW, m_diffH;
+	int m_popupX, m_popupY;
 	
-	PropEditor *mPropEdit;
-	SymTab *mSymTab;
-
-	wxString mName;
-	wxString mCaption;
-	wxWindow *mParent;
-	Array<UIObject*> mChildren;
-	wxMenu *mPopup;
-	int mPopupX, mPopupY;
-
 	void OnMouseMove(wxMouseEvent &evt);
-	void OnLeftButtonUp(wxMouseEvent &evt);
-	void OnLeftButtonDown(wxMouseEvent &evt);
-	void OnRightButtonDown(wxMouseEvent &evt);
-	void OnResize(wxSizeEvent &evt);
+	void OnLeftUp(wxMouseEvent &evt);
+	void OnLeftDown(wxMouseEvent &evt);
+	void OnRightDown(wxMouseEvent &evt);
+	void OnSize(wxSizeEvent &evt);
 	void OnPaint(wxPaintEvent &evt);
-
 	void OnPopup(wxCommandEvent &evt);
-	void OnAddCtrl(wxCommandEvent &evt);
+	void OnCreateCtrl(wxCommandEvent &evt);
+	
+	bool m_tabOrderMode;
+	int m_tabOrderCounter;
+	int m_snapSpacing;
 
-	/* native control event handler/propagator */
-	void NativeCtrlEvent(wxCommandEvent &evt);
+	bool m_modified;
+	wxUIObjectCopyBuffer *m_copyBuffer;
+	wxUIPropertyEditor *m_propEditor;
+	std::vector<wxUIObject*> m_selected;
+	wxUIFormData *m_form;
 
 	DECLARE_EVENT_TABLE()
+};
+
+
+class wxUIFormDesigner : public wxScrolledWindow
+{
+public:
+	wxUIFormDesigner( wxWindow *parent, int id, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize );
+
+	void SetFormData( wxUIFormData *form );
+	wxUIFormData *GetFormData();
+
+	void SetFormSize( int width, int height );
+	wxSize GetFormSize();
+
+	void UpdateScrollbars();
+private:
+	void OnPaint(wxPaintEvent &evt);
+	void OnResize(wxSizeEvent &evt);
+	void OnMouseDown(wxMouseEvent &evt);
+	void OnMouseUp(wxMouseEvent &evt);
+	void OnMouseMove(wxMouseEvent &evt);
+
+	bool m_mouseDown;
+	int m_diffX, m_diffY;
+
+	wxUIFormData *m_formData;
+	wxUIFormEditor *m_editor;
+
+	DECLARE_EVENT_TABLE()
+};
+
+class wxNumericCtrl;
+
+class wxUIEditorWindow : public wxPanel
+{
+public:
+	wxUIEditorWindow( wxWindow *parent, int id, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize );
+	wxUIFormData &GetFormData();
+
+private:
+	void OnCreate( wxCommandEvent & );
+	void OnCommand( wxCommandEvent & );
+	void OnEditorSelect( wxUIFormEvent &evt );
+	void OnEditorModify( wxUIFormEvent &evt );
+
+	wxUIFormData m_form;
+	wxTextCtrl *m_txtName;
+	wxNumericCtrl *m_numWidth, *m_numHeight;
+	wxUIPropertyEditor *m_propEditor;
+	wxUIFormDesigner *m_formDesigner;
+
+	DECLARE_EVENT_TABLE();
 };
 
 #endif

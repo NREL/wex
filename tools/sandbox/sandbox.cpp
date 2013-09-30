@@ -46,6 +46,8 @@ public:
 
 #include "demo_bitmap.cpng"
 
+#include "wex/uiform.h"
+
 
 void TestPLPlot( wxWindow *parent )
 {
@@ -238,9 +240,12 @@ public:
 
 		frm->SetSizer( sizer );
 		frm->Show();
-		
-		
 
+		frm = new wxFrame( 0, wxID_ANY, "Form Editor", wxDefaultPosition, wxSize(800, 600) );
+		new wxUIEditorWindow( frm, wxID_ANY );
+		frm->Show();
+
+		
 		return true;
 	}
 };
