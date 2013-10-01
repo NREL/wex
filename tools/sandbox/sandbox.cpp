@@ -243,7 +243,7 @@ public:
 		frm->SetSizer( sizer );
 		frm->Show();
 		*/
-		wxFrame *frm = new wxFrame( 0, wxID_ANY, "Form Editor", wxDefaultPosition, wxSize(800, 600) );
+		wxFrame *frm = new wxFrame( 0, wxID_ANY, "Form Editor", wxDefaultPosition, wxSize(900, 600) );
 		new wxUIEditorWindow( frm, wxID_ANY );
 		frm->Show();
 

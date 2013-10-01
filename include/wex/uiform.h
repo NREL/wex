@@ -106,6 +106,10 @@ public:
 	wxString GetName();
 	void SetGeometry( const wxRect &r );
 	wxRect GetGeometry();
+	wxPoint GetPosition();
+	wxSize GetSize();
+	virtual void Show( bool b );
+	bool IsVisible() { return m_visible; }
 
 	wxUIProperty &Property( const wxString &name );
 	wxArrayString Properties();
@@ -113,8 +117,6 @@ public:
 	virtual void Write( wxOutputStream & );
 	virtual bool Read( wxInputStream & );
 	
-	virtual void Show( bool b ) { m_visible = b; }
-	bool IsVisible() { return m_visible; }
 
 protected:
 	void AddProperty( const wxString &name, wxUIProperty *prop );
@@ -272,6 +274,8 @@ public:
 	void SetFormData( wxUIFormData *form );
 	wxUIFormData *GetFormData() { return m_form; }
 
+	wxUIObject *CreateObject( const wxString &type );
+
 	void SetCopyBuffer( wxUIObjectCopyBuffer *cpbuf);
 	void SetPropertyEditor( wxUIPropertyEditor *pe );
 	void EnableTabOrderMode(bool b);
@@ -282,6 +286,8 @@ public:
 	bool IsModified() { return m_modified; }
 	void SetModified( bool b ) { m_modified = b; }
 	void Modified();
+
+	void SetViewMode( bool b );
 
 private:	
 
@@ -321,6 +327,8 @@ private:
 	std::vector<wxUIObject*> m_selected;
 	wxUIFormData *m_form;
 
+	bool m_viewMode;
+
 	DECLARE_EVENT_TABLE()
 };
 
@@ -338,6 +346,8 @@ public:
 
 	void SetPropertyEditor( wxUIPropertyEditor *pe ) { m_editor->SetPropertyEditor(pe); }
 	void SetCopyBuffer( wxUIObjectCopyBuffer *cb ) { m_editor->SetCopyBuffer(cb); }
+
+	wxUIFormEditor *GetEditor() { return m_editor; }
 
 	void UpdateScrollbars();
 private:

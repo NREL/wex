@@ -13,18 +13,19 @@ class wxUIButtonObject : public wxUIObject
 {
 public:
 	wxUIButtonObject() {
-		AddProperty( "Label", new wxUIProperty( wxString("Click") ) );
+		AddProperty( "Caption", new wxUIProperty( "Button" ) );
+		AddProperty( "TabOrder", new wxUIProperty( -1 ) );
 	}
 	virtual wxString GetTypeName() { return "Button"; }
 	virtual wxUIObject *Duplicate() { wxUIObject *b = new wxUIButtonObject; b->Copy( this ); return b; }	
 	virtual wxWindow *CreateNativeWidget( wxWindow *parent ) {
-		return AssignNative( new wxButton(parent, wxID_ANY, Property("Label").GetString() ) );
+		return AssignNative( new wxButton(parent, wxID_ANY, Property("Caption").GetString(), GetPosition(), GetSize() ) );
 	}
 	virtual void OnPropertyChanged( const wxString &id, wxUIProperty *p )
 	{
 		if ( wxButton *b = dynamic_cast<wxButton*>(m_nativeObject) )
 		{
-			if ( id == "Label" ) b->SetLabel( p->GetString() );
+			if ( id == "Caption" ) b->SetLabel( p->GetString() );
 		}
 	}
 
@@ -33,7 +34,7 @@ public:
 		wxWindow *win = m_nativeObject ? m_nativeObject->GetParent() : 0;
 		wxRendererNative::Get().DrawPushButton( win, dc, geom );
 		dc.SetFont( *wxNORMAL_FONT );
-		wxString label = Property("Label").GetString();
+		wxString label = Property("Caption").GetString();
 		int x, y;
 		dc.GetTextExtent( label, &x, &y );
 		dc.DrawText( label, geom.x + geom.width/2-x/2, geom.y+geom.height/2-y/2 );
@@ -149,7 +150,7 @@ void wxUIProperty::Set( const wxColour &c )
 void wxUIProperty::Set( const wxString &s )
 {
 	if ( m_pReference ) m_pReference->Set( s );
-	else m_string = s;
+	else { m_string = s; ValueChanged(); }
 }
 
 void wxUIProperty::Set( const wxArrayString &list)
@@ -407,12 +408,6 @@ wxWindow *wxUIObject::GetNativeWidget()
 	return m_nativeObject;
 }
 
-void wxUIObject::ShowNativeWidget( bool b )
-{
-	if ( m_nativeObject ) m_nativeObject->Show( b );
-}
-
-
 bool wxUIObject::IsWithin( int xx, int yy )
 {
 	int x = Property("X").GetInteger();
@@ -449,9 +444,17 @@ bool wxUIObject::Copy( wxUIObject *rhs )
 	return true;
 }
 
+void wxUIObject::Show( bool b )
+{
+	m_visible = b;
+	if ( m_nativeObject ) m_nativeObject->Show( b );
+}
+
 void wxUIObject::SetName( const wxString &name )
 {
 	Property("Name").Set( name );
+
+	if ( m_nativeObject != 0 ) m_nativeObject->SetName( name );
 }
 
 wxString wxUIObject::GetName()
@@ -465,6 +468,8 @@ void wxUIObject::SetGeometry( const wxRect &r )
 	Property("Y").Set( r.y );
 	Property("Width").Set( r.width );
 	Property("Height").Set( r.height );
+
+	if ( m_nativeObject != 0 ) m_nativeObject->SetSize( r );
 }
 
 wxRect wxUIObject::GetGeometry()
@@ -474,6 +479,18 @@ wxRect wxUIObject::GetGeometry()
 		Property("Y").GetInteger(),
 		Property("Width").GetInteger(),
 		Property("Height").GetInteger() );
+}
+
+wxPoint wxUIObject::GetPosition()
+{
+	wxRect r = GetGeometry();
+	return wxPoint( r.x, r.y );
+}
+
+wxSize wxUIObject::GetSize()
+{
+	wxRect r = GetGeometry();
+	return wxSize( r.width, r.height );
 }
 
 wxUIProperty &wxUIObject::Property( const wxString &name )
@@ -680,7 +697,7 @@ wxUIPropertyEditor::wxUIPropertyEditor( wxWindow *parent, int id, const wxPoint 
 	: wxPanel( parent, id, pos, size, wxTAB_TRAVERSAL )
 {
 	m_curObject = 0;
-	wxFlexGridSizer *sizer = new wxFlexGridSizer(2, 1, 1);
+	wxFlexGridSizer *sizer = new wxFlexGridSizer(2,0,0);
 	sizer->AddGrowableCol(1);
 	SetSizer( sizer );
 }
@@ -944,10 +961,7 @@ void wxUIFormData::Attach( wxWindow *form )
 	if ( m_formWindow )
 	{
 		for( size_t i=0;i<m_objects.size();i++ )
-		{
 			m_objects[i]->CreateNativeWidget( m_formWindow );
-			m_objects[i]->ShowNativeWidget( false );
-		}
 	}
 
 }
@@ -1035,10 +1049,7 @@ void wxUIFormData::Add( wxUIObject *obj )
 	{
 		m_objects.push_back( obj );
 		if ( m_formWindow != 0 )
-		{
 			obj->CreateNativeWidget( m_formWindow );
-			obj->ShowNativeWidget( false );
-		}
 	}
 }
 
@@ -1213,6 +1224,7 @@ wxUIFormEditor::wxUIFormEditor( wxWindow *parent, int id, const wxPoint &pos, co
 	m_copyBuffer = 0;
 	m_propEditor = 0;
 
+	m_viewMode = false;
 	m_snapSpacing = 3;
 
 	m_tabOrderCounter = 1;
@@ -1239,6 +1251,22 @@ wxUIFormEditor::wxUIFormEditor( wxWindow *parent, int id, const wxPoint &pos, co
 	//wxUIObjectTypeProvider::Register( new wxUINumericObject );
 }
 
+wxUIObject *wxUIFormEditor::CreateObject( const wxString &type )
+{
+	if ( m_form != 0 )
+	{
+		wxUIObject *obj = wxUIObjectTypeProvider::Create( type );
+		if ( !obj ) return 0;
+
+		m_form->Add( obj );
+		obj->Show( m_viewMode );
+
+		Refresh();
+		return obj;
+	}
+	else return 0;
+}
+
 void wxUIFormEditor::SetFormData( wxUIFormData *form )
 {
 	m_form = form;
@@ -1252,6 +1280,19 @@ void wxUIFormEditor::SetCopyBuffer( wxUIObjectCopyBuffer *cpbuf )
 void wxUIFormEditor::SetPropertyEditor( wxUIPropertyEditor *pe )
 {
 	m_propEditor = pe;
+}
+
+void wxUIFormEditor::SetViewMode( bool b )
+{
+	m_viewMode = b;
+	if ( m_form != 0 )
+	{
+		std::vector<wxUIObject*> objs = m_form->GetObjects();
+		for( size_t i=0;i<objs.size();i++ )
+			objs[i]->Show( m_viewMode );
+
+		Refresh();
+	}
 }
 
 void wxUIFormEditor::Modified()
@@ -1347,6 +1388,8 @@ void wxUIFormEditor::OnLeftDown(wxMouseEvent &evt)
 {
 	if ( m_form == 0 ) return;
 
+	if ( m_viewMode ) return;
+
 	// edit mode, enable selections and moving
 	int mx = evt.GetX();
 	int my = evt.GetY();
@@ -1365,9 +1408,9 @@ void wxUIFormEditor::OnLeftDown(wxMouseEvent &evt)
 		for ( size_t i=0;i<objs.size();i++ )
 		{
 			wxRect rct = objs[i]->GetGeometry();
-			if (mx >= rct.x && mx < rct.x+15 && my >= rct.y && my < rct.y+15)
+			if ( objs[i]->IsWithin( mx, my ) )
 			{
-				objs[i]->Property("Tab order").Set(m_tabOrderCounter++);
+				objs[i]->Property("TabOrder").Set(m_tabOrderCounter++);
 				Modified();
 				Refresh();
 				break;
@@ -1380,13 +1423,6 @@ void wxUIFormEditor::OnLeftDown(wxMouseEvent &evt)
 			Refresh();
 			return;
 		}
-	}
-	else if (evt.AltDown())
-	{
-		m_diffX = 0;
-		m_diffY = 0;
-		m_multiSelMode = true;
-		m_multiSelModeErase = true;
 	}
 	else if (m_selected.size() == 1 && 
 		IsOverResizeBox(mx, my, m_selected[0]) > 0 )
@@ -1461,6 +1497,14 @@ void wxUIFormEditor::OnLeftDown(wxMouseEvent &evt)
 			m_diffW = 0;
 			m_diffH = 0;
 		}
+		else
+		{
+			// if clicked in blank space, start a multiple selection box
+			m_diffX = 0;
+			m_diffY = 0;
+			m_multiSelMode = true;
+			m_multiSelModeErase = true;
+		}
 
 		if (redraw)
 			Refresh();
@@ -1473,6 +1517,8 @@ void wxUIFormEditor::OnLeftDown(wxMouseEvent &evt)
 void wxUIFormEditor::OnLeftUp(wxMouseEvent &)
 {
 	if ( m_form == 0 ) return;
+	
+	if ( m_viewMode ) return;
 
 	// allow interface editing
 	if (m_moveMode)
@@ -1635,6 +1681,8 @@ void wxUIFormEditor::SetResizeCursor(int pos)
 
 void wxUIFormEditor::OnMouseMove(wxMouseEvent &evt)
 {
+	if ( m_viewMode ) return;
+
 	int mx = evt.GetX();
 	int my = evt.GetY();
 
@@ -1753,7 +1801,12 @@ void wxUIFormEditor::OnSize(wxSizeEvent &)
 
 
 void wxUIFormEditor::OnRightDown(wxMouseEvent &evt)
-{	
+{
+	if ( evt.ShiftDown() )
+	{
+		SetViewMode( !m_viewMode );
+		return;
+	}
 	
 	m_popupX = evt.GetX();
 	m_popupY = evt.GetY();
@@ -1765,6 +1818,7 @@ void wxUIFormEditor::OnRightDown(wxMouseEvent &evt)
 
 	popup.AppendSeparator();
 	popup.AppendCheckItem( ID_TABORDERMODE, "Tab order mode" );
+	popup.Check( ID_TABORDERMODE, m_tabOrderMode );
 	popup.AppendSeparator();
 
 	wxMenu *align_menu = new wxMenu;
@@ -1791,20 +1845,23 @@ void wxUIFormEditor::OnPaint(wxPaintEvent &)
 	
 	wxSize sz = GetSize();
 
-	dc.SetBrush(wxBrush(wxColour(230, 230, 230)));
-	dc.SetPen(wxPen(wxColour(230, 230, 230)));
-	dc.DrawRectangle(0, 0, sz.GetWidth(), sz.GetHeight());
+	if ( !m_viewMode )
+	{
+		dc.SetBrush(wxBrush(wxColour(230, 230, 230)));
+		dc.SetPen(wxPen(wxColour(230, 230, 230)));
+		dc.DrawRectangle(0, 0, sz.GetWidth(), sz.GetHeight());
 		
-	dc.SetBrush(*wxLIGHT_GREY_BRUSH);
-	dc.SetPen(*wxLIGHT_GREY_PEN);
-	//gfx.DrawRectangle(0,0,sz.GetWidth(), sz.GetHeight(), false);
+		dc.SetBrush(*wxLIGHT_GREY_BRUSH);
+		dc.SetPen(*wxLIGHT_GREY_PEN);
+		//gfx.DrawRectangle(0,0,sz.GetWidth(), sz.GetHeight(), false);
 
-	int spacing = m_snapSpacing * 3;
+		int spacing = m_snapSpacing * 3;
 
-	for (int i=spacing;i<sz.GetWidth();i+=spacing)
-		for(int j=spacing;j<sz.GetHeight();j+=spacing)
-			dc.DrawPoint(i , j);
-		
+		for (int i=spacing;i<sz.GetWidth();i+=spacing)
+			for(int j=spacing;j<sz.GetHeight();j+=spacing)
+				dc.DrawPoint(i , j);
+	}
+
 	if ( m_form == 0 ) return;
 
 	// paint the children
@@ -1812,7 +1869,8 @@ void wxUIFormEditor::OnPaint(wxPaintEvent &)
 	std::vector<wxUIObject*> objs = m_form->GetObjects();
 	for ( int i=(int)objs.size()-1;i>=0;i-- )
 	{
-		if ( objs[i]->IsVisible() )
+		if ( ( objs[i]->GetNativeWidget() != 0 || objs[i]->IsVisible() )
+			&& ( !m_viewMode || objs[i]->GetNativeWidget() == 0 ) )
 		{
 			rct = objs[i]->GetGeometry();
 			dc.SetClippingRegion(rct);			
@@ -1826,6 +1884,7 @@ void wxUIFormEditor::OnPaint(wxPaintEvent &)
 				dc.DrawRectangle(rct.x, rct.y, rct.width, rct.height);
 			}
 
+			
 			objs[i]->Draw( dc, rct );
 			dc.DestroyClippingRegion();
 		}
@@ -1850,65 +1909,73 @@ void wxUIFormEditor::OnPaint(wxPaintEvent &)
 		}
 	}
 
-	// paint any selection handles
-	dc.SetBrush(wxBrush( "magenta" ));
-	dc.SetPen(wxPen( "magenta" ));
-	for (size_t i=0;i<m_selected.size();i++)
+	if ( !m_viewMode )
 	{
-		wxRect rct = m_selected[i]->GetGeometry();
-			
-		// left side
-		dc.DrawRectangle(rct.x - RSZBOXW, rct.y - RSZBOXW, RSZBOXW, RSZBOXW);
-		dc.DrawRectangle(rct.x - RSZBOXW, rct.y + rct.height/2 - RSZBOXW/2, RSZBOXW, RSZBOXW);
-		dc.DrawRectangle(rct.x - RSZBOXW, rct.y + rct.height, RSZBOXW, RSZBOXW);
-
-		// right side
-		dc.DrawRectangle(rct.x + rct.width, rct.y - RSZBOXW, RSZBOXW, RSZBOXW);
-		dc.DrawRectangle(rct.x + rct.width, rct.y + rct.height/2 - RSZBOXW/2, RSZBOXW, RSZBOXW);
-		dc.DrawRectangle(rct.x + rct.width, rct.y + rct.height, RSZBOXW, RSZBOXW);
-			
-		// bottom
-		dc.DrawRectangle(rct.x + rct.width/2 - RSZBOXW/2, rct.y + rct.height, RSZBOXW, RSZBOXW);
-
-		// top
-		dc.DrawRectangle(rct.x + rct.width/2 - RSZBOXW/2, rct.y - RSZBOXW, RSZBOXW, RSZBOXW);
-	}
-
-	if (m_tabOrderMode)
-	{
-		wxFont f = *wxNORMAL_FONT;
-		f.SetWeight(wxFONTWEIGHT_BOLD);
-		dc.SetFont(f);
-		for (size_t i=0;i<objs.size();i++)
+		// paint any selection handles
+		dc.SetBrush(wxBrush( "magenta" ));
+		dc.SetPen(wxPen( "magenta" ));
+		for (size_t i=0;i<m_selected.size();i++)
 		{
-			if ( objs[i]->Property("Tab order").IsValid() )
+			wxRect rct = m_selected[i]->GetGeometry();
+			
+			// left side
+			dc.DrawRectangle(rct.x - RSZBOXW, rct.y - RSZBOXW, RSZBOXW, RSZBOXW);
+			dc.DrawRectangle(rct.x - RSZBOXW, rct.y + rct.height/2 - RSZBOXW/2, RSZBOXW, RSZBOXW);
+			dc.DrawRectangle(rct.x - RSZBOXW, rct.y + rct.height, RSZBOXW, RSZBOXW);
+
+			// right side
+			dc.DrawRectangle(rct.x + rct.width, rct.y - RSZBOXW, RSZBOXW, RSZBOXW);
+			dc.DrawRectangle(rct.x + rct.width, rct.y + rct.height/2 - RSZBOXW/2, RSZBOXW, RSZBOXW);
+			dc.DrawRectangle(rct.x + rct.width, rct.y + rct.height, RSZBOXW, RSZBOXW);
+			
+			// bottom
+			dc.DrawRectangle(rct.x + rct.width/2 - RSZBOXW/2, rct.y + rct.height, RSZBOXW, RSZBOXW);
+
+			// top
+			dc.DrawRectangle(rct.x + rct.width/2 - RSZBOXW/2, rct.y - RSZBOXW, RSZBOXW, RSZBOXW);
+		}
+
+		if (m_tabOrderMode)
+		{
+			wxFont f = *wxNORMAL_FONT;
+			f.SetWeight(wxFONTWEIGHT_BOLD);
+			dc.SetFont(f);
+			for (size_t i=0;i<objs.size();i++)
 			{
-				rct = objs[i]->GetGeometry();
+				if ( objs[i]->Property("TabOrder").IsValid() )
+				{
+					rct = objs[i]->GetGeometry();
 				
-				int tw, th;
-				wxString tabnum = wxString::Format("%d",objs[i]->Property("Tab order").GetInteger());
-				dc.GetTextExtent(tabnum, &tw, &th);
+					int tw, th;
+					wxString tabnum = wxString::Format("%d",objs[i]->Property("TabOrder").GetInteger());
+					dc.GetTextExtent(tabnum, &tw, &th);
 
-				dc.SetBrush(*wxLIGHT_GREY_BRUSH);
-				dc.SetPen(*wxLIGHT_GREY_PEN);
-				dc.DrawRectangle(rct.x, rct.y, tw+4, th+4);
+					dc.SetBrush(*wxLIGHT_GREY_BRUSH);
+					dc.SetPen(*wxLIGHT_GREY_PEN);
+					dc.DrawRectangle(rct.x, rct.y, tw+4, th+4);
 
-				dc.SetTextForeground(*wxRED);
-				dc.DrawText(tabnum, rct.x+2, rct.y+2);
+					dc.SetTextForeground(*wxRED);
+					dc.DrawText(tabnum, rct.x+2, rct.y+2);
 
-				dc.SetBrush(*wxTRANSPARENT_BRUSH);
-				dc.SetPen(wxPen(*wxBLUE));
-				dc.DrawRectangle(rct.x, rct.y, tw+4, th+4);
-				dc.DrawRectangle(rct.x-2, rct.y-2, rct.width+4, rct.height+4);
+					dc.SetBrush(*wxTRANSPARENT_BRUSH);
+					dc.SetPen(wxPen(*wxBLUE));
+					dc.DrawRectangle(rct.x, rct.y, tw+4, th+4);
+					dc.DrawRectangle(rct.x-2, rct.y-2, rct.width+4, rct.height+4);
+				}
 			}
 		}
 	}
-
+	else
+	{
+		dc.SetTextForeground( *wxLIGHT_GREY );
+		dc.SetFont( *wxNORMAL_FONT );
+		dc.DrawText( "View mode.  Shift-right-click to return to editing.", 5, sz.GetHeight() - 5 - dc.GetCharHeight() );
+	}
 }
 
 void wxUIFormEditor::OnPopup(wxCommandEvent &evt)
 {
-	if ( m_form == 0 ) return;
+	if ( m_form == 0 || m_viewMode ) return;
 
 	if ( evt.GetId() == ID_COPY && m_copyBuffer != 0 )
 	{
@@ -1926,6 +1993,7 @@ void wxUIFormEditor::OnPopup(wxCommandEvent &evt)
 		{
 			wxUIObject *obj = topaste[i]->Duplicate();
 			m_form->Add( obj );
+			obj->Show( m_viewMode );
 			Modified();
 			m_selected.push_back(obj);
 		}
@@ -1953,7 +2021,8 @@ void wxUIFormEditor::OnPopup(wxCommandEvent &evt)
 
 				wxUIObject *obj = tocopy->Duplicate();
 				obj->SetGeometry( wxRect( m_popupX+dx, m_popupY+dy, geom.width, geom.height ) );
-				m_form->Add( obj );				
+				m_form->Add( obj );
+				obj->Show( m_viewMode );
 				added.push_back( obj );
 				Modified();
 
@@ -2029,11 +2098,12 @@ void wxUIFormEditor::OnCreateCtrl( wxCommandEvent &evt )
 	if ( id < types.size() )
 	{
 		wxUIObject *obj = types[id]->Duplicate();
-		//wxRect rct = obj->GetGeometry();
-		//rct.x = m_popupX - rct.width/2;
-		//rct.y = m_popupY - rct.height/2;
-		//obj->SetGeometry( rct );
+		wxRect rct = obj->GetGeometry();
+		rct.x = m_popupX - rct.width/2;
+		rct.y = m_popupY - rct.height/2;
+		obj->SetGeometry( rct );
 		m_form->Add( obj );	
+		obj->Show( m_viewMode );
 		m_selected.clear();
 		if ( m_propEditor ) m_propEditor->SetObject( 0 );
 		Refresh();
@@ -2240,9 +2310,7 @@ void wxUIEditorWindow::OnCreate( wxCommandEvent &evt )
 	std::vector<wxUIObject*> ctrls = wxUIObjectTypeProvider::GetTypes();
 
 	if ( id < ctrls.size() )
-		m_form.Add( ctrls[id]->Duplicate() );
-
-	m_formDesigner->Refresh();
+		m_formDesigner->GetEditor()->CreateObject( ctrls[id]->GetTypeName() );
 }
 
 void wxUIEditorWindow::OnCommand( wxCommandEvent &evt )
