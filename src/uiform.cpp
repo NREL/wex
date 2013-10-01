@@ -1220,6 +1220,8 @@ END_EVENT_TABLE()
 wxUIFormEditor::wxUIFormEditor( wxWindow *parent, int id, const wxPoint &pos, const wxSize &size )
 	: wxWindow(parent, id, pos, size, wxCLIP_CHILDREN)
 {
+	SetBackgroundStyle( wxBG_STYLE_CUSTOM );
+
 	m_form = 0;
 	m_copyBuffer = 0;
 	m_propEditor = 0;
@@ -1841,7 +1843,7 @@ void wxUIFormEditor::OnRightDown(wxMouseEvent &evt)
 
 void wxUIFormEditor::OnPaint(wxPaintEvent &)
 {
-	wxPaintDC dc(this);
+	wxAutoBufferedPaintDC dc(this);
 	
 	wxSize sz = GetSize();
 
@@ -2122,6 +2124,7 @@ END_EVENT_TABLE()
 wxUIFormDesigner::wxUIFormDesigner(wxWindow *parent, int id, const wxPoint &pos, const wxSize &size )
 	: wxScrolledWindow( parent, wxID_ANY, pos, size, wxHSCROLL|wxVSCROLL|wxWANTS_CHARS  )
 {
+	SetBackgroundStyle( wxBG_STYLE_CUSTOM );
 	SetBackgroundColour( *wxWHITE );
 	m_formData = 0;
 	m_editor = new wxUIFormEditor( this, id, wxPoint(10,10), wxSize(400,300) );
@@ -2163,9 +2166,12 @@ wxSize wxUIFormDesigner::GetFormSize()
 
 void wxUIFormDesigner::OnPaint(wxPaintEvent &)
 {
-	wxPaintDC pdc(this);
+	wxAutoBufferedPaintDC pdc(this);
 	PrepareDC(pdc);
 	pdc.SetDeviceClippingRegion( GetUpdateRegion() );
+
+	pdc.SetBackground( *wxWHITE_BRUSH );
+	pdc.Clear();
 
 	int fx,fy,fw,fh;
 	m_editor->GetPosition(&fx,&fy);
