@@ -18,6 +18,7 @@ public:
 	}
 	virtual wxString GetTypeName() { return "Button"; }
 	virtual wxUIObject *Duplicate() { wxUIObject *b = new wxUIButtonObject; b->Copy( this ); return b; }	
+	virtual bool IsNativeWidget() { return true; }
 	virtual wxWindow *CreateNativeWidget( wxWindow *parent ) {
 		return AssignNative( new wxButton(parent, wxID_ANY, Property("Caption").GetString(), GetPosition(), GetSize() ) );
 	}
@@ -29,16 +30,56 @@ public:
 		}
 	}
 
-	virtual void Draw( wxDC &dc, const wxRect &geom )
+	virtual void Draw( wxWindow *win, wxDC &dc, const wxRect &geom )
 	{
-		wxWindow *win = m_nativeObject ? m_nativeObject->GetParent() : 0;
 		wxRendererNative::Get().DrawPushButton( win, dc, geom );
 		dc.SetFont( *wxNORMAL_FONT );
+		dc.SetTextForeground( *wxBLACK );
 		wxString label = Property("Caption").GetString();
 		int x, y;
 		dc.GetTextExtent( label, &x, &y );
 		dc.DrawText( label, geom.x + geom.width/2-x/2, geom.y+geom.height/2-y/2 );
 	}
+};
+
+class wxUICheckBoxObject : public wxUIObject
+{
+public:
+	wxUICheckBoxObject() {
+		AddProperty( "Caption", new wxUIProperty( "CheckBox" ) );
+		AddProperty( "State", new wxUIProperty( true ) );
+		AddProperty( "TabOrder", new wxUIProperty( -1 ) );
+	}
+	virtual wxString GetTypeName() { return "CheckBox"; }
+	virtual wxUIObject *Duplicate() { wxUIObject *c = new wxUICheckBoxObject; c->Copy( this ); return c; }
+	virtual bool IsNativeWidget() { return true; }
+	virtual bool DrawDottedOutline() { return true; }
+	virtual wxWindow *CreateNativeWidget( wxWindow *parent ) {
+		wxCheckBox *cb = new wxCheckBox(parent, wxID_ANY, Property("Caption").GetString(), GetPosition(), GetSize() );
+		cb->SetValue( Property("State").GetBoolean() );
+		return AssignNative( cb );
+	}
+	virtual void OnPropertyChanged( const wxString &id, wxUIProperty *p )
+	{
+		if ( wxCheckBox *c = dynamic_cast<wxCheckBox*>( m_nativeObject ) )
+		{
+			if ( id == "Caption" ) c->SetLabel( p->GetString() );
+			else if ( id == "State" ) c->SetValue( p->GetBoolean() );
+		}
+	}
+	virtual void Draw( wxWindow *win, wxDC &dc, const wxRect &geom )
+	{
+		int flags = Property("State").GetBoolean() ? wxCONTROL_CHECKED : 0;
+		wxSize size = wxRendererNative::Get().GetCheckBoxSize( win );
+		wxRendererNative::Get().DrawCheckBox( win, dc, wxRect( geom.x + 1, geom.y+geom.height/2-size.y/2, size.x, size.y), flags );
+		wxString label = Property("Caption").GetString();
+		int x, y;
+		dc.SetFont( *wxNORMAL_FONT );
+		dc.SetTextForeground( *wxBLACK );
+		dc.GetTextExtent( label, &x, &y );
+		dc.DrawText( label, geom.x + size.x + 3, geom.y+geom.height/2-y/2 );
+	}
+
 };
 
 
@@ -418,7 +459,7 @@ bool wxUIObject::IsWithin( int xx, int yy )
 		&& yy >= y && yy < y+height) ;
 }
 
-void wxUIObject::Draw( wxDC &dc, const wxRect &geom )
+void wxUIObject::Draw( wxWindow *win, wxDC &dc, const wxRect &geom )
 {
 	dc.SetPen( *wxBLACK_PEN );
 	dc.SetBrush( *wxLIGHT_GREY_BRUSH );
@@ -577,7 +618,7 @@ class StringListDialog : public wxDialog
 	wxListBox *m_list;
 	wxButton *m_addButton;
 public:
-	StringListDialog::StringListDialog( wxWindow *parent )
+	StringListDialog( wxWindow *parent )
 		: wxDialog(parent, wxID_ANY, "Edit strings",
 			wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE )
 	{
@@ -1140,7 +1181,6 @@ wxSize wxUIFormData::GetSize()
 
 
 DEFINE_EVENT_TYPE( wxEVT_UIFORM_SELECT )
-DEFINE_EVENT_TYPE( wxEVT_UIFORM_MODIFY )
 
 wxUIObjectCopyBuffer::wxUIObjectCopyBuffer()
 {
@@ -1248,7 +1288,7 @@ wxUIFormEditor::wxUIFormEditor( wxWindow *parent, int id, const wxPoint &pos, co
 	m_resizeBox = BOX_NONE;	
 
 	wxUIObjectTypeProvider::Register( new wxUIButtonObject );
-	//wxUIObjectTypeProvider::Register( new wxUICheckBoxObject );
+	wxUIObjectTypeProvider::Register( new wxUICheckBoxObject );
 	//wxUIObjectTypeProvider::Register( new wxUILabelObject );
 	//wxUIObjectTypeProvider::Register( new wxUINumericObject );
 }
@@ -1296,15 +1336,6 @@ void wxUIFormEditor::SetViewMode( bool b )
 		Refresh();
 	}
 }
-
-void wxUIFormEditor::Modified()
-{
-	m_modified = true;
-	wxUIFormEvent evt( 0, wxEVT_UIFORM_MODIFY, GetId());
-	evt.SetEventObject(this);
-	ProcessEvent(evt);
-}
-
 
 void wxUIFormEditor::Snap(int *x, int *y, int spacing )
 {
@@ -1413,7 +1444,6 @@ void wxUIFormEditor::OnLeftDown(wxMouseEvent &evt)
 			if ( objs[i]->IsWithin( mx, my ) )
 			{
 				objs[i]->Property("TabOrder").Set(m_tabOrderCounter++);
-				Modified();
 				Refresh();
 				break;
 			}
@@ -1518,6 +1548,9 @@ void wxUIFormEditor::OnLeftDown(wxMouseEvent &evt)
 
 void wxUIFormEditor::OnLeftUp(wxMouseEvent &)
 {
+	if ( HasCapture() )
+		ReleaseMouse();
+
 	if ( m_form == 0 ) return;
 	
 	if ( m_viewMode ) return;
@@ -1539,9 +1572,18 @@ void wxUIFormEditor::OnLeftUp(wxMouseEvent &)
 			m_propEditor->UpdatePropertyValues();
 
 		m_moveMode = false;
-		m_moveModeErase = false;
 
-		Modified();
+#ifdef wxUI_USE_OVERLAY
+		wxClientDC dc( this );
+		wxDCOverlay overlaydc( m_overlay, &dc );
+		overlaydc.Clear();
+		m_overlay.Reset();
+#else
+		if ( m_moveModeErase )
+			DrawMoveResizeOutlines();
+#endif
+		m_moveModeErase = false;
+		
 		Refresh();
 	}
 	else if (m_multiSelMode)
@@ -1568,8 +1610,17 @@ void wxUIFormEditor::OnLeftUp(wxMouseEvent &)
 		}
 
 		m_multiSelMode = false;
+#ifdef wxUI_USE_OVERLAY
+		wxClientDC dc( this );
+		wxDCOverlay overlaydc( m_overlay, &dc );
+		overlaydc.Clear();
+		m_overlay.Reset();
+#else
+		if ( m_multiSelModeErase )
+			DrawMultiSelBox();
+#endif
 		m_multiSelModeErase = false;
-		Modified();
+		
 		Refresh();
 	}
 	else if (m_resizeMode && m_selected.size() == 1)
@@ -1591,8 +1642,17 @@ void wxUIFormEditor::OnLeftUp(wxMouseEvent &)
 			m_propEditor->UpdatePropertyValues();
 
 		m_resizeMode = false;
+#ifdef wxUI_USE_OVERLAY
+		wxClientDC dc( this );
+		wxDCOverlay overlaydc( m_overlay, &dc );
+		overlaydc.Clear();
+		m_overlay.Reset();
+#else
+		if ( m_resizeModeErase )
+			DrawMoveResizeOutlines();
+#endif
 		m_resizeModeErase = false;
-		Modified();
+
 		Refresh();
 	}
 		
@@ -1605,9 +1665,17 @@ void wxUIFormEditor::DrawMultiSelBox()
 		return;
 
 	wxClientDC dc(this);
+#ifdef wxUI_USE_OVERLAY
+	wxDCOverlay overlaydc( m_overlay, &dc );
+	overlaydc.Clear();
+	wxBrush brush( wxColour(240,240,240,130) );
+	wxPen pen( wxColour(120,120,120) );
+#else
 	dc.SetLogicalFunction( wxINVERT );
 	wxBrush brush( *wxWHITE, wxTRANSPARENT );
 	wxPen pen(*wxBLACK, 2, wxSOLID);
+#endif
+
 	pen.SetCap(wxCAP_BUTT);
 	pen.SetJoin(wxJOIN_MITER);
 	dc.SetBrush(brush);
@@ -1629,7 +1697,12 @@ void wxUIFormEditor::DrawMultiSelBox()
 void wxUIFormEditor::DrawMoveResizeOutlines()
 {
 	wxClientDC dc(this);
+#ifdef wxUI_USE_OVERLAY
+	wxDCOverlay overlaydc( m_overlay, &dc );
+	overlaydc.Clear();
+#else
 	dc.SetLogicalFunction( wxINVERT );
+#endif
 	wxBrush brush( *wxWHITE, wxTRANSPARENT );
 	wxPen pen(*wxBLACK, 2, wxSOLID);
 	pen.SetCap(wxCAP_BUTT);
@@ -1694,8 +1767,10 @@ void wxUIFormEditor::OnMouseMove(wxMouseEvent &evt)
 
 	if (m_moveMode)
 	{
+#ifndef wxUI_USE_OVERLAY
 		if (m_moveModeErase)
 			DrawMoveResizeOutlines();
+#endif
 
 		m_diffX = xroot - m_origX;
 		m_diffY = yroot - m_origY;
@@ -1709,9 +1784,10 @@ void wxUIFormEditor::OnMouseMove(wxMouseEvent &evt)
 	{
 		SetResizeCursor();
 
+#ifndef wxUI_USE_OVERLAY
 		if (m_resizeModeErase)
 			DrawMoveResizeOutlines();
-
+#endif
 		int diffx = xroot - m_origX;
 		int diffy = yroot - m_origY;
 
@@ -1777,8 +1853,10 @@ void wxUIFormEditor::OnMouseMove(wxMouseEvent &evt)
 	}
 	else if (m_multiSelMode)
 	{
+#ifndef wxUI_USE_OVERLAY
 		if (m_multiSelModeErase)
 			DrawMultiSelBox();
+#endif
 
 		m_diffX = xroot - m_origX;
 		m_diffY = yroot - m_origY;
@@ -1846,16 +1924,12 @@ void wxUIFormEditor::OnPaint(wxPaintEvent &)
 	wxAutoBufferedPaintDC dc(this);
 	
 	wxSize sz = GetSize();
+	dc.SetBackground( wxBrush( m_viewMode ? GetBackgroundColour() : wxColour(245,245,245) ) );
+	dc.Clear();
 
 	if ( !m_viewMode )
 	{
-		dc.SetBrush(wxBrush(wxColour(230, 230, 230)));
-		dc.SetPen(wxPen(wxColour(230, 230, 230)));
-		dc.DrawRectangle(0, 0, sz.GetWidth(), sz.GetHeight());
-		
-		dc.SetBrush(*wxLIGHT_GREY_BRUSH);
 		dc.SetPen(*wxLIGHT_GREY_PEN);
-		//gfx.DrawRectangle(0,0,sz.GetWidth(), sz.GetHeight(), false);
 
 		int spacing = m_snapSpacing * 3;
 
@@ -1876,7 +1950,7 @@ void wxUIFormEditor::OnPaint(wxPaintEvent &)
 		{
 			rct = objs[i]->GetGeometry();
 			dc.SetClippingRegion(rct);			
-			if ( objs[i]->DrawDottedBox() )
+			if ( objs[i]->DrawDottedOutline() )
 			{
 				wxPen p = wxPen(*wxBLACK, 1, wxDOT);
 				p.SetCap(wxCAP_BUTT);
@@ -1887,7 +1961,7 @@ void wxUIFormEditor::OnPaint(wxPaintEvent &)
 			}
 
 			
-			objs[i]->Draw( dc, rct );
+			objs[i]->Draw( this, dc, rct );
 			dc.DestroyClippingRegion();
 		}
 
@@ -1996,7 +2070,6 @@ void wxUIFormEditor::OnPopup(wxCommandEvent &evt)
 			wxUIObject *obj = topaste[i]->Duplicate();
 			m_form->Add( obj );
 			obj->Show( m_viewMode );
-			Modified();
 			m_selected.push_back(obj);
 		}
 		Refresh();
@@ -2026,8 +2099,6 @@ void wxUIFormEditor::OnPopup(wxCommandEvent &evt)
 				m_form->Add( obj );
 				obj->Show( m_viewMode );
 				added.push_back( obj );
-				Modified();
-
 			}
 
 			m_selected = added;
@@ -2083,7 +2154,6 @@ void wxUIFormEditor::OnPopup(wxCommandEvent &evt)
 					objgeom.y = (geom.y+geom.height)-objgeom.height;
 
 				m_selected[i]->SetGeometry(objgeom);
-				Modified();
 			}
 
 			Refresh();
@@ -2243,7 +2313,6 @@ void wxUIFormDesigner::OnMouseMove(wxMouseEvent &evt)
 		if (mx > 20 && my > 20)
 		{
 			m_editor->SetClientSize(mx-m_diffX, my-m_diffY);
-			m_editor->Modified();
 
 			if ( m_formData ) 
 				m_formData->SetSize( mx-m_diffX, my-m_diffY );

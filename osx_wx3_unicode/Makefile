@@ -14,6 +14,7 @@ TARGET = ../$(LIBNAME).a
 	
 OBJECTS = \
 	metro.o \
+	uiform.o \
 	sched.o \
 	utils.o \
 	lkscript.o \

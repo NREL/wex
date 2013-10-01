@@ -6,6 +6,9 @@
 #include <wx/wx.h>
 #include <wx/clrpicker.h>
 
+#define wxUI_USE_OVERLAY 1
+#include <wx/overlay.h>
+
 class wxUIProperty;
 
 class wxUIPropertyUpdateInterface
@@ -88,10 +91,12 @@ public:
 
 	virtual wxString GetTypeName() = 0;
 	virtual wxUIObject *Duplicate() = 0;
+	virtual bool IsNativeWidget() = 0;
+
 	virtual bool Copy( wxUIObject *rhs );
-	virtual void Draw( wxDC &dc, const wxRect &geom );
+	virtual void Draw( wxWindow *win, wxDC &dc, const wxRect &geom );
 	virtual bool IsWithin( int xx, int yy );
-	virtual bool DrawDottedBox() { return false; }
+	virtual bool DrawDottedOutline() { return false; }
 	
 	/* methods for handling native controls */
 	virtual wxWindow *CreateNativeWidget( wxWindow * ) { return 0; }
@@ -253,7 +258,6 @@ private:
 };
 
 DECLARE_EVENT_TYPE( wxEVT_UIFORM_SELECT, -1 )
-DECLARE_EVENT_TYPE( wxEVT_UIFORM_MODIFY, -1 )
 
 typedef void (wxEvtHandler::*wxUIFormEventFunction)(wxUIFormEvent&);
 
@@ -263,7 +267,6 @@ typedef void (wxEvtHandler::*wxUIFormEventFunction)(wxUIFormEvent&);
     wxStaticCastEvent( wxUIFormEventFunction, & fn ), (wxObject *) NULL ),
 
 #define EVT_UIFORM_SELECT( id, fn ) EVT_UIFORM_GENERIC( id, wxEVT_UIFORM_SELECT, fn )
-#define EVT_UIFORM_MODIFY( id, fn ) EVT_UIFORM_GENERIC( id, wxEVT_UIFORM_MODIFY, fn )
 
 class wxUIFormEditor : public wxWindow
 {
@@ -282,10 +285,6 @@ public:
 
 	void Snap( int *x, int *y, int spacing = -1 );
 	int Snap( int p, int spacing = -1 );
-
-	bool IsModified() { return m_modified; }
-	void SetModified( bool b ) { m_modified = b; }
-	void Modified();
 
 	void SetViewMode( bool b );
 
@@ -307,6 +306,10 @@ private:
 	int m_diffX, m_diffY;
 	int m_diffW, m_diffH;
 	int m_popupX, m_popupY;
+
+#ifdef wxUI_USE_OVERLAY
+	wxOverlay m_overlay;
+#endif
 	
 	void OnMouseMove(wxMouseEvent &evt);
 	void OnLeftUp(wxMouseEvent &evt);
