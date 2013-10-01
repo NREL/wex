@@ -91,7 +91,7 @@ public:
 
 	virtual wxString GetTypeName() = 0;
 	virtual wxUIObject *Duplicate() = 0;
-	virtual bool IsNativeWidget() = 0;
+	virtual bool IsNativeObject() = 0;
 
 	virtual bool Copy( wxUIObject *rhs );
 	virtual void Draw( wxWindow *win, wxDC &dc, const wxRect &geom );
@@ -99,14 +99,14 @@ public:
 	virtual bool DrawDottedOutline() { return false; }
 	
 	/* methods for handling native controls */
-	virtual wxWindow *CreateNativeWidget( wxWindow * ) { return 0; }
+	virtual wxWindow *CreateNative( wxWindow * ) { return 0; }
 	virtual void OnPropertyChanged( const wxString &id, wxUIProperty *p );
 	virtual void OnNativeEvent( );
 
-	void DestroyNativeWidget();
-	wxWindow *GetNativeWidget();
-	void ShowNativeWidget( bool b );
-	
+	void DestroyNative();
+	wxWindow *GetNative() { return m_nativeObject; }
+	template<typename c> c*GetNative() { return dynamic_cast<c*>(m_nativeObject); }
+
 	void SetName( const wxString &name );
 	wxString GetName();
 	void SetGeometry( const wxRect &r );
@@ -134,6 +134,8 @@ private:
 
 protected:
 	wxWindow *AssignNative( wxWindow *win );
+
+private:
 	wxWindow *m_nativeObject;
 	
 };

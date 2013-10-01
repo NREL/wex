@@ -8,6 +8,7 @@
 #include <wex/uiform.h>
 #include <wx/renderer.h>
 
+static wxColour g_uiSelectColor( 135, 135, 135 );
 
 class wxUIButtonObject : public wxUIObject
 {
@@ -18,18 +19,15 @@ public:
 	}
 	virtual wxString GetTypeName() { return "Button"; }
 	virtual wxUIObject *Duplicate() { wxUIObject *b = new wxUIButtonObject; b->Copy( this ); return b; }	
-	virtual bool IsNativeWidget() { return true; }
-	virtual wxWindow *CreateNativeWidget( wxWindow *parent ) {
+	virtual bool IsNativeObject() { return true; }
+	virtual wxWindow *CreateNative( wxWindow *parent ) {
 		return AssignNative( new wxButton(parent, wxID_ANY, Property("Caption").GetString(), GetPosition(), GetSize() ) );
 	}
 	virtual void OnPropertyChanged( const wxString &id, wxUIProperty *p )
 	{
-		if ( wxButton *b = dynamic_cast<wxButton*>(m_nativeObject) )
-		{
+		if ( wxButton *b = GetNative<wxButton>() )
 			if ( id == "Caption" ) b->SetLabel( p->GetString() );
-		}
 	}
-
 	virtual void Draw( wxWindow *win, wxDC &dc, const wxRect &geom )
 	{
 		wxRendererNative::Get().DrawPushButton( win, dc, geom );
@@ -52,16 +50,16 @@ public:
 	}
 	virtual wxString GetTypeName() { return "CheckBox"; }
 	virtual wxUIObject *Duplicate() { wxUIObject *c = new wxUICheckBoxObject; c->Copy( this ); return c; }
-	virtual bool IsNativeWidget() { return true; }
+	virtual bool IsNativeObject() { return true; }
 	virtual bool DrawDottedOutline() { return true; }
-	virtual wxWindow *CreateNativeWidget( wxWindow *parent ) {
+	virtual wxWindow *CreateNative( wxWindow *parent ) {
 		wxCheckBox *cb = new wxCheckBox(parent, wxID_ANY, Property("Caption").GetString(), GetPosition(), GetSize() );
 		cb->SetValue( Property("State").GetBoolean() );
 		return AssignNative( cb );
 	}
 	virtual void OnPropertyChanged( const wxString &id, wxUIProperty *p )
 	{
-		if ( wxCheckBox *c = dynamic_cast<wxCheckBox*>( m_nativeObject ) )
+		if ( wxCheckBox *c = GetNative<wxCheckBox>() )
 		{
 			if ( id == "Caption" ) c->SetLabel( p->GetString() );
 			else if ( id == "State" ) c->SetValue( p->GetBoolean() );
@@ -71,15 +69,114 @@ public:
 	{
 		int flags = Property("State").GetBoolean() ? wxCONTROL_CHECKED : 0;
 		wxSize size = wxRendererNative::Get().GetCheckBoxSize( win );
-		wxRendererNative::Get().DrawCheckBox( win, dc, wxRect( geom.x + 1, geom.y+geom.height/2-size.y/2, size.x, size.y), flags );
+		wxRendererNative::Get().DrawCheckBox( win, dc, wxRect( geom.x, geom.y+geom.height/2-size.y/2, size.x, size.y), flags );
 		wxString label = Property("Caption").GetString();
 		int x, y;
 		dc.SetFont( *wxNORMAL_FONT );
 		dc.SetTextForeground( *wxBLACK );
 		dc.GetTextExtent( label, &x, &y );
-		dc.DrawText( label, geom.x + size.x + 3, geom.y+geom.height/2-y/2 );
+		dc.DrawText( label, geom.x + size.x + 2, geom.y+geom.height/2-y/2 );
 	}
+	virtual void OnNativeEvent()
+	{
+		if ( wxCheckBox *c = GetNative<wxCheckBox>() )
+			Property("State").Set( c->GetValue() );
+	}
+};
 
+class wxUIChoiceObject : public wxUIObject
+{
+public:
+	wxUIChoiceObject() {
+		AddProperty( "Items", new wxUIProperty( wxArrayString() ) );
+		AddProperty( "Selection", new wxUIProperty(-1) );
+	}
+	virtual wxString GetTypeName() { return "Choice"; }
+	virtual wxUIObject *Duplicate() { wxUIObject *c = new wxUIChoiceObject; c->Copy( this ); return c; }
+	virtual bool IsNativeObject() { return true; }
+	virtual wxWindow *CreateNative( wxWindow *parent ) {
+		wxArrayString items = Property("Items").GetStringList();
+		wxComboBox *cbo = new wxComboBox( parent, wxID_ANY, wxEmptyString, GetPosition(), GetSize(), items, wxCB_READONLY );
+		int sel = Property("Selection").GetInteger();
+		if ( sel >= 0 && sel < items.Count() ) cbo->SetSelection( sel );
+		return AssignNative( cbo );
+	}
+	virtual void OnPropertyChanged( const wxString &id, wxUIProperty *p )
+	{
+		if ( wxComboBox *cbo = GetNative<wxComboBox>() )
+		{
+			if ( id == "Selection" && p->GetInteger() >= 0 && p->GetInteger() < cbo->GetCount() )
+				cbo->SetSelection( p->GetInteger() );
+			else if ( id == "Items" )
+			{
+				int sel = cbo->GetSelection();
+				cbo->Clear();
+				cbo->Append( p->GetStringList() );
+				if( sel >= 0 && sel < cbo->GetCount() ) cbo->SetSelection( sel );
+			}
+		}
+	}
+	virtual void Draw( wxWindow *win, wxDC &dc, const wxRect &geom )
+	{
+		wxRendererNative::Get().DrawComboBox( win, dc, geom );
+		int sel = Property("Selection").GetInteger();
+		wxArrayString items = Property("Items").GetStringList();
+		if ( sel >= 0 && sel < items.Count() )
+		{
+			dc.SetFont( *wxNORMAL_FONT );
+			dc.SetTextForeground( *wxBLACK );
+			int x,y;
+			dc.GetTextExtent( items[sel], &x, &y );
+			dc.DrawText( items[sel], geom.x+2, geom.y + geom.height/2-y/2 );
+		}
+	}
+	virtual void OnNativeEvent()
+	{
+		if ( wxComboBox *cbo = GetNative<wxComboBox>() )
+			Property("Selection").Set( cbo->GetSelection() );
+	}
+};
+
+class wxUIGroupBoxObject : public wxUIObject
+{
+public:
+	wxUIGroupBoxObject() {
+		AddProperty( "Caption", new wxUIProperty("Group box") );
+		AddProperty( "Bold", new wxUIProperty( true ) );
+		Property("Width").Set(350);
+		Property("Height").Set(200);
+	}
+	virtual wxString GetTypeName() { return "GroupBox"; }
+	virtual wxUIObject *Duplicate() { wxUIObject *gb = new wxUIGroupBoxObject; gb->Copy( this ); return gb; }
+	virtual bool IsNativeObject() { return false; }
+	virtual bool IsWithin( int x, int y )
+	{
+		wxRect geom = GetGeometry();
+		if (x >= geom.x+4 && x < geom.x+geom.width-4 &&
+				y >= geom.y+15 && y < geom.y+geom.height-4 ) return false;
+		else return wxUIObject::IsWithin( x, y );
+	}
+	virtual void Draw( wxWindow *win, wxDC &dc, const wxRect &geom )
+	{
+		dc.SetBrush( *wxTRANSPARENT_BRUSH );
+		dc.SetPen( wxPen( wxColour(135,135,135) ) );
+		dc.DrawRectangle( geom.x, geom.y+7, geom.width, geom.height-8 );
+		
+		wxString caption = Property("Caption").GetString();
+		if ( !caption.IsEmpty() )
+		{
+			int x,y;
+			wxFont font( *wxNORMAL_FONT );
+			if ( Property("Bold").GetBoolean() ) font.SetWeight( wxFONTWEIGHT_BOLD );
+			dc.SetFont( font );
+			dc.GetTextExtent( caption, &x, &y );
+			dc.SetBrush( wxBrush( win->GetBackgroundColour() ) );
+			dc.SetPen( *wxTRANSPARENT_PEN );
+			dc.DrawRectangle(geom.x+5, geom.y, x+2, y+1);			
+			dc.SetTextForeground(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNTEXT));
+			dc.DrawText( caption , geom.x+6, geom.y);
+		}
+	}
 };
 
 
@@ -406,12 +503,12 @@ static int g_idCounter = 0;
 	AddProperty( "X", new wxUIProperty( (int) 10 ) );
 	AddProperty( "Y", new wxUIProperty( (int) 10 ) );
 	AddProperty( "Width", new wxUIProperty( (int) 100 ) );
-	AddProperty( "Height", new wxUIProperty( (int) 23 ) );	
+	AddProperty( "Height", new wxUIProperty( (int) 21 ) );	
 }
 
 wxUIObject::~wxUIObject()
 {
-	DestroyNativeWidget();
+	DestroyNative();
 	DeleteProperties();
 }
 
@@ -425,7 +522,7 @@ void wxUIObject::DeleteProperties()
 wxWindow *wxUIObject::AssignNative( wxWindow *win )
 {
 	if ( m_nativeObject != win )
-		DestroyNativeWidget();
+		DestroyNative();
 	m_nativeObject = win;
 	return m_nativeObject;
 }
@@ -435,18 +532,13 @@ void wxUIObject::OnNativeEvent()
 	// nothing to do here... override in descendants
 }
 
-void wxUIObject::DestroyNativeWidget()
+void wxUIObject::DestroyNative()
 {
 	if ( m_nativeObject != 0 )
 	{
 		m_nativeObject->Destroy();
 		m_nativeObject = 0;
 	}
-}
-
-wxWindow *wxUIObject::GetNativeWidget()
-{
-	return m_nativeObject;
 }
 
 bool wxUIObject::IsWithin( int xx, int yy )
@@ -750,6 +842,8 @@ wxUIPropertyEditor::~wxUIPropertyEditor()
 
 void wxUIPropertyEditor::SetObject( wxUIObject *obj )
 {
+	if ( obj == m_curObject ) return;
+
 	// clear the property grid
 	for ( size_t i=0;i<m_curProps.size();i++ )
 	{
@@ -1002,7 +1096,7 @@ void wxUIFormData::Attach( wxWindow *form )
 	if ( m_formWindow )
 	{
 		for( size_t i=0;i<m_objects.size();i++ )
-			m_objects[i]->CreateNativeWidget( m_formWindow );
+			m_objects[i]->CreateNative( m_formWindow );
 	}
 
 }
@@ -1012,7 +1106,7 @@ void wxUIFormData::Detach()
 	if ( m_formWindow )
 	{
 		for( size_t i=0;i<m_objects.size();i++ )
-			m_objects[i]->DestroyNativeWidget();
+			m_objects[i]->DestroyNative();
 
 		m_formWindow = 0;
 	}
@@ -1090,7 +1184,7 @@ void wxUIFormData::Add( wxUIObject *obj )
 	{
 		m_objects.push_back( obj );
 		if ( m_formWindow != 0 )
-			obj->CreateNativeWidget( m_formWindow );
+			obj->CreateNative( m_formWindow );
 	}
 }
 
@@ -1289,6 +1383,8 @@ wxUIFormEditor::wxUIFormEditor( wxWindow *parent, int id, const wxPoint &pos, co
 
 	wxUIObjectTypeProvider::Register( new wxUIButtonObject );
 	wxUIObjectTypeProvider::Register( new wxUICheckBoxObject );
+	wxUIObjectTypeProvider::Register( new wxUIChoiceObject );
+	wxUIObjectTypeProvider::Register( new wxUIGroupBoxObject );
 	//wxUIObjectTypeProvider::Register( new wxUILabelObject );
 	//wxUIObjectTypeProvider::Register( new wxUINumericObject );
 }
@@ -1419,6 +1515,9 @@ int wxUIFormEditor::IsOverResizeBox(int x, int y, wxUIObject *obj)
 
 void wxUIFormEditor::OnLeftDown(wxMouseEvent &evt)
 {
+	if ( !HasCapture() )
+		CaptureMouse();
+
 	if ( m_form == 0 ) return;
 
 	if ( m_viewMode ) return;
@@ -1668,8 +1767,12 @@ void wxUIFormEditor::DrawMultiSelBox()
 #ifdef wxUI_USE_OVERLAY
 	wxDCOverlay overlaydc( m_overlay, &dc );
 	overlaydc.Clear();
+#ifdef __WXOSX__
 	wxBrush brush( wxColour(240,240,240,130) );
-	wxPen pen( wxColour(120,120,120) );
+#else
+	wxBrush brush( *wxWHITE, wxTRANSPARENT );
+#endif
+	wxPen pen( wxColour(90,90,90) );
 #else
 	dc.SetLogicalFunction( wxINVERT );
 	wxBrush brush( *wxWHITE, wxTRANSPARENT );
@@ -1700,13 +1803,21 @@ void wxUIFormEditor::DrawMoveResizeOutlines()
 #ifdef wxUI_USE_OVERLAY
 	wxDCOverlay overlaydc( m_overlay, &dc );
 	overlaydc.Clear();
+#ifdef __WXOSX__
+	wxBrush brush( wxColour(240,240,240,130) );
+#else
+	wxBrush brush( *wxWHITE, wxTRANSPARENT );
+#endif
+
 #else
 	dc.SetLogicalFunction( wxINVERT );
-#endif
 	wxBrush brush( *wxWHITE, wxTRANSPARENT );
-	wxPen pen(*wxBLACK, 2, wxSOLID);
+#endif
+
+	wxPen pen( wxColour(90,90,90), 1, wxSOLID);
 	pen.SetCap(wxCAP_BUTT);
 	pen.SetJoin(wxJOIN_MITER);
+
 	dc.SetBrush(brush);
 	dc.SetPen(pen);
 
@@ -1924,12 +2035,12 @@ void wxUIFormEditor::OnPaint(wxPaintEvent &)
 	wxAutoBufferedPaintDC dc(this);
 	
 	wxSize sz = GetSize();
-	dc.SetBackground( wxBrush( m_viewMode ? GetBackgroundColour() : wxColour(245,245,245) ) );
+	dc.SetBackground( GetBackgroundColour() );
 	dc.Clear();
 
 	if ( !m_viewMode )
 	{
-		dc.SetPen(*wxLIGHT_GREY_PEN);
+		dc.SetPen( wxColour(210,210,210) );
 
 		int spacing = m_snapSpacing * 3;
 
@@ -1945,8 +2056,7 @@ void wxUIFormEditor::OnPaint(wxPaintEvent &)
 	std::vector<wxUIObject*> objs = m_form->GetObjects();
 	for ( int i=(int)objs.size()-1;i>=0;i-- )
 	{
-		if ( ( objs[i]->GetNativeWidget() != 0 || objs[i]->IsVisible() )
-			&& ( !m_viewMode || objs[i]->GetNativeWidget() == 0 ) )
+		if ( !objs[i]->IsNativeObject() || !m_viewMode )
 		{
 			rct = objs[i]->GetGeometry();
 			dc.SetClippingRegion(rct);			
@@ -1988,8 +2098,8 @@ void wxUIFormEditor::OnPaint(wxPaintEvent &)
 	if ( !m_viewMode )
 	{
 		// paint any selection handles
-		dc.SetBrush(wxBrush( "magenta" ));
-		dc.SetPen(wxPen( "magenta" ));
+		dc.SetBrush(wxBrush( g_uiSelectColor ));
+		dc.SetPen(wxPen( g_uiSelectColor ));
 		for (size_t i=0;i<m_selected.size();i++)
 		{
 			wxRect rct = m_selected[i]->GetGeometry();
@@ -2195,9 +2305,9 @@ wxUIFormDesigner::wxUIFormDesigner(wxWindow *parent, int id, const wxPoint &pos,
 	: wxScrolledWindow( parent, wxID_ANY, pos, size, wxHSCROLL|wxVSCROLL|wxWANTS_CHARS  )
 {
 	SetBackgroundStyle( wxBG_STYLE_CUSTOM );
-	SetBackgroundColour( *wxWHITE );
+//	SetBackgroundColour( *wxWHITE );
 	m_formData = 0;
-	m_editor = new wxUIFormEditor( this, id, wxPoint(10,10), wxSize(400,300) );
+	m_editor = new wxUIFormEditor( this, id, wxPoint(1,1), wxSize(400,300) );
 	m_diffX = m_diffY = 0;
 	m_mouseDown = false;
 	UpdateScrollbars();
@@ -2240,7 +2350,7 @@ void wxUIFormDesigner::OnPaint(wxPaintEvent &)
 	PrepareDC(pdc);
 	pdc.SetDeviceClippingRegion( GetUpdateRegion() );
 
-	pdc.SetBackground( *wxWHITE_BRUSH );
+	pdc.SetBackground( wxBrush( GetBackgroundColour() ));
 	pdc.Clear();
 
 	int fx,fy,fw,fh;
@@ -2250,11 +2360,11 @@ void wxUIFormDesigner::OnPaint(wxPaintEvent &)
 	int vx,vy;
 	GetViewStart(&vx,&vy);
 
-	pdc.SetPen(wxPen( "magenta" ));
+	pdc.SetPen(wxPen( g_uiSelectColor ));
 	pdc.SetBrush(*wxTRANSPARENT_BRUSH);
 	pdc.DrawRectangle(vx+fx-1, vy+fy-1, fw+2, fh+2);
 
-	pdc.SetBrush(wxBrush(wxColour(255, 0, 255)));
+	pdc.SetBrush(wxBrush(g_uiSelectColor));
 	pdc.DrawRectangle(vx+fx+fw, vy+fy+fh, 10, 10);
 
 	pdc.DestroyClippingRegion();
@@ -2275,14 +2385,14 @@ void wxUIFormDesigner::OnMouseDown(wxMouseEvent &evt)
 	int mw,mh;
 	m_editor->GetClientSize(&mw,&mh);
 
-	if ( mx >= mw+10 && mx < mw+20
-		&& my >= mh+10 && my < mh+20 )
+	if ( mx >= mw+1 && mx < mw+11
+		&& my >= mh+1 && my < mh+11 )
 	{
 		m_diffX = mx - mw;
 		m_diffY = my - mh;
 		m_mouseDown = true;
 		if ( !HasCapture() )
-			this->CaptureMouse();
+			CaptureMouse();
 	}
 }
 
@@ -2290,7 +2400,7 @@ void wxUIFormDesigner::UpdateScrollbars()
 {
 	int w,h;
 	m_editor->GetClientSize(&w,&h);
-	m_editor->Move( wxPoint(10, 10 ) );
+	m_editor->Move( wxPoint(1, 1 ) );
 	SetScrollbars(1,1, w+20, h+20, 0, 0);
 }
 
