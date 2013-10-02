@@ -3,10 +3,13 @@
 #include <wx/dcbuffer.h>
 #include <wx/clrpicker.h>
 #include <wx/splitter.h>
+#include <wx/tokenzr.h>
+#include <wx/renderer.h>
 
+#include <wex/label.h>
+#include <wex/radiochoice.h>
 #include <wex/numeric.h>
 #include <wex/uiform.h>
-#include <wx/renderer.h>
 
 static wxColour g_uiSelectColor( 135, 135, 135 );
 
@@ -90,20 +93,21 @@ public:
 	wxUIChoiceObject() {
 		AddProperty( "Items", new wxUIProperty( wxArrayString() ) );
 		AddProperty( "Selection", new wxUIProperty(-1) );
+		AddProperty( "TabOrder", new wxUIProperty( -1 ) );
 	}
 	virtual wxString GetTypeName() { return "Choice"; }
 	virtual wxUIObject *Duplicate() { wxUIObject *c = new wxUIChoiceObject; c->Copy( this ); return c; }
 	virtual bool IsNativeObject() { return true; }
 	virtual wxWindow *CreateNative( wxWindow *parent ) {
 		wxArrayString items = Property("Items").GetStringList();
-		wxComboBox *cbo = new wxComboBox( parent, wxID_ANY, wxEmptyString, GetPosition(), GetSize(), items, wxCB_READONLY );
+		wxChoice *cbo = new wxChoice( parent, wxID_ANY, GetPosition(), GetSize(), items );
 		int sel = Property("Selection").GetInteger();
 		if ( sel >= 0 && sel < items.Count() ) cbo->SetSelection( sel );
 		return AssignNative( cbo );
 	}
 	virtual void OnPropertyChanged( const wxString &id, wxUIProperty *p )
 	{
-		if ( wxComboBox *cbo = GetNative<wxComboBox>() )
+		if ( wxChoice *cbo = GetNative<wxChoice>() )
 		{
 			if ( id == "Selection" && p->GetInteger() >= 0 && p->GetInteger() < cbo->GetCount() )
 				cbo->SetSelection( p->GetInteger() );
@@ -143,8 +147,8 @@ public:
 	wxUIGroupBoxObject() {
 		AddProperty( "Caption", new wxUIProperty("Group box") );
 		AddProperty( "Bold", new wxUIProperty( true ) );
-		Property("Width").Set(350);
-		Property("Height").Set(200);
+		Property("Width").Set(360);
+		Property("Height").Set(180);
 	}
 	virtual wxString GetTypeName() { return "GroupBox"; }
 	virtual wxUIObject *Duplicate() { wxUIObject *gb = new wxUIGroupBoxObject; gb->Copy( this ); return gb; }
@@ -179,6 +183,256 @@ public:
 	}
 };
 
+class wxUIListBoxObject : public wxUIObject
+{
+public:
+	wxUIListBoxObject() {
+		AddProperty( "Items", new wxUIProperty( wxArrayString() ) );
+		AddProperty( "Selection", new wxUIProperty(-1) );
+		AddProperty( "TabOrder", new wxUIProperty( -1 ) );
+		Property("Width").Set( 180 );
+		Property("Height").Set( 90 );
+	}
+	virtual wxString GetTypeName() { return "ListBox"; }
+	virtual wxUIObject *Duplicate() { wxUIObject *c = new wxUIListBoxObject; c->Copy( this ); return c; }
+	virtual bool IsNativeObject() { return true; }
+	virtual wxWindow *CreateNative( wxWindow *parent ) {
+		wxArrayString items = Property("Items").GetStringList();
+		wxListBox *list = new wxListBox( parent, wxID_ANY, GetPosition(), GetSize(), items, wxLB_SINGLE|wxLB_ALWAYS_SB );
+		int sel = Property("Selection").GetInteger();
+		if ( sel >= 0 && sel < items.Count() ) list->SetSelection( sel );
+		return AssignNative( list );
+	}
+	virtual void OnPropertyChanged( const wxString &id, wxUIProperty *p )
+	{
+		if ( wxListBox *cbo = GetNative<wxListBox>() )
+		{
+			if ( id == "Selection" && p->GetInteger() >= 0 && p->GetInteger() < cbo->GetCount() )
+				cbo->SetSelection( p->GetInteger() );
+			else if ( id == "Items" )
+			{
+				int sel = cbo->GetSelection();
+				cbo->Clear();
+				cbo->Append( p->GetStringList() );
+				if( sel >= 0 && sel < cbo->GetCount() ) cbo->SetSelection( sel );
+			}
+		}
+	}
+	virtual void Draw( wxWindow *win, wxDC &dc, const wxRect &geom )
+	{
+		dc.SetBrush( *wxWHITE_BRUSH );
+		dc.SetPen( wxPen( wxColour(135,135,135) ) );
+		dc.DrawRectangle( geom );
+		int sel = Property("Selection").GetInteger();
+		wxArrayString items = Property("Items").GetStringList();
+		dc.SetFont( *wxNORMAL_FONT );
+		dc.SetTextForeground( *wxBLACK );
+		int y=geom.y+2;
+		
+		dc.SetBrush( *wxLIGHT_GREY_BRUSH );
+		dc.SetPen( *wxTRANSPARENT_PEN );
+		for (size_t i=0;i<items.Count() && y < geom.y+geom.height;i++)
+		{
+			if ( i==sel ) dc.DrawRectangle( geom.x+1, y-1, geom.width-2, dc.GetCharHeight()+2 );
+
+			dc.DrawText( items[i], geom.x+3, y );
+			y += dc.GetCharHeight() + 2;
+		}
+		dc.SetBrush( wxBrush(wxColour(235,235,235) ) );
+		dc.DrawRectangle( geom.x+geom.width-10, geom.y+1, 9, geom.height-2 );
+	}
+	virtual void OnNativeEvent()
+	{
+		if ( wxListBox *cbo = GetNative<wxListBox>() )
+			Property("Selection").Set( cbo->GetSelection() );
+	}
+};
+
+class wxUICheckListBoxObject : public wxUIObject
+{
+public:
+	wxUICheckListBoxObject() {
+		AddProperty( "Items", new wxUIProperty( wxArrayString() ) );
+		AddProperty( "Checked", new wxUIProperty( "" ) );
+		AddProperty( "TabOrder", new wxUIProperty( -1 ) );
+		Property("Width").Set( 180 );
+		Property("Height").Set( 90 );
+	}
+	virtual wxString GetTypeName() { return "CheckListBox"; }
+	virtual wxUIObject *Duplicate() { wxUIObject *o = new wxUICheckListBoxObject; o->Copy(this); return o; }
+	virtual bool IsNativeObject() { return true; }
+	void UpdateNativeChecks( wxCheckListBox *clb ) {
+		for ( size_t i=0;i<clb->GetCount();i++ ) clb->Check( i, false );
+		wxArrayString checked = wxStringTokenize( Property("Checked").GetString(), "," );
+		for ( size_t i=0;i<checked.size();i++ )	{
+			int idx = atoi( checked[i] );
+			if ( idx >= 0 && idx < clb->GetCount() ) clb->Check( idx );
+		}
+	}
+	virtual wxWindow *CreateNative( wxWindow *parent ) {
+		wxArrayString items = Property("Items").GetStringList();
+		wxCheckListBox *clb = new wxCheckListBox( parent, wxID_ANY, GetPosition(), GetSize(), items );
+		UpdateNativeChecks( clb );
+		return AssignNative( clb );
+	}
+	virtual void OnPropertyChanged( const wxString &id, wxUIProperty *p )	{
+		if ( wxCheckListBox *clb = GetNative<wxCheckListBox>() ) {
+			if ( id == "Items" ) {
+				int sel = clb->GetSelection();
+				clb->Clear();
+				clb->Append( p->GetStringList() );
+			}
+
+			// update checks when either 'Checked' or 'Items' property changes
+			UpdateNativeChecks( clb );
+		}
+	}
+	virtual void Draw( wxWindow *win, wxDC &dc, const wxRect &geom ) {
+		dc.SetBrush( *wxWHITE_BRUSH );
+		dc.SetPen( wxPen( wxColour(135,135,135) ) );
+		dc.DrawRectangle( geom );
+		wxArrayString checked = wxStringTokenize( Property("Checked").GetString(), "," );
+		wxArrayString items = Property("Items").GetStringList();
+		dc.SetFont( *wxNORMAL_FONT );
+		dc.SetTextForeground( *wxBLACK );
+		int y=geom.y+2;
+		int itemheight = dc.GetCharHeight() + 2;		
+		dc.SetBrush( *wxLIGHT_GREY_BRUSH );
+		dc.SetPen( *wxTRANSPARENT_PEN );
+		wxSize chksize = wxRendererNative::Get().GetCheckBoxSize( win );
+		for (size_t i=0;i<items.Count() && y < geom.y+geom.height;i++)
+		{
+			int flags = 0;
+			if ( checked.Index( wxString::Format("%d",i) ) != wxNOT_FOUND ) flags = wxCONTROL_CHECKED;
+			wxRendererNative::Get().DrawCheckBox( win, dc, wxRect( geom.x+1, y + itemheight/2-chksize.y/2, chksize.x, chksize.y ), flags );
+			dc.DrawText( items[i], geom.x+chksize.x+3, y );
+			y += itemheight;
+		}
+		dc.SetBrush( wxBrush(wxColour(235,235,235) ) );
+		dc.DrawRectangle( geom.x+geom.width-10, geom.y+1, 9, geom.height-2 );
+	}
+	virtual void OnNativeEvent() {
+		if ( wxCheckListBox *clb = GetNative<wxCheckListBox>() ) {
+			wxArrayString checked;
+			for( size_t i=0;i<clb->GetCount();i++)
+				if ( clb->IsChecked( i ) )
+					checked.Add( wxString::Format("%d", i ) );
+			Property("Checked").Set( wxJoin( checked, ',' ) );
+		}
+	}
+};
+
+class wxUILabelObject : public wxUIObject
+{
+public:
+	wxUILabelObject() {
+		AddProperty( "Caption", new wxUIProperty( "" ) );
+		AddProperty( "TextColour", new wxUIProperty( *wxBLACK ) );
+		AddProperty( "Bold", new wxUIProperty( false ) );
+		AddProperty( "FontSize", new wxUIProperty( 0 ) );
+		AddProperty( "WordWrap", new wxUIProperty( false ) );
+		AddProperty( "AlignRight", new wxUIProperty( false ) );
+		AddProperty( "AlignTop", new wxUIProperty( false ) );
+	}
+	virtual wxString GetTypeName() { return "Label"; }
+	virtual wxUIObject *Duplicate() { wxUIObject *o = new wxUILabelObject; o->Copy(this); return o; }
+	virtual bool IsNativeObject() { return false; }
+	virtual bool DrawDottedOutline() { return true; }
+	virtual void Draw( wxWindow *win, wxDC &dc, const wxRect &r ) {
+		wxLabelDraw( dc, r, *wxNORMAL_FONT, Property("Caption").GetString(),
+			Property("TextColour").GetColour(), Property("AlignTop").GetBoolean(),
+			Property("AlignRight").GetBoolean(), Property("Bold").GetBoolean(),
+			Property("WordWrap").GetBoolean(), Property("FontSize").GetInteger() );
+	}
+};
+
+class wxUIRadioChoiceObject : public wxUIObject
+{
+public:
+	wxUIRadioChoiceObject() {
+		AddProperty( "Selection", new wxUIProperty( 0 ) );
+		AddProperty( "Items", new wxUIProperty( wxArrayString() ) );
+		AddProperty( "ShowCaptions", new wxUIProperty( true ) );
+		AddProperty( "Horizontal", new wxUIProperty( false ) );
+		AddProperty( "TabOrder", new wxUIProperty( -1 ) );
+		Property("Width").Set( 180 );
+		Property("Height").Set( 90 );
+	}
+	virtual wxString GetTypeName() { return "RadioChoice"; }
+	virtual wxUIObject *Duplicate() { wxUIObject *o = new wxUIRadioChoiceObject; o->Copy(this); return o; }
+	virtual bool IsNativeObject() { return true; }
+	virtual bool DrawDottedOutline() { return true; }
+	
+	virtual wxWindow *CreateNative( wxWindow *parent ) {
+		wxArrayString items = Property("Items").GetStringList();
+		wxRadioChoice *rc = new wxRadioChoice( parent, wxID_ANY, GetPosition(), GetSize() );
+		rc->Add( items );
+		int sel = Property("Selection").GetInteger();
+		if ( sel >= 0 && sel < items.Count() ) rc->SetSelection( sel );
+		rc->ShowCaptions( Property("ShowCaptions").GetBoolean() );
+		rc->SetHorizontal( Property("Horizontal").GetBoolean() );
+		return AssignNative( rc );
+	}
+	virtual void OnPropertyChanged( const wxString &id, wxUIProperty *p )
+	{
+		if ( wxRadioChoice *rc = GetNative<wxRadioChoice>() )
+		{
+			if ( id == "Selection" && p->GetInteger() >= 0 && p->GetInteger() < rc->GetCount() )
+				rc->SetSelection( p->GetInteger() );
+			else if ( id == "Items" )
+			{
+				int sel = rc->GetSelection();
+				rc->Clear();
+				rc->Add( p->GetStringList() );
+				if( sel >= 0 && sel < rc->GetCount() ) rc->SetSelection( sel );
+			}
+			else if ( id == "ShowCaptions" )
+				rc->ShowCaptions( p->GetBoolean() );
+			else if ( id == "Horizontal" )
+				rc->SetHorizontal( p->GetBoolean() );
+		}
+	}
+	virtual void Draw( wxWindow *win, wxDC &dc, const wxRect &geom )
+	{
+		wxArrayString items = Property("Items").GetStringList();
+		if ( items.size() == 0 ) return;
+		int sel = Property("Selection").GetInteger();
+		bool showCaps = Property("ShowCaptions").GetBoolean();
+		dc.SetFont( *wxNORMAL_FONT );
+		dc.SetTextForeground( *wxBLACK );
+		wxSize optsize = wxRendererNative::Get().GetCheckBoxSize( win );
+		if ( Property("Horizontal").GetBoolean() == false )
+		{
+			int y=geom.y+2;		
+			int itemheight = dc.GetCharHeight() + 2;
+			if ( itemheight < 21 ) itemheight = 21;
+			for (size_t i=0;i<items.Count() && y < geom.y+geom.height;i++)
+			{
+				int flags = 0;
+				if ( i==sel ) flags = wxCONTROL_CHECKED;
+				wxRendererNative::Get().DrawRadioBitmap( win, dc, wxRect( geom.x+1, y + itemheight/2-optsize.y/2, optsize.x, optsize.y ), flags );
+				if ( showCaps ) dc.DrawText( items[i], geom.x+optsize.GetWidth()+3, y + itemheight/2-dc.GetCharHeight()/2 );
+				y += itemheight;
+			}
+		}
+		else
+		{
+			int itemwidth = geom.width/items.size();
+			for( size_t i=0;i<items.size();i++ )
+			{
+				int flags = 0;
+				if ( i==sel ) flags = wxCONTROL_CHECKED;
+				wxRendererNative::Get().DrawRadioBitmap( win, dc, wxRect( geom.x+i*itemwidth, geom.y + geom.height/2-optsize.y/2, optsize.x, optsize.y ), flags );
+				if ( showCaps ) dc.DrawText( items[i], geom.x+i*itemwidth + optsize.x + 1, geom.y+geom.height/2-dc.GetCharHeight()/2 );
+			}
+		}
+	}
+	virtual void OnNativeEvent()
+	{
+		if ( wxRadioChoice *cbo = GetNative<wxRadioChoice>() )
+			Property("Selection").Set( cbo->GetSelection() );
+	}
+};
 
 wxUIProperty::wxUIProperty()
 {
@@ -500,10 +754,10 @@ static int g_idCounter = 0;
 	m_nativeObject = 0;
 	m_visible = true;
 	AddProperty( "Name", new wxUIProperty( wxString::Format("object %d", ++g_idCounter ) ) );
-	AddProperty( "X", new wxUIProperty( (int) 10 ) );
-	AddProperty( "Y", new wxUIProperty( (int) 10 ) );
-	AddProperty( "Width", new wxUIProperty( (int) 100 ) );
-	AddProperty( "Height", new wxUIProperty( (int) 21 ) );	
+	AddProperty( "X", new wxUIProperty( (int) 9 ) );
+	AddProperty( "Y", new wxUIProperty( (int) 9 ) );
+	AddProperty( "Width", new wxUIProperty( (int) 90 ) );
+	AddProperty( "Height", new wxUIProperty( (int) 24 ) );	
 }
 
 wxUIObject::~wxUIObject()
@@ -1385,8 +1639,11 @@ wxUIFormEditor::wxUIFormEditor( wxWindow *parent, int id, const wxPoint &pos, co
 	wxUIObjectTypeProvider::Register( new wxUICheckBoxObject );
 	wxUIObjectTypeProvider::Register( new wxUIChoiceObject );
 	wxUIObjectTypeProvider::Register( new wxUIGroupBoxObject );
-	//wxUIObjectTypeProvider::Register( new wxUILabelObject );
-	//wxUIObjectTypeProvider::Register( new wxUINumericObject );
+	wxUIObjectTypeProvider::Register( new wxUIListBoxObject );
+	wxUIObjectTypeProvider::Register( new wxUICheckListBoxObject );
+	wxUIObjectTypeProvider::Register( new wxUILabelObject );
+	wxUIObjectTypeProvider::Register( new wxUIRadioChoiceObject );
+
 }
 
 wxUIObject *wxUIFormEditor::CreateObject( const wxString &type )
@@ -1673,9 +1930,6 @@ void wxUIFormEditor::OnLeftUp(wxMouseEvent &)
 		m_moveMode = false;
 
 #ifdef wxUI_USE_OVERLAY
-		wxClientDC dc( this );
-		wxDCOverlay overlaydc( m_overlay, &dc );
-		overlaydc.Clear();
 		m_overlay.Reset();
 #else
 		if ( m_moveModeErase )
@@ -1710,9 +1964,6 @@ void wxUIFormEditor::OnLeftUp(wxMouseEvent &)
 
 		m_multiSelMode = false;
 #ifdef wxUI_USE_OVERLAY
-		wxClientDC dc( this );
-		wxDCOverlay overlaydc( m_overlay, &dc );
-		overlaydc.Clear();
 		m_overlay.Reset();
 #else
 		if ( m_multiSelModeErase )
@@ -1742,9 +1993,6 @@ void wxUIFormEditor::OnLeftUp(wxMouseEvent &)
 
 		m_resizeMode = false;
 #ifdef wxUI_USE_OVERLAY
-		wxClientDC dc( this );
-		wxDCOverlay overlaydc( m_overlay, &dc );
-		overlaydc.Clear();
 		m_overlay.Reset();
 #else
 		if ( m_resizeModeErase )
@@ -2060,7 +2308,7 @@ void wxUIFormEditor::OnPaint(wxPaintEvent &)
 		{
 			rct = objs[i]->GetGeometry();
 			dc.SetClippingRegion(rct);			
-			if ( objs[i]->DrawDottedOutline() )
+			if ( objs[i]->DrawDottedOutline() && !m_viewMode )
 			{
 				wxPen p = wxPen(*wxBLACK, 1, wxDOT);
 				p.SetCap(wxCAP_BUTT);

@@ -810,3 +810,196 @@ int CSVRead( const wxString &file, Mat2D<wxString> &csv )
 }
 
 */
+
+int wxDrawWordWrappedText(wxDC& dc, const wxString &str, int width, bool draw, int x, int y, wxArrayString *lines)
+{
+	int line = 0;
+	int line_height = dc.GetCharHeight();
+	wxString remaining = str;
+
+	while ( !remaining.IsEmpty() )
+	{
+		wxString line_text = remaining;
+		wxCoord line_width;
+		dc.GetTextExtent(line_text, &line_width, NULL);
+		while(line_width > 5 && line_width >= width-3 && line_text.Len() > 0)
+		{
+			int pos = line_text.Find(' ', true);
+			if (pos < 0)
+				line_text.Truncate( line_text.Len()-1 );
+			else
+				line_text.Truncate(pos);
+
+			dc.GetTextExtent(line_text, &line_width, NULL);
+		}
+
+		if (line_text.IsEmpty() || line_width < 5)
+			break;
+
+		if (lines) lines->Add( line_text );
+		
+		if (draw)
+			dc.DrawText(line_text, x, y+line*line_height);
+
+		line++;
+
+		remaining = remaining.Mid(line_text.Len());
+		remaining.Trim(false).Trim();
+	}
+
+	return line*line_height;
+}
+
+void wxDrawRaisedPanel(wxDC &dc, int x, int y, int width, int height)
+{	
+	dc.DrawRectangle(x, y, width, height);
+	
+	wxPen savedPen = dc.GetPen();
+	dc.SetPen(*wxWHITE_PEN);
+
+	dc.DrawLine(x, 				y+1, 				x+width-1, 		y+1);
+	dc.DrawLine(x, 				y+1, 					x, 				y+height-1);
+	dc.DrawLine(x+1, 				y+1, 				x+width-2, 		y+1);
+	
+	dc.SetPen(*wxLIGHT_GREY_PEN);
+	dc.DrawLine(x+1, 			y+height-2,			x+width-2, 		y+height-2);
+	dc.DrawLine(x+width-2, 	y+2, 				x+width-2, 		y+height-2);
+	
+	dc.SetPen(*wxBLACK_PEN);
+	dc.DrawLine(x, 				y+height-1, 	x+width-1, 		y+height-1);
+	dc.DrawLine(x+width-1, 		y, 				x+width-1, 		y+height);	
+	
+	dc.SetPen(savedPen);
+}
+
+
+void wxDrawSunkenPanel(wxDC &dc, int x, int y, int width, int height)
+{
+	dc.DrawRectangle(x, y, width, height);
+
+	wxPen savedPen = dc.GetPen();
+	wxBrush savedBrush = dc.GetBrush();
+	
+	dc.SetBrush(*wxTRANSPARENT_BRUSH);
+	dc.SetPen(*wxBLACK_PEN);
+	dc.DrawRectangle(x, y, width-1, height-1);
+	
+	dc.SetPen(*wxGREY_PEN);
+	dc.DrawRectangle(x+1, y+1, width-2, height-2);
+
+	dc.SetBrush(savedBrush);
+	dc.SetPen(savedPen);
+}
+
+
+void wxDrawEngravedPanel(wxDC &dc, int x, int y, int width, int height, bool fill)
+{
+	wxBrush savedBrush = dc.GetBrush();
+	wxPen savedPen = dc.GetPen();
+	
+	if (fill)
+	{
+		dc.DrawRectangle(x, y, width, height);
+	}
+
+	dc.SetBrush(*wxTRANSPARENT_BRUSH);
+	dc.SetPen(*wxGREY_PEN);
+	dc.DrawRectangle(x, y, width-2, height-2);
+	
+	dc.SetPen(*wxWHITE_PEN);
+	dc.DrawRectangle(x+1, y+1, width-2, height-2);
+	dc.SetBrush(savedBrush);
+	dc.SetPen(savedPen);
+}
+
+
+void wxDrawScrollBar(wxDC &dc, bool vertical, int x, int y, int width, int height)
+{
+	wxPen savedPen = dc.GetPen();
+	wxBrush savedBrush = dc.GetBrush();
+	
+	dc.SetPen(*wxLIGHT_GREY_PEN);
+	dc.SetBrush(*wxLIGHT_GREY_BRUSH);
+	dc.DrawRectangle(x, y, width, height);	
+
+	dc.SetBrush(savedBrush);
+	dc.SetPen(savedPen);
+	if (vertical)
+	{
+		wxDrawArrowButton(dc, wxARROW_UP, x, y, width, width);
+		if (height > 2.5*width)
+			wxDrawRaisedPanel(dc, x, y+width+1, width, 0.3*height);
+
+		wxDrawArrowButton(dc, wxARROW_DOWN, x, y+height-width, width, width);
+	}
+	else
+	{
+		wxDrawArrowButton(dc, wxARROW_LEFT, x, y, height, height);
+		if (width > 2.5*height)
+			wxDrawRaisedPanel(dc, x+height+1, y, 0.3*width, height);
+
+		wxDrawArrowButton(dc, wxARROW_RIGHT, x+width-height, y, height, height);
+	}
+	dc.SetBrush(savedBrush);
+	dc.SetPen(savedPen);
+}
+
+
+void wxDrawArrowButton(wxDC &dc, wxArrowType type, int x, int y, int width, int height)
+{
+	int asize = width < height ? width/2 : height/2;
+	
+	wxBrush savedBrush = dc.GetBrush();
+	wxPen savedPen = dc.GetPen();
+	wxDrawRaisedPanel(dc, x, y, width, height);
+	dc.SetBrush(*wxBLACK_BRUSH);
+	dc.SetPen(*wxBLACK_PEN);
+	
+	switch(type)
+	{
+	case wxARROW_UP:
+	case wxARROW_DOWN:
+		wxDrawArrow(dc, type, x+(width-asize)/2, y+(height-asize)/2, asize, asize);
+		break;
+	default:
+		wxDrawArrow(dc, type, x+(width-asize)/2, y+(height-asize)/2, asize, asize);
+	}
+	
+	dc.SetBrush(savedBrush);
+	dc.SetPen(savedPen);
+}
+
+
+
+void wxDrawArrow(wxDC &dc, wxArrowType type, int x, int y, int width, int height)
+{
+	wxPoint pts[3];
+	switch(type)
+	{
+	case wxARROW_RIGHT:
+      pts[0] = wxPoint(x,y);
+      pts[1] = wxPoint(x, y+height);
+      pts[2] = wxPoint(x+width, y+height/2);
+      break;
+   case wxARROW_LEFT:
+      pts[0] = wxPoint(x+width,y);
+      pts[1] = wxPoint(x+width, y+height);
+      pts[2] = wxPoint(x, y+height/2);
+      break;
+   case wxARROW_UP:
+      pts[0] = wxPoint(x,y+height);
+      pts[1] = wxPoint(x+width, y+height);
+      pts[2] = wxPoint(x+width/2, y);
+      break;
+   case wxARROW_DOWN:
+      pts[0] = wxPoint(x,y);
+      pts[1] = wxPoint(x+width, y);
+      pts[2] = wxPoint(x+width/2, y+height);
+      break;
+   default:
+   	return;
+  	}
+
+	dc.DrawPolygon(3, pts);
+}
+

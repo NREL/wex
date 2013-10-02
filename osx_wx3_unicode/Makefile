@@ -13,6 +13,9 @@ LIBNAME = wexosxwx3
 TARGET = ../$(LIBNAME).a
 	
 OBJECTS = \
+	label.o \
+	exttext.o \
+	radiochoice.o \
 	metro.o \
 	uiform.o \
 	sched.o \
