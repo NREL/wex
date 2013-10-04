@@ -3,6 +3,7 @@
 #include <wx/stc/stc.h>
 #include <wx/webview.h>
 #include <wx/statbmp.h>
+#include <wx/numformatter.h>
 
 #include "wex/icons/time.cpng"
 #include "wex/icons/dmap.cpng"
@@ -189,9 +190,15 @@ void TestDView( wxWindow *parent )
 
 class MyApp : public wxApp
 {
+	wxLocale m_locale;
 public:
 	bool OnInit()
 	{
+		if ( !wxApp::OnInit() )
+			return false;
+
+		m_locale.Init();
+
 		wxInitAllImageHandlers();
 		//TestDView( 0 );
 
@@ -246,6 +253,13 @@ public:
 		wxFrame *frm = new wxFrame( 0, wxID_ANY, "Form Editor", wxDefaultPosition, wxSize(900, 600) );
 		new wxUIEditorWindow( frm, wxID_ANY );
 		frm->Show();
+
+		
+		wxUIObjectTypeProvider::RegisterBuiltinTypes();
+		wxChar sep = ',';
+		bool use_thousep = wxNumberFormatter::GetThousandsSeparatorIfUsed(&sep);
+		wxMessageBox( m_locale.GetLocale() + "\n" + wxString::Format( "thousep? %d sep=%c\n\n", use_thousep ? 1:0, (char)sep)
+			+ wxNumberFormatter::ToString( 12490589.02, 2, wxNumberFormatter::Style_WithThousandsSep ) );
 
 		
 		return true;

@@ -25,6 +25,7 @@ public:
 	explicit wxUIProperty( double d );
 	explicit wxUIProperty( int i );
 	explicit wxUIProperty( int i, const wxArrayString &named_options );
+	explicit wxUIProperty( int i, const wxString &commasep_options );
 	explicit wxUIProperty( bool b );
 	explicit wxUIProperty( const char *str );
 	explicit wxUIProperty( const wxString &s );
@@ -178,6 +179,7 @@ private:
 class wxUIObjectTypeProvider
 {
 public:
+	static void RegisterBuiltinTypes();
 	static void Register( wxUIObject *obj );
 	static std::vector<wxUIObject*> GetTypes();
 	static wxUIObject *Create( const wxString &type );

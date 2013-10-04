@@ -1,5 +1,5 @@
-#ifndef __wx_numeric_h
-#define __wx_numeric_h
+#ifndef __wx_exttextctrl_h
+#define __wx_exttextctrl_h
 
 #include <wx/textctrl.h>
 

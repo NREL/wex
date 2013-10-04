@@ -40,6 +40,8 @@ public:
 	wxString GetPrefixText() const { return m_preText; }
 	wxString GetSuffixText() const { return m_postText; }
 
+	static wxString Format( double val, Mode m, int deci, bool thousep, const wxString &pre, const wxString &post );
+
 private:
 	void OnTextEnter( wxCommandEvent & );
 	void OnSetFocus( wxFocusEvent & );

@@ -9,6 +9,8 @@
 #include <wex/label.h>
 #include <wex/radiochoice.h>
 #include <wex/numeric.h>
+#include <wex/exttext.h>
+#include <wex/utils.h>
 #include <wex/uiform.h>
 
 static wxColour g_uiSelectColor( 135, 135, 135 );
@@ -434,6 +436,248 @@ public:
 	}
 };
 
+class wxUITextEntryObject : public wxUIObject
+{
+public:
+	wxUITextEntryObject() {
+		AddProperty( "Text", new wxUIProperty( "" ) );
+		AddProperty( "Editable", new wxUIProperty( true ) );
+		AddProperty( "ForeColour", new wxUIProperty( *wxBLACK ) );
+		AddProperty( "BackColour", new wxUIProperty( *wxWHITE ) );
+		AddProperty( "TabOrder", new wxUIProperty( -1 ) );
+	}
+	virtual wxString GetTypeName() { return "TextEntry"; }
+	virtual wxUIObject *Duplicate() { wxUIObject *o = new wxUITextEntryObject; o->Copy(this); return o; }
+	virtual bool IsNativeObject() { return true; }
+	virtual wxWindow *CreateNative( wxWindow *parent ) {
+		wxExtTextCtrl *txt = new wxExtTextCtrl( parent, wxID_ANY, Property("text").GetString(), GetPosition(), GetSize() );
+		txt->SetForegroundColour( Property("ForeColour").GetColour() );
+		txt->SetBackgroundColour( Property("BackColour").GetColour() );
+		txt->SetEditable( Property("Editable").GetBoolean() );
+		return AssignNative( txt );
+	}
+	virtual void OnPropertyChanged( const wxString &id, wxUIProperty *p )
+	{
+		if ( wxTextCtrl *txt = GetNative<wxTextCtrl>() )
+		{
+			if ( id == "Text" ) txt->ChangeValue( p->GetString() );
+			else if ( id == "ForeColour" ) txt->SetForegroundColour( p->GetColour() );
+			else if ( id == "BackColour" ) txt->SetBackgroundColour( p->GetColour() );
+			else if ( id == "Editable" ) txt->SetEditable( p->GetBoolean() );
+		}
+	}
+	virtual void Draw( wxWindow *win, wxDC &dc, const wxRect &geom )
+	{
+		dc.SetPen( *wxLIGHT_GREY_PEN );
+		dc.SetBrush( wxBrush( Property("BackColour").GetColour() ) );
+		dc.DrawRectangle( geom );
+		dc.SetFont( *wxNORMAL_FONT );
+		dc.SetTextForeground( Property("ForeColour").GetColour() );
+		wxString text = Property("Text").GetString();
+		int x, y;
+		dc.GetTextExtent( text, &x, &y );
+		dc.DrawText( text, geom.x+2, geom.y+geom.height/2-y/2 );
+	}
+	virtual void OnNativeEvent()
+	{
+		if ( wxTextCtrl *txt = GetNative<wxTextCtrl>() )
+			Property("Text").Set( txt->GetValue() );
+	}
+};
+
+class wxUIMultilineTextObject : public wxUITextEntryObject
+{
+public:
+	wxUIMultilineTextObject() { }
+	virtual wxString GetTypeName() { return "MultilineText"; }
+	virtual wxUIObject *Duplicate() { wxUIObject *o = new wxUIMultilineTextObject; o->Copy(this); return o; }
+	virtual wxWindow *CreateNative( wxWindow *parent ) {
+		wxTextCtrl *txt = new wxTextCtrl( parent, wxID_ANY, Property("text").GetString(), GetPosition(), GetSize(), wxTE_MULTILINE );
+		txt->SetForegroundColour( Property("ForeColour").GetColour() );
+		txt->SetBackgroundColour( Property("BackColour").GetColour() );
+		txt->SetEditable( Property("Editable").GetBoolean() );
+		return AssignNative( txt );
+	}
+	virtual void Draw( wxWindow *win, wxDC &dc, const wxRect &geom )
+	{
+		dc.SetPen( *wxLIGHT_GREY_PEN );
+		dc.SetBrush( wxBrush( Property("BackColour").GetColour() ) );
+		dc.DrawRectangle( geom );
+		dc.SetTextForeground( Property("ForeColour").GetColour() );
+		dc.SetFont( *wxNORMAL_FONT );
+		wxString text = Property("Text").GetString();
+		wxDrawWordWrappedText( dc, text, geom.width-10,true,geom.x+2, geom.y+2 );
+		dc.SetPen( *wxTRANSPARENT_PEN );
+		dc.SetBrush( wxBrush(wxColour(235,235,235) ) );
+		dc.DrawRectangle( geom.x+geom.width-10, geom.y+1, 9, geom.height-2 );
+	}
+};
+
+class wxUINumericObject : public wxUIObject
+{
+public:
+	wxUINumericObject() {
+		AddProperty( "Value", new wxUIProperty( 0.0 ) );
+		AddProperty( "Mode", new wxUIProperty( 1, "Integer,Real" ) );
+		AddProperty( "Format", new wxUIProperty( 0, "Fixed,Generic,Exponential,Hexadecimal" ) );
+		AddProperty( "Decimals", new wxUIProperty( 3 ) );
+		AddProperty( "Prefix", new wxUIProperty( "" ) );
+		AddProperty( "Suffix", new wxUIProperty( "" ) );
+		AddProperty( "ThousandsSep", new wxUIProperty( true ) );
+		AddProperty( "Editable", new wxUIProperty( true ) );
+		AddProperty( "ForeColour", new wxUIProperty( *wxBLACK ) );
+		AddProperty( "BackColour", new wxUIProperty( *wxWHITE ) );
+		AddProperty( "TabOrder", new wxUIProperty( -1 ) );
+	}
+	virtual wxString GetTypeName() { return "Numeric"; }
+	virtual wxUIObject *Duplicate() { wxUIObject *o = new wxUINumericObject; o->Copy(this); return o; }
+	virtual bool IsNativeObject() { return true; }
+	int GetDecimals()
+	{	
+		int deci = Property("Decimals").GetInteger();
+		int pf = Property("Format").GetInteger();
+		
+		if( pf == 1 ) deci = wxNumericCtrl::GENERIC;
+		else if( pf == 2 ) deci = wxNumericCtrl::EXPONENTIAL;
+		else if( pf == 3 ) deci = wxNumericCtrl::HEXADECIMAL;
+
+		return deci;
+	}
+	void UpdateFormat( wxNumericCtrl *num )
+	{	
+		bool tsep = Property("ThousandsSep").GetBoolean();
+		num->SetFormat( GetDecimals(), tsep, 
+			Property("Prefix").GetString(), Property("Suffix").GetString() );
+	}
+	virtual wxWindow *CreateNative( wxWindow *parent ) {		
+		wxNumericCtrl *num = new wxNumericCtrl( parent, wxID_ANY, Property("Value").GetDouble(), 
+			(wxNumericCtrl::Mode)Property("Mode").GetInteger(), GetPosition(), GetSize() );
+		UpdateFormat( num );
+		num->SetForegroundColour( Property("ForeColour").GetColour() );
+		num->SetBackgroundColour( Property("BackColour").GetColour() );
+		num->SetEditable( Property("Editable").GetBoolean() );
+		return AssignNative( num );
+	}
+	virtual void OnPropertyChanged( const wxString &id, wxUIProperty *p )
+	{
+		if ( wxNumericCtrl *num = GetNative<wxNumericCtrl>() )
+		{
+			if ( id == "Value" ) num->SetValue( p->GetDouble() );
+			else if ( id == "Mode" ) num->SetMode( (wxNumericCtrl::Mode)p->GetInteger() );
+			else if ( id == "Format" || id == "Decimals" || id == "Prefix" || id == "Suffix" || id == "ThousandsSep" ) UpdateFormat( num );
+			else if ( id == "ForeColour" ) num->SetForegroundColour( p->GetColour() );
+			else if ( id == "BackColour" ) num->SetBackgroundColour( p->GetColour() );
+			else if ( id == "Editable" ) num->SetEditable( p->GetBoolean() );
+		}
+	}
+	virtual void Draw( wxWindow *win, wxDC &dc, const wxRect &geom )
+	{
+		dc.SetPen( *wxLIGHT_GREY_PEN );
+		dc.SetBrush( wxBrush( Property("BackColour").GetColour() ) );
+		dc.DrawRectangle( geom );
+		dc.SetFont( *wxNORMAL_FONT );
+		dc.SetTextForeground( Property("ForeColour").GetColour() );
+		wxString text = wxNumericCtrl::Format( Property("Value").GetDouble(),
+			(wxNumericCtrl::Mode)Property("Mode").GetInteger(),
+			GetDecimals(), Property("ThousandsSep").GetBoolean(),
+			Property("Prefix").GetString(), Property("Suffix").GetString() );
+
+		int x, y;
+		dc.GetTextExtent( text, &x, &y );
+		dc.DrawText( text, geom.x+geom.width-2-x, geom.y+geom.height/2-y/2 );
+	}
+	virtual void OnNativeEvent()
+	{
+		if ( wxNumericCtrl *num = GetNative<wxNumericCtrl>() )
+			Property("Value").Set( num->AsDouble() );
+	}
+};
+
+class wxUIImageObject : public wxUIObject
+{
+public:
+	wxUIImageObject() {
+		AddProperty( "Image", new wxUIProperty( wxImage() ) );
+		AddProperty( "Centered", new wxUIProperty( true ) );
+	}
+	virtual wxString GetTypeName() { return "Image"; }
+	virtual wxUIObject *Duplicate() { wxUIObject *o = new wxUIImageObject; o->Copy(this); return o; }
+	virtual bool IsNativeObject() { return false; }
+	virtual bool DrawDottedOutline() { return true; }
+	virtual void Draw( wxWindow *win, wxDC &dc, const wxRect &geom )
+	{
+		wxImage img = Property("Image").GetImage();
+		if ( img.IsOk() )
+		{
+			wxBitmap bit( img );
+			int x = geom.x;
+			int y = geom.y;
+			if ( Property("Centered").GetBoolean() )
+			{
+				x = geom.x + geom.width/2 - bit.GetWidth()/2;
+				y = geom.y + geom.height/2 - bit.GetHeight()/2;
+			}
+			dc.DrawBitmap( bit, x, y );
+		}
+		else
+		{
+			dc.SetBrush( *wxWHITE_BRUSH );
+			dc.SetPen( *wxRED_PEN );
+			dc.DrawRectangle( geom );
+			dc.SetTextForeground( *wxRED );
+			dc.SetFont( *wxNORMAL_FONT );
+			dc.DrawText( "Invalid image.", geom.x+2, geom.y+2 );
+		}
+	}
+};
+
+class wxUISliderObject : public wxUIObject
+{
+public:
+	wxUISliderObject() {
+		AddProperty( "Value", new wxUIProperty( 1 ) );
+		AddProperty( "Min", new wxUIProperty( 0 ) );
+		AddProperty( "Max", new wxUIProperty( 10 ) );
+		AddProperty( "TabOrder", new wxUIProperty( -1 ) );
+	}
+	virtual wxString GetTypeName() { return "Slider"; }
+	virtual wxUIObject *Duplicate() { wxUIObject *o = new wxUISliderObject; o->Copy(this); return o; }
+	virtual bool IsNativeObject() { return true; }
+	virtual bool DrawDottedOutline() { return true; }
+	virtual wxWindow *CreateNative( wxWindow *parent ) {
+		return AssignNative( new wxSlider( parent, wxID_ANY, Property("Value").GetInteger(), 
+			Property("Min").GetInteger(), Property("Max").GetInteger()) );
+	}
+	virtual void OnPropertyChanged( const wxString &id, wxUIProperty *p )
+	{
+		if ( wxSlider *sli = GetNative<wxSlider>() )
+		{
+			if ( id == "Value" ) sli->SetValue( p->GetInteger() );
+			else if ( id == "Min" ) sli->SetMin( p->GetInteger() );
+			else if ( id == "Max" ) sli->SetMax( p->GetInteger() );
+		}
+	}
+	virtual void Draw( wxWindow *win, wxDC &dc, const wxRect &geom )
+	{
+		dc.SetBrush(wxBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE)));
+		dc.SetPen(wxPen(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE)));
+		wxDrawEngravedPanel(dc, geom.x+1, geom.y+geom.height/2-2, geom.width-2, 4, true);
+		int min = Property("Min").GetInteger();
+		int max = Property("Max").GetInteger();
+		int val = Property("Value").GetInteger();
+		float percent = ((float)(val-min))/( (float)(max-min) );
+		int xoff = 2;
+		int barx = geom.x+xoff + (geom.width-xoff-xoff)*percent;
+		wxDrawRaisedPanel(dc, barx-4, geom.y+2, 8, geom.height-4);
+	}
+	virtual void OnNativeEvent()
+	{
+		if ( wxSlider *sli = GetNative<wxSlider>() )
+			Property("Value").Set( sli->GetValue() );
+	}
+
+};
+
 wxUIProperty::wxUIProperty()
 {
 	Init();
@@ -473,6 +717,14 @@ wxUIProperty::wxUIProperty( int i, const wxArrayString &named_options )
 	m_type = INTEGER,
 	m_intVal = i;
 	m_namedOptions = named_options;
+}
+
+wxUIProperty::wxUIProperty( int i, const wxString &commasep_options )
+{
+	Init();
+	m_type = INTEGER,
+	m_intVal = i;
+	m_namedOptions = wxStringTokenize(commasep_options, ",");
 }
 
 wxUIProperty::wxUIProperty( const wxColour &cp )
@@ -1320,6 +1572,24 @@ std::vector<wxUIObject*> wxUIObjectTypeProvider::GetTypes()
 	return g_registeredTypes;
 }
 
+void wxUIObjectTypeProvider::RegisterBuiltinTypes()
+{
+	wxUIObjectTypeProvider::Register( new wxUIButtonObject );
+	wxUIObjectTypeProvider::Register( new wxUICheckBoxObject );
+	wxUIObjectTypeProvider::Register( new wxUIChoiceObject );
+	wxUIObjectTypeProvider::Register( new wxUIGroupBoxObject );
+	wxUIObjectTypeProvider::Register( new wxUIListBoxObject );
+	wxUIObjectTypeProvider::Register( new wxUICheckListBoxObject );
+	wxUIObjectTypeProvider::Register( new wxUILabelObject );
+	wxUIObjectTypeProvider::Register( new wxUIRadioChoiceObject );
+	wxUIObjectTypeProvider::Register( new wxUITextEntryObject );
+	wxUIObjectTypeProvider::Register( new wxUIMultilineTextObject );
+	wxUIObjectTypeProvider::Register( new wxUINumericObject );
+	wxUIObjectTypeProvider::Register( new wxUIImageObject );
+	wxUIObjectTypeProvider::Register( new wxUISliderObject );
+
+}
+
 wxUIFormData::wxUIFormData()
 {
 	m_formWindow = 0;
@@ -1562,8 +1832,6 @@ int wxUIObjectCopyBuffer::Count()
 	return m_copyList.size();
 }
 
-
-
 enum {	ID_CREATE_CONTROL = wxID_HIGHEST + 985,	ID_nMaxControls = ID_CREATE_CONTROL+100,
 		ID_DUPLICATE, ID_DELETE, ID_COPY, ID_PASTE, ID_CLEARALL, ID_TABORDERMODE,		
 		ID_ALIGNTOP, ID_ALIGNLEFT, ID_ALIGNRIGHT, ID_ALIGNBOTTOM
@@ -1634,16 +1902,6 @@ wxUIFormEditor::wxUIFormEditor( wxWindow *parent, int id, const wxPoint &pos, co
 	m_resizeMode = false;
 	m_resizeModeErase = false;
 	m_resizeBox = BOX_NONE;	
-
-	wxUIObjectTypeProvider::Register( new wxUIButtonObject );
-	wxUIObjectTypeProvider::Register( new wxUICheckBoxObject );
-	wxUIObjectTypeProvider::Register( new wxUIChoiceObject );
-	wxUIObjectTypeProvider::Register( new wxUIGroupBoxObject );
-	wxUIObjectTypeProvider::Register( new wxUIListBoxObject );
-	wxUIObjectTypeProvider::Register( new wxUICheckListBoxObject );
-	wxUIObjectTypeProvider::Register( new wxUILabelObject );
-	wxUIObjectTypeProvider::Register( new wxUIRadioChoiceObject );
-
 }
 
 wxUIObject *wxUIFormEditor::CreateObject( const wxString &type )
