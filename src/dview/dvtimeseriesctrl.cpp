@@ -34,15 +34,20 @@ static const wxString NO_UNITS("ThereAreNoUnitsForThisAxis.");
 class wxDVTimeSeriesSettingsDialog : public wxDialog
 {
 	wxCheckBox *mSyncCheck;
-	wxCheckBox *mAutoscaleCheck;
+	wxCheckBox *mAutoscaleCheck, *mBottomAutoscaleCheck;
 	wxNumericCtrl *mTopYMaxCtrl, *mTopYMinCtrl, *mBottomYMaxCtrl, *mBottomYMinCtrl;
 	wxChoice *mLineStyleCombo;
 
+	long TopCheckboxID;
+	long BottomCheckboxID;
+
 public:
-	wxDVTimeSeriesSettingsDialog( wxWindow *parent, const wxString &title )
+	wxDVTimeSeriesSettingsDialog( wxWindow *parent, const wxString &title, bool isBottomGraphVisible = true )
 		: wxDialog( parent, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxRESIZE_BORDER|wxDEFAULT_DIALOG_STYLE)
 	{
-		
+		TopCheckboxID = wxID_HIGHEST + 1;
+		BottomCheckboxID = wxID_HIGHEST + 2;
+
 		mSyncCheck = new wxCheckBox(this, wxID_ANY, "Synchronize view with heat map" );
 		
 		wxArrayString choices;
@@ -50,49 +55,78 @@ public:
 		choices.Add( "Stepped line graph" );
 		mLineStyleCombo = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, choices);
 				
-		mAutoscaleCheck = new wxCheckBox(this, wxID_ANY, "Autoscale y1-axis");
+		mAutoscaleCheck = new wxCheckBox(this, TopCheckboxID, "Autoscale top y1-axis");
+		mBottomAutoscaleCheck = new wxCheckBox(this, BottomCheckboxID, "Autoscale bottom y1-axis");
 		
-		wxFlexGridSizer *yBoundSizer = new wxFlexGridSizer(2, 2, 0);
-		yBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Top Y Min:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
+		wxFlexGridSizer *yTopBoundSizer = new wxFlexGridSizer(2, 2, 0);
+		yTopBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Top Y Min:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
 		mTopYMinCtrl = new wxNumericCtrl(this);
-		yBoundSizer->Add(mTopYMinCtrl, 0, wxLEFT|wxRIGHT, 2);
-		yBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Top Y Max:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
+		yTopBoundSizer->Add(mTopYMinCtrl, 0, wxLEFT|wxRIGHT, 2);
+		yTopBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Top Y Max:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
 		mTopYMaxCtrl = new wxNumericCtrl(this);
-		yBoundSizer->Add(mTopYMaxCtrl, 0, wxLEFT|wxRIGHT, 2);
+		yTopBoundSizer->Add(mTopYMaxCtrl, 0, wxLEFT|wxRIGHT, 2);
 		
-		yBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Bottom Y Min:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
+		wxFlexGridSizer *yBottomBoundSizer = new wxFlexGridSizer(2, 2, 0);
+		if(isBottomGraphVisible) { yBottomBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Bottom Y Min:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2); }
 		mBottomYMinCtrl = new wxNumericCtrl(this);
-		yBoundSizer->Add(mBottomYMinCtrl, 0, wxLEFT|wxRIGHT|wxBOTTOM, 2);
-		yBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Bottom Y Max:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
+		yBottomBoundSizer->Add(mBottomYMinCtrl, 0, wxLEFT|wxRIGHT|wxBOTTOM, 2);
+		if(isBottomGraphVisible) { yBottomBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Bottom Y Max:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2); }
 		mBottomYMaxCtrl = new wxNumericCtrl(this);
-		yBoundSizer->Add(mBottomYMaxCtrl, 0, wxLEFT|wxRIGHT|wxBOTTOM, 2);
+		yBottomBoundSizer->Add(mBottomYMaxCtrl, 0, wxLEFT|wxRIGHT|wxBOTTOM, 2);
 		
 		wxBoxSizer *boxmain = new wxBoxSizer(wxVERTICAL);
 		boxmain->Add( mSyncCheck, 0, wxALL|wxEXPAND, 10 );
 		boxmain->Add( mLineStyleCombo, 0, wxALL|wxEXPAND, 10 );
 		boxmain->Add( new wxStaticLine( this ), 0, wxALL|wxEXPAND, 0 );
 		boxmain->Add( mAutoscaleCheck, 0, wxALL|wxEXPAND, 10 );
-		boxmain->Add( yBoundSizer, 1, wxALL|wxEXPAND, 10 );
+		boxmain->Add( yTopBoundSizer, 1, wxALL|wxEXPAND, 10 );
+		if(isBottomGraphVisible) { boxmain->Add( new wxStaticLine( this ), 0, wxALL|wxEXPAND, 0 ); }
+		boxmain->Add( mBottomAutoscaleCheck, 0, wxALL|wxEXPAND, 10 );
+		boxmain->Add( yBottomBoundSizer, 1, wxALL|wxEXPAND, 10 );
 		boxmain->Add( new wxStaticLine( this ), 0, wxALL|wxEXPAND, 0 );
 		boxmain->Add( CreateButtonSizer( wxOK|wxCANCEL ), 0, wxALL|wxEXPAND, 20 );
 		SetSizer(boxmain);
 		Fit();
+
+		Connect(TopCheckboxID, wxEVT_CHECKBOX, wxCommandEventHandler(wxDVTimeSeriesSettingsDialog::OnClickTopHandler));
+		Connect(BottomCheckboxID, wxEVT_CHECKBOX, wxCommandEventHandler(wxDVTimeSeriesSettingsDialog::OnClickBottomHandler));
+
+		if(!isBottomGraphVisible)
+		{
+			mBottomAutoscaleCheck->Hide();
+			mBottomYMaxCtrl->Hide();
+			mBottomYMinCtrl->Hide();
+		}
 	}
 
-	void SetYBounds( double y1min, double y1max, double y2min, double y2max )
+	~wxDVTimeSeriesSettingsDialog()
+	{
+        Disconnect(TopCheckboxID, wxEVT_CHECKBOX, wxCommandEventHandler(wxDVTimeSeriesSettingsDialog::OnClickTopHandler));
+        Disconnect(BottomCheckboxID, wxEVT_CHECKBOX, wxCommandEventHandler(wxDVTimeSeriesSettingsDialog::OnClickBottomHandler));
+	}
+
+	void SetTopYBounds( double y1min, double y1max )
 	{
 		mTopYMinCtrl->SetValue( y1min );
 		mTopYMaxCtrl->SetValue( y1max );
+	}
+
+	void SetBottomYBounds( double y2min, double y2max )
+	{
 		mBottomYMinCtrl->SetValue( y2min );
 		mBottomYMaxCtrl->SetValue( y2max );
 	}
-	void GetYBounds( double *y1min, double *y1max, double *y2min, double *y2max )
+
+	void GetTopYBounds( double *y1min, double *y1max )
 	{
 		*y1min = mTopYMinCtrl->Value();
 		*y1max = mTopYMaxCtrl->Value();
+	}
+
+	void GetBottomYBounds( double *y2min, double *y2max )
+	{
 		*y2min = mBottomYMinCtrl->Value();
 		*y2max = mBottomYMaxCtrl->Value();
-
 	}
 
 	void SetLineStyle( int id ) { mLineStyleCombo->SetSelection(id); }
@@ -101,8 +135,32 @@ public:
 	void SetSync( bool b ) { mSyncCheck->SetValue( b ); }
 	bool GetSync() { return mSyncCheck->GetValue(); }
 
-	void SetAutoscale( bool b ) { mAutoscaleCheck->SetValue( b ); }
+	void SetAutoscale( bool b ) 
+	{ 
+		mAutoscaleCheck->SetValue( b ); 
+		mTopYMaxCtrl->Enable(!b);
+		mTopYMinCtrl->Enable(!b);
+	}
 	bool GetAutoscale() { return mAutoscaleCheck->GetValue(); }
+
+	void SetBottomAutoscale( bool b ) 
+	{ 
+		mBottomAutoscaleCheck->SetValue( b ); 
+		mBottomYMaxCtrl->Enable(!b);
+		mBottomYMinCtrl->Enable(!b);
+	}
+	bool GetBottomAutoscale() { return mBottomAutoscaleCheck->GetValue(); }
+
+private:
+	void OnClickTopHandler(wxCommandEvent& event)
+    {
+		SetAutoscale( mAutoscaleCheck->IsChecked() );
+    }
+
+	void OnClickBottomHandler(wxCommandEvent& event)
+    {
+		SetBottomAutoscale( mBottomAutoscaleCheck->IsChecked() );
+    }
 };
 
 
@@ -242,6 +300,7 @@ wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id)
 : wxPanel(parent, id)
 {	
 	m_autoScale = true;
+	m_bottomAutoScale = true;
 	m_syncToHeatMap = false;
 	m_lineStyle = 0; // line, stepped, points
 	
@@ -337,6 +396,16 @@ void wxDVTimeSeriesCtrl::OnZoomFit(wxCommandEvent& e)
 void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 {
 	double y1min = 0, y1max = 0, y2min = 0, y2max = 0;
+	bool isBottomGraphVisible = false;
+
+	for(int i = 0; i < m_dataSelector->Length(); i++)
+	{
+		if(m_dataSelector->IsSelected(i, 1))
+		{
+			isBottomGraphVisible = true;
+			break;
+		}
+	}
 
 	if ( m_plotSurface->GetYAxis1( wxPLPlotCtrl::PLOT_TOP ) != 0 )
 		m_plotSurface->GetYAxis1( wxPLPlotCtrl::PLOT_TOP )->GetWorld( &y1min, &y1max );
@@ -344,12 +413,14 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 	if ( m_plotSurface->GetYAxis1( wxPLPlotCtrl::PLOT_BOTTOM ) != 0 )
 		m_plotSurface->GetYAxis1( wxPLPlotCtrl::PLOT_BOTTOM )->GetWorld( &y2min, &y2max );
 
-	wxDVTimeSeriesSettingsDialog dlg(  this, "View Settings" );
+	wxDVTimeSeriesSettingsDialog dlg(  this, "View Settings", isBottomGraphVisible );
 	dlg.CentreOnParent();
 	dlg.SetSync( m_syncToHeatMap );
 	dlg.SetLineStyle( m_lineStyle );
 	dlg.SetAutoscale( m_autoScale );
-	dlg.SetYBounds( y1min, y1max, y2min, y2max );
+	dlg.SetBottomAutoscale( m_bottomAutoScale );
+	dlg.SetTopYBounds( y1min, y1max );
+	dlg.SetBottomYBounds( y2min, y2max );
 	if (wxID_OK == dlg.ShowModal())
 	{
 		m_syncToHeatMap = dlg.GetSync();
@@ -360,20 +431,41 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 			m_plots[i]->SetStyle( (wxDVTimeSeriesPlot::Style) m_lineStyle );
 
 		m_autoScale = dlg.GetAutoscale();
+		m_bottomAutoScale = dlg.GetBottomAutoscale();
 		if ( m_autoScale )
 		{
-			AutoscaleYAxis( true );
+			if (m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP))
+				AutoscaleYAxis(m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP), *m_selectedChannelIndices[TOP_LEFT_AXIS], true);
+			if (m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_TOP))
+				AutoscaleYAxis(m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_TOP), 
+				m_selectedChannelIndices[TOP_RIGHT_AXIS]->size() > 0 ? *m_selectedChannelIndices[TOP_RIGHT_AXIS] : *m_selectedChannelIndices[TOP_LEFT_AXIS], 
+				true);
 		}
 		else
 		{
-			double y1min, y1max, y2min, y2max;
-			dlg.GetYBounds( &y1min, &y1max, &y2min, &y2max );
+			double y1min, y1max;
+			dlg.GetTopYBounds( &y1min, &y1max );
 
 			if (y1max > y1min)
 			{
 				if (m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP))
 					m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP)->SetWorld( y1min, y1max );
 			}
+		}
+
+		if ( m_bottomAutoScale )
+		{
+			if (m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM))
+				AutoscaleYAxis(m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM), *m_selectedChannelIndices[BOTTOM_LEFT_AXIS], true);
+			if (m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_BOTTOM))
+				AutoscaleYAxis(m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_BOTTOM), 
+				m_selectedChannelIndices[BOTTOM_RIGHT_AXIS]->size() > 0 ? *m_selectedChannelIndices[BOTTOM_RIGHT_AXIS] : *m_selectedChannelIndices[BOTTOM_LEFT_AXIS], 
+				true);	
+		}
+		else
+		{
+			double y2min, y2max;
+			dlg.GetBottomYBounds( &y2min, &y2max );
 
 			if (y2max > y2min)
 			{		
@@ -885,7 +977,6 @@ void wxDVTimeSeriesCtrl::UpdateScrollbarPosition()
 }
 
 
-
 void wxDVTimeSeriesCtrl::AutoscaleYAxis(bool forceUpdate)
 {
 	//It is probably best to avoid this function and use the more specific version where possible.
@@ -907,9 +998,8 @@ void wxDVTimeSeriesCtrl::AutoscaleYAxis( wxPLAxis *axisToScale, const std::vecto
 {
 	//If autoscaling is off don't scale y1 axis
 	// But do scale y2 axis (since we don't allow manual scaling there for UI simplicity).
-	if (!m_autoScale && 
-		axisToScale != m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_TOP) &&
-		axisToScale != m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_BOTTOM)) return;
+	if (!m_autoScale && axisToScale == m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP)) { return; }
+	if (!m_bottomAutoScale && axisToScale == m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM)) { return; }
 
 	//Force Update is used to rescale even if data is still in acceptable range
 	bool needsRescale = false;

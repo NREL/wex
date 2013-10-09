@@ -116,7 +116,7 @@ private:
 	wxScrollBar *m_graphScrollBar;
 	wxDVSelectionListCtrl *m_dataSelector;
 
-	bool m_autoScale, m_syncToHeatMap;
+	bool m_autoScale, m_bottomAutoScale, m_syncToHeatMap;
 	int m_lineStyle; // line, stepped, points
 
 
