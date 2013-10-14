@@ -442,7 +442,6 @@ bool wxDVFileDataSet::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, 
 	wxString fExtension = filename.Right(3);
 	if (fExtension.CmpNoCase("tm2") == 0 ||
 		fExtension.CmpNoCase("epw") == 0 ||
-		fExtension.CmpNoCase("csv") == 0 || //TMY3s could also be in CSV, but we don't detect that until later.
 		fExtension.CmpNoCase("smw") == 0)
 	{
 		return ReadWeatherFile(plotWin, filename);
@@ -512,14 +511,15 @@ bool wxDVFileDataSet::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, 
 		wxStringTokenizer tkz_units(units, wxT(" \t\r\n"));
 
 		wxStringTokenizer tkz_names_commas(names, wxT(",")); //If it has commas, use them and nothing else.
+		wxStringTokenizer tkz_units_commas(units, wxT(","));
 		if (tkz_names_commas.CountTokens() > 1)
 		{
 			tkz_names = tkz_names_commas;
-			tkz_units = wxStringTokenizer(units, wxT(","));
+			tkz_units = tkz_units_commas;
 		}
 
 		int count_names, count_units;
-		if ((count_names=tkz_names.CountTokens()) != (count_units=tkz_units.CountTokens()))
+		if ((count_names=tkz_names.CountTokens()) != (count_units=tkz_units_commas.CountTokens()))
 		{
 			//Check if its a tmy3 with a csv extension. 
 			//We couldn't catch this earlier because not all csvs are tmy3s.
@@ -582,7 +582,7 @@ bool wxDVFileDataSet::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, 
 		ds->SetTimeStep(1.0);
 
 		columns = 1;
-		while(tkz_names.HasMoreTokens() && tkz_units.HasMoreTokens())
+		while(columns < count_names)
 		{
 			timeCounters.push_back(0.5);
 			wxDVFileDataSet *ds = new wxDVFileDataSet();
@@ -598,7 +598,13 @@ bool wxDVFileDataSet::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, 
 			}
 
 			if (secondRowContainsUnits)
-				ds->SetUnits(tkz_units.GetNextToken());
+			{
+				wxString next_units = tkz_units.GetNextToken();
+				if (next_units.length() > 0)
+					ds->SetUnits(next_units);
+				else
+					ds->SetUnits(wxT("-no units-"));
+			}
 			else
 			{
 				tkz_units.GetNextToken().ToDouble(&entry);
