@@ -41,5 +41,8 @@ void wxDrawScrollBar(wxDC &dc, bool vertical, int x, int y, int width, int heigh
 void wxDrawArrowButton(wxDC &dc, wxArrowType type, int x, int y, int width, int height);
 void wxDrawArrow(wxDC &dc, wxArrowType type, int x, int y, int width, int height);
 
+
+void wxShowTextMessageDialog(const wxString &text, const wxString &title = wxEmptyString, wxWindow *parent = 0);
+
 #endif
 

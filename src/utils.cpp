@@ -1003,3 +1003,32 @@ void wxDrawArrow(wxDC &dc, wxArrowType type, int x, int y, int width, int height
 	dc.DrawPolygon(3, pts);
 }
 
+
+class TextMessageDialog : public wxDialog
+{
+public:
+	TextMessageDialog(const wxString &text, const wxString &title, wxWindow *parent)
+		: wxDialog( parent, wxID_ANY, title, wxDefaultPosition, wxSize(600,400), 
+			wxRESIZE_BORDER|wxDEFAULT_DIALOG_STYLE )
+	{
+		wxTextCtrl *txtctrl = new wxTextCtrl(this, -1, text, 
+			wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_DONTWRAP|wxTE_READONLY);
+		txtctrl->SetFont( wxFont(10, wxMODERN, wxNORMAL, wxNORMAL) );
+		wxButton *btnclose = new wxButton(this, wxID_CANCEL, "Close");
+		wxBoxSizer *btnsz = new wxBoxSizer(wxHORIZONTAL);
+		btnsz->AddStretchSpacer(1);
+		btnsz->Add(btnclose, 0, wxALL, 2);
+		wxBoxSizer *vert = new wxBoxSizer(wxVERTICAL);
+		vert->Add( txtctrl, 1, wxALL|wxEXPAND, 0 );
+		vert->Add( btnsz, 0, wxALL|wxEXPAND, 2 );
+		SetSizer(vert);
+		SetEscapeId( wxID_CANCEL );
+	}
+};
+
+void wxShowTextMessageDialog(const wxString &text, const wxString &title, wxWindow *parent)
+{
+   TextMessageDialog dlg(text, "Notice", parent);
+   dlg.ShowModal();  
+}
+
