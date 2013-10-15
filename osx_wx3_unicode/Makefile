@@ -13,6 +13,7 @@ LIBNAME = wexosxwx3
 TARGET = ../$(LIBNAME).a
 	
 OBJECTS = \
+	choicetree.o \
 	label.o \
 	exttext.o \
 	radiochoice.o \

@@ -12,6 +12,8 @@
 #include "wex/icons/curve.cpng"
 #include "wex/icons/scatter.cpng"
 
+#include "wex/choicetree.h"
+
 class PngTestApp : public wxApp
 {
 public:
@@ -261,6 +263,26 @@ public:
 		wxMessageBox( m_locale.GetLocale() + "\n" + wxString::Format( "thousep? %d sep=%c\n\n", use_thousep ? 1:0, (char)sep)
 			+ wxNumberFormatter::ToString( 12490589.02, 2, wxNumberFormatter::Style_WithThousandsSep ) );
 
+
+		frm = new wxFrame( 0, wxID_ANY, "Tree Widget", wxDefaultPosition, wxSize(300, 400) );
+		wxChoiceTree *ct = new wxChoiceTree( frm, wxID_ANY );
+		
+		ct->Add( "Flat Plate PV", "A detailed PV performance simulator that uses component-based CEC and Sandia models for modules and inverters.  This model can also be used for some low-X CPV systems." );
+		ct->Add( "PVWatts System Model", "A simplified system model that assumes typical module and inverter characteristics." );
+		ct->Add( "High-X Concentrating PV", "A system model specific for high concentration (HCPV) photovoltaic system modeling." );
+		ct->Add( "Solar Water Heating", "Represents a flat plate closed-loop glycol water heating system with auxiliary.  Uses a variable node volume tank model." );
+		ct->Add( "CSP Parabolic Trough (Physical Model)", "A new parabolic trough model developed by NREL in 2010 that uses physical characteristics of the plant to predict performance." );
+		ct->Add( "CSP Parabolic Trough (Empirical Model)", "Long parabolic mirrors are used to focus sunlight on a heat transfer fluid passing through a pipe at the focal point." );
+		ct->Add( "CSP Molten Salt Power Tower", "A field of tracking heliostats focus sunlight on a central tower. SAM utilizes the DELSOL3 code to compute field characteristics." );
+		ct->Add( "CSP Direct Steam Power Tower", "A field of tracking heliostats focus sunlight on a central tower that generates steam in a boiler to run a turbine.  This type of power tower does not include explicit thermal storage." );
+		ct->Add( "CSP Linear Fresnel", "A system that uses long small mirrors to line focus sunlight on fixed receiver tubes mounted above them." );
+		ct->Add( "CSP Dish Stirling", "A Stirling engine is placed at the focal point of a large dish mirror." );
+		ct->Add( "CSP Generic Solar System", "A generic solar system whose optical performance is specified by an optical efficiency table." );
+		ct->Add( "Generic System", "The simplest plant model that uses a nameplate size and capacity factor or user supplied production profile." );
+		ct->Add( "Wind Power", "An hourly model meant to simulate wind power production from single turbine installations to a full scale wind farm providing power to the electricity grid." );
+		ct->Add( "Geothermal Power", "Geothermal power plants generate electricity by extracting heat stored within the earth." );
+		
+		frm->Show();
 		
 		return true;
 	}
