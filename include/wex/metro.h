@@ -192,5 +192,44 @@ private:
 	DECLARE_EVENT_TABLE()
 };
 
+class wxMetroListBox : public wxScrolledWindow
+{
+public:
+	wxMetroListBox( wxWindow *parent, int id, 
+		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize );
+	virtual ~wxMetroListBox();
+
+	int Add( const wxString &label, const wxString &caption = wxEmptyString );
+	void Delete( int idx );
+	void Clear();
+	int Find( const wxString &label );
+	int Count();
+	void SetLabel( int idx, const wxString &label );
+	void SetCaption( int idx, const wxString &capt );
+	wxString GetItem( int idx );
+	wxString GetCaption( int idx );
+	int GetSelection();
+	void SetSelection( int idx );
+
+private:
+	struct item_data {
+		wxString Label;
+		wxString Caption;
+	};
+
+	std::vector<item_data> m_items;
+	int m_hover;
+	int m_selection;
+
+	void OnPaint( wxPaintEvent &evt );
+	void OnErase( wxEraseEvent &evt );
+	void OnLeftDown( wxMouseEvent &evt );
+	void OnMouseMove( wxMouseEvent &evt );
+	void OnLeave( wxMouseEvent &evt );
+	void OnDoubleClick( wxMouseEvent &evt );
+
+	DECLARE_EVENT_TABLE();
+};
+
 #endif
 
