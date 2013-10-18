@@ -397,6 +397,26 @@ int wxMetroTabList::Find( const wxString &label )
 	return -1;
 }
 
+wxString wxMetroTabList::GetLabel( size_t idx )
+{
+	if ( idx < m_items.size() ) return m_items[idx].label;
+	else return wxEmptyString;
+}
+
+void wxMetroTabList::SetLabel( size_t idx, const wxString &text )
+{
+	if ( idx < m_items.size() )
+	{
+		m_items[idx].label = text;
+		Refresh();
+	}
+}
+
+size_t wxMetroTabList::Count()
+{
+	return m_items.size();
+}
+
 void wxMetroTabList::Clear()
 {
 	m_items.clear();
@@ -412,6 +432,14 @@ void wxMetroTabList::SetSelection( size_t i )
 size_t wxMetroTabList::GetSelection()
 {
 	return m_selection;
+}
+
+wxString wxMetroTabList::GetStringSelection()
+{
+	if( m_selection >= 0 && m_selection < m_items.size() )
+		return m_items[m_selection].label;
+	else
+		return wxEmptyString;
 }
 
 wxSize wxMetroTabList::DoGetBestSize() const

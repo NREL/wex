@@ -112,8 +112,12 @@ public:
 	void Remove( const wxString &label );
 	int Find( const wxString &label );
 	void Clear();
+	size_t Count();
+	wxString GetLabel( size_t idx );
+	void SetLabel( size_t idx, const wxString &text );
 	void SetSelection( size_t idx );
 	size_t GetSelection();
+	wxString GetStringSelection();
 	
 	wxSize DoGetBestSize() const;
 
