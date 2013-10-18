@@ -114,10 +114,13 @@ public:
 	void Clear();
 	size_t Count();
 	wxString GetLabel( size_t idx );
+	wxArrayString GetLabels();
 	void SetLabel( size_t idx, const wxString &text );
 	void SetSelection( size_t idx );
 	size_t GetSelection();
 	wxString GetStringSelection();
+	void ReorderLeft( size_t idx );
+	void ReorderRight( size_t idx );
 	
 	wxSize DoGetBestSize() const;
 
@@ -125,6 +128,7 @@ protected:
 	struct item
 	{
 		item( const wxString &l ) : label(l), x_start(0), width(0), shown(true) { }
+		item( const item &x ) : label(x.label), x_start(x.x_start), width(x.width), shown(x.shown) { }
 		wxString label;
 		int x_start;
 		int width;

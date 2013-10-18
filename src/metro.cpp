@@ -397,10 +397,49 @@ int wxMetroTabList::Find( const wxString &label )
 	return -1;
 }
 
+
+void wxMetroTabList::ReorderLeft( size_t idx )
+{
+	if ( idx > 0 && idx < m_items.size() )
+	{
+		item x( m_items[idx-1] );
+		m_items[idx-1] = m_items[idx];
+		m_items[idx] = x;
+
+		if ( m_selection == idx ) m_selection--;
+
+		m_hoverIdx = -1;
+		Refresh();
+	}
+}
+
+void wxMetroTabList::ReorderRight( size_t idx )
+{
+	if ( idx >= 0 && idx < m_items.size()-1)
+	{
+		item x( m_items[idx+1] );
+		m_items[idx+1] = m_items[idx];
+		m_items[idx] = x;
+
+		if ( m_selection == idx ) m_selection++;
+
+		m_hoverIdx = -1;
+		Refresh();
+	}
+}
+
 wxString wxMetroTabList::GetLabel( size_t idx )
 {
 	if ( idx < m_items.size() ) return m_items[idx].label;
 	else return wxEmptyString;
+}
+
+wxArrayString wxMetroTabList::GetLabels()
+{
+	wxArrayString list;
+	for( size_t i=0;i<m_items.size();i++ )
+		list.Add( m_items[i].label );
+	return list;
 }
 
 void wxMetroTabList::SetLabel( size_t idx, const wxString &text )
