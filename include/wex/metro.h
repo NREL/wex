@@ -207,30 +207,32 @@ public:
 		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize );
 	virtual ~wxMetroListBox();
 
-	int Add( const wxString &label, const wxString &caption = wxEmptyString );
-	void Delete( int idx );
+	void Add( const wxString &label );
+	void Delete( size_t idx );
 	void Clear();
 	int Find( const wxString &label );
 	int Count();
-	void SetLabel( int idx, const wxString &label );
-	void SetCaption( int idx, const wxString &capt );
-	wxString GetItem( int idx );
-	wxString GetCaption( int idx );
+	void Set( size_t idx, const wxString &label );
+	wxString Get( size_t idx );
 	int GetSelection();
 	void SetSelection( int idx );
+	wxString GetValue();
 
+	void Invalidate();
 private:
-	struct item_data {
-		wxString Label;
-		wxString Caption;
+	struct _item
+	{
+		wxString name;
+		wxRect geom;
 	};
 
-	std::vector<item_data> m_items;
-	int m_hover;
-	int m_selection;
+	std::vector<_item> m_items;
+	int m_hoverIdx;
+	int m_selectedIdx;
 
 	void OnPaint( wxPaintEvent &evt );
 	void OnErase( wxEraseEvent &evt );
+	void OnResize( wxSizeEvent &evt );
 	void OnLeftDown( wxMouseEvent &evt );
 	void OnMouseMove( wxMouseEvent &evt );
 	void OnLeave( wxMouseEvent &evt );

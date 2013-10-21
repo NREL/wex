@@ -652,8 +652,8 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 
 	if ( light )
 	{
-		dc.SetPen( wxPen( wxMetroTheme::Colour( wxMT_TEXT ) ));
-		dc.DrawLine( 0, cheight-2, cwidth, cheight-2);
+		dc.SetPen( wxPen( wxColour(209,209,209) ));
+		dc.DrawLine( 0, cheight-1, cwidth, cheight-1);
 	}
 }
 	
@@ -809,12 +809,11 @@ wxMetroNotebook::wxMetroNotebook(wxWindow *parent, int id, const wxPoint &pos, c
 
 	wxBoxSizer *sizer = new wxBoxSizer( wxVERTICAL );
 	sizer->Add( m_list, 0, wxALL|wxEXPAND, 0 );
-	sizer->Add( m_flipper, 0, wxALL|wxEXPAND, 0 );
+	sizer->Add( m_flipper, 1, wxALL|wxEXPAND, 0 );
 	SetSizer( sizer );
 
 	SetBackgroundColour( wxMetroTheme::Colour( wxMT_BACKGROUND ) );
 	SetForegroundColour( wxMetroTheme::Colour( wxMT_FOREGROUND ) );
-	SetFont( wxMetroTheme::Font( wxMT_LIGHT, 14) );
 	
 }
 
@@ -1033,3 +1032,220 @@ void wxMetroNotebook::SwitchPage( size_t i )
 	evt2.SetSelection(i);
 	ProcessEvent(evt2);
 }
+
+#define SCRL_RATE 25
+
+BEGIN_EVENT_TABLE(wxMetroListBox, wxScrolledWindow)
+	EVT_SIZE( wxMetroListBox::OnResize )	
+	EVT_LEFT_DOWN( wxMetroListBox::OnLeftDown )
+	EVT_PAINT( wxMetroListBox::OnPaint )
+	EVT_MOTION( wxMetroListBox::OnMouseMove )
+	EVT_LEAVE_WINDOW( wxMetroListBox::OnLeave )
+	EVT_ERASE_BACKGROUND( wxMetroListBox::OnErase )
+END_EVENT_TABLE()
+
+wxMetroListBox::wxMetroListBox(wxWindow *parent, int id, const wxPoint &pos, const wxSize &size)
+	: wxScrolledWindow(parent,id, pos, size, wxBORDER_NONE)
+{
+	SetBackgroundStyle(wxBG_STYLE_CUSTOM);
+	SetBackgroundColour( wxColour(243,243,243) );
+	SetFont( wxMetroTheme::Font( wxMT_LIGHT, 16 ) );	
+	m_selectedIdx = -1;
+	m_hoverIdx = -1;
+	
+}
+
+wxMetroListBox::~wxMetroListBox()
+{
+	/* nothing to do */
+}
+
+
+void wxMetroListBox::Add(const wxString &item)
+{
+	if (Find(item) >= 0)
+		return;
+	
+	_item x;
+	x.name = item;
+	m_items.push_back( x );
+}
+
+void wxMetroListBox::Delete( size_t idx )
+{
+	if ( idx < m_items.size() )
+		m_items.erase( m_items.begin() + idx );
+}
+
+int wxMetroListBox::Find(const wxString &item)
+{
+	for (size_t i=0;i<m_items.size();i++)
+		if (m_items[i].name == item)
+			return i;
+	return -1;
+}
+
+wxString wxMetroListBox::Get(size_t idx)
+{
+	if (idx >= 0 && idx < m_items.size())
+		return m_items[idx].name;
+	else
+		return wxEmptyString;
+}
+
+wxString wxMetroListBox::GetValue()
+{
+	return m_selectedIdx >= 0 ? Get(m_selectedIdx) : wxEmptyString;
+}
+
+void wxMetroListBox::Clear()
+{
+	m_items.clear();
+	Invalidate();
+}
+
+int wxMetroListBox::Count()
+{
+	return m_items.size();
+}
+
+void wxMetroListBox::SetSelection(int idx)
+{
+	m_selectedIdx = idx;
+	Refresh();
+}
+
+int wxMetroListBox::GetSelection()
+{
+	return m_selectedIdx;
+}
+
+void wxMetroListBox::Invalidate()
+{
+	int hpos, vpos;
+	GetViewStart( &hpos, &vpos );
+	hpos *= SCRL_RATE;
+	vpos *= SCRL_RATE;
+
+	wxSize sz = GetClientSize();
+	int width,height;
+	width=height=0;
+
+	wxClientDC dc( this );
+	dc.SetFont( GetFont() );
+
+
+	int y = 0;
+	for (int i=0;i<m_items.size();i++)
+	{
+		if (m_items[i].name == "System Summary")
+			continue;
+		else
+		{
+			int height = dc.GetCharHeight()+10;
+			m_items[i].geom.x = 0;
+			m_items[i].geom.y = y;
+			m_items[i].geom.width = sz.GetWidth()+1;
+			m_items[i].geom.height = height;
+			y += height;
+		}
+	}
+
+	SetScrollbars(1,1,sz.GetWidth(),y, hpos, vpos);
+	SetScrollRate( SCRL_RATE, SCRL_RATE );
+	Refresh();
+}
+
+void wxMetroListBox::OnResize(wxSizeEvent &evt)
+{
+	Invalidate();
+}
+
+
+
+void wxMetroListBox::OnPaint(wxPaintEvent &evt)
+{
+	wxAutoBufferedPaintDC dc(this);
+	DoPrepareDC( dc );
+	
+	wxColour bg = GetBackgroundColour();
+	dc.SetBrush(wxBrush(bg));
+	dc.SetPen(wxPen(bg,1));
+	wxRect windowRect( wxPoint(0,0), GetClientSize() );
+	CalcUnscrolledPosition(windowRect.x, windowRect.y,
+		&windowRect.x, &windowRect.y);
+	dc.DrawRectangle(windowRect);
+	dc.SetFont( GetFont() );
+	dc.SetTextForeground( *wxBLACK );
+	int height = dc.GetCharHeight();
+	for (int i=0;i<m_items.size();i++)	
+	{
+		wxColour bcol = (m_hoverIdx == i) ? wxColour(231,231,231) :
+			(  (m_selectedIdx == i) ? wxColour(213,213,213) : GetBackgroundColour() );
+		dc.SetPen( wxPen( bcol ) );
+		dc.SetBrush( wxBrush( bcol ) );
+		dc.DrawRectangle( m_items[i].geom );
+		dc.DrawText( m_items[i].name, 4, m_items[i].geom.y + m_items[i].geom.height/2 - height/2 );
+	}			
+}
+
+void wxMetroListBox::OnErase( wxEraseEvent & )
+{
+	/* nothing to do */
+}
+
+void wxMetroListBox::OnLeftDown(wxMouseEvent &evt)
+{
+	int vsx, vsy;
+	GetViewStart( &vsx, &vsy );
+	vsx *= SCRL_RATE;
+	vsy *= SCRL_RATE;
+
+	SetFocus();
+
+	for (int i=0;i<m_items.size();i++)
+	{
+		if (evt.GetY()+vsy > m_items[i].geom.y 
+			&& evt.GetY()+vsy < m_items[i].geom.y+m_items[i].geom.height )
+		{
+			
+			m_selectedIdx = i;
+			Refresh();
+				
+			wxCommandEvent selevt(wxEVT_COMMAND_LISTBOX_SELECTED, this->GetId() );
+			selevt.SetEventObject(this);
+			selevt.SetInt(i);
+			selevt.SetString(GetValue());
+			GetEventHandler()->ProcessEvent(selevt);
+			return;
+		}
+	}
+}
+
+void wxMetroListBox::OnMouseMove(wxMouseEvent &evt)
+{	
+	int vsx, vsy;
+	GetViewStart( &vsx, &vsy );
+	vsx *= SCRL_RATE;
+	vsy *= SCRL_RATE;
+
+	for (int i=0;i<m_items.size();i++)
+	{
+		if (evt.GetY()+vsy > m_items[i].geom.y 
+			&& evt.GetY()+vsy < m_items[i].geom.y+m_items[i].geom.height
+			&& m_hoverIdx != i )
+		{
+			
+			m_hoverIdx = i;
+			Refresh();
+			return;
+		}
+	}
+}
+
+void wxMetroListBox::OnLeave(wxMouseEvent &evt)
+{
+	m_hoverIdx = -1;
+	Refresh();
+}
+
