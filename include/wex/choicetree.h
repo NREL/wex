@@ -104,7 +104,8 @@ private:
 	void FireSelectionChangedEvent();
 
 	void PaintBackground( wxDC &dc );
-	void PaintItem(wxDC &dc, wxChoiceTreeItem *item, int line_state, int last_line_y);
+	void PaintItem(wxDC &dc, wxChoiceTreeItem *item, int line_state, int last_line_y,
+		const wxFont &, const wxFont &);
 	void OnPaint(wxPaintEvent &evt);
 	void OnErase(wxEraseEvent &evt);
 	void OnLeftDown(wxMouseEvent &evt);

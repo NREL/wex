@@ -190,6 +190,59 @@ void TestDView( wxWindow *parent )
 	frame->Show();
 }
 
+enum { ID_TechTree, ID_FinTree };
+
+class CTFrame : public wxFrame
+{
+	wxChoiceTree *m_pTech, *m_pFin;
+public:
+	CTFrame( ) : wxFrame( 0, wxID_ANY, "CT Test", wxDefaultPosition, wxSize(500, 400) )
+	{
+		m_pTech = new wxChoiceTree( this, ID_TechTree );
+		m_pTech->SetBackgroundColour(*wxWHITE);
+
+		m_pFin = new wxChoiceTree( this, ID_FinTree );
+		m_pFin->SetBackgroundColour(*wxWHITE);
+
+		wxBoxSizer *sizer = new wxBoxSizer( wxHORIZONTAL );
+		sizer->Add( m_pTech, 1, wxALL|wxEXPAND, 0 );
+		sizer->Add( m_pFin, 1, wxALL|wxEXPAND, 0 );
+		SetSizer( sizer );
+
+		Populate( m_pTech );
+	}
+
+	void Populate( wxChoiceTree *ct )
+	{	
+		ct->DeleteAll();
+		wxChoiceTreeItem *parent = ct->Add( "PhotovoltaiX", wxEmptyString );
+		ct->Add( "Flat Plate PV", "A detailed PV performance simulator that uses component-based CEC and Sandia models for modules and inverters.  This model can also be used for some low-X CPV systems.", wxNullBitmap, parent );
+		ct->Add( "PVWatts System Model", "A simplified system model that assumes typical module and inverter characteristics.", wxNullBitmap, parent );
+		ct->Add( "High-X Concentrating PV", "A system model specific for high concentration (HCPV) photovoltaic system modeling.", wxNullBitmap, parent );
+		
+		static int ii=0;
+		for( int i=0;i<5;i++ )
+			ct->Add( wxString::Format("Value %d", ii++), wxEmptyString );
+
+		ct->Invalidate();
+	}
+
+	void OnTreeSel( wxCommandEvent &evt )
+	{
+		if ( wxChoiceTreeItem *sel = m_pTech->GetSelection() )
+		{
+			//wxMessageBox("On Sel: " + sel->Label );
+			Populate( m_pFin );
+		}
+	}
+
+	DECLARE_EVENT_TABLE();
+};
+
+BEGIN_EVENT_TABLE( CTFrame, wxFrame )
+	EVT_CHOICETREE_SELCHANGE( ID_TechTree, CTFrame::OnTreeSel )
+END_EVENT_TABLE()
+
 class MyApp : public wxApp
 {
 	wxLocale m_locale;
@@ -264,24 +317,7 @@ public:
 			+ wxNumberFormatter::ToString( 12490589.02, 2, wxNumberFormatter::Style_WithThousandsSep ) );
 
 
-		frm = new wxFrame( 0, wxID_ANY, "Tree Widget", wxDefaultPosition, wxSize(300, 400) );
-		wxChoiceTree *ct = new wxChoiceTree( frm, wxID_ANY );
-		
-		ct->Add( "Flat Plate PV", "A detailed PV performance simulator that uses component-based CEC and Sandia models for modules and inverters.  This model can also be used for some low-X CPV systems." );
-		ct->Add( "PVWatts System Model", "A simplified system model that assumes typical module and inverter characteristics." );
-		ct->Add( "High-X Concentrating PV", "A system model specific for high concentration (HCPV) photovoltaic system modeling." );
-		ct->Add( "Solar Water Heating", "Represents a flat plate closed-loop glycol water heating system with auxiliary.  Uses a variable node volume tank model." );
-		ct->Add( "CSP Parabolic Trough (Physical Model)", "A new parabolic trough model developed by NREL in 2010 that uses physical characteristics of the plant to predict performance." );
-		ct->Add( "CSP Parabolic Trough (Empirical Model)", "Long parabolic mirrors are used to focus sunlight on a heat transfer fluid passing through a pipe at the focal point." );
-		ct->Add( "CSP Molten Salt Power Tower", "A field of tracking heliostats focus sunlight on a central tower. SAM utilizes the DELSOL3 code to compute field characteristics." );
-		ct->Add( "CSP Direct Steam Power Tower", "A field of tracking heliostats focus sunlight on a central tower that generates steam in a boiler to run a turbine.  This type of power tower does not include explicit thermal storage." );
-		ct->Add( "CSP Linear Fresnel", "A system that uses long small mirrors to line focus sunlight on fixed receiver tubes mounted above them." );
-		ct->Add( "CSP Dish Stirling", "A Stirling engine is placed at the focal point of a large dish mirror." );
-		ct->Add( "CSP Generic Solar System", "A generic solar system whose optical performance is specified by an optical efficiency table." );
-		ct->Add( "Generic System", "The simplest plant model that uses a nameplate size and capacity factor or user supplied production profile." );
-		ct->Add( "Wind Power", "An hourly model meant to simulate wind power production from single turbine installations to a full scale wind farm providing power to the electricity grid." );
-		ct->Add( "Geothermal Power", "Geothermal power plants generate electricity by extracting heat stored within the earth." );
-		
+		frm = new CTFrame;	
 		frm->Show();
 		
 		return true;

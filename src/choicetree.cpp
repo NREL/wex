@@ -72,7 +72,7 @@ bool wxChoiceTreeItem::Draw(wxDC &dc, const wxRect &rct,
 
 	if (line_state != 0)
 	{
-		wxPen pen( wxPen( *wxBLACK, 1, wxDOT ) );
+		wxPen pen( wxPen( *wxLIGHT_GREY, 2, wxSOLID ) );
 		pen.SetJoin( wxJOIN_ROUND );
 		dc.SetPen( pen );
 
@@ -131,13 +131,13 @@ int wxChoiceTreeItem::HeightRequest( int width, const wxFont &labelfont, const w
 ****************************************/
 
 BEGIN_EVENT_TABLE(wxChoiceTree, wxScrolledWindow)
-EVT_SIZE(wxChoiceTree::OnResize)
-EVT_ERASE_BACKGROUND(wxChoiceTree::OnErase)
-EVT_PAINT(wxChoiceTree::OnPaint)
-EVT_LEFT_DOWN( wxChoiceTree::OnLeftDown )
-EVT_MOTION( wxChoiceTree::OnMouseMove )
-EVT_LEAVE_WINDOW( wxChoiceTree::OnLeave )
-EVT_LEFT_DCLICK( wxChoiceTree::OnDoubleClick)
+	EVT_SIZE(wxChoiceTree::OnResize)
+	EVT_ERASE_BACKGROUND(wxChoiceTree::OnErase)
+	EVT_PAINT(wxChoiceTree::OnPaint)
+	EVT_LEFT_DOWN( wxChoiceTree::OnLeftDown )
+	EVT_MOTION( wxChoiceTree::OnMouseMove )
+	EVT_LEAVE_WINDOW( wxChoiceTree::OnLeave )
+	EVT_LEFT_DCLICK( wxChoiceTree::OnDoubleClick)
 END_EVENT_TABLE()
 
 wxChoiceTree::wxChoiceTree( wxWindow *parent, int id, const wxPoint &pos, const wxSize &sz)
@@ -240,7 +240,7 @@ void wxChoiceTree::Delete(wxChoiceTreeItem *item)
 	for (size_t i=0;i<arr.size();i++)
 		Delete( arr[i] );
 
-	// delete this item from parent
+	// remove this item from parent
 	wxChoiceTreeItem *parent = GetParent(item);
 	if (parent)
 	{
@@ -465,7 +465,7 @@ void wxChoiceTree::FireSelectionChangedEvent()
 	// emit selection change event
 	wxCommandEvent eobj(wxEVT_CHOICETREE_SELCHANGE, GetId());
 	eobj.SetEventObject( this );
-	GetEventHandler()->ProcessEvent(eobj);
+	ProcessEvent( eobj );
 }
 
 
@@ -481,15 +481,12 @@ void wxChoiceTree::PaintBackground( wxDC &dc )
 	dc.DrawRectangle(windowRect);
 }
 
-void wxChoiceTree::PaintItem(wxDC &dc, wxChoiceTreeItem *item, int line_state, int last_line_y)
+void wxChoiceTree::PaintItem(wxDC &dc, wxChoiceTreeItem *item, int line_state, int last_line_y, 
+							 const wxFont &flab, const wxFont &fcap )
 {
 	if (!item || !item->Visible) return;
 
-	//gfx.PushClip( item->Geometry );
-	wxFont label, cap;
-	GetFonts( label, cap );
-	item->Draw(dc, item->Geometry, label, cap, line_state, last_line_y );
-	//gfx.PopClip();
+	item->Draw(dc, item->Geometry, flab, fcap, line_state, last_line_y );
 
 	// draw children
 	for (size_t i=0;i<item->Children.size();i++)
@@ -501,7 +498,7 @@ void wxChoiceTree::PaintItem(wxDC &dc, wxChoiceTreeItem *item, int line_state, i
 
 			PaintItem(dc, item->Children[i], 
 				line_state,
-				item->Geometry.y+item->Geometry.height);
+				item->Geometry.y+item->Geometry.height, flab, fcap);
 		}
 	}
 }
@@ -515,19 +512,11 @@ void wxChoiceTree::OnPaint(wxPaintEvent &)
 {
 	wxAutoBufferedPaintDC pdc(this);
 	DoPrepareDC(pdc);
-
-	int cw, ch;
-
-	GetClientSize(&cw,&ch);
-	
 	PaintBackground(pdc);
-
-	/*int maxlevels = MaxDepth();
+	wxFont label, cap;
+	GetFonts( label, cap );
 	for (size_t i=0;i<m_rootItems.size();i++)
-		CalculateGeometry(cw, cx, cy, 0, maxlevels, m_rootItems[i]);*/
-
-	for (size_t i=0;i<m_rootItems.size();i++)
-		PaintItem(pdc, m_rootItems[i], 0, 0);
+		PaintItem(pdc, m_rootItems[i], 0, 0, label, cap);
 }
 
 void wxChoiceTree::OnLeftDown(wxMouseEvent &evt)
@@ -605,7 +594,6 @@ void wxChoiceTree::OnLeave(wxMouseEvent &)
 	{
 		m_lastHoverItem->Hover = false;
 		m_lastHoverItem = NULL;
-
 		Refresh();
 	}
 }
@@ -614,7 +602,7 @@ void wxChoiceTree::OnDoubleClick(wxMouseEvent &)
 {
 	wxCommandEvent eobj(wxEVT_CHOICETREE_DOUBLECLICK, GetId());
 	eobj.SetEventObject( this );
-	GetEventHandler()->ProcessEvent(eobj);
+	ProcessEvent( eobj );
 }
 
 wxChoiceTreeItem *wxChoiceTree::LocateXY(int mx, int my, wxChoiceTreeItem *parent)
