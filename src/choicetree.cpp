@@ -143,9 +143,12 @@ END_EVENT_TABLE()
 wxChoiceTree::wxChoiceTree( wxWindow *parent, int id, const wxPoint &pos, const wxSize &sz)
 	: wxScrolledWindow(parent, id, pos, sz, wxCLIP_CHILDREN)
 {
-	SetFont( wxMetroTheme::Font( wxMT_LIGHT, 12 ) );
 	SetBackgroundStyle(::wxBG_STYLE_CUSTOM );
 	SetBackgroundColour(*wxWHITE);
+	
+	wxFont font( *wxNORMAL_FONT );
+	font.SetWeight( wxFONTWEIGHT_BOLD );
+	SetFont( font );
 
 	m_selectedItem = NULL;
 	m_lastHoverItem = NULL;
@@ -196,6 +199,7 @@ wxChoiceTreeItem *wxChoiceTree::Add(const wxString &lbl, const wxString &cap,
 	item->Image = bit;
 
 	Add(item, parent);
+
 	return item;
 }
 
@@ -669,5 +673,6 @@ void wxChoiceTree::GetFonts( wxFont &label, wxFont &cap )
 {
 	label = GetFont();
 	cap = label;
-	cap.SetPointSize( cap.GetPointSize() - 3 );
+	cap.SetPointSize( cap.GetPointSize() - 2 );
+	cap.SetWeight( wxFONTWEIGHT_NORMAL );
 }
