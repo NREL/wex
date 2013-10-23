@@ -1138,17 +1138,13 @@ void wxMetroListBox::Invalidate()
 	int y = 0;
 	for (int i=0;i<m_items.size();i++)
 	{
-		if (m_items[i].name == "System Summary")
-			continue;
-		else
-		{
-			int height = dc.GetCharHeight()+10;
-			m_items[i].geom.x = 0;
-			m_items[i].geom.y = y;
-			m_items[i].geom.width = sz.GetWidth()+1;
-			m_items[i].geom.height = height;
-			y += height;
-		}
+		
+		int height = dc.GetCharHeight()+10;
+		m_items[i].geom.x = 0;
+		m_items[i].geom.y = y;
+		m_items[i].geom.width = sz.GetWidth()+1;
+		m_items[i].geom.height = height;
+		y += height;
 	}
 
 	SetScrollbars(1,1,sz.GetWidth(),y, hpos, vpos);
@@ -1180,8 +1176,8 @@ void wxMetroListBox::OnPaint(wxPaintEvent &evt)
 	int height = dc.GetCharHeight();
 	for (int i=0;i<m_items.size();i++)	
 	{
-		wxColour bcol = (m_hoverIdx == i) ? wxColour(231,231,231) :
-			(  (m_selectedIdx == i) ? wxColour(213,213,213) : GetBackgroundColour() );
+		wxColour bcol = (m_selectedIdx == i) ? wxColour(213,213,213) :
+			( (m_hoverIdx == i) ? wxColour(231,231,231) : GetBackgroundColour() );
 		dc.SetPen( wxPen( bcol ) );
 		dc.SetBrush( wxBrush( bcol ) );
 		dc.DrawRectangle( m_items[i].geom );
