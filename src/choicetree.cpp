@@ -9,8 +9,8 @@
 #include "wex/metro.h"
 
 
-DEFINE_EVENT_TYPE( wxEVT_CHOICETREE_SELCHANGE )
-DEFINE_EVENT_TYPE( wxEVT_CHOICETREE_DOUBLECLICK )
+wxDEFINE_EVENT( wxEVT_CHOICETREE_SELCHANGE, wxCommandEvent );
+wxDEFINE_EVENT( wxEVT_CHOICETREE_DOUBLECLICK, wxCommandEvent );
 
 /****************************************
    ********* wxChoiceTreeItem *********
@@ -463,9 +463,9 @@ int wxChoiceTree::MaxDepth()
 void wxChoiceTree::FireSelectionChangedEvent()
 {
 	// emit selection change event
-	wxCommandEvent eobj(wxEVT_CHOICETREE_SELCHANGE, GetId());
-	eobj.SetEventObject( this );
-	ProcessEvent( eobj );
+	wxCommandEvent e( wxEVT_CHOICETREE_SELCHANGE, GetId() );
+	e.SetEventObject( this );
+	ProcessWindowEvent( e );
 }
 
 
@@ -598,11 +598,11 @@ void wxChoiceTree::OnLeave(wxMouseEvent &)
 	}
 }
 
-void wxChoiceTree::OnDoubleClick(wxMouseEvent &)
+void wxChoiceTree::OnDoubleClick( wxMouseEvent & )
 {
-	wxCommandEvent eobj(wxEVT_CHOICETREE_DOUBLECLICK, GetId());
-	eobj.SetEventObject( this );
-	ProcessEvent( eobj );
+	wxCommandEvent e(wxEVT_CHOICETREE_DOUBLECLICK, GetId());
+	e.SetEventObject( this );
+	ProcessWindowEvent( e );
 }
 
 wxChoiceTreeItem *wxChoiceTree::LocateXY(int mx, int my, wxChoiceTreeItem *parent)

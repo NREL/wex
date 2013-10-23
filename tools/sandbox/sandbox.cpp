@@ -304,7 +304,8 @@ public:
 
 		frm->SetSizer( sizer );
 		frm->Show();
-		*/
+
+
 		wxFrame *frm = new wxFrame( 0, wxID_ANY, "Form Editor", wxDefaultPosition, wxSize(900, 600) );
 		new wxUIEditorWindow( frm, wxID_ANY );
 		frm->Show();
@@ -316,8 +317,9 @@ public:
 		wxMessageBox( m_locale.GetLocale() + "\n" + wxString::Format( "thousep? %d sep=%c\n\n", use_thousep ? 1:0, (char)sep)
 			+ wxNumberFormatter::ToString( 12490589.02, 2, wxNumberFormatter::Style_WithThousandsSep ) );
 
-
-		frm = new CTFrame;	
+			
+		*/
+		wxFrame *frm = new CTFrame;	
 		frm->Show();
 		
 		return true;
