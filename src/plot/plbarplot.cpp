@@ -102,19 +102,23 @@ double wxPLBarPlot::CalcXStart(double x, const wxPLDeviceMapping &map, int dispw
 
 int wxPLBarPlot::CalcDispBarWidth( const wxPLDeviceMapping &map )
 {
-	wxRect rct = map.GetDeviceExtents();
-	double xmin = map.GetWorldMinimum().x;
-	double xmax = map.GetWorldMaximum().x;
-
-	int bars_in_view = 0;
-	for ( size_t i=0;i<Len();i++ )
+	if ( m_scaleThickness )
 	{
-		double x = At(i).x;
-		if ( x >= xmin && x <= xmax )
-			bars_in_view++;
-	}
+		wxRect rct = map.GetDeviceExtents();
+		double xmin = map.GetWorldMinimum().x;
+		double xmax = map.GetWorldMaximum().x;
 
-	return (int)( ((double)rct.GetWidth()) / ((double)( bars_in_view + 3 )) );
+		int bars_in_view = 0;
+		for ( size_t i=0;i<Len();i++ )
+		{
+			double x = At(i).x;
+			if ( x >= xmin && x <= xmax )
+				bars_in_view++;
+		}
+
+		return (int)( ((double)rct.GetWidth()) / ((double)( bars_in_view + 3 )) );
+	}
+	else return m_thickness;
 }
 
 void wxPLBarPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
