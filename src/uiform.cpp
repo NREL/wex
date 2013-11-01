@@ -267,7 +267,7 @@ public:
 		for ( size_t i=0;i<clb->GetCount();i++ ) clb->Check( i, false );
 		wxArrayString checked = wxStringTokenize( Property("Checked").GetString(), "," );
 		for ( size_t i=0;i<checked.size();i++ )	{
-			int idx = atoi( checked[i] );
+			int idx = atoi( checked[i].c_str() );
 			if ( idx >= 0 && idx < clb->GetCount() ) clb->Check( idx );
 		}
 	}

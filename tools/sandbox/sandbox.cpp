@@ -203,6 +203,10 @@ public:
 		wxInitAllImageHandlers();
 		TestPLPlot( 0 );
 
+		wxFrame *frame = new wxFrame(NULL, wxID_ANY, "Test LKEdit", wxDefaultPosition, wxSize(600,400) );
+		new wxLKScriptCtrl(frame, wxID_ANY );
+		frame->Show();
+
 		/*
 		
 		wxFrame *frm = new wxFrame(NULL, wxID_ANY, "SchedCtrl", wxDefaultPosition, wxSize(1100,700));
