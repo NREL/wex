@@ -13,7 +13,6 @@ LIBNAME = wexosxwx3
 TARGET = ../$(LIBNAME).a
 	
 OBJECTS = \
-	choicetree.o \
 	label.o \
 	exttext.o \
 	radiochoice.o \
@@ -29,7 +28,6 @@ OBJECTS = \
 	jsonwriter.o \
 	md5.o \
 	numeric.o \
-	ribbonbook.o \
 	dvautocolourassigner.o \
 	dvcolourmap.o \
 	dvdcctrl.o \

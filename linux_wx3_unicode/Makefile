@@ -23,7 +23,6 @@ OBJECTS = \
 	jsonwriter.o \
 	md5.o \
 	numeric.o \
-	ribbonbook.o \
 	dvautocolourassigner.o \
 	dvcolourmap.o \
 	dvdcctrl.o \

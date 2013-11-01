@@ -336,12 +336,6 @@
     <ClInclude Include="..\include\wex\label.h">
       <Filter>wex\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\wex\radiochoice.h">
-      <Filter>wex\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\wex\choicetree.h">
-      <Filter>wex\Headers</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
@@ -536,9 +530,6 @@
     <ClCompile Include="..\src\ole\iehtmlwin.cpp">
       <Filter>ole\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ribbonbook.cpp">
-      <Filter>wex\Sources</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\jsonreader.cpp">
       <Filter>wex\Sources</Filter>
     </ClCompile>
@@ -585,9 +576,6 @@
       <Filter>wex\Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\src\radiochoice.cpp">
-      <Filter>wex\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\choicetree.cpp">
       <Filter>wex\Sources</Filter>
     </ClCompile>
   </ItemGroup>

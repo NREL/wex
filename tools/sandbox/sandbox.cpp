@@ -12,7 +12,6 @@
 #include "wex/icons/curve.cpng"
 #include "wex/icons/scatter.cpng"
 
-#include "wex/choicetree.h"
 
 class PngTestApp : public wxApp
 {
@@ -190,59 +189,6 @@ void TestDView( wxWindow *parent )
 	frame->Show();
 }
 
-enum { ID_TechTree, ID_FinTree };
-
-class CTFrame : public wxFrame
-{
-	wxChoiceTree *m_pTech, *m_pFin;
-public:
-	CTFrame( ) : wxFrame( 0, wxID_ANY, "CT Test", wxDefaultPosition, wxSize(500, 400) )
-	{
-		m_pTech = new wxChoiceTree( this, ID_TechTree );
-		m_pTech->SetBackgroundColour(*wxWHITE);
-
-		m_pFin = new wxChoiceTree( this, ID_FinTree );
-		m_pFin->SetBackgroundColour(*wxWHITE);
-
-		wxBoxSizer *sizer = new wxBoxSizer( wxHORIZONTAL );
-		sizer->Add( m_pTech, 1, wxALL|wxEXPAND, 0 );
-		sizer->Add( m_pFin, 1, wxALL|wxEXPAND, 0 );
-		SetSizer( sizer );
-
-		Populate( m_pTech );
-	}
-
-	void Populate( wxChoiceTree *ct )
-	{	
-		ct->DeleteAll();
-		wxChoiceTreeItem *parent = ct->Add( "PhotovoltaiX", wxEmptyString );
-		ct->Add( "Flat Plate PV", "A detailed PV performance simulator that uses component-based CEC and Sandia models for modules and inverters.  This model can also be used for some low-X CPV systems.", wxNullBitmap, parent );
-		ct->Add( "PVWatts System Model", "A simplified system model that assumes typical module and inverter characteristics.", wxNullBitmap, parent );
-		ct->Add( "High-X Concentrating PV", "A system model specific for high concentration (HCPV) photovoltaic system modeling.", wxNullBitmap, parent );
-		
-		static int ii=0;
-		for( int i=0;i<5;i++ )
-			ct->Add( wxString::Format("Value %d", ii++), wxEmptyString );
-
-		ct->Invalidate();
-	}
-
-	void OnTreeSel( wxCommandEvent &evt )
-	{
-		if ( wxChoiceTreeItem *sel = m_pTech->GetSelection() )
-		{
-			//wxMessageBox("On Sel: " + sel->Label );
-			Populate( m_pFin );
-		}
-	}
-
-	DECLARE_EVENT_TABLE();
-};
-
-BEGIN_EVENT_TABLE( CTFrame, wxFrame )
-	EVT_CHOICETREE_SELCHANGE( ID_TechTree, CTFrame::OnTreeSel )
-END_EVENT_TABLE()
-
 class MyApp : public wxApp
 {
 	wxLocale m_locale;
@@ -255,7 +201,7 @@ public:
 		m_locale.Init();
 
 		wxInitAllImageHandlers();
-		//TestDView( 0 );
+		TestPLPlot( 0 );
 
 		/*
 		
@@ -319,8 +265,6 @@ public:
 
 			
 		*/
-		wxFrame *frm = new CTFrame;	
-		frm->Show();
 		
 		return true;
 	}

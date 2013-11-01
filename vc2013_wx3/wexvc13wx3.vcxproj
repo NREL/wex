@@ -44,7 +44,6 @@
     <ClInclude Include="..\include\wex\md5.h" />
     <ClInclude Include="..\include\wex\metro.h" />
     <ClInclude Include="..\include\wex\mtrand.h" />
-    <ClInclude Include="..\include\wex\radiochoice.h" />
     <ClInclude Include="..\include\wex\sched.h" />
     <ClInclude Include="..\include\wex\numeric.h" />
     <ClInclude Include="..\include\wex\ole\activex.h" />
@@ -113,7 +112,6 @@
     <ClInclude Include="..\include\wex\plot\plplotctrl.h" />
     <ClInclude Include="..\include\wex\plot\plscatterplot.h" />
     <ClInclude Include="..\include\wex\ribbonbook.h" />
-    <ClInclude Include="..\include\wex\choicetree.h" />
     <ClInclude Include="..\include\wex\uiform.h" />
     <ClInclude Include="..\include\wex\utils.h" />
     <ClInclude Include="..\src\pdf\wxmemdbg.h" />
@@ -197,8 +195,6 @@
     <ClCompile Include="..\src\plot\pllineplot.cpp" />
     <ClCompile Include="..\src\plot\plplotctrl.cpp" />
     <ClCompile Include="..\src\plot\plscatterplot.cpp" />
-    <ClCompile Include="..\src\ribbonbook.cpp" />
-    <ClCompile Include="..\src\choicetree.cpp" />
     <ClCompile Include="..\src\uiform.cpp" />
     <ClCompile Include="..\src\utils.cpp" />
   </ItemGroup>
