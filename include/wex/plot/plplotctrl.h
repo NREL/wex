@@ -117,7 +117,7 @@ public:
 	enum LegendPos { FLOATING, NORTHWEST, SOUTHWEST, NORTHEAST, SOUTHEAST, NORTH, SOUTH, EAST, WEST, BOTTOM, RIGHT  };
 
 	void AddPlot( wxPLPlottable *p, AxisPos xap = X_BOTTOM, AxisPos yap = Y_LEFT, PlotPos ppos = PLOT_TOP );
-	wxPLPlottable *RemovePlot( wxPLPlottable *p );
+	wxPLPlottable *RemovePlot( wxPLPlottable *p, PlotPos plotPosition = PLOT_TOP );
 	void DeleteAllPlots();
 	size_t GetPlotCount();
 	wxPLPlottable *GetPlot( size_t i );

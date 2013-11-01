@@ -1262,7 +1262,7 @@ void wxDVTimeSeriesCtrl::RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos 
 	if (m_selectedChannelIndices[graphIndex]->size() > 0)
 		keepAxis = true;
 
-	m_plotSurface->RemovePlot(m_plots[index]);
+	m_plotSurface->RemovePlot(m_plots[index], pPos);
 
 	//See if axis is still in use or not, and to some cleanup.
 	wxPLLinearAxis *axisThatWasUsed;

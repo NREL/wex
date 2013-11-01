@@ -960,13 +960,13 @@ void wxPLPlotCtrl::AddPlot( wxPLPlottable *p, AxisPos xap, AxisPos yap, PlotPos 
 		m_legendInvalidated = true;
 }
 
-wxPLPlottable *wxPLPlotCtrl::RemovePlot( wxPLPlottable *p )
+wxPLPlottable *wxPLPlotCtrl::RemovePlot( wxPLPlottable *p, PlotPos plotPosition )
 {
 	for ( std::vector<plot_data>::iterator it = m_plots.begin();
 		it != m_plots.end();
 		++it )
 	{
-		if ( it->plot == p )
+		if ( it->plot == p && it->ppos == plotPosition )
 		{
 			m_plots.erase( it );
 			if ( p->IsShownInLegend() )
