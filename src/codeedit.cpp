@@ -140,18 +140,17 @@ BEGIN_EVENT_TABLE (wxCodeEditCtrl, wxStyledTextCtrl)
 	
 END_EVENT_TABLE()
 
-
 #ifdef __WXMAC__
 #define DEFAULT_FONT_SIZE 13
 #define DEFAULT_FONT_FACE "Courier New"
 #else
-#ifdef __WXMSW___
-	#define DEFAULT_FONT_SIZE 10
-	#define DEFAULT_FONT_FACE "Consolas"
-#else
-	#define DEFAULT_FONT_SIZE 10
-	#define DEFAULT_FONT_FACE "Courier New"
-#endif
+	#ifdef __WXMSW__
+		#define DEFAULT_FONT_SIZE 10
+		#define DEFAULT_FONT_FACE "Consolas"
+	#else
+		#define DEFAULT_FONT_SIZE 10
+		#define DEFAULT_FONT_FACE "Courier New"
+	#endif
 #endif
 
 static char* CWordlist1 =
