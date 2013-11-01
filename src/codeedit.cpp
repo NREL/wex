@@ -826,13 +826,12 @@ void wxCodeEditCtrl::OnCharAdded( wxStyledTextEvent &evt )
 		{
 			wxString prevline = GetLine(curline - 1);
 		
-			static char buf[32];
+			wxString buf;
+			buf.Alloc( 32 );
 			size_t prevlinelen = prevline.Length();
 			size_t i;
 			for ( i=0;i<prevlinelen && i < 31 && (prevline[i] == '\t' || prevline[i] == ' '); i++)
-				buf[i] = prevline[i];
-
-			buf[i] = '\0';
+				buf += prevline[i];
 			
 			ReplaceSelection(buf);
 		}
