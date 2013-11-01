@@ -621,11 +621,6 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 		double MinHrs = d->GetMinHours();
 		double timestep = d->GetTimeStep();
 		wxDVFileDataSet *d2 = new wxDVFileDataSet();
-		wxRealPoint *pt;
-
-		double MaxHrs = d->GetMaxHours();	//TODO:  Remove when done testing
-		double TotHrs = d->GetTotalHours();	//TODO:  Remove when done testing
-		std::vector<wxRealPoint> data = d->GetDataVector();	//TODO:  Remove when done testing
 
 		d2->SetSeriesTitle(d->GetSeriesTitle());
 		d2->SetUnits(d->GetUnits());
@@ -657,8 +652,7 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 
 						for (double j = currentDay; j < nextDay; j += timestep)
 						{
-							pt = new wxRealPoint(j, avg);
-							d2->Append(*pt); 
+							d2->Append(wxRealPoint(j, avg)); 
 						}
 
 						currentDay = nextDay;
@@ -677,8 +671,7 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 
 			for (double j = currentDay; j < nextDay; j += timestep)
 			{
-				pt = new wxRealPoint(j, avg);
-				d2->Append(*pt); 
+				d2->Append(wxRealPoint(j, avg)); 
 			}
 		}
 		else
@@ -714,8 +707,7 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 
 						for (double j = currentMonth; j < nextMonth; j += timestep)
 						{
-							pt = new wxRealPoint(j, avg);
-							d2->Append(*pt); 
+							d2->Append(wxRealPoint(j, avg)); 
 						}
 
 						currentMonth = nextMonth;
@@ -749,8 +741,7 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 
 			for (double j = currentMonth; j < nextMonth; j += timestep)
 			{
-				pt = new wxRealPoint(j, avg);
-				d2->Append(*pt); 
+				d2->Append(wxRealPoint(j, avg)); 
 			}
 		}
 
