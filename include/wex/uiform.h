@@ -373,25 +373,4 @@ private:
 	DECLARE_EVENT_TABLE()
 };
 
-class wxNumericCtrl;
-
-class wxUIEditorWindow : public wxPanel
-{
-public:
-	wxUIEditorWindow( wxWindow *parent, int id, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize );
-	wxUIFormData &GetFormData();
-
-private:
-	void OnCreate( wxCommandEvent & );
-	void OnCommand( wxCommandEvent & );
-
-	wxUIFormData m_form;
-	wxTextCtrl *m_txtName;
-	wxNumericCtrl *m_numWidth, *m_numHeight;
-	wxUIPropertyEditor *m_propEditor;
-	wxUIFormDesigner *m_formDesigner;
-
-	DECLARE_EVENT_TABLE();
-};
-
 #endif
