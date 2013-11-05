@@ -1030,6 +1030,11 @@ wxWindow *wxUIObject::AssignNative( wxWindow *win )
 	if ( m_nativeObject != win )
 		DestroyNative();
 	m_nativeObject = win;
+	if ( win )
+	{
+		wxRect r = GetGeometry();
+		win->SetSize( r.x, r.y, r.width, r.height );
+	}
 	return m_nativeObject;
 }
 
