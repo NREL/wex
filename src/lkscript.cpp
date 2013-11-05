@@ -575,7 +575,7 @@ void wxLKScriptCtrl::OnScriptTextChanged( wxStyledTextEvent &evt )
 		AnnotationClearLine( GetCurrentLine() );
 
 		m_timer.Stop();
-		m_timer.Start( 900, true );
+		m_timer.Start( 1500, true );
 		evt.Skip();
 	}
 }

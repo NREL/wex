@@ -23,6 +23,9 @@ public:
 	wxCodeEditCtrl( wxWindow *parent, int id = wxID_ANY, 
 		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize );
 
+	bool ReadAscii( const wxString &file );
+	bool WriteAscii( const wxString &file );
+
 	enum Language { NONE, CPP, C, LK, VBA, HTML, TEXT, TRNSYS, PYTHON };
 
 	void SetLanguage( const wxString &fileName );

@@ -212,6 +212,41 @@ wxCodeEditCtrl::wxCodeEditCtrl( wxWindow *parent, int id,
 	SetScrollWidthTracking( true );
 }
 
+bool wxCodeEditCtrl::ReadAscii( const wxString &file )
+{
+	FILE *fp = fopen(file.c_str(), "r");
+	if ( fp )
+	{
+		wxString str;
+		char buf[1024];
+		while(fgets( buf, 1023, fp ) != 0)
+			str += buf;
+
+		fclose(fp);
+		SetText(str);
+		EmptyUndoBuffer();
+		SetSavePoint();
+		SetModified( false );
+		return true;
+	}
+	else return false;
+}
+
+
+bool wxCodeEditCtrl::WriteAscii( const wxString &file )
+{
+	FILE *fp = fopen( file.c_str(), "w" );
+	if ( fp )
+	{
+		fputs( GetText().ToAscii().data(), fp );
+		SetSavePoint();
+		SetModified( false );
+		fclose( fp );
+		return true;
+	}
+	else return false;
+}
+
 void wxCodeEditCtrl::SetLanguage( const wxString &fileName )
 {
 	SetLanguage( GetLanguage( fileName ) );

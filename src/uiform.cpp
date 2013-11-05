@@ -1677,7 +1677,10 @@ bool wxUIFormData::Read( wxInputStream &_I )
 	for ( size_t i=0;i<n;i++ )
 	{
 		wxString type = in.ReadString();
-		ok = ok && (Create( type )!=0);
+		if (wxUIObject *obj = Create( type ))
+			ok = ok && obj->Read( _I );
+		else
+			ok = false;
 	}
 
 	return ( in.Read8() == code && ok );
@@ -1920,8 +1923,16 @@ wxUIObject *wxUIFormEditor::CreateObject( const wxString &type )
 	else return 0;
 }
 
+void wxUIFormEditor::ClearSelections()
+{
+	if ( m_propEditor ) m_propEditor->SetObject( 0 ) ;
+	m_selected.clear();
+	Refresh();
+}
+
 void wxUIFormEditor::SetFormData( wxUIFormData *form )
 {
+	if ( m_propEditor ) m_propEditor->SetObject( 0 );
 	m_form = form;
 }
 
@@ -2821,6 +2832,8 @@ wxUIFormDesigner::wxUIFormDesigner(wxWindow *parent, int id, const wxPoint &pos,
 
 void wxUIFormDesigner::SetFormData( wxUIFormData *form )
 {
+	m_editor->ClearSelections();
+
 	if( m_formData != 0 )
 		m_formData->Detach();
 
@@ -2830,8 +2843,11 @@ void wxUIFormDesigner::SetFormData( wxUIFormData *form )
 	if( m_formData == 0 ) return;
 	
 	m_formData->Attach( m_editor );
+	m_editor->SetViewMode( false );	
 	m_editor->SetClientSize( m_formData->GetSize() );
 	UpdateScrollbars();
+
+	Refresh();
 }
 
 wxUIFormData *wxUIFormDesigner::GetFormData()
