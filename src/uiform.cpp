@@ -1415,7 +1415,7 @@ void wxUIPropertyEditor::SetObject( wxUIObject *obj )
 			m_curProps.push_back( x );
 
 			GetSizer()->Add( x.label, 0, wxALL|wxALIGN_CENTRE_VERTICAL, 4 );
-			GetSizer()->Add( x.editor, 1, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 0 );
+			GetSizer()->Add( x.editor, 1, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 2 );
 			ValueToPropGrid( x );
 		}
 	}
@@ -1445,7 +1445,9 @@ void wxUIPropertyEditor::OnButton( wxCommandEvent &evt )
 		{
 			wxImage image_data;
 			if ( image_data.LoadFile( file ) )
-				m_curObject->Property( pi->name ).Set( image_data );
+			{
+				m_curObject->Property( pi->name ).Set( image_data );				
+			}
 			else
 				wxMessageBox("Could not load the selected image file:\n\n" + file);
 		}
