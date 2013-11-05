@@ -1612,8 +1612,7 @@ wxUIFormData::~wxUIFormData()
 
 
 bool wxUIFormData::GetMetaData( const wxString &,
-	wxString *, wxString *, bool *, bool *,
-	wxColour *, wxColour * )
+	wxString *, wxString *, wxColour * )
 {
 	return false;
 }
@@ -2600,15 +2599,13 @@ void wxUIFormEditor::OnPaint(wxPaintEvent &)
 		}
 
 		wxString label, units;
-		wxColour fore, back;
-		bool is_indicator, show_labels;
+		wxColour colour;
 		if ( m_form->GetMetaData( objs[i]->GetName(),
-				&label, &units, &is_indicator, &show_labels, &fore, &back ) 
-			&& show_labels == true )
+				&label, &units, &colour ) )
 		{
 			dc.SetFont(*wxNORMAL_FONT);
 			rct = objs[i]->GetGeometry();
-			dc.SetTextForeground( fore );
+			dc.SetTextForeground( colour );
 
 			int sw, sh;
 			dc.GetTextExtent(label, &sw, &sh);

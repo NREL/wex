@@ -222,8 +222,7 @@ public:
 	// labels, units, and other properties to be rendered
 	// on the actual form
 	virtual bool GetMetaData( const wxString &name,
-		wxString *label, wxString *units, bool *indicator, bool *show_labels,
-		wxColour *fore = 0, wxColour *back = 0 );
+		wxString *label, wxString *units, wxColour *colour );
 
 protected:
 	wxString m_name;

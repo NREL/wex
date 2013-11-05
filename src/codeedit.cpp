@@ -224,6 +224,7 @@ bool wxCodeEditCtrl::ReadAscii( const wxString &file )
 
 		fclose(fp);
 		SetText(str);
+		ConvertEOLs( wxSTC_EOL_LF );
 		EmptyUndoBuffer();
 		SetSavePoint();
 		SetModified( false );
@@ -238,6 +239,7 @@ bool wxCodeEditCtrl::WriteAscii( const wxString &file )
 	FILE *fp = fopen( file.c_str(), "w" );
 	if ( fp )
 	{
+		ConvertEOLs( wxSTC_EOL_LF );
 		fputs( GetText().ToAscii().data(), fp );
 		SetSavePoint();
 		SetModified( false );
