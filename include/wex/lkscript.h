@@ -11,11 +11,21 @@
 
 #include "wex/codeedit.h"
 
+#define wxLK_STDLIB_BASIC 0x01
+#define wxLK_STDLIB_STRING 0x02
+#define wxLK_STDLIB_MATH 0x04
+#define wxLK_STDLIB_WXUI 0x08
+#define wxLK_STDLIB_WEXPLOT 0x10
+
+#define wxLK_STDLIB_ALL (wxLK_STDLIB_BASIC|wxLK_STDLIB_STRING| \
+	wxLK_STDLIB_MATH|wxLK_STDLIB_WXUI|wxLK_STDLIB_WEXPLOT)
+
 class wxLKScriptCtrl : public wxCodeEditCtrl
 {
 public:
 	wxLKScriptCtrl( wxWindow *parent, int id = wxID_ANY,
-		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize );
+		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize,
+		unsigned long libs = wxLK_STDLIB_ALL );
 
 	virtual ~wxLKScriptCtrl();
 

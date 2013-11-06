@@ -470,7 +470,7 @@ BEGIN_EVENT_TABLE( wxLKScriptCtrl, wxCodeEditCtrl )
 END_EVENT_TABLE()
 
 wxLKScriptCtrl::wxLKScriptCtrl( wxWindow *parent, int id,
-	const wxPoint &pos, const wxSize &size )
+	const wxPoint &pos, const wxSize &size, unsigned long libs )
 	: wxCodeEditCtrl( parent, id, pos, size ),
 		m_timer( this, IDT_TIMER )
 {
@@ -482,11 +482,11 @@ wxLKScriptCtrl::wxLKScriptCtrl( wxWindow *parent, int id,
 	SetLanguage( LK );
 	EnableCallTips( true );
 	
-	RegisterLibrary( wexlib_lkfuncs(), "I/O and Plotting Functions", this );
-	RegisterLibrary( lk::stdlib_basic(), "Standard Operations" );
-	RegisterLibrary( lk::stdlib_string(), "String Functions" );
-	RegisterLibrary( lk::stdlib_math(), "Math Functions" );
-	RegisterLibrary( lk::stdlib_wxui(), "User interface Functions" );
+	if( libs & wxLK_STDLIB_BASIC ) RegisterLibrary( lk::stdlib_basic(), "Standard Operations" );
+	if( libs & wxLK_STDLIB_STRING ) RegisterLibrary( lk::stdlib_string(), "String Functions" );
+	if( libs & wxLK_STDLIB_MATH ) RegisterLibrary( lk::stdlib_math(), "Math Functions" );
+	if( libs & wxLK_STDLIB_WXUI ) RegisterLibrary( lk::stdlib_wxui(), "User interface Functions" );
+	if( libs & wxLK_STDLIB_WEXPLOT ) RegisterLibrary( wexlib_lkfuncs(), "I/O and Plotting Functions", this );
 	
 	wxFont font( *wxNORMAL_FONT );
 	AnnotationSetStyleOffset( 512 );

@@ -197,8 +197,8 @@ public:
 	wxWindow *GetWindow() { return m_formWindow; }
 	
 	// load/save form definition
-	void Write( wxOutputStream & );
-	bool Read( wxInputStream & );
+	virtual void Write( wxOutputStream & );
+	virtual bool Read( wxInputStream & );
 
 	// methods to create/edit UI objects
 	wxUIObject *Create( const wxString &type, const wxRect &geom, const wxString &name = wxEmptyString );

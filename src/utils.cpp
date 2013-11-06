@@ -1007,28 +1007,27 @@ void wxDrawArrow(wxDC &dc, wxArrowType type, int x, int y, int width, int height
 class TextMessageDialog : public wxDialog
 {
 public:
-	TextMessageDialog(const wxString &text, const wxString &title, wxWindow *parent)
-		: wxDialog( parent, wxID_ANY, title, wxDefaultPosition, wxSize(600,400), 
+	TextMessageDialog(const wxString &text, const wxString &title, wxWindow *parent, const wxSize &size = wxSize(600,400))
+		: wxDialog( parent, wxID_ANY, title, wxDefaultPosition, size, 
 			wxRESIZE_BORDER|wxDEFAULT_DIALOG_STYLE )
 	{
 		wxTextCtrl *txtctrl = new wxTextCtrl(this, -1, text, 
-			wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_DONTWRAP|wxTE_READONLY);
+			wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_DONTWRAP|wxTE_READONLY|wxBORDER_NONE);
 		txtctrl->SetFont( wxFont(10, wxMODERN, wxNORMAL, wxNORMAL) );
-		wxButton *btnclose = new wxButton(this, wxID_CANCEL, "Close");
-		wxBoxSizer *btnsz = new wxBoxSizer(wxHORIZONTAL);
-		btnsz->AddStretchSpacer(1);
-		btnsz->Add(btnclose, 0, wxALL, 2);
-		wxBoxSizer *vert = new wxBoxSizer(wxVERTICAL);
-		vert->Add( txtctrl, 1, wxALL|wxEXPAND, 0 );
-		vert->Add( btnsz, 0, wxALL|wxEXPAND, 2 );
-		SetSizer(vert);
+		
+		wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+		sizer->Add( txtctrl, 1, wxALL|wxEXPAND, 0 );
+		sizer->Add( CreateButtonSizer( wxOK ), 0, wxALL|wxEXPAND, 4 );
+		SetSizer( sizer );
+
 		SetEscapeId( wxID_CANCEL );
 	}
 };
 
-void wxShowTextMessageDialog(const wxString &text, const wxString &title, wxWindow *parent)
+void wxShowTextMessageDialog(const wxString &text, const wxString &title, wxWindow *parent, const wxSize &size )
 {
-   TextMessageDialog dlg(text, "Notice", parent);
+   TextMessageDialog dlg(text, "Notice", parent, size);
+   if( parent ) dlg.CenterOnParent();
    dlg.ShowModal();  
 }
 
