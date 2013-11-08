@@ -118,7 +118,9 @@ public:
 	bool IsVisible() { return m_visible; }
 
 	wxUIProperty &Property( const wxString &name );
+	bool HasProperty( const wxString &name );
 	wxArrayString Properties();
+	int GetTabOrder();
 		
 	virtual void Write( wxOutputStream & );
 	virtual bool Read( wxInputStream & );

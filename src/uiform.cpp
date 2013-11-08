@@ -1137,16 +1137,34 @@ wxSize wxUIObject::GetSize()
 	return wxSize( r.width, r.height );
 }
 
+static wxUIProperty gs_nullProp;
+
 wxUIProperty &wxUIObject::Property( const wxString &name )
 {
-	static wxUIProperty s_nullProp;
 
 	wxString lowered = name.Lower();
 	for( size_t i=0;i<m_properties.size();i++ )
 		if ( lowered == m_properties[i].lowered )
 			return *m_properties[i].prop;
 
-	return s_nullProp;
+	return gs_nullProp;
+}
+
+bool wxUIObject::HasProperty( const wxString &name )
+{
+	wxString lowered = name.Lower();
+	for( size_t i=0;i<m_properties.size();i++ )
+		if ( lowered == m_properties[i].lowered )
+			return true;
+
+	return false;
+}
+
+int wxUIObject::GetTabOrder()
+{
+	wxUIProperty &p = Property("TabOrder");
+	if( &p == &gs_nullProp ) return 99999;
+	else return p.GetInteger();
 }
 
 wxArrayString wxUIObject::Properties()
@@ -1625,8 +1643,27 @@ void wxUIFormData::Attach( wxWindow *form )
 	m_formWindow = form;
 	if ( m_formWindow )
 	{
-		for( size_t i=0;i<m_objects.size();i++ )
-			m_objects[i]->CreateNative( m_formWindow );
+		// first sort by "TabOrder" property
+		std::vector<wxUIObject*> list = m_objects;
+
+		int len = (int)list.size();
+		for( int i=0;i<len-1;i++ )
+		{
+			int smallest = i;
+
+			for( int j=i+1;j<len;j++ )
+				if ( list[j]->GetTabOrder() < list[smallest]->GetTabOrder() )
+					smallest = j;
+
+			// swap
+			wxUIObject *ptr = list[i];
+			list[i] = list[smallest];
+			list[smallest] = ptr;
+		}
+		
+		// then create the object
+		for( size_t i=0;i<list.size();i++ )
+			list[i]->CreateNative( m_formWindow );
 	}
 
 }
