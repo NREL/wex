@@ -34,12 +34,6 @@ void wxNumericCtrl::OnTextEnter( wxCommandEvent &evt )
 		m_focusStrVal = GetValue();
 		Translate();
 		SetSelection(0,this->GetValue().Len());
-
-		
-		wxCommandEvent enterpress(wxEVT_COMMAND_TEXT_ENTER, this->GetId() );
-		enterpress.SetEventObject( this );
-		enterpress.SetString( GetValue() );
-		GetEventHandler()->ProcessEvent(enterpress);
 		evt.Skip();
 	}
 }

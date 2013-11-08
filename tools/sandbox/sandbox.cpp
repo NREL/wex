@@ -189,6 +189,64 @@ void TestDView( wxWindow *parent )
 	frame->Show();
 }
 
+#include <wex/numeric.h>
+#include <wex/exttext.h>
+enum { ID_NUMERIC = wxID_HIGHEST+121, ID_EXTTEXT, ID_CLEAR };
+class NumericTest : public wxFrame
+{
+	int m_counter;
+	wxNumericCtrl *m_num;
+	wxExtTextCtrl *m_txt;
+	wxTextCtrl *m_log;
+public:
+	NumericTest() : wxFrame( NULL, wxID_ANY, "Numeric Test", wxDefaultPosition, wxSize(500,400) )
+	{
+		wxPanel *panel = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+
+		m_counter = 0;
+		m_num = new wxNumericCtrl( panel, ID_NUMERIC );
+		m_txt = new wxExtTextCtrl( panel, ID_EXTTEXT );
+
+		m_log = new wxTextCtrl( panel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY );
+
+		wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL );
+		sizer->Add( m_num, 0, wxALL|wxEXPAND, 10 );
+		sizer->Add( m_txt, 0, wxALL|wxEXPAND, 10 );
+		sizer->AddStretchSpacer();
+		sizer->Add( new wxButton( panel, ID_CLEAR, "Clear" ), 0, wxALL|wxEXPAND, 10 );
+
+		wxBoxSizer *main = new wxBoxSizer( wxVERTICAL );
+		main->Add( sizer, 0, wxALL|wxEXPAND, 10 );
+		main->Add( m_log, 1, wxALL|wxEXPAND, 10 );
+
+		panel->SetSizer( main );
+	}
+
+	void OnNumeric( wxCommandEvent &evt )
+	{
+		m_log->AppendText( wxString::Format("%d --> numeric changed %.6lf\n", ++m_counter, m_num->Value()) );
+	}
+
+	void OnExtText( wxCommandEvent &evt )
+	{
+		m_log->AppendText( wxString::Format("%d --> exttext changed\n", ++m_counter) );
+	}
+
+	void OnClear( wxCommandEvent & )
+	{
+		m_log->Clear();
+	}
+
+	DECLARE_EVENT_TABLE();
+};
+
+BEGIN_EVENT_TABLE( NumericTest, wxFrame )
+	EVT_NUMERIC( ID_NUMERIC, NumericTest::OnNumeric )
+	EVT_TEXT_ENTER( ID_EXTTEXT, NumericTest::OnExtText )
+	EVT_BUTTON( ID_CLEAR, NumericTest::OnClear )
+END_EVENT_TABLE()
+
+
 class MyApp : public wxApp
 {
 	wxLocale m_locale;
@@ -201,11 +259,15 @@ public:
 		m_locale.Init();
 
 		wxInitAllImageHandlers();
-		TestPLPlot( 0 );
+		//TestPLPlot( 0 );
 
+		(new NumericTest())->Show();
+
+		/*
 		wxFrame *frame = new wxFrame(NULL, wxID_ANY, "Test LKEdit", wxDefaultPosition, wxSize(600,400) );
 		new wxLKScriptCtrl(frame, wxID_ANY );
 		frame->Show();
+		*/
 
 		/*
 		
