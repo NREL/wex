@@ -190,9 +190,13 @@ public:
 class wxUIFormData
 {
 public:
-	wxUIFormData();
+	explicit wxUIFormData();
+	explicit wxUIFormData( const wxUIFormData &rhs );
 	virtual ~wxUIFormData();
 	
+	wxUIFormData *Duplicate() const;
+	void Copy( const wxUIFormData &rhs );
+
 	// build/destroy native interface as needed
 	void Attach( wxWindow *form );
 	void Detach();

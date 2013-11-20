@@ -1623,9 +1623,32 @@ wxUIFormData::wxUIFormData()
 	m_height = 300;
 }
 
+wxUIFormData::wxUIFormData( const wxUIFormData &rhs )
+{
+	Copy( rhs );
+}
+
 wxUIFormData::~wxUIFormData()
 {
 	DeleteAll(); // this will detach from the form too
+}
+
+
+void wxUIFormData::Copy( const wxUIFormData &rhs )
+{
+	Detach();
+	DeleteAll();
+
+	m_name = rhs.m_name;
+	m_width = rhs.m_width;
+	m_height = rhs.m_height;
+	for( size_t i=0;i<rhs.m_objects.size(); i++ )
+		m_objects.push_back( rhs.m_objects[i]->Duplicate() );
+}
+
+wxUIFormData *wxUIFormData::Duplicate() const
+{
+	return new wxUIFormData( *this );
 }
 
 
