@@ -1115,8 +1115,7 @@ void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visi
 	double worldMax;
 	double YMin;
 	double YMax;
-	std::vector<wxRealPoint> data;
-	wxPLHistogramPlot *histPlot = new wxPLHistogramPlot();
+	wxPLHistogramPlot* histPlot;
 
 	//Filter out histogram plots since this function doesn't work with them.  They need their own function.
 	for ( size_t i = 0; i < m_plots.size(); i++ )
@@ -1125,14 +1124,7 @@ void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visi
 		if(histChk == histStr) 
 		{ 
 			xDataLabel = m_plots[i].plot->GetYDataLabel();	//For CDF plots there is no X data label. The closest useful lable is the Y lable of the companion PDF histogram plot, so we need to store it.
-
-			histPlot->SetLabel(m_plots[i].plot->GetLabel());
-			for(int k = 0; k < m_plots[i].plot->Len(); k++)
-			{
-				data.push_back(m_plots[i].plot->At(k));
-			}
-			histPlot->SetData(data);
-
+			histPlot = dynamic_cast<wxPLHistogramPlot*>( m_plots[i].plot );
 			break;
 		}
 	}

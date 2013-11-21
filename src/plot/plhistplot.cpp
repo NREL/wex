@@ -201,6 +201,7 @@ void wxPLHistogramPlot::RecalculateHistogram()
 	size_t index;
 
 	m_histData.clear();
+	m_histDataBinRanges.clear();
 
 	if ( m_data.size() < 2 || m_numberOfBins < 1) return;
 
