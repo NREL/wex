@@ -24,6 +24,8 @@ public:
 	NormalizeType GetNormalize();
 	int GetNumberOfBins();
 	double GetNiceYMax();
+	double HistAt( size_t i ) const;
+	wxRealPoint HistBinAt( size_t i ) const;
 
 	bool GetIgnoreZeros();
 	void SetIgnoreZeros(bool value = true);
@@ -52,6 +54,7 @@ private:
 	size_t m_numberOfBins;
 
 	std::vector<double> m_histData;
+	std::vector<wxRealPoint> m_histDataBinRanges;
 
 	void RecalculateHistogram();
 

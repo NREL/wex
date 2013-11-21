@@ -38,6 +38,16 @@ wxRealPoint wxPLHistogramPlot::At( size_t i ) const
 	return m_data[i];
 }
 
+double wxPLHistogramPlot::HistAt( size_t i ) const
+{
+	return m_histData[i];
+}
+
+wxRealPoint wxPLHistogramPlot::HistBinAt( size_t i ) const
+{
+	return m_histDataBinRanges[i];
+}
+
 size_t wxPLHistogramPlot::Len() const
 {
 	return m_data.size();
@@ -113,7 +123,6 @@ void wxPLHistogramPlot::SetIgnoreZeros(bool value)
 	RecalculateHistogram();
 }
 
-
 void wxPLHistogramPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 {
 	if ( m_histData.size() > 0 )
@@ -188,6 +197,9 @@ void wxPLHistogramPlot::RecalculateHistogram()
 	//This method builds histogram data. (basically, just groups and counts WPPlotData)
 	//Histogram data is stored in a local array m_histData.
 	//Uses WPPlotData to build this data.
+
+	size_t index;
+
 	m_histData.clear();
 
 	if ( m_data.size() < 2 || m_numberOfBins < 1) return;
@@ -203,17 +215,22 @@ void wxPLHistogramPlot::RecalculateHistogram()
 	if ( m_dataMin == m_dataMax ) return;
 	
 	m_histData.resize( m_numberOfBins, 0.0 );
+	m_histDataBinRanges.resize( m_numberOfBins, wxRealPoint(m_dataMax, m_dataMin) );
 
 	for (size_t i=0; i<m_data.size(); i++)
 	{
 		if ( m_ignoreZeros && m_data[i].y == 0 ) continue;
 
-		size_t index = m_numberOfBins * (m_data[i].y - m_dataMin) / (m_dataMax - m_dataMin);
+		index = m_numberOfBins * (m_data[i].y - m_dataMin) / (m_dataMax - m_dataMin);
 		if (index >= m_numberOfBins)
 			index--;
 
 		if ( index >= 0 && index < m_histData.size() )
+		{
 			m_histData[index]++;
+			if(m_histDataBinRanges[index].x > m_data[i].y) { m_histDataBinRanges[index].x = m_data[i].y; }
+			if(m_histDataBinRanges[index].y < m_data[i].y) { m_histDataBinRanges[index].y = m_data[i].y; }
+		}
 	}
 	//We now have a histogram...
 
@@ -257,7 +274,3 @@ int wxPLHistogramPlot::GetSqrtBinsFor(int nDataPoints)
 {
 	return (int) sqrt(double(nDataPoints));
 }
-
-
-
-
