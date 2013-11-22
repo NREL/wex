@@ -54,7 +54,7 @@ void wxDVAutoColourAssigner::ResetColourList()
 	mAvailableColours.push_back("forest green");
 	mAvailableColours.push_back("blue");
 	mAvailableColours.push_back("purple");
-	mAvailableColours.push_back("goldenrod");
+	//mAvailableColours.push_back("goldenrod");
 	mAvailableColours.push_back("salmon");
 	mAvailableColours.push_back("magenta");
 	mAvailableColours.push_back("grey");
