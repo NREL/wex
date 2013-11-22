@@ -452,16 +452,6 @@ lk::fcall_t* wexlib_lkfuncs()
 }
 
 
-
-static bool eval_callback( int line, void *cbdata )
-{
-	wxLKScriptCtrl *sc = ((wxLKScriptCtrl*)cbdata);
-
-	if (!sc->OnEval( line )) return false;
-
-	return !sc->IsStopFlagSet();
-}
-
 enum { IDT_TIMER = wxID_HIGHEST+213 };
 
 BEGIN_EVENT_TABLE( wxLKScriptCtrl, wxCodeEditCtrl )	
@@ -649,6 +639,25 @@ void wxLKScriptCtrl::Stop()
 	m_stopScriptFlag = true;
 }
 
+
+class my_eval : public lk::eval
+{
+	wxLKScriptCtrl *m_lcs;
+public:
+	my_eval( lk::node_t *tree, lk::env_t *env, wxLKScriptCtrl *lcs ) 
+		: lk::eval( tree, env ), m_lcs(lcs)
+	{
+	}
+
+	virtual bool on_run( int line )
+	{
+		if ( !m_lcs->OnEval( line ) ) return false;
+
+		return !m_lcs->IsStopFlagSet();
+	}
+};
+
+
 bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 							 wxWindow *toplevel )
 {
@@ -701,11 +710,10 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 		m_env->clear_vars();
 		m_env->clear_objs();
 
-		lk::vardata_t result;
-		unsigned int ctl_id = lk::CTL_NONE;
 		wxStopWatch sw;
-		std::vector<lk_string> errors;
-		if ( lk::eval( m_tree, m_env, errors, result, 0, ctl_id, eval_callback, this ) )
+		my_eval e( m_tree, m_env, this );
+
+		if ( e.run() )
 		{
 			long time = sw.Time();
 			OnOutput(wxString::Format("elapsed time: %ld msec\n", time));
@@ -726,8 +734,8 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 		else
 		{
 			OnOutput("eval fail\n");
-			for (size_t i=0;i<errors.size();i++)
-				OnOutput( wxString(errors[i].c_str()) + "\n");
+			for (size_t i=0;i<e.error_count();i++)
+				OnOutput( e.get_error(i) + "\n");
 
 		}
 	}
