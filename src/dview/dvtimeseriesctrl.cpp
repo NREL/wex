@@ -174,14 +174,16 @@ private:
 	wxDVTimeSeriesDataSet *m_data;
 	wxColour m_colour;
 	Style m_style;
+	TimeSeriesType m_seriesType;
 public:
 
 
-	wxDVTimeSeriesPlot( wxDVTimeSeriesDataSet *ds )
+	wxDVTimeSeriesPlot( wxDVTimeSeriesDataSet *ds, TimeSeriesType seriesType )
 		: m_data(ds)
 	{
 		m_colour = *wxRED;
-		m_style = NORMAL;
+		m_style = seriesType == HOURLY_TIME_SERIES ? NORMAL : STEPPED;
+		m_seriesType = seriesType;
 	}
 
 	void SetStyle( Style ss ) { m_style = ss; }
@@ -216,42 +218,229 @@ public:
 	{
 		if ( !m_data || m_data->Length() < 2 ) return;
 
+		size_t len;
+		std::vector< wxPoint > points;
+		wxRealPoint rpt;
+	
 		wxPoint start = map.ToDevice( At(0).x, At(0).y );
-
-		size_t len = m_data->Length();
 		wxRealPoint wmin = map.GetWorldMinimum();
 		wxRealPoint wmax = map.GetWorldMaximum();
-		std::vector< wxPoint > points;
-		points.reserve( len );
-		for ( size_t i = 0; i<len; i++ )
-		{
-			wxRealPoint rpt = m_data->At(i);
-			if ( rpt.x < wmin.x || rpt.x > wmax.x ) continue;
-			points.push_back( map.ToDevice( At(i) ) );
-		}
-
-		if ( points.size() == 0 ) return;
 		
 		dc.SetPen( wxPen( m_colour, 2, wxPENSTYLE_SOLID ) );
 
-		if ( m_style == STEPPED )
+		//Original logic for hourly time series
+		if(m_seriesType == HOURLY_TIME_SERIES)
 		{
-			std::vector<wxPoint> drawpts( points.size() * 2 );
-
-			for (size_t i=0;i<points.size();i++)
+			len = m_data->Length();
+			points.reserve( len );
+			for ( size_t i = 0; i<len; i++ )
 			{
-				if ( i > 0 ) drawpts[2*i].x = points[i-1].x;
-				else drawpts[2*i].x = points[i].x;
-				
-				drawpts[2*i].y = points[i].y;				
-				drawpts[2*i+1].x = points[i].x;
-				drawpts[2*i+1].y = points[i].y;
+				rpt = m_data->At(i);
+				if ( rpt.x < wmin.x || rpt.x > wmax.x ) continue;
+				points.push_back( map.ToDevice( At(i) ) );
 			}
 
-			dc.DrawLines( drawpts.size(), &drawpts[0] );
+			if ( points.size() == 0 ) return;
+
+			//For stepped graph create an array twice as big as the original and replace each single x value with two x values, one with the prior y value and one with the current y value
+			if ( m_style == STEPPED )
+			{
+				std::vector<wxPoint> drawpts( points.size() * 2 );
+
+				for (size_t i=0;i<points.size();i++)
+				{
+					if ( i > 0 ) drawpts[2*i].x = points[i-1].x;
+					else drawpts[2*i].x = points[i].x;
+				
+					drawpts[2*i].y = points[i].y;				
+					drawpts[2*i+1].x = points[i].x;
+					drawpts[2*i+1].y = points[i].y;
+				}
+
+				dc.DrawLines( drawpts.size(), &drawpts[0] );
+			}
+			else			
+				dc.DrawLines( points.size(), &points[0] );
 		}
-		else			
-			dc.DrawLines( points.size(), &points[0] );
+		else
+		{
+			//For daily and monthly time series create a dataset with the average x and y values for the day/month
+			//For stepped graphs we have to start the array with the average y value for the first period at x = 0, have each avg y value at the beginning of the period (leftmost x for the period),
+			//and end it with the average y value for the final period duplicated at x = max
+			double sum = 0.0;
+			double avg = 0.0;
+			double counter = 0.0;
+			double MinHrs = m_data->GetMinHours();
+			wxDVFileDataSet *d2 = new wxDVFileDataSet();
+
+			d2->SetSeriesTitle(m_data->GetSeriesTitle());
+			d2->SetUnits(m_data->GetUnits());
+			d2->SetTimeStep(m_data->GetTimeStep());
+
+			//Create daily data set (avg value of data by day) from m_data
+			if(m_seriesType == DAILY_TIME_SERIES)
+			{
+				double nextDay = 0.0;
+				double currentDay = 0.0;
+
+				while (nextDay < MinHrs)
+				{
+					nextDay += 24.0;
+				}
+
+				currentDay = nextDay - 24.0;
+
+				for (size_t i = 0; i < m_data->Length(); i++)
+				{
+					if(m_data->At(i).x >= nextDay)
+					{
+						if(i != 0 && counter != 0)
+						{ 
+							avg = sum / counter;
+
+							if ( m_style == STEPPED )
+							{
+								if(d2->Length() == 0) { d2->Append(wxRealPoint((double) currentDay / 2.0, avg)); }
+								d2->Append(wxRealPoint((double)nextDay, avg)); 
+							}
+							else
+							{
+								d2->Append(wxRealPoint((double) currentDay + (double)(nextDay - currentDay) / 2.0, avg)); 
+							}
+
+							currentDay = nextDay;
+							nextDay += 24;
+						}
+
+						counter = 0.0;
+						sum = 0.0;
+					}
+
+					counter += 1.0;
+					sum += m_data->At(i).y;
+				}
+
+				avg = sum / counter;
+
+				if ( m_style == STEPPED )
+				{
+					if(d2->Length() == 0) { d2->Append(wxRealPoint((double) currentDay / 2.0, avg)); }
+					d2->Append(wxRealPoint((double)nextDay, avg)); 
+				}
+				else
+				{
+					d2->Append(wxRealPoint((double) currentDay + (double)(nextDay - currentDay) / 2.0, avg)); 
+				}
+			}
+			else
+			{
+				//Create monthly data set (avg value of data by month) from m_data
+				double nextMonth = 0.0;
+				double currentMonth = 0.0;
+				double year = 0.0;
+
+				if(MinHrs >= 0.0 && MinHrs < 744.0) { currentMonth = 0.0; nextMonth = 744.0; }
+				else if(MinHrs >= 744.0 && MinHrs < 1416.0) { currentMonth = 744.0; nextMonth = 1416.0; }
+				else if(MinHrs >= 1416.0 && MinHrs < 2160.0) { currentMonth = 1416.0; nextMonth = 2160.0; }
+				else if(MinHrs >= 2160.0 && MinHrs < 2880.0) { currentMonth = 2160.0; nextMonth = 2880.0; }
+				else if(MinHrs >= 2880.0 && MinHrs < 3624.0) { currentMonth = 2880.0; nextMonth = 3624.0; }
+				else if(MinHrs >= 3624.0 && MinHrs < 4344.0) { currentMonth = 3624.0; nextMonth = 4344.0; }
+				else if(MinHrs >= 4344.0 && MinHrs < 5088.0) { currentMonth = 4344.0; nextMonth = 5088.0; }
+				else if(MinHrs >= 5088.0 && MinHrs < 5832.0) { currentMonth = 5088.0; nextMonth = 5832.0; }
+				else if(MinHrs >= 5832.0 && MinHrs < 6552.0) { currentMonth = 5832.0; nextMonth = 6552.0; }
+				else if(MinHrs >= 6552.0 && MinHrs < 7296.0) { currentMonth = 6552.0; nextMonth = 7296.0; }
+				else if(MinHrs >= 7296.0 && MinHrs < 8016.0) { currentMonth = 7296.0; nextMonth = 8016.0; }
+				else if(MinHrs >= 8016.0 && MinHrs < 8760.0) { currentMonth = 8016.0; nextMonth = 8760.0; }
+
+				for (size_t i = 0; i < m_data->Length(); i++)
+				{
+					if(m_data->At(i).x >= nextMonth)
+					{
+						if(i != 0 && counter != 0)
+						{ 
+							avg = sum / counter;
+
+							if ( m_style == STEPPED )
+							{
+								if(d2->Length() == 0) { d2->Append(wxRealPoint((double) currentMonth / 2.0, avg)); }
+								d2->Append(wxRealPoint((double)nextMonth, avg)); 
+							}
+							else
+							{
+								d2->Append(wxRealPoint((double) currentMonth + (double)(nextMonth - currentMonth) / 2.0, avg)); 
+							}
+
+							currentMonth = nextMonth;
+							if(nextMonth == 744.0 + year) { nextMonth = 1416.0 + year; }
+							else if(nextMonth == 1416.0 + year) { nextMonth = 2160.0 + year; }
+							else if(nextMonth == 2160.0 + year) { nextMonth = 2880.0 + year; }
+							else if(nextMonth == 2880.0 + year) { nextMonth = 3624.0 + year; }
+							else if(nextMonth == 3624.0 + year) { nextMonth = 4344.0 + year; }
+							else if(nextMonth == 4344.0 + year) { nextMonth = 5088.0 + year; }
+							else if(nextMonth == 5088.0 + year) { nextMonth = 5832.0 + year; }
+							else if(nextMonth == 5832.0 + year) { nextMonth = 6552.0 + year; }
+							else if(nextMonth == 6552.0 + year) { nextMonth = 7296.0 + year; }
+							else if(nextMonth == 7296.0 + year) { nextMonth = 8016.0 + year; }
+							else if(nextMonth == 8016.0 + year) { nextMonth = 8760.0 + year; }
+							else if(nextMonth == 8760.0 + year) 
+							{ 
+								year += 8760.0;
+								nextMonth = 744.0 + year; 
+							}
+						}
+
+						counter = 0.0;
+						sum = 0.0;
+					}
+
+					counter += 1.0;
+					sum += m_data->At(i).y;
+				}
+
+				avg = sum / counter;
+
+				if ( m_style == STEPPED )
+				{
+					if(d2->Length() == 0) { d2->Append(wxRealPoint((double) currentMonth / 2.0, avg)); }
+					d2->Append(wxRealPoint((double)nextMonth, avg)); 
+				}
+				else
+				{
+					d2->Append(wxRealPoint((double) currentMonth + (double)(nextMonth - currentMonth) / 2.0, avg)); 
+				}
+			}
+
+			len = d2->Length();
+			points.reserve( len );
+			for ( size_t i = 0; i<len; i++ )
+			{
+				rpt = d2->At(i);
+				if ( rpt.x < wmin.x || rpt.x > wmax.x ) continue;
+				points.push_back( map.ToDevice( rpt ) );
+			}
+
+			if ( points.size() == 0 ) return;
+
+			//For stepped graph create an array twice as big as the original and replace each single x value with two x values, one with the prior y value and one with the current y value
+			if ( m_style == STEPPED )
+			{
+				std::vector<wxPoint> drawpts( points.size() * 2 );
+
+				for (size_t i=0;i<points.size();i++)
+				{
+					if ( i > 0 ) drawpts[2*i].x = points[i-1].x;
+					else drawpts[2*i].x = points[i].x;
+				
+					drawpts[2*i].y = points[i].y;				
+					drawpts[2*i+1].x = points[i].x;
+					drawpts[2*i+1].y = points[i].y;
+				}
+
+				dc.DrawLines( drawpts.size(), &drawpts[0] );
+			}
+			else			
+				dc.DrawLines( points.size(), &points[0] );
+		}
 	}
 
 	virtual void DrawInLegend( wxDC &dc, const wxRect &rct )
@@ -297,13 +486,14 @@ END_EVENT_TABLE()
 
 
 /*Constructors and Destructors*/
-wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id)
+wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, TimeSeriesType seriesType)
 : wxPanel(parent, id)
 {	
 	m_autoScale = true;
 	m_bottomAutoScale = true;
 	m_syncToHeatMap = false;
-	m_lineStyle = 0; // line, stepped, points
+	m_lineStyle = seriesType == HOURLY_TIME_SERIES ? wxDVTimeSeriesPlot::NORMAL : wxDVTimeSeriesPlot::STEPPED; // line, stepped, points
+	m_seriesType = seriesType;
 	
 	m_plotSurface = new wxPLPlotCtrl(this, ID_PLOT_SURFACE); 
 	m_plotSurface->SetAllowHighlighting(true);
@@ -359,13 +549,16 @@ wxDVTimeSeriesCtrl::~wxDVTimeSeriesCtrl(void)
 		delete m_selectedChannelIndices[i];
 }
 
-
 void wxDVTimeSeriesCtrl::Invalidate()
 {
 	m_plotSurface->Invalidate();
 	m_plotSurface->Refresh();
 }
 
+TimeSeriesType wxDVTimeSeriesCtrl::GetTimeSeriesType()
+{
+	return m_seriesType;
+}
 
 
 /*** EVENT HANDLERS ***/
@@ -602,153 +795,11 @@ void wxDVTimeSeriesCtrl::OnPlotDragEnd(wxCommandEvent& e)
 */
 
 
-void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, bool refresh_ui, int seriesType)
+void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, bool refresh_ui)
 {
-	if(seriesType == HOURLY_TIME_SERIES)
-	{
-		wxDVTimeSeriesPlot *p = new wxDVTimeSeriesPlot(d);
-		m_plots.push_back(p); //Add to data sets list.
-		m_dataSelector->Append( d->GetTitleWithUnits(), group );
-	}
-	else
-	{
-		double hr;
-		double val;
-		double sum = 0.0;
-		double avg = 0.0;
-		double counter = 0.0;
-		size_t NumPoints = d->Length();
-		double MinHrs = d->GetMinHours();
-		double timestep = d->GetTimeStep();
-		wxDVFileDataSet *d2 = new wxDVFileDataSet();
-
-		d2->SetSeriesTitle(d->GetSeriesTitle());
-		d2->SetUnits(d->GetUnits());
-		d2->SetTimeStep(timestep);
-
-		if(seriesType == DAILY_TIME_SERIES)
-		{
-			double nextDay = 0.0;
-			double currentDay = 0.0;
-
-			while (nextDay < MinHrs)
-			{
-				nextDay += 24.0;
-			}
-
-			currentDay = nextDay - 24.0;
-
-			//Create daily data set (avg value of data by day) from d
-			for (size_t i = 0; i < NumPoints; i++)
-			{
-				hr = d->At(i).x;
-				val = d->At(i).y;
-
-				if(hr >= nextDay)
-				{
-					if(i != 0 && counter != 0)
-					{ 
-						avg = sum / counter;
-
-						for (double j = currentDay; j < nextDay; j += timestep)
-						{
-							d2->Append(wxRealPoint(j, avg)); 
-						}
-
-						currentDay = nextDay;
-						nextDay += 24;
-					}
-
-					counter = 0.0;
-					sum = 0.0;
-				}
-
-				counter += 1.0;
-				sum += val;
-			}
-
-			avg = sum / counter;
-
-			for (double j = currentDay; j < nextDay; j += timestep)
-			{
-				d2->Append(wxRealPoint(j, avg)); 
-			}
-		}
-		else
-		{
-			double nextMonth = 0.0;
-			double currentMonth = 0.0;
-			double year = 0.0;
-
-			if(MinHrs >= 0.0 && MinHrs < 744.0) { currentMonth = 0.0; nextMonth = 744.0; }
-			else if(MinHrs >= 744.0 && MinHrs < 1416.0) { currentMonth = 744.0; nextMonth = 1416.0; }
-			else if(MinHrs >= 1416.0 && MinHrs < 2160.0) { currentMonth = 1416.0; nextMonth = 2160.0; }
-			else if(MinHrs >= 2160.0 && MinHrs < 2880.0) { currentMonth = 2160.0; nextMonth = 2880.0; }
-			else if(MinHrs >= 2880.0 && MinHrs < 3624.0) { currentMonth = 2880.0; nextMonth = 3624.0; }
-			else if(MinHrs >= 3624.0 && MinHrs < 4344.0) { currentMonth = 3624.0; nextMonth = 4344.0; }
-			else if(MinHrs >= 4344.0 && MinHrs < 5088.0) { currentMonth = 4344.0; nextMonth = 5088.0; }
-			else if(MinHrs >= 5088.0 && MinHrs < 5832.0) { currentMonth = 5088.0; nextMonth = 5832.0; }
-			else if(MinHrs >= 5832.0 && MinHrs < 6552.0) { currentMonth = 5832.0; nextMonth = 6552.0; }
-			else if(MinHrs >= 6552.0 && MinHrs < 7296.0) { currentMonth = 6552.0; nextMonth = 7296.0; }
-			else if(MinHrs >= 7296.0 && MinHrs < 8016.0) { currentMonth = 7296.0; nextMonth = 8016.0; }
-			else if(MinHrs >= 8016.0 && MinHrs < 8760.0) { currentMonth = 8016.0; nextMonth = 8760.0; }
-
-			//Create daily data set (avg value of data by day) from d
-			for (size_t i = 0; i < NumPoints; i++)
-			{
-				hr = d->At(i).x;
-				val = d->At(i).y;
-
-				if(hr >= nextMonth)
-				{
-					if(i != 0 && counter != 0)
-					{ 
-						avg = sum / counter;
-
-						for (double j = currentMonth; j < nextMonth; j += timestep)
-						{
-							d2->Append(wxRealPoint(j, avg)); 
-						}
-
-						currentMonth = nextMonth;
-						if(nextMonth == 744.0 + year) { nextMonth = 1416.0 + year; }
-						else if(nextMonth == 1416.0 + year) { nextMonth = 2160.0 + year; }
-						else if(nextMonth == 2160.0 + year) { nextMonth = 2880.0 + year; }
-						else if(nextMonth == 2880.0 + year) { nextMonth = 3624.0 + year; }
-						else if(nextMonth == 3624.0 + year) { nextMonth = 4344.0 + year; }
-						else if(nextMonth == 4344.0 + year) { nextMonth = 5088.0 + year; }
-						else if(nextMonth == 5088.0 + year) { nextMonth = 5832.0 + year; }
-						else if(nextMonth == 5832.0 + year) { nextMonth = 6552.0 + year; }
-						else if(nextMonth == 6552.0 + year) { nextMonth = 7296.0 + year; }
-						else if(nextMonth == 7296.0 + year) { nextMonth = 8016.0 + year; }
-						else if(nextMonth == 8016.0 + year) { nextMonth = 8760.0 + year; }
-						else if(nextMonth == 8760.0 + year) 
-						{ 
-							year += 8760.0;
-							nextMonth = 744.0 + year; 
-						}
-					}
-
-					counter = 0.0;
-					sum = 0.0;
-				}
-
-				counter += 1.0;
-				sum += val;
-			}
-
-			avg = sum / counter;
-
-			for (double j = currentMonth; j < nextMonth; j += timestep)
-			{
-				d2->Append(wxRealPoint(j, avg)); 
-			}
-		}
-
-		wxDVTimeSeriesPlot *p = new wxDVTimeSeriesPlot(d2);
-		m_plots.push_back(p); //Add to data sets list.
-		m_dataSelector->Append( d2->GetTitleWithUnits(), group );
-	}
+	wxDVTimeSeriesPlot *p = new wxDVTimeSeriesPlot(d, m_seriesType);
+	m_plots.push_back(p); //Add to data sets list.
+	m_dataSelector->Append( d->GetTitleWithUnits(), group );
 
 	if ( refresh_ui )
 	{

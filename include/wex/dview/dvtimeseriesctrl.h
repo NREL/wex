@@ -28,11 +28,11 @@ class wxScrollBar;
 class wxDVTimeSeriesCtrl : public wxPanel
 {
 public:
-	wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id);
+	wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, TimeSeriesType seriesType);
 	virtual ~wxDVTimeSeriesCtrl();
 
 	//When a data set is added, wxDVTimeSeriesCtrl creates a plottable with a pointer to that data.  Does not take ownership.
-	void AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, bool refresh_ui, int seriesType);
+	void AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, bool refresh_ui);
 	bool RemoveDataSet(wxDVTimeSeriesDataSet *d); //Releases ownership, does not delete. //true if found & removed.
 	void RemoveAllDataSets(); //Clears all data sets from graphs and memory.
 
@@ -60,6 +60,7 @@ public:
 
 	bool GetSyncWithHeatMap();
 	void SetSyncWithHeatMap(bool b);
+	TimeSeriesType GetTimeSeriesType();
 
 	/*Graph Specific Methods*/
 	bool CanZoomIn(void);
@@ -118,7 +119,7 @@ private:
 
 	bool m_autoScale, m_bottomAutoScale, m_syncToHeatMap;
 	int m_lineStyle; // line, stepped, points
-
+	TimeSeriesType m_seriesType;
 
 	void AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPos, int index);
 	void RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPos, int index);
