@@ -31,7 +31,7 @@ public:
 
 	// by default assumes a linear axis.  can be overridden to provide logarithmic or other scaling
 
-	virtual wxCoord WorldToPhysical( double coord, wxCoord phys_min, wxCoord phys_max );
+	virtual wxCoord WorldToPhysical( double coord, wxCoord phys_min, wxCoord phys_max, bool isHistXAxis = false );
 	virtual double PhysicalToWorld( wxCoord p, wxCoord phys_min, wxCoord phys_max );
 
 	// get & set axis properties

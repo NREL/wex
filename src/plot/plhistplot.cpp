@@ -129,7 +129,7 @@ void wxPLHistogramPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 	{
 
 		wxCoord xMin = map.ToDevice( wxPoint(m_dataMin, 0) ).x;
-		wxCoord xMax = map.ToDevice( wxPoint(m_dataMax, 0) ).x;
+		wxCoord xMax = map.ToDevice( wxPoint(m_dataMax, 0), true ).x;
 
 		double usableLength = xMax - xMin;
 		
@@ -199,6 +199,7 @@ void wxPLHistogramPlot::RecalculateHistogram()
 	//Uses WPPlotData to build this data.
 
 	size_t index;
+	size_t DataCount = 0;
 
 	m_histData.clear();
 	m_histDataBinRanges.clear();
@@ -220,6 +221,7 @@ void wxPLHistogramPlot::RecalculateHistogram()
 
 	for (size_t i=0; i<m_data.size(); i++)
 	{
+		if (!m_ignoreZeros || m_data[i].y != 0 ) DataCount++;
 		if ( m_ignoreZeros && m_data[i].y == 0 ) continue;
 
 		index = m_numberOfBins * (m_data[i].y - m_dataMin) / (m_dataMax - m_dataMin);
@@ -235,13 +237,14 @@ void wxPLHistogramPlot::RecalculateHistogram()
 	}
 	//We now have a histogram...
 
+
 	m_niceMax = 0;
 	if (m_normalize)
 	{
 		//Here we normalize it so that we show percent on the y axis instead of the count.
 		for (size_t i=0; i<m_numberOfBins; i++)
 		{
-			m_histData[i] *= 100.0f / (double)m_data.size();
+			m_histData[i] *= 100.0f / (double)DataCount;
 			if (m_normalizeToPdf)
 			{
 				//This scales so total area is equal to 1 (like a pdf).

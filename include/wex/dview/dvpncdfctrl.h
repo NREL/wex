@@ -13,6 +13,7 @@ class wxPLLinePlot;
 class wxComboBox;
 class wxChoice;
 class wxTextCtrl;
+class wxCheckBox;
 
 class wxDVPnCdfCtrl : public wxPanel
 {
@@ -38,8 +39,6 @@ public:
 	double GetYMax();
 	void SetYMax(double max);
 
-	
-
 	void ReadCdfFrom( wxDVTimeSeriesDataSet& d, std::vector<wxRealPoint>* cdfArray );
 	void ChangePlotDataTo( wxDVTimeSeriesDataSet* d );
 	void RebuildPlotSurface( double maxYPercent );
@@ -50,6 +49,7 @@ public:
 	void OnBinComboSelection( wxCommandEvent & );
 	void OnBinTextEnter( wxCommandEvent & );
 	void OnNormalizeChoice( wxCommandEvent & );
+	void OnShowZerosClick( wxCommandEvent & );
 
 private:
 	std::vector<wxDVTimeSeriesDataSet*> m_dataSets;
@@ -63,6 +63,7 @@ private:
 	wxChoice *m_dataSelector;
 	wxComboBox *m_binsCombo;
 	wxChoice *m_normalizeChoice;
+	wxCheckBox *m_hideZeros;
 
 	wxPLPlotCtrl *m_plotSurface;
 	wxPLHistogramPlot *m_pdfPlot;

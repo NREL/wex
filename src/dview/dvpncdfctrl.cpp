@@ -21,6 +21,7 @@ BEGIN_EVENT_TABLE(wxDVPnCdfCtrl, wxPanel)
 	EVT_CHOICE(wxID_NORMALIZE_CHOICE, wxDVPnCdfCtrl::OnNormalizeChoice)
 	EVT_COMBOBOX(wxID_BIN_COMBO, wxDVPnCdfCtrl::OnBinComboSelection)
 	EVT_TEXT_ENTER(wxID_BIN_COMBO, wxDVPnCdfCtrl::OnBinTextEnter)
+	EVT_CHECKBOX(wxID_ANY, wxDVPnCdfCtrl::OnShowZerosClick)
 END_EVENT_TABLE()
 
 wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos, 
@@ -44,11 +45,13 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos
 
 	m_dataSelector = new wxChoice(this, wxID_DATA_SELECTOR_CHOICE, wxDefaultPosition, wxDefaultSize, 0, NULL, wxCB_SORT);
 
-
+	m_hideZeros = new wxCheckBox(this, wxID_ANY, "Exclude Zero Values", wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
+	
 	wxBoxSizer *optionsSizer = new wxBoxSizer(wxHORIZONTAL);
 	optionsSizer->Add(m_dataSelector, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxALIGN_CENTER, 2);
 	optionsSizer->Add(new wxStaticText(this, wxID_ANY, wxT("  Y Max:")), 0, wxALIGN_CENTER|wxALL|wxALIGN_CENTER_VERTICAL, 2);
 	optionsSizer->Add(m_maxTextBox, 0, wxALL|wxALIGN_CENTER_VERTICAL, 2);
+	optionsSizer->Add(m_hideZeros, 0, wxALL|wxALIGN_CENTER_VERTICAL, 2);
 	optionsSizer->AddStretchSpacer();
 	
 	m_normalizeChoice = new wxChoice(this, wxID_NORMALIZE_CHOICE);
@@ -428,6 +431,15 @@ void wxDVPnCdfCtrl::OnBinTextEnter(wxCommandEvent& e)
 void wxDVPnCdfCtrl::OnNormalizeChoice(wxCommandEvent& e)
 {
 	SetNormalizeType(wxPLHistogramPlot::NormalizeType(m_normalizeChoice->GetSelection()));
+	m_plotSurface->GetYAxis1()->SetWorldMax( m_pdfPlot->GetNiceYMax() );
+	m_maxTextBox->SetValue(wxString::Format("%lg", m_pdfPlot->GetNiceYMax()));
+	InvalidatePlot();
+}
+
+void wxDVPnCdfCtrl::OnShowZerosClick(wxCommandEvent& e)
+{
+	m_pdfPlot->SetIgnoreZeros(!m_pdfPlot->GetIgnoreZeros());
+	m_hideZeros->SetValue(m_pdfPlot->GetIgnoreZeros());
 	m_plotSurface->GetYAxis1()->SetWorldMax( m_pdfPlot->GetNiceYMax() );
 	m_maxTextBox->SetValue(wxString::Format("%lg", m_pdfPlot->GetNiceYMax()));
 	InvalidatePlot();
