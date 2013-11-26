@@ -5,13 +5,16 @@
 #include <wx/splitter.h>
 #include <wx/tokenzr.h>
 #include <wx/renderer.h>
+#include <wx/hyperlink.h>
 
+#include <wex/extgrid.h>
 #include <wex/label.h>
 #include <wex/radiochoice.h>
 #include <wex/numeric.h>
 #include <wex/exttext.h>
 #include <wex/utils.h>
 #include <wex/uiform.h>
+#include <wex/sched.h>
 
 static wxColour g_uiSelectColor( 135, 135, 135 );
 
@@ -675,7 +678,78 @@ public:
 		if ( wxSlider *sli = GetNative<wxSlider>() )
 			Property("Value").Set( sli->GetValue() );
 	}
+};
 
+class wxUIHyperlinkObject : public wxUIObject
+{
+public:
+	wxUIHyperlinkObject() {
+		AddProperty( "Caption", new wxUIProperty("<url>") );
+		AddProperty( "URL", new wxUIProperty("<url>") );
+		AddProperty( "TabOrder", new wxUIProperty( -1 ) );
+	}
+	virtual wxString GetTypeName() { return "Hyperlink"; }
+	virtual wxUIObject *Duplicate() { wxUIObject *o = new wxUIHyperlinkObject; o->Copy( this ); return o; }
+	virtual bool IsNativeObject() { return true; }
+	virtual bool DrawDottedOutline() { return true; }
+	virtual wxWindow *CreateNative( wxWindow *parent ) {
+		return AssignNative( new wxHyperlinkCtrl( parent, wxID_ANY, Property("Caption").GetString(),
+			Property("URL").GetString() ) );
+	}
+	virtual void OnPropertyChanged( const wxString &id, wxUIProperty *p )
+	{
+		if ( wxHyperlinkCtrl *hy = GetNative<wxHyperlinkCtrl>() )
+		{
+			if ( id == "Caption" ) hy->SetLabel( p->GetString() );
+			if ( id == "URL" ) hy->SetURL( p->GetString() );
+		}
+	}
+	
+	virtual void Draw( wxWindow *win, wxDC &dc, const wxRect &geom )
+	{
+		dc.SetFont(*wxNORMAL_FONT);
+		dc.SetTextForeground(*wxBLUE);
+		wxString label = Property("Caption").GetString();
+		int sz_width, sz_height;
+		dc.GetTextExtent(label, &sz_width, &sz_height );
+
+		dc.DrawText(label,
+			geom.x + 2,
+			geom.y + (geom.height - dc.GetCharHeight()) / 2);
+	}
+
+	virtual void OnNativeEvent()
+	{
+		/* nothing to do here ... */
+	}
+};
+
+class wxUITOUScheduleObject : public wxUIObject
+{
+public:
+	wxUITOUScheduleObject() {
+		AddProperty( "TabOrder", new wxUIProperty( -1 ) );
+		Property("Width").Set( 444 );
+		Property("Height").Set( 246 );
+	}
+	virtual wxString GetTypeName() { return "TOUSchedule"; }
+	virtual wxUIObject *Duplicate() { wxUIObject *o = new wxUITOUScheduleObject; o->Copy( this ); return o; }
+	virtual bool IsNativeObject() { return true; }
+	virtual bool DrawDottedOutline() { return false; }
+	virtual wxWindow *CreateNative( wxWindow *parent ) {
+		wxSchedCtrl *sc = new wxSchedCtrl( parent, wxID_ANY );
+		sc->SetupTOUGrid();
+		return AssignNative( sc );
+	}	
+	virtual void Draw( wxWindow *win, wxDC &dc, const wxRect &geom )
+	{
+		dc.SetPen( *wxBLACK_PEN );
+		dc.SetBrush(  *wxLIGHT_GREY_BRUSH );
+		dc.DrawRectangle( geom );
+		dc.SetFont(*wxNORMAL_FONT);
+		dc.SetTextForeground(*wxBLUE);
+		dc.DrawText( "Time of use schedule", geom.x + 2, geom.y + 2 );
+	}
 };
 
 wxUIProperty::wxUIProperty()
@@ -1612,6 +1686,8 @@ void wxUIObjectTypeProvider::RegisterBuiltinTypes()
 	wxUIObjectTypeProvider::Register( new wxUINumericObject );
 	wxUIObjectTypeProvider::Register( new wxUIImageObject );
 	wxUIObjectTypeProvider::Register( new wxUISliderObject );
+	wxUIObjectTypeProvider::Register( new wxUIHyperlinkObject );
+	wxUIObjectTypeProvider::Register( new wxUITOUScheduleObject );
 
 }
 
