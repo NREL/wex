@@ -638,179 +638,6 @@ std::vector<int> wxCommaDashListToIndices(const wxString &value)
 }
 
 
-/*
-// this will interpolate or extrapolate as necessary
-// if slope is infinite (x1 = x2), it will just return the first Y value
-double Interpolate(double x1, double y1, double x2, double y2, double xValueToGetYValueFor)
-{
-	if (x1 == x2) return y1;
-	if (y1 == y2) return y1;
-
-	double slope = (y2 - y1)/(x2 - x1);
-	double inter = y1 - (slope * x1);
-	return (slope*xValueToGetYValueFor) + inter;
-}
-
-*/
-
-/*
-struct csvcell
-{
-	size_t r, c;
-	wxString text;
-};
- 
-int CSVRead( const wxString &file, Mat2D<wxString> &csv )
-{
-	FILE *fp = fopen( (const char*)file.c_str(), "r" );
-	if ( !fp ) return 0;
-	
-	size_t size = BUFSIZ;
-	char *buf = new char[size];
-
-	size_t max_row = 0;
-	size_t max_col = 0;
-
-	std::vector< csvcell* > cells;
-	int errflag = 0;
-
-	while ( !feof(fp) )
-	{
-		// read a full line, extending buf as needed
-		size_t last = 0;
-		size_t len = 0;
-		bool has_line = false;
-		while ( !feof(fp) )
-		{
-			char *line = fgets( buf + last, size - last, fp );
-			len = strlen(buf);
-			last = len - 1;
-
-			if ( buf[last] != '\n' ) // buffer was too short for the line
-			{
-				// reallocate it, copying over old buffer contents
-				char *pnew = new char[size+BUFSIZ];
-				for (size_t k=0;k<size;k++)
-					pnew[k] = buf[k];
-				delete [] buf;
-				buf = pnew;
-				size += BUFSIZ;
-				continue;
-			}
-			else
-			{
-				has_line = ( line != 0 && len > 0 && buf[last] == '\n' );
-				break; // full line read into buf.
-			}
-		}
-
-		if ( !has_line ) break;
-
-		// at this point, buf contains a null terminated string representing 
-		// one full line of the CSV file.
-		// scan through one character at a time, determine
-		
-		size_t cur_col = 0;
-		char *p = buf;
-
-		while( len > 0 && p && *p && *p != '\n' )
-		{
-			csvcell *cell = new csvcell;
-			cell->r = max_row;
-			cell->c = cur_col;
-			cells.push_back( cell );
-
-			if (*p == '"')
-			{
-				p++; // skip the initial quote
-
-				// read a quoted cell
-				while ( p && *p )
-				{
-					if ( *p == '"' )
-					{
-						if ( *(p+1) == '"')
-						{
-							cell->text += '"';
-							p++; p++;
-						}
-						else
-						{
-							p++; // skip current quote
-							break; // end of quoted cell
-						}
-					}
-					else
-					{
-						cell->text += *p++;
-					}
-				}
-			}
-			else
-			{
-				// read a normal cell
-				char prev = 0;
-				while ( p && *p && *p != ',' && *p != '\n' )
-				{
-					if ( *p == '"' && prev == '"' )
-					{
-						cell->text += '"';
-						prev = *p;
-						p++;
-					}
-					else
-					{
-						cell->text += *p;
-						prev = *p;
-						p++;
-					}
-				}
-			}
-
-			if (*p == ',' || *p == '\n')
-			{
-				p++; // skip over the comma
-				cur_col++;
-				if ( cur_col > max_col )
-					max_col = cur_col;
-			}
-			else
-			{
-				// flag error on the first row with a formatting problem
-				if (errflag == 0)
-					errflag = -( (int)max_row+1 );
-			}
-		}
-
-		max_row++;
-	}
-	
-	fclose(fp);
-	delete [] buf;
-
-	// copy csv cells into matrix
-	if (max_row > 0 && max_col > 0)
-		csv.resize( max_row, max_col, wxEmptyString, false );
-
-	for ( std::vector< csvcell* >::iterator it = cells.begin();
-		it != cells.end();
-		++it )
-	{
-	
-		size_t r = (*it)->r;
-		size_t c = (*it)->c;
-		if (r < max_row && c < max_col)
-			csv.at( r, c ) = (*it)->text;
-
-		delete (*it);
-	}
-
-
-	return (0 == errflag);
-}
-
-*/
-
 int wxDrawWordWrappedText(wxDC& dc, const wxString &str, int width, bool draw, int x, int y, wxArrayString *lines)
 {
 	int line = 0;
@@ -1031,3 +858,287 @@ void wxShowTextMessageDialog(const wxString &text, const wxString &title, wxWind
    dlg.ShowModal();  
 }
 
+wxCSVData::wxCSVData()
+{
+	m_nrows = m_ncols = 0;
+	m_invalidated = false;
+	m_errorLine = 0;
+	m_sep = ',';
+}
+
+wxCSVData::wxCSVData( const wxCSVData &copy )
+{
+	m_invalidated = copy.m_invalidated;
+	m_nrows = copy.m_nrows;
+	m_ncols = copy.m_ncols;
+	m_cells = copy.m_cells;
+	m_sep = copy.m_sep;
+	m_errorLine = 0;
+}
+
+wxCSVData::~wxCSVData()
+{
+	 // nothing to do
+}
+
+
+void wxCSVData::Set( size_t r, size_t c, const wxString &val )
+{
+	// rows, cols remain valid
+	if ( r+1 > m_nrows ) m_nrows = r+1;
+	if ( c+1 > m_ncols ) m_ncols = c+1;
+	m_cells[ Encode(r,c) ] = val;
+}
+
+wxString &wxCSVData::operator()(size_t r, size_t c)
+{
+	// rows, cols remain valid
+	if ( r+1 > m_nrows ) m_nrows = r+1;
+	if ( c+1 > m_ncols ) m_ncols = c+1;
+	return m_cells[ Encode(r,c) ];
+}
+
+wxString wxCSVData::Get( size_t r, size_t c ) const
+{
+	cell_hash::const_iterator it = m_cells.find(Encode(r,c));
+	if ( it != m_cells.end() ) return it->second;
+	else return wxEmptyString;
+}
+
+const wxString &wxCSVData::operator()(size_t r, size_t c) const
+{
+	return Get(r,c);
+}
+
+size_t wxCSVData::NumCells() const
+{
+	return m_cells.size();
+}
+
+size_t wxCSVData::NumRows()
+{
+	if ( m_invalidated ) RecalculateDimensions();
+	return m_nrows;
+}
+
+size_t wxCSVData::NumCols()
+{
+	if ( m_invalidated ) RecalculateDimensions();
+	return m_ncols;
+}
+
+
+void wxCSVData::Clear()
+{
+	m_cells.clear();
+	m_nrows = m_ncols = 0;
+	m_invalidated = false;
+}
+
+void wxCSVData::Clear( size_t r, size_t c )
+{
+	cell_hash::iterator it = m_cells.find( Encode(r,c) );
+	if( it != m_cells.end() )
+	{
+		m_cells.erase( it );
+		m_invalidated = true;
+	}
+}
+	
+bool wxCSVData::Read( wxInputStream &in )
+{
+/*
+TEST CSV FILE: (r/w)
+"Cell 0,0","a""oran,ge",'e"e'
+
+"Cell 1,0",b'prime,cellb,"Row 1,Col 3"
+dd,"c""dprime","Cell 2,2",,,,bacd
+"ans,b,z,d","x,""yz""","xx',' - "",""",,"a,,,b"
+
+*/
+	Clear(); // erase the csv data first
+
+	wxTextInputStream txt(in);
+	
+	m_errorLine = 0;
+	size_t max_row = 0;
+	size_t max_col = 0;
+
+	while ( !txt.GetInputStream().Eof() )
+	{
+		wxString buf = txt.ReadLine();
+		size_t cur_col = 0;
+		wxString::iterator it = buf.begin();
+		while( it < buf.end() && *it != wxUniChar('\n') )
+		{
+		//	csvcell *cell = new csvcell;
+		//	cell->r = max_row;
+		//	cell->c = cur_col;
+		//	cells.push_back( cell );
+
+			wxString text;
+
+			if( *it == '"' )
+			{
+				++it; // skip the initial quote
+
+				// read a quoted cell
+				while ( it < buf.end() )
+				{
+					if ( *it == '"' )
+					{
+						if ( it + 1 < buf.end() )
+						{
+							wxUniChar next = *(++it);
+							--it;
+							if ( next == '"')
+							{
+								text += '"';
+								++it; 
+								if ( it < buf.end() ) ++it;
+							}
+							else
+							{
+								++it; // skip current quote
+								break; // end of quoted cell
+							}
+						}
+						else
+						{
+							++it;
+							break;
+						}
+					}
+					else
+					{
+						text += *(it++);
+					}
+				}
+			}
+			else
+			{
+				// read a normal cell
+				wxUniChar prev = 0;
+				while ( it < buf.end() && *it != m_sep && *it != '\n' )
+				{
+					if ( *it == '"' && prev == '"' )
+					{
+						text += '"';
+						prev = *it;
+						++it;
+					}
+					else
+					{
+						text += *it;
+						prev = *it;
+						++it;
+					}
+				}
+			}
+			
+			// store the cell
+			Set( max_row, cur_col, text );
+
+			if ( it >= buf.end() || *it == m_sep || *it == '\n')
+			{
+				if ( it < buf.end() ) ++it; // skip over the comma
+				cur_col++;
+				if ( cur_col > max_col )
+					max_col = cur_col;
+			}
+			else
+			{
+				// flag error on the first row with a formatting problem
+				if (m_errorLine == 0)
+					m_errorLine = -( (int)max_row+1 );
+			}
+
+
+		}
+
+		max_row++;
+	}
+
+	return (0 == m_errorLine);
+
+}
+
+void wxCSVData::Write( wxOutputStream &out )
+{
+	wxTextOutputStream txt( out, wxEOL_UNIX );
+	if ( m_invalidated ) RecalculateDimensions();
+
+	for( size_t r=0;r<m_nrows; r++ )
+	{
+		for( size_t c=0;c<m_ncols;c++ )
+		{
+			wxString cell = Get(r,c);
+			if ( cell.Find( wxUniChar(m_sep) ) != wxString::npos )
+			{
+				cell.Replace("\"", "\"\"");
+				txt << '"' << cell << '"';
+			}
+			else txt << cell;
+
+			if ( c < m_ncols-1 ) txt << ((wxChar)m_sep);
+		}
+
+		txt << endl;
+	}
+}
+
+bool wxCSVData::ReadFile( const wxString &file )
+{
+	wxFFileInputStream in( file );
+	if ( !in.IsOk() ) return false;
+	return Read( in );
+}
+
+bool wxCSVData::WriteFile( const wxString &file )
+{
+	wxFFileOutputStream out( file );
+	if ( !out.IsOk() ) return false;
+	Write( out );
+	return true;
+}
+
+bool wxCSVData::ReadString( const wxString &data )
+{
+	wxStringInputStream ss(data);
+	return Read(ss);
+}
+
+wxString wxCSVData::WriteString()
+{
+	wxString buf;
+	wxStringOutputStream ss( &buf );
+	Write( ss );
+	return buf;
+}
+	
+wxUint64 wxCSVData::Encode( size_t r, size_t c ) const
+{
+	return ( ((wxUint64)r) << 32 ) | ((wxUint64)c);
+}
+
+void wxCSVData::Decode( wxUint64 idx, size_t *r, size_t *c ) const
+{
+	*r = (size_t)(idx >> 32);
+	*c = (size_t)(idx & 0x00000000ffffffff);
+}
+
+void wxCSVData::RecalculateDimensions()
+{
+	m_nrows = m_ncols = 0;
+	for( cell_hash::const_iterator it = m_cells.begin();
+		it != m_cells.end();
+		++it )
+	{
+		size_t r, c;
+		Decode( it->first, &r, &c );
+		if ( r+1 > m_nrows ) m_nrows = r+1;
+		if ( c+1 > m_ncols ) m_ncols = c+1;
+	}
+	
+	m_invalidated = false;
+}

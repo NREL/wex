@@ -4,6 +4,7 @@
 #include <wx/webview.h>
 #include <wx/statbmp.h>
 #include <wx/numformatter.h>
+#include <wx/grid.h>
 
 #include "wex/icons/time.cpng"
 #include "wex/icons/dmap.cpng"
@@ -40,6 +41,7 @@ public:
 #include "wex/codeedit.h"
 #include "wex/lkscript.h"
 #include "wex/sched.h"
+#include "wex/utils.h"
 
 #include "wex/metro.h"
 
@@ -261,7 +263,7 @@ public:
 		wxInitAllImageHandlers();
 		//TestPLPlot( 0 );
 
-		(new NumericTest())->Show();
+		//(new NumericTest())->Show();
 
 		/*
 		wxFrame *frame = new wxFrame(NULL, wxID_ANY, "Test LKEdit", wxDefaultPosition, wxSize(600,400) );
@@ -331,6 +333,28 @@ public:
 
 			
 		*/
+
+		
+		
+		wxFrame *top = new wxFrame(NULL, wxID_ANY, "CSV Read Test", wxDefaultPosition, wxSize(500,500));
+		wxGrid *grid = new wxGrid( top, wxID_ANY );
+		
+		wxCSVData csv;
+		bool ok = csv.ReadFile( "c:/Users/adobos/Desktop/csv_test.csv" );
+		csv.WriteFile("c:/Users/adobos/Desktop/csv_test2.csv");
+		int nr = (int)csv.NumRows()+1;
+		int nc = (int)csv.NumCols()+1;
+		top->SetTitle( wxString::Format("CSVRead: %d %s [%d x %d]", csv.GetErrorLine(), ok?"ok":"fail", nr, nc) );
+
+		if (nr > 0 && nc > 0)
+		{
+			grid->CreateGrid( nr, nc );
+			for ( size_t r = 0; r < nr; r++ )
+				for ( size_t c = 0; c < nc; c++ )
+					grid->SetCellValue( r, c, csv(r,c) );
+		}
+
+		top->Show();
 		
 		return true;
 	}
