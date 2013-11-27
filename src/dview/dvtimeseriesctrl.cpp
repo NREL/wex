@@ -238,8 +238,9 @@ public:
 		size_t len;
 		std::vector< wxPoint > points;
 		wxRealPoint rpt;
+		wxRealPoint rpt2;
 	
-		wxPoint start = map.ToDevice( At(0).x, At(0).y );
+		double tempY;
 		wxRealPoint wmin = map.GetWorldMinimum();
 		wxRealPoint wmax = map.GetWorldMaximum();
 		
@@ -250,11 +251,44 @@ public:
 		{
 			len = m_data->Length();
 			points.reserve( len );
+
+			//If this is a line plot then add a point at the left edge of the graph if there isn't one there in the data
+			if(m_style == NORMAL && m_data->At(0).x < wmin.x)
+			{
+				for ( size_t i = 1; i<len; i++ )
+				{
+					rpt = m_data->At(i);
+					rpt2 = m_data->At(i - 1);
+					if ( rpt.x > wmin.x )
+					{
+						tempY = rpt2.y + ((rpt.y - rpt2.y) * (wmin.x - rpt2.x) / (rpt.x - rpt2.x));
+						points.push_back( map.ToDevice( wxRealPoint(wmin.x, tempY) ) );
+						break;
+					}
+				}
+			}
+
 			for ( size_t i = 0; i<len; i++ )
 			{
 				rpt = m_data->At(i);
 				if ( rpt.x < wmin.x || rpt.x > wmax.x ) continue;
 				points.push_back( map.ToDevice( At(i) ) );
+			}
+
+			//If this is a line plot then add a point at the right edge of the graph if there isn't one there in the data
+			if(m_style == NORMAL && m_data->At(len - 1).x > wmax.x)
+			{
+				for ( size_t i = len - 2; i >= 0; i-- )
+				{
+					rpt = m_data->At(i);
+					rpt2 = m_data->At(i + 1);
+					if ( rpt.x < wmax.x )
+					{
+						tempY = rpt.y + ((rpt2.y - rpt.y) * (wmax.x - rpt.x) / (rpt2.x - rpt.x));
+						points.push_back( map.ToDevice( wxRealPoint(wmax.x, tempY) ) );
+						break;
+					}
+				}
 			}
 
 			if ( points.size() == 0 ) return;
@@ -429,11 +463,44 @@ public:
 
 			len = d2->Length();
 			points.reserve( len );
+
+			//If this is a line plot then add a point at the left edge of the graph if there isn't one there in the data
+			if(m_style == NORMAL && d2->At(0).x < wmin.x)
+			{
+				for ( size_t i = 1; i<len; i++ )
+				{
+					rpt = d2->At(i);
+					rpt2 = d2->At(i - 1);
+					if ( rpt.x > wmin.x )
+					{
+						tempY = rpt2.y + ((rpt.y - rpt2.y) * (wmin.x - rpt2.x) / (rpt.x - rpt2.x));
+						points.push_back( map.ToDevice( wxRealPoint(wmin.x, tempY) ) );
+						break;
+					}
+				}
+			}
+
 			for ( size_t i = 0; i<len; i++ )
 			{
 				rpt = d2->At(i);
 				if ( rpt.x < wmin.x || rpt.x > wmax.x ) continue;
 				points.push_back( map.ToDevice( rpt ) );
+			}
+
+			//If this is a line plot then add a point at the right edge of the graph if there isn't one there in the data
+			if(m_style == NORMAL && d2->At(len - 1).x > wmax.x)
+			{
+				for ( size_t i = len - 2; i >= 0; i-- )
+				{
+					rpt = d2->At(i);
+					rpt2 = d2->At(i + 1);
+					if ( rpt.x < wmax.x )
+					{
+						tempY = rpt.y + ((rpt2.y - rpt.y) * (wmax.x - rpt.x) / (rpt2.x - rpt.x));
+						points.push_back( map.ToDevice( wxRealPoint(wmax.x, tempY) ) );
+						break;
+					}
+				}
 			}
 
 			if ( points.size() == 0 ) return;
