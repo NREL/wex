@@ -340,11 +340,13 @@ public:
 		wxGrid *grid = new wxGrid( top, wxID_ANY );
 		
 		wxCSVData csv;
+		wxStopWatch sw;
 		bool ok = csv.ReadFile( "c:/Users/adobos/Desktop/csv_test.csv" );
+		int msec = sw.Time();
 		csv.WriteFile("c:/Users/adobos/Desktop/csv_test2.csv");
 		int nr = (int)csv.NumRows()+1;
 		int nc = (int)csv.NumCols()+1;
-		top->SetTitle( wxString::Format("CSVRead: %d %s [%d x %d]", csv.GetErrorLine(), ok?"ok":"fail", nr, nc) );
+		top->SetTitle( wxString::Format("CSVRead: (%d ms) %d %s [%d x %d]", msec, csv.GetErrorLine(), ok?"ok":"fail", nr, nc) );
 
 		if (nr > 0 && nc > 0)
 		{
