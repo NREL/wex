@@ -35,12 +35,14 @@ static const wxString NO_UNITS("ThereAreNoUnitsForThisAxis.");
 class wxDVTimeSeriesSettingsDialog : public wxDialog
 {
 	wxCheckBox *mSyncCheck;
+	wxCheckBox *mStatTypeCheck;
 	wxCheckBox *mAutoscaleCheck, *mBottomAutoscaleCheck;
 	wxNumericCtrl *mTopYMaxCtrl, *mTopYMinCtrl, *mBottomYMaxCtrl, *mBottomYMinCtrl;
 	wxChoice *mLineStyleCombo;
 
 	long TopCheckboxID;
 	long BottomCheckboxID;
+	long StatCheckboxID;
 
 public:
 	wxDVTimeSeriesSettingsDialog( wxWindow *parent, const wxString &title, bool isBottomGraphVisible = true )
@@ -48,8 +50,10 @@ public:
 	{
 		TopCheckboxID = wxID_HIGHEST + 1;
 		BottomCheckboxID = wxID_HIGHEST + 2;
+		StatCheckboxID = wxID_HIGHEST + 3;
 
 		mSyncCheck = new wxCheckBox(this, wxID_ANY, "Synchronize view with heat map" );
+		mStatTypeCheck = new wxCheckBox(this, StatCheckboxID, "Use SUM (not AVG) for plots" );
 		
 		wxArrayString choices;
 		choices.Add( "Line graph");
@@ -77,6 +81,7 @@ public:
 		
 		wxBoxSizer *boxmain = new wxBoxSizer(wxVERTICAL);
 		boxmain->Add( mSyncCheck, 0, wxALL|wxEXPAND, 10 );
+		boxmain->Add( mStatTypeCheck, 0, wxALL|wxEXPAND, 10 );
 		boxmain->Add( mLineStyleCombo, 0, wxALL|wxEXPAND, 10 );
 		boxmain->Add( new wxStaticLine( this ), 0, wxALL|wxEXPAND, 0 );
 		boxmain->Add( mAutoscaleCheck, 0, wxALL|wxEXPAND, 10 );
@@ -91,6 +96,7 @@ public:
 
 		Connect(TopCheckboxID, wxEVT_CHECKBOX, wxCommandEventHandler(wxDVTimeSeriesSettingsDialog::OnClickTopHandler));
 		Connect(BottomCheckboxID, wxEVT_CHECKBOX, wxCommandEventHandler(wxDVTimeSeriesSettingsDialog::OnClickBottomHandler));
+		Connect(StatCheckboxID, wxEVT_CHECKBOX, wxCommandEventHandler(wxDVTimeSeriesSettingsDialog::OnClickStatHandler));
 
 		if(!isBottomGraphVisible)
 		{
@@ -104,6 +110,7 @@ public:
 	{
         Disconnect(TopCheckboxID, wxEVT_CHECKBOX, wxCommandEventHandler(wxDVTimeSeriesSettingsDialog::OnClickTopHandler));
         Disconnect(BottomCheckboxID, wxEVT_CHECKBOX, wxCommandEventHandler(wxDVTimeSeriesSettingsDialog::OnClickBottomHandler));
+        Disconnect(StatCheckboxID, wxEVT_CHECKBOX, wxCommandEventHandler(wxDVTimeSeriesSettingsDialog::OnClickStatHandler));
 	}
 
 	void SetTopYBounds( double y1min, double y1max )
@@ -136,6 +143,9 @@ public:
 	void SetSync( bool b ) { mSyncCheck->SetValue( b ); }
 	bool GetSync() { return mSyncCheck->GetValue(); }
 
+	void SetStatType( StatType statType ) { mStatTypeCheck->SetValue( statType == StatType::SUM ? true : false ); }
+	StatType GetStatType() { return mStatTypeCheck->GetValue() ? StatType::SUM : StatType::AVERAGE; }
+
 	void SetAutoscale( bool b ) 
 	{ 
 		mAutoscaleCheck->SetValue( b ); 
@@ -162,6 +172,11 @@ private:
     {
 		SetBottomAutoscale( mBottomAutoscaleCheck->IsChecked() );
     }
+
+	void OnClickStatHandler(wxCommandEvent& event)
+    {
+		SetStatType( mStatTypeCheck->IsChecked() ? StatType::SUM : StatType::AVERAGE );
+    }
 };
 
 
@@ -175,19 +190,21 @@ private:
 	wxColour m_colour;
 	Style m_style;
 	TimeSeriesType m_seriesType;
+	StatType m_statType;
+
 public:
-
-
-	wxDVTimeSeriesPlot( wxDVTimeSeriesDataSet *ds, TimeSeriesType seriesType )
+	wxDVTimeSeriesPlot( wxDVTimeSeriesDataSet *ds, TimeSeriesType seriesType, StatType statType )
 		: m_data(ds)
 	{
 		m_colour = *wxRED;
 		m_style = seriesType == HOURLY_TIME_SERIES ? NORMAL : STEPPED;
 		m_seriesType = seriesType;
+		m_statType = statType;
 	}
 
 	void SetStyle( Style ss ) { m_style = ss; }
 	void SetColour( const wxColour &col ) { m_colour = col; }
+	void SetStatType(StatType statType) { m_statType = statType; }
 
 	virtual wxString GetXDataLabel() const 
 	{
@@ -300,12 +317,12 @@ public:
 
 							if ( m_style == STEPPED )
 							{
-								if(d2->Length() == 0) { d2->Append(wxRealPoint((double) currentDay / 2.0, avg)); }
-								d2->Append(wxRealPoint((double)nextDay, avg)); 
+								if(d2->Length() == 0) { d2->Append(wxRealPoint((double) currentDay / 2.0, (m_statType == AVERAGE ? avg : sum))); }
+								d2->Append(wxRealPoint((double)nextDay, (m_statType == AVERAGE ? avg : sum))); 
 							}
 							else
 							{
-								d2->Append(wxRealPoint((double) currentDay + (double)(nextDay - currentDay) / 2.0, avg)); 
+								d2->Append(wxRealPoint((double) currentDay + (double)(nextDay - currentDay) / 2.0, (m_statType == AVERAGE ? avg : sum))); 
 							}
 
 							currentDay = nextDay;
@@ -324,12 +341,12 @@ public:
 
 				if ( m_style == STEPPED )
 				{
-					if(d2->Length() == 0) { d2->Append(wxRealPoint((double) currentDay / 2.0, avg)); }
-					d2->Append(wxRealPoint((double)nextDay, avg)); 
+					if(d2->Length() == 0) { d2->Append(wxRealPoint((double) currentDay / 2.0, (m_statType == AVERAGE ? avg : sum))); }
+					d2->Append(wxRealPoint((double)nextDay, (m_statType == AVERAGE ? avg : sum))); 
 				}
 				else
 				{
-					d2->Append(wxRealPoint((double) currentDay + (double)(nextDay - currentDay) / 2.0, avg)); 
+					d2->Append(wxRealPoint((double) currentDay + (double)(nextDay - currentDay) / 2.0, (m_statType == AVERAGE ? avg : sum))); 
 				}
 			}
 			else
@@ -362,12 +379,12 @@ public:
 
 							if ( m_style == STEPPED )
 							{
-								if(d2->Length() == 0) { d2->Append(wxRealPoint((double) currentMonth / 2.0, avg)); }
-								d2->Append(wxRealPoint((double)nextMonth, avg)); 
+								if(d2->Length() == 0) { d2->Append(wxRealPoint((double) currentMonth / 2.0, (m_statType == AVERAGE ? avg : sum))); }
+								d2->Append(wxRealPoint((double)nextMonth, (m_statType == AVERAGE ? avg : sum))); 
 							}
 							else
 							{
-								d2->Append(wxRealPoint((double) currentMonth + (double)(nextMonth - currentMonth) / 2.0, avg)); 
+								d2->Append(wxRealPoint((double) currentMonth + (double)(nextMonth - currentMonth) / 2.0, (m_statType == AVERAGE ? avg : sum))); 
 							}
 
 							currentMonth = nextMonth;
@@ -401,12 +418,12 @@ public:
 
 				if ( m_style == STEPPED )
 				{
-					if(d2->Length() == 0) { d2->Append(wxRealPoint((double) currentMonth / 2.0, avg)); }
-					d2->Append(wxRealPoint((double)nextMonth, avg)); 
+					if(d2->Length() == 0) { d2->Append(wxRealPoint((double) currentMonth / 2.0, (m_statType == AVERAGE ? avg : sum))); }
+					d2->Append(wxRealPoint((double)nextMonth, (m_statType == AVERAGE ? avg : sum))); 
 				}
 				else
 				{
-					d2->Append(wxRealPoint((double) currentMonth + (double)(nextMonth - currentMonth) / 2.0, avg)); 
+					d2->Append(wxRealPoint((double) currentMonth + (double)(nextMonth - currentMonth) / 2.0, (m_statType == AVERAGE ? avg : sum))); 
 				}
 			}
 
@@ -486,15 +503,16 @@ END_EVENT_TABLE()
 
 
 /*Constructors and Destructors*/
-wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, TimeSeriesType seriesType)
+wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, TimeSeriesType seriesType, StatType statType)
 : wxPanel(parent, id)
 {	
 	m_autoScale = true;
 	m_bottomAutoScale = true;
 	m_syncToHeatMap = false;
-	m_lineStyle = seriesType == HOURLY_TIME_SERIES ? wxDVTimeSeriesPlot::NORMAL : wxDVTimeSeriesPlot::STEPPED; // line, stepped, points
+	m_lineStyle = (seriesType == HOURLY_TIME_SERIES ? wxDVTimeSeriesPlot::NORMAL : wxDVTimeSeriesPlot::STEPPED); // line, stepped, points
 	m_seriesType = seriesType;
-	
+	m_statType = statType;
+
 	m_plotSurface = new wxPLPlotCtrl(this, ID_PLOT_SURFACE); 
 	m_plotSurface->SetAllowHighlighting(true);
 	m_plotSurface->ShowTitle( false );
@@ -610,6 +628,7 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 	wxDVTimeSeriesSettingsDialog dlg(  this, "View Settings", isBottomGraphVisible );
 	dlg.CentreOnParent();
 	dlg.SetSync( m_syncToHeatMap );
+	dlg.SetStatType( m_statType );
 	dlg.SetLineStyle( m_lineStyle );
 	dlg.SetAutoscale( m_autoScale );
 	dlg.SetBottomAutoscale( m_bottomAutoScale );
@@ -618,11 +637,14 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 	if (wxID_OK == dlg.ShowModal())
 	{
 		m_syncToHeatMap = dlg.GetSync();
-		
 		m_lineStyle = dlg.GetLineStyle();
+		m_statType = dlg.GetStatType();
 
 		for (int i=0; i<m_plots.size(); i++)
+		{
 			m_plots[i]->SetStyle( (wxDVTimeSeriesPlot::Style) m_lineStyle );
+			dynamic_cast<wxDVTimeSeriesPlot*>(m_plots[i])->SetStatType(m_statType);
+		}
 
 		m_autoScale = dlg.GetAutoscale();
 		m_bottomAutoScale = dlg.GetBottomAutoscale();
@@ -797,7 +819,7 @@ void wxDVTimeSeriesCtrl::OnPlotDragEnd(wxCommandEvent& e)
 
 void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, bool refresh_ui)
 {
-	wxDVTimeSeriesPlot *p = new wxDVTimeSeriesPlot(d, m_seriesType);
+	wxDVTimeSeriesPlot *p = new wxDVTimeSeriesPlot(d, m_seriesType, m_statType);
 	m_plots.push_back(p); //Add to data sets list.
 	m_dataSelector->Append( d->GetTitleWithUnits(), group );
 
@@ -1201,6 +1223,18 @@ void wxDVTimeSeriesCtrl::AutoscaleYAxis( wxPLAxis *axisToScale, const std::vecto
 	double dataMin; 
 	GetVisibleDataMinAndMax(&dataMin, &dataMax, selectedChannelIndices);
 
+	if(m_seriesType == DAILY_TIME_SERIES && m_statType == SUM)
+	{
+		dataMax = dataMax * 24;	//Hours in a day
+		dataMin = dataMin * 24;	//Hours in a day
+	}
+
+	if(m_seriesType == MONTHLY_TIME_SERIES && m_statType == SUM)
+	{
+		dataMax = dataMax * 744;	//Hours in a 31 day month
+		dataMin = dataMin * 744;	//Hours in a 31 day month
+	}
+
 	//If the maximum of the visible data is outside the acceptable range
 	if(forceUpdate || (dataMax > 0 && (dataMax >= axisToScale->GetWorldMax() || dataMax < axisToScale->GetWorldMax()/2.0)))
 	{	
@@ -1482,5 +1516,15 @@ bool wxDVTimeSeriesCtrl::GetSyncWithHeatMap()
 void wxDVTimeSeriesCtrl::SetSyncWithHeatMap(bool b)
 {
 	m_syncToHeatMap = b;
+}
+
+StatType wxDVTimeSeriesCtrl::GetStatType()
+{
+	return m_statType;
+}
+
+void wxDVTimeSeriesCtrl::SetStatType(StatType statType)
+{
+	m_statType = statType;
 }
 

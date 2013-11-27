@@ -49,9 +49,9 @@ wxDVPlotCtrl::wxDVPlotCtrl(wxWindow* parent, wxWindowID id,
 	m_plotNotebook = new wxRibbonNotebook(this, ID_NOTEBOOK);
 	topSizer->Add(m_plotNotebook, 1, wxEXPAND, 0);
 
-	m_timeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, HOURLY_TIME_SERIES);
-	m_dailyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, DAILY_TIME_SERIES);
-	m_monthlyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, MONTHLY_TIME_SERIES);
+	m_timeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, HOURLY_TIME_SERIES, StatType::AVERAGE);
+	m_dailyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, DAILY_TIME_SERIES, StatType::AVERAGE);
+	m_monthlyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, MONTHLY_TIME_SERIES, StatType::AVERAGE);
 	m_dMap = new wxDVDMapCtrl(m_plotNotebook, wxID_ANY);
 	m_profilePlots = new wxDVProfileCtrl(m_plotNotebook, wxID_ANY);
 	m_pnCdf = new wxDVPnCdfCtrl(m_plotNotebook, wxID_ANY);

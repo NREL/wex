@@ -928,6 +928,8 @@ wxPLPlotCtrl::~wxPLPlotCtrl()
 	if ( m_titleLayout != 0 )
 		delete m_titleLayout;
 
+	m_plots.clear();
+
 	for ( std::vector<plot_data>::iterator it = m_plots.begin();
 		it != m_plots.end();
 		++it )

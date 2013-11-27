@@ -24,11 +24,12 @@ class wxCheckBox;
 class wxDVTimeSeriesPlot;
 class wxScrollBar;
 
+enum StatType { AVERAGE = 0, SUM };
 
 class wxDVTimeSeriesCtrl : public wxPanel
 {
 public:
-	wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, TimeSeriesType seriesType);
+	wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, TimeSeriesType seriesType, StatType statType);
 	virtual ~wxDVTimeSeriesCtrl();
 
 	//When a data set is added, wxDVTimeSeriesCtrl creates a plottable with a pointer to that data.  Does not take ownership.
@@ -61,6 +62,8 @@ public:
 	bool GetSyncWithHeatMap();
 	void SetSyncWithHeatMap(bool b);
 	TimeSeriesType GetTimeSeriesType();
+	StatType GetStatType();
+	void SetStatType(StatType statType);
 
 	/*Graph Specific Methods*/
 	bool CanZoomIn(void);
@@ -120,6 +123,7 @@ private:
 	bool m_autoScale, m_bottomAutoScale, m_syncToHeatMap;
 	int m_lineStyle; // line, stepped, points
 	TimeSeriesType m_seriesType;
+	StatType m_statType;
 
 	void AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPos, int index);
 	void RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPos, int index);
