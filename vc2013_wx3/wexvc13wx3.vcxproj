@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\wex\codeedit.h" />
+    <ClInclude Include="..\include\wex\csv.h" />
     <ClInclude Include="..\include\wex\dview\dvautocolourassigner.h" />
     <ClInclude Include="..\include\wex\dview\dvcolourmap.h" />
     <ClInclude Include="..\include\wex\dview\dvdcctrl.h" />
@@ -118,6 +119,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\codeedit.cpp" />
+    <ClCompile Include="..\src\csv.cpp" />
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp" />
     <ClCompile Include="..\src\dview\dvcolourmap.cpp" />
     <ClCompile Include="..\src\dview\dvdcctrl.cpp" />

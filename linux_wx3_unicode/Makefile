@@ -12,7 +12,12 @@ LIBNAME = wexuxwx3
 TARGET = ../$(LIBNAME).a
 	
 OBJECTS = \
+	csv.o \
+	label.o \
+	exttext.o \
+	radiochoice.o \
 	metro.o \
+	uiform.o \
 	sched.o \
 	utils.o \
 	lkscript.o \
