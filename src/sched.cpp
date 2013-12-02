@@ -6,6 +6,7 @@
 
 BEGIN_EVENT_TABLE(wxSchedCtrl, wxWindow)
 	EVT_PAINT( wxSchedCtrl::OnPaint )
+	EVT_ERASE_BACKGROUND( wxSchedCtrl::OnErase )
 	EVT_SIZE( wxSchedCtrl::OnResize )
 	EVT_CHAR( wxSchedCtrl::OnChar )
 	EVT_LEFT_DOWN( wxSchedCtrl::OnMouseDown )
@@ -24,7 +25,7 @@ DEFINE_EVENT_TYPE( wxEVT_SCHEDCTRL_CHANGE )
 #endif
 
 wxSchedCtrl::wxSchedCtrl(wxWindow *parent, int id, const wxPoint &pos, const wxSize &sz)
-	: wxWindow(parent, id, pos, sz, wxWANTS_CHARS|wxCLIP_CHILDREN)
+	: wxWindow(parent, id, pos, sz, wxWANTS_CHARS)
 {
 	SetBackgroundStyle(wxBG_STYLE_CUSTOM);
 
@@ -177,11 +178,19 @@ void wxSchedCtrl::AutosizeHeaders()
 	m_colHeaderSize += 4;
 }
 
-void wxSchedCtrl::Draw(wxDC &dc, const wxRect &geom)
+void wxSchedCtrl::OnErase( wxEraseEvent & )
 {
-	dc.SetBrush(*wxWHITE_BRUSH);
-	dc.SetPen(*wxWHITE_PEN);
-	dc.DrawRectangle(geom.x,geom.y, geom.width, geom.height);
+	/* nothing to do */
+}
+
+void wxSchedCtrl::OnPaint( wxPaintEvent & )
+{
+	wxAutoBufferedPaintDC dc( this );
+	wxSize sz( GetClientSize() );
+	wxRect geom( 0, 0, sz.GetWidth(), sz.GetHeight() );
+
+	dc.SetBackground( GetBackgroundColour() );
+	dc.Clear();
 
 	int r, c;
 	int rows = NRows();
@@ -190,8 +199,8 @@ void wxSchedCtrl::Draw(wxDC &dc, const wxRect &geom)
 	wxFont f = wxFont(8, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD);
 	dc.SetFont(f);
 
-	if (m_autosizeHeaders) AutosizeHeaders();
 
+	dc.SetPen( *wxTRANSPARENT_PEN );
 	for (r=0;r<rows;r++)
 	{
 		for (c=0;c<cols;c++)
@@ -213,7 +222,6 @@ void wxSchedCtrl::Draw(wxDC &dc, const wxRect &geom)
 			if (val >= 1 && val-1 < (int) m_colours.size() || sel)
 			{
 				dc.SetBrush(wxBrush( sel ? *wxBLUE : m_colours[val-1] ));
-				dc.SetPen(wxPen( sel ? *wxBLUE : m_colours[val-1] ));
 				dc.DrawRectangle(geom.x+x,geom.y+y, m_cellSize, m_cellSize);
 			}
 			
@@ -228,6 +236,7 @@ void wxSchedCtrl::Draw(wxDC &dc, const wxRect &geom)
 			dc.DrawText(buf, geom.x + x, geom.y + y);
 		}
 	}
+
 
 	dc.SetPen(wxPen(wxColour(120, 120, 120)));
 	dc.SetTextForeground(wxColour(120, 120, 120));
@@ -266,16 +275,6 @@ void wxSchedCtrl::Draw(wxDC &dc, const wxRect &geom)
 		}
 	}
 
-	dc.SetBrush(*wxTRANSPARENT_BRUSH);
-	dc.DrawRectangle(geom.x,geom.y,geom.width, geom.height);
-}
-
-void wxSchedCtrl::OnPaint(wxPaintEvent &)
-{
-	wxAutoBufferedPaintDC pdc(this);
-	wxSize sz = GetClientSize();
-	wxRect geom(0, 0, sz.GetWidth(), sz.GetHeight());
-	Draw(pdc, geom);
 }
 
 void wxSchedCtrl::OnResize(wxSizeEvent &)
@@ -482,6 +481,7 @@ void wxSchedCtrl::SetupTOUGrid()
 	AddColLabel("10pm");
 	AddColLabel("11pm");
 
+	AutosizeHeaders();
 	InvalidateBestSize();
 }
 

@@ -37,15 +37,15 @@ public:
 	wxString Schedule() const;
 	
 	virtual wxSize DoGetBestSize() const;
-	void Draw(wxDC &dc, const wxRect &geom);
 
 	static bool TranslateSchedule( int tod[8760],
 		const char *weekday, const char *weekend, 
 		int min_val=0, int max_val=9 );
 
-private:
 	void AutosizeHeaders();
+private:
 
+	void OnErase( wxEraseEvent & );
 	void OnPaint(wxPaintEvent &evt);
 	void OnResize(wxSizeEvent &evt);
 	void OnChar(wxKeyEvent &evt);

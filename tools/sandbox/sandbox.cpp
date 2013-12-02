@@ -337,6 +337,10 @@ public:
 		
 		
 		wxFrame *top = new wxFrame(NULL, wxID_ANY, "CSV Read Test", wxDefaultPosition, wxSize(500,500));
+		
+		wxSchedCtrl *sched = new wxSchedCtrl( top, wxID_ANY );
+		sched->SetupTOUGrid();
+/*
 		wxGrid *grid = new wxGrid( top, wxID_ANY );
 		
 		wxCSVData csv;
@@ -355,7 +359,7 @@ public:
 				for ( size_t c = 0; c < nc; c++ )
 					grid->SetCellValue( r, c, csv(r,c) );
 		}
-
+*/
 		top->Show();
 		
 		return true;
