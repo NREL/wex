@@ -27,6 +27,7 @@ DEFINE_EVENT_TYPE( wxEVT_SCHEDCTRL_CHANGE )
 wxSchedCtrl::wxSchedCtrl(wxWindow *parent, int id, const wxPoint &pos, const wxSize &sz)
 	: wxWindow(parent, id, pos, sz, wxWANTS_CHARS)
 {
+	SetBackgroundColour( *wxWHITE );
 	SetBackgroundStyle(wxBG_STYLE_CUSTOM);
 
 	m_colLabelsVertical = true;
