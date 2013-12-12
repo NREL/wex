@@ -322,6 +322,7 @@ public:
 			double avg = 0.0;
 			double counter = 0.0;
 			double MinHrs = m_data->GetMinHours();
+			double MaxHrs = m_data->GetMaxHours();
 			wxDVFileDataSet *d2 = new wxDVFileDataSet();
 
 			d2->SetSeriesTitle(m_data->GetSeriesTitle());
@@ -380,7 +381,11 @@ public:
 				}
 				else
 				{
-					d2->Append(wxRealPoint((double) currentDay + (double)(nextDay - currentDay) / 2.0, (m_statType == AVERAGE ? avg : sum))); 
+					//Prevent appending the final point if it represents 12/31 24:00, which the system interprets as 1/1 0:00 and creates a point for January of the next year
+					if(MaxHrs > 0.0 && fmod(MaxHrs, 8760.0) != 0)
+					{
+						d2->Append(wxRealPoint((double) currentDay + (double)(nextDay - currentDay) / 2.0, (m_statType == AVERAGE ? avg : sum))); 
+					}
 				}
 			}
 			else
@@ -390,18 +395,24 @@ public:
 				double currentMonth = 0.0;
 				double year = 0.0;
 
-				if(MinHrs >= 0.0 && MinHrs < 744.0) { currentMonth = 0.0; nextMonth = 744.0; }
-				else if(MinHrs >= 744.0 && MinHrs < 1416.0) { currentMonth = 744.0; nextMonth = 1416.0; }
-				else if(MinHrs >= 1416.0 && MinHrs < 2160.0) { currentMonth = 1416.0; nextMonth = 2160.0; }
-				else if(MinHrs >= 2160.0 && MinHrs < 2880.0) { currentMonth = 2160.0; nextMonth = 2880.0; }
-				else if(MinHrs >= 2880.0 && MinHrs < 3624.0) { currentMonth = 2880.0; nextMonth = 3624.0; }
-				else if(MinHrs >= 3624.0 && MinHrs < 4344.0) { currentMonth = 3624.0; nextMonth = 4344.0; }
-				else if(MinHrs >= 4344.0 && MinHrs < 5088.0) { currentMonth = 4344.0; nextMonth = 5088.0; }
-				else if(MinHrs >= 5088.0 && MinHrs < 5832.0) { currentMonth = 5088.0; nextMonth = 5832.0; }
-				else if(MinHrs >= 5832.0 && MinHrs < 6552.0) { currentMonth = 5832.0; nextMonth = 6552.0; }
-				else if(MinHrs >= 6552.0 && MinHrs < 7296.0) { currentMonth = 6552.0; nextMonth = 7296.0; }
-				else if(MinHrs >= 7296.0 && MinHrs < 8016.0) { currentMonth = 7296.0; nextMonth = 8016.0; }
-				else if(MinHrs >= 8016.0 && MinHrs < 8760.0) { currentMonth = 8016.0; nextMonth = 8760.0; }
+				while(MinHrs > 8760.0)
+				{
+					year += 8760.0;
+					MinHrs -= 8760.0;
+				}
+
+				if(MinHrs >= 0.0 && MinHrs < 744.0) { currentMonth = year; nextMonth = year + 744.0; }
+				else if(MinHrs >= 744.0 && MinHrs < 1416.0) { currentMonth = year + 744.0; nextMonth = year + 1416.0; }
+				else if(MinHrs >= 1416.0 && MinHrs < 2160.0) { currentMonth = year + 1416.0; nextMonth = year + 2160.0; }
+				else if(MinHrs >= 2160.0 && MinHrs < 2880.0) { currentMonth = year + 2160.0; nextMonth = year + 2880.0; }
+				else if(MinHrs >= 2880.0 && MinHrs < 3624.0) { currentMonth = year + 2880.0; nextMonth = year + 3624.0; }
+				else if(MinHrs >= 3624.0 && MinHrs < 4344.0) { currentMonth = year + 3624.0; nextMonth = year + 4344.0; }
+				else if(MinHrs >= 4344.0 && MinHrs < 5088.0) { currentMonth = year + 4344.0; nextMonth = year + 5088.0; }
+				else if(MinHrs >= 5088.0 && MinHrs < 5832.0) { currentMonth = year + 5088.0; nextMonth = year + 5832.0; }
+				else if(MinHrs >= 5832.0 && MinHrs < 6552.0) { currentMonth = year + 5832.0; nextMonth = year + 6552.0; }
+				else if(MinHrs >= 6552.0 && MinHrs < 7296.0) { currentMonth = year + 6552.0; nextMonth = year + 7296.0; }
+				else if(MinHrs >= 7296.0 && MinHrs < 8016.0) { currentMonth = year + 7296.0; nextMonth = year + 8016.0; }
+				else if(MinHrs >= 8016.0 && MinHrs < 8760.0) { currentMonth = year + 8016.0; nextMonth = year + 8760.0; }
 
 				for (size_t i = 0; i < m_data->Length(); i++)
 				{
@@ -457,7 +468,11 @@ public:
 				}
 				else
 				{
-					d2->Append(wxRealPoint((double) currentMonth + (double)(nextMonth - currentMonth) / 2.0, (m_statType == AVERAGE ? avg : sum))); 
+					//Prevent appending the final point if it represents 12/31 24:00, which the system interprets as 1/1 0:00 and creates a point for January of the next year
+					if(MaxHrs > 0.0 && fmod(MaxHrs, 8760.0) != 0)
+					{
+						d2->Append(wxRealPoint((double) currentMonth + (double)(nextMonth - currentMonth) / 2.0, (m_statType == AVERAGE ? avg : sum))); 
+					}
 				}
 			}
 
@@ -887,6 +902,7 @@ void wxDVTimeSeriesCtrl::OnPlotDragEnd(wxCommandEvent& e)
 void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, bool refresh_ui)
 {
 	wxDVTimeSeriesPlot *p = new wxDVTimeSeriesPlot(d, m_seriesType, m_statType);
+	p->SetStyle((wxDVTimeSeriesPlot::Style) m_lineStyle);
 	m_plots.push_back(p); //Add to data sets list.
 	m_dataSelector->Append( d->GetTitleWithUnits(), group );
 
