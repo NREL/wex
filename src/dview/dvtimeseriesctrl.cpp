@@ -351,7 +351,7 @@ public:
 
 							if ( m_style == STEPPED )
 							{
-								if(d2->Length() == 0) { d2->Append(wxRealPoint((double) currentDay / 2.0, (m_statType == AVERAGE ? avg : sum))); }
+								if(d2->Length() == 0) { d2->Append(wxRealPoint((double) currentDay, (m_statType == AVERAGE ? avg : sum))); }	//Create root point for first line of step
 								d2->Append(wxRealPoint((double)nextDay, (m_statType == AVERAGE ? avg : sum))); 
 							}
 							else
@@ -375,7 +375,7 @@ public:
 
 				if ( m_style == STEPPED )
 				{
-					if(d2->Length() == 0) { d2->Append(wxRealPoint((double) currentDay / 2.0, (m_statType == AVERAGE ? avg : sum))); }
+					if(d2->Length() == 0) { d2->Append(wxRealPoint((double) currentDay, (m_statType == AVERAGE ? avg : sum))); }	//Create root point for first line of step
 					d2->Append(wxRealPoint((double)nextDay, (m_statType == AVERAGE ? avg : sum))); 
 				}
 				else
@@ -413,7 +413,7 @@ public:
 
 							if ( m_style == STEPPED )
 							{
-								if(d2->Length() == 0) { d2->Append(wxRealPoint((double) currentMonth / 2.0, (m_statType == AVERAGE ? avg : sum))); }
+								if(d2->Length() == 0) { d2->Append(wxRealPoint((double) currentMonth, (m_statType == AVERAGE ? avg : sum))); }	//Create root point for first line of step
 								d2->Append(wxRealPoint((double)nextMonth, (m_statType == AVERAGE ? avg : sum))); 
 							}
 							else
@@ -452,7 +452,7 @@ public:
 
 				if ( m_style == STEPPED )
 				{
-					if(d2->Length() == 0) { d2->Append(wxRealPoint((double) currentMonth / 2.0, (m_statType == AVERAGE ? avg : sum))); }
+					if(d2->Length() == 0) { d2->Append(wxRealPoint((double) currentMonth, (m_statType == AVERAGE ? avg : sum))); }	//Create root point for first line of step
 					d2->Append(wxRealPoint((double)nextMonth, (m_statType == AVERAGE ? avg : sum))); 
 				}
 				else
