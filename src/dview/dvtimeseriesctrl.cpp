@@ -1288,19 +1288,33 @@ void wxDVTimeSeriesCtrl::AutoscaleYAxis( wxPLAxis *axisToScale, const std::vecto
 	bool needsRescale = false;
 	double dataMax; 
 	double dataMin; 
+	double timestep = 1.0;
+
 	GetVisibleDataMinAndMax(&dataMin, &dataMax, selectedChannelIndices);
 
-	if(m_seriesType == DAILY_TIME_SERIES && m_statType == SUM)
+	if(m_statType == SUM)
 	{
-		dataMax = dataMax * 24;	//Hours in a day
-		dataMin = dataMin * 24;	//Hours in a day
+		if(m_seriesType != HOURLY_TIME_SERIES)
+		{
+			for(int i = 0; i < m_plots.size(); i++)
+			{
+				if(m_plots[i]->GetDataSet()->GetTimeStep() < 1.0) { timestep = m_plots[i]->GetDataSet()->GetTimeStep(); }
+			}
+		}
+
+		if(m_seriesType == DAILY_TIME_SERIES)
+		{
+			dataMax = dataMax * 24 / timestep;	//Hours in a day
+			dataMin = dataMin * 24 / timestep;	//Hours in a day
+		}
+
+		if(m_seriesType == MONTHLY_TIME_SERIES)
+		{
+			dataMax = dataMax * 744 / timestep;	//Hours in a 31 day month
+			dataMin = dataMin * 744 / timestep;	//Hours in a 31 day month
+		}
 	}
 
-	if(m_seriesType == MONTHLY_TIME_SERIES && m_statType == SUM)
-	{
-		dataMax = dataMax * 744;	//Hours in a 31 day month
-		dataMin = dataMin * 744;	//Hours in a 31 day month
-	}
 
 	//If the maximum of the visible data is outside the acceptable range
 	if(forceUpdate || (dataMax > 0 && (dataMax >= axisToScale->GetWorldMax() || dataMax < axisToScale->GetWorldMax()/2.0)))
