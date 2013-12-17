@@ -23,7 +23,7 @@ wxExtGridCellAttrProvider::wxExtGridCellAttrProvider(bool highlight_r0c0, bool h
 	{
 		m_attrCell00 = new wxGridCellAttr;
 		m_attrCell00->SetBackgroundColour(wxColour("SLATE BLUE"));
-		m_attrCell00->SetTextColour(wxColour("SLATE_BLUE"));
+		m_attrCell00->SetTextColour(wxColour("SLATE BLUE"));
 	}
 }
 

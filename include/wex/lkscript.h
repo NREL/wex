@@ -20,6 +20,16 @@
 #define wxLK_STDLIB_ALL (wxLK_STDLIB_BASIC|wxLK_STDLIB_STRING| \
 	wxLK_STDLIB_MATH|wxLK_STDLIB_WXUI|wxLK_STDLIB_WEXPLOT)
 
+class wxPLPlotCtrl;
+
+void wxLKSetToplevelParent( wxWindow *parent );
+void wxLKSetPlotTarget( wxPLPlotCtrl *plot );
+wxPLPlotCtrl *wxLKGetPlotTarget();
+
+lk::fcall_t* wxLKPlotFunctions(); // newplot, plot, plotopt, plotpng
+lk::fcall_t* wxLKHttpFunctions(); // httpget, httpdownload
+lk::fcall_t* wxLKMiscFunctions(); // rand, decompress
+
 class wxLKScriptCtrl : public wxCodeEditCtrl
 {
 public:

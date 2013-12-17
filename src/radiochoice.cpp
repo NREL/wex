@@ -39,7 +39,6 @@ bool wxRadioChoice::IsEnabled(int idx)
 
 void wxRadioChoice::OnRadio(wxCommandEvent &evt)
 {
-	evt.Skip();
 	wxCommandEvent radioclick(wxEVT_COMMAND_RADIOBUTTON_SELECTED , GetId() );
 	radioclick.SetEventObject(this);
 	radioclick.SetString(GetValue());
