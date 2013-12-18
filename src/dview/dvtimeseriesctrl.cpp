@@ -31,37 +31,30 @@
 #include "wex/dview/dvfiledataset.h"
 
 static const wxString NO_UNITS("ThereAreNoUnitsForThisAxis.");
+enum { ID_TopCheckbox = wxID_HIGHEST + 1, ID_BottomCheckbox, ID_StatCheckbox };
 
 class wxDVTimeSeriesSettingsDialog : public wxDialog
 {
 	wxCheckBox *mSyncCheck;
 	wxCheckBox *mStatTypeCheck;
-	wxCheckBox *mAutoscaleCheck, *mBottomAutoscaleCheck;
+	wxCheckBox *mTopAutoscaleCheck, *mBottomTopAutoscaleCheck;
 	wxNumericCtrl *mTopYMaxCtrl, *mTopYMinCtrl, *mBottomYMaxCtrl, *mBottomYMinCtrl;
 	wxChoice *mLineStyleCombo;
-
-	long TopCheckboxID;
-	long BottomCheckboxID;
-	long StatCheckboxID;
 
 public:
 	wxDVTimeSeriesSettingsDialog( wxWindow *parent, const wxString &title, bool isBottomGraphVisible = true )
 		: wxDialog( parent, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxRESIZE_BORDER|wxDEFAULT_DIALOG_STYLE)
 	{
-		TopCheckboxID = wxID_HIGHEST + 1;
-		BottomCheckboxID = wxID_HIGHEST + 2;
-		StatCheckboxID = wxID_HIGHEST + 3;
-
 		mSyncCheck = new wxCheckBox(this, wxID_ANY, "Synchronize view with heat map" );
-		mStatTypeCheck = new wxCheckBox(this, StatCheckboxID, "Use SUM (not AVG) for plots" );
+		mStatTypeCheck = new wxCheckBox(this, ID_StatCheckbox, "Use SUM (not AVG) for plots" );
 		
 		wxArrayString choices;
 		choices.Add( "Line graph");
 		choices.Add( "Stepped line graph" );
 		mLineStyleCombo = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, choices);
 				
-		mAutoscaleCheck = new wxCheckBox(this, TopCheckboxID, "Autoscale top y1-axis");
-		mBottomAutoscaleCheck = new wxCheckBox(this, BottomCheckboxID, "Autoscale bottom y1-axis");
+		mTopAutoscaleCheck = new wxCheckBox(this, ID_TopCheckbox, "Autoscale top y1-axis");
+		mBottomTopAutoscaleCheck = new wxCheckBox(this, ID_BottomCheckbox, "Autoscale bottom y1-axis");
 		
 		wxFlexGridSizer *yTopBoundSizer = new wxFlexGridSizer(2, 2, 0);
 		yTopBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Top Y Min:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
@@ -84,23 +77,23 @@ public:
 		boxmain->Add( mStatTypeCheck, 0, wxALL|wxEXPAND, 10 );
 		boxmain->Add( mLineStyleCombo, 0, wxALL|wxEXPAND, 10 );
 		boxmain->Add( new wxStaticLine( this ), 0, wxALL|wxEXPAND, 0 );
-		boxmain->Add( mAutoscaleCheck, 0, wxALL|wxEXPAND, 10 );
+		boxmain->Add( mTopAutoscaleCheck, 0, wxALL|wxEXPAND, 10 );
 		boxmain->Add( yTopBoundSizer, 1, wxALL|wxEXPAND, 10 );
 		if(isBottomGraphVisible) { boxmain->Add( new wxStaticLine( this ), 0, wxALL|wxEXPAND, 0 ); }
-		boxmain->Add( mBottomAutoscaleCheck, 0, wxALL|wxEXPAND, 10 );
+		boxmain->Add( mBottomTopAutoscaleCheck, 0, wxALL|wxEXPAND, 10 );
 		boxmain->Add( yBottomBoundSizer, 1, wxALL|wxEXPAND, 10 );
 		boxmain->Add( new wxStaticLine( this ), 0, wxALL|wxEXPAND, 0 );
 		boxmain->Add( CreateButtonSizer( wxOK|wxCANCEL ), 0, wxALL|wxEXPAND, 20 );
 		SetSizer(boxmain);
 		Fit();
 
-		Connect(TopCheckboxID, wxEVT_CHECKBOX, wxCommandEventHandler(wxDVTimeSeriesSettingsDialog::OnClickTopHandler));
-		Connect(BottomCheckboxID, wxEVT_CHECKBOX, wxCommandEventHandler(wxDVTimeSeriesSettingsDialog::OnClickBottomHandler));
-		Connect(StatCheckboxID, wxEVT_CHECKBOX, wxCommandEventHandler(wxDVTimeSeriesSettingsDialog::OnClickStatHandler));
+		Connect(ID_TopCheckbox, wxEVT_CHECKBOX, wxCommandEventHandler(wxDVTimeSeriesSettingsDialog::OnClickTopHandler));
+		Connect(ID_BottomCheckbox, wxEVT_CHECKBOX, wxCommandEventHandler(wxDVTimeSeriesSettingsDialog::OnClickBottomHandler));
+		Connect(ID_StatCheckbox, wxEVT_CHECKBOX, wxCommandEventHandler(wxDVTimeSeriesSettingsDialog::OnClickStatHandler));
 
 		if(!isBottomGraphVisible)
 		{
-			mBottomAutoscaleCheck->Hide();
+			mBottomTopAutoscaleCheck->Hide();
 			mBottomYMaxCtrl->Hide();
 			mBottomYMinCtrl->Hide();
 		}
@@ -108,9 +101,9 @@ public:
 
 	~wxDVTimeSeriesSettingsDialog()
 	{
-        Disconnect(TopCheckboxID, wxEVT_CHECKBOX, wxCommandEventHandler(wxDVTimeSeriesSettingsDialog::OnClickTopHandler));
-        Disconnect(BottomCheckboxID, wxEVT_CHECKBOX, wxCommandEventHandler(wxDVTimeSeriesSettingsDialog::OnClickBottomHandler));
-        Disconnect(StatCheckboxID, wxEVT_CHECKBOX, wxCommandEventHandler(wxDVTimeSeriesSettingsDialog::OnClickStatHandler));
+        Disconnect(ID_TopCheckbox, wxEVT_CHECKBOX, wxCommandEventHandler(wxDVTimeSeriesSettingsDialog::OnClickTopHandler));
+        Disconnect(ID_BottomCheckbox, wxEVT_CHECKBOX, wxCommandEventHandler(wxDVTimeSeriesSettingsDialog::OnClickBottomHandler));
+        Disconnect(ID_StatCheckbox, wxEVT_CHECKBOX, wxCommandEventHandler(wxDVTimeSeriesSettingsDialog::OnClickStatHandler));
 	}
 
 	void SetTopYBounds( double y1min, double y1max )
@@ -148,29 +141,29 @@ public:
 
 	void SetAutoscale( bool b ) 
 	{ 
-		mAutoscaleCheck->SetValue( b ); 
+		mTopAutoscaleCheck->SetValue( b ); 
 		mTopYMaxCtrl->Enable(!b);
 		mTopYMinCtrl->Enable(!b);
 	}
-	bool GetAutoscale() { return mAutoscaleCheck->GetValue(); }
+	bool GetAutoscale() { return mTopAutoscaleCheck->GetValue(); }
 
 	void SetBottomAutoscale( bool b ) 
 	{ 
-		mBottomAutoscaleCheck->SetValue( b ); 
+		mBottomTopAutoscaleCheck->SetValue( b ); 
 		mBottomYMaxCtrl->Enable(!b);
 		mBottomYMinCtrl->Enable(!b);
 	}
-	bool GetBottomAutoscale() { return mBottomAutoscaleCheck->GetValue(); }
+	bool GetBottomAutoscale() { return mBottomTopAutoscaleCheck->GetValue(); }
 
 private:
 	void OnClickTopHandler(wxCommandEvent& event)
     {
-		SetAutoscale( mAutoscaleCheck->IsChecked() );
+		SetAutoscale( mTopAutoscaleCheck->IsChecked() );
     }
 
 	void OnClickBottomHandler(wxCommandEvent& event)
     {
-		SetBottomAutoscale( mBottomAutoscaleCheck->IsChecked() );
+		SetBottomAutoscale( mBottomTopAutoscaleCheck->IsChecked() );
     }
 
 	void OnClickStatHandler(wxCommandEvent& event)
@@ -588,7 +581,7 @@ END_EVENT_TABLE()
 wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, TimeSeriesType seriesType, StatType statType)
 : wxPanel(parent, id)
 {	
-	m_autoScale = true;
+	m_topAutoScale = true;
 	m_bottomAutoScale = true;
 	m_syncToHeatMap = false;
 	m_lineStyle = (seriesType == HOURLY_TIME_SERIES ? wxDVTimeSeriesPlot::NORMAL : wxDVTimeSeriesPlot::STEPPED); // line, stepped, points
@@ -712,7 +705,7 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 	dlg.SetSync( m_syncToHeatMap );
 	dlg.SetStatType( m_statType );
 	dlg.SetLineStyle( m_lineStyle );
-	dlg.SetAutoscale( m_autoScale );
+	dlg.SetAutoscale( m_topAutoScale );
 	dlg.SetBottomAutoscale( m_bottomAutoScale );
 	dlg.SetTopYBounds( y1min, y1max );
 	dlg.SetBottomYBounds( y2min, y2max );
@@ -728,9 +721,9 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 			dynamic_cast<wxDVTimeSeriesPlot*>(m_plots[i])->SetStatType(m_statType);
 		}
 
-		m_autoScale = dlg.GetAutoscale();
+		m_topAutoScale = dlg.GetAutoscale();
 		m_bottomAutoScale = dlg.GetBottomAutoscale();
-		if ( m_autoScale )
+		if ( m_topAutoScale )
 		{
 			if (m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP))
 				AutoscaleYAxis(m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP), *m_selectedChannelIndices[TOP_LEFT_AXIS], true);
@@ -1297,7 +1290,7 @@ void wxDVTimeSeriesCtrl::AutoscaleYAxis( wxPLAxis *axisToScale, const std::vecto
 {
 	//If autoscaling is off don't scale y1 axis
 	// But do scale y2 axis (since we don't allow manual scaling there for UI simplicity).
-	if (!m_autoScale && axisToScale == m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP)) { return; }
+	if (!m_topAutoScale && axisToScale == m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP)) { return; }
 	if (!m_bottomAutoScale && axisToScale == m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM)) { return; }
 
 	//Force Update is used to rescale even if data is still in acceptable range

@@ -22,8 +22,6 @@
 #include <wx/gdicmn.h>
 #include <wx/string.h>
 
-enum TimeSeriesType { HOURLY_TIME_SERIES = 0, DAILY_TIME_SERIES, MONTHLY_TIME_SERIES};
-
 class wxDVTimeSeriesDataSet
 {
 protected:

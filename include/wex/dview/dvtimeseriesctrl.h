@@ -25,6 +25,7 @@ class wxDVTimeSeriesPlot;
 class wxScrollBar;
 
 enum StatType { AVERAGE = 0, SUM };
+enum TimeSeriesType { HOURLY_TIME_SERIES = 0, DAILY_TIME_SERIES, MONTHLY_TIME_SERIES};
 
 class wxDVTimeSeriesCtrl : public wxPanel
 {
@@ -120,7 +121,7 @@ private:
 	wxScrollBar *m_graphScrollBar;
 	wxDVSelectionListCtrl *m_dataSelector;
 
-	bool m_autoScale, m_bottomAutoScale, m_syncToHeatMap;
+	bool m_topAutoScale, m_bottomAutoScale, m_syncToHeatMap;
 	int m_lineStyle; // line, stepped, points
 	TimeSeriesType m_seriesType;
 	StatType m_statType;
