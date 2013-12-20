@@ -1108,9 +1108,6 @@ void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visi
 	wxTextOutputStream tt(os);
 	wxString sepstr(sep);
 	wxString xDataLabel;
-	wxString histStr = "class wxPLHistogramPlot";
-	wxString histChk;
-	wxString histChkPrior;
 	wxPLPlottable *plot;
 	wxPLAxis *xaxis;
 	double worldMin;
@@ -1122,11 +1119,9 @@ void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visi
 	//Filter out histogram plots since this function doesn't work with them.  They need their own function.
 	for ( size_t i = 0; i < m_plots.size(); i++ )
 	{
-		histChk = typeid(*m_plots[i].plot).name();
-		if(histChk == histStr) 
+		if(histPlot = dynamic_cast<wxPLHistogramPlot*>( m_plots[i].plot )) 
 		{ 
 			xDataLabel = m_plots[i].plot->GetYDataLabel();	//For CDF plots there is no X data label. The closest useful lable is the Y lable of the companion PDF histogram plot, so we need to store it.
-			histPlot = dynamic_cast<wxPLHistogramPlot*>( m_plots[i].plot );
 			break;
 		}
 	}
@@ -1136,10 +1131,12 @@ void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visi
 	includeXForPlot[0] = true;
 	for ( size_t i = 1 ; i < m_plots.size(); i++ )
 	{
-		histChk = typeid(*m_plots[i].plot).name();
-		histChkPrior = typeid(*m_plots[i - 1].plot).name();
-		if(histChk == histStr || histChkPrior == histStr) 
+		if(histPlot = dynamic_cast<wxPLHistogramPlot*>( m_plots[i].plot )) 
 		{ 
+			includeXForPlot[i] = true;
+		}
+		else if(histPlot = dynamic_cast<wxPLHistogramPlot*>( m_plots[i - 1].plot ))
+		{
 			includeXForPlot[i] = true;
 		}
 		else
@@ -1152,7 +1149,6 @@ void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visi
 	//Do header info
 	for ( size_t i = 0; i < m_plots.size(); i++ )
 	{
-		histChk = typeid(*m_plots[i].plot).name();
 		wxPLPlottable *plot = m_plots[i].plot;
 		
 		if (include_x && includeXForPlot[i])
@@ -1160,7 +1156,7 @@ void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visi
 			wxString xLabel = plot->GetXDataLabel();
 			if(xLabel.size() == 0 && xDataLabel.size() != 0) 
 			{ 
-				xLabel = histChk == histStr ? "Avg Bin Value" : xDataLabel; 
+				xLabel = (histPlot = dynamic_cast<wxPLHistogramPlot*>( m_plots[i].plot )) ? "Avg Bin Value" : xDataLabel; 
 			}
 			
 			//Remove sep chars that we don't want
@@ -1174,7 +1170,7 @@ void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visi
 			tt << sepstr;
 		}
 
-		wxString yLabel = (histChk == histStr ? (histPlot->GetNormalize() == 0 ? "Point Count" : "% of Points") : plot->GetYDataLabel());
+		wxString yLabel = ((histPlot = dynamic_cast<wxPLHistogramPlot*>( m_plots[i].plot )) ? (histPlot->GetNormalize() == 0 ? "Point Count" : "% of Points") : plot->GetYDataLabel());
 		//Remove sep chars that we don't want
 		while (yLabel.Find(sep) != wxNOT_FOUND)
 			yLabel = yLabel.BeforeFirst(sep) + yLabel.AfterFirst(sep);
@@ -1198,9 +1194,7 @@ void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visi
 
 		for ( size_t j=0; j<m_plots.size(); j++ )
 		{
-			histChk = typeid(*m_plots[j].plot).name();
-
-			if(histChk == histStr)
+			if(histPlot = dynamic_cast<wxPLHistogramPlot*>( m_plots[j].plot ))
 			{
 				keepGoing = true;
 
