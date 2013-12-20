@@ -679,6 +679,7 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 {
 	double y1min = 0, y1max = 0, y2min = 0, y2max = 0;
 	bool isBottomGraphVisible = false;
+	wxDVTimeSeriesPlot* temp;
 
 	for(int i = 0; i < m_dataSelector->Length(); i++)
 	{
@@ -713,7 +714,7 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 		for (int i=0; i<m_plots.size(); i++)
 		{
 			m_plots[i]->SetStyle( (wxDVTimeSeriesPlot::Style) m_lineStyle );
-			dynamic_cast<wxDVTimeSeriesPlot*>(m_plots[i])->SetStatType(m_statType);
+			if(temp = dynamic_cast<wxDVTimeSeriesPlot*>(m_plots[i])) { temp->SetStatType(m_statType); }
 		}
 
 		m_topAutoScale = dlg.GetAutoscale();
