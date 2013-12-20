@@ -28,7 +28,6 @@
 #include "wex/dview/dvtimeseriesdataset.h"
 #include "wex/dview/dvplothelper.h"
 #include "wex/dview/dvtimeseriesctrl.h"
-#include "wex/dview/dvfiledataset.h"
 
 static const wxString NO_UNITS("ThereAreNoUnitsForThisAxis.");
 enum { ID_TopCheckbox = wxID_HIGHEST + 1, ID_BottomCheckbox, ID_StatCheckbox };
@@ -316,11 +315,7 @@ public:
 			double counter = 0.0;
 			double MinHrs = m_data->GetMinHours();
 			double MaxHrs = m_data->GetMaxHours();
-			wxDVFileDataSet *d2 = new wxDVFileDataSet();
-
-			d2->SetSeriesTitle(m_data->GetSeriesTitle());
-			d2->SetUnits(m_data->GetUnits());
-			d2->SetTimeStep(m_data->GetTimeStep());
+			wxDVPointArrayDataSet *d2 = new wxDVPointArrayDataSet(m_data->GetSeriesTitle(), m_data->GetUnits(), m_data->GetTimeStep());
 
 			//Create daily data set (avg value of data by day) from m_data
 			if(m_seriesType == DAILY_TIME_SERIES)

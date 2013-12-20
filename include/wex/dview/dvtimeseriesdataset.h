@@ -71,4 +71,25 @@ private:
 	std::vector<double> m_pData;
 	
 };
+
+class wxDVPointArrayDataSet : public wxDVTimeSeriesDataSet
+{
+public:
+	wxDVPointArrayDataSet( const wxString &var, const wxString &units, const double &timestep );
+	
+	virtual wxRealPoint At(size_t i) const;
+	virtual size_t Length() const;
+	virtual double GetTimeStep() const;
+	virtual wxString GetSeriesTitle() const;
+	virtual wxString GetUnits() const;
+	void Alloc(int size);
+	void Append(const wxRealPoint& p);
+	
+private:
+	wxString mSeriesTitle;
+	wxString m_varUnits;
+	double m_timestep; // timestep in hours - fractional hours okay
+	std::vector<wxRealPoint> mDataPoints;
+};
+
 #endif

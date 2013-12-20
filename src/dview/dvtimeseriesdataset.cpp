@@ -147,3 +147,47 @@ wxString wxDVArrayDataSet::GetUnits() const
 {
 	return m_varUnits;
 }
+
+
+// ******** Point array data set *********** //
+
+wxDVPointArrayDataSet::wxDVPointArrayDataSet( const wxString &var, const wxString &units, const double &timestep )
+	: mSeriesTitle(var), m_varUnits(units), m_timestep(timestep)
+{
+	
+}
+
+wxRealPoint wxDVPointArrayDataSet::At(size_t i) const
+{
+	return mDataPoints[i];
+}
+
+size_t wxDVPointArrayDataSet::Length() const
+{
+	return mDataPoints.size();
+}
+
+double wxDVPointArrayDataSet::GetTimeStep() const
+{
+	return m_timestep;
+}
+
+wxString wxDVPointArrayDataSet::GetSeriesTitle() const
+{
+	return mSeriesTitle;
+}
+
+wxString wxDVPointArrayDataSet::GetUnits() const 
+{
+	return m_varUnits;
+}
+
+void wxDVPointArrayDataSet::Append(const wxRealPoint& p)
+{
+	mDataPoints.push_back(p);
+}
+
+void wxDVPointArrayDataSet::Alloc(int size)
+{
+	mDataPoints.reserve(size);
+}
