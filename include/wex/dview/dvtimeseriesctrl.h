@@ -12,8 +12,10 @@
  */
 
 #include <wx/panel.h>
-
+#include <wx/dialog.h>
+#include "wex/numeric.h"
 #include "wex/plot/plplotctrl.h"
+#include "wex/dview/dvplothelper.h"
 
 class wxDVTimeSeriesDataSet;
 class wxPLTimeAxis;
@@ -26,6 +28,48 @@ class wxScrollBar;
 
 enum StatType { AVERAGE = 0, SUM };
 enum TimeSeriesType { HOURLY_TIME_SERIES = 0, DAILY_TIME_SERIES, MONTHLY_TIME_SERIES};
+
+class wxDVTimeSeriesSettingsDialog : public wxDialog
+{
+public:
+	wxDVTimeSeriesSettingsDialog( wxWindow *parent, const wxString &title, bool isBottomGraphVisible = true );
+	~wxDVTimeSeriesSettingsDialog();
+
+	void SetTopYBounds( double y1min, double y1max );
+	void SetBottomYBounds( double y2min, double y2max );
+	void GetTopYBounds( double *y1min, double *y1max );
+	void GetBottomYBounds( double *y2min, double *y2max );
+
+	void SetLineStyle( int id );
+	int GetLineStyle();
+	void SetSync( bool b );
+	bool GetSync();
+	void SetStatType( StatType statType );
+	StatType GetStatType();
+	void SetAutoscale( bool b );
+	bool GetAutoscale();
+	void SetBottomAutoscale( bool b );
+	bool GetBottomAutoscale();
+
+protected:
+	void OnClickTopHandler(wxCommandEvent& event);
+	void OnClickBottomHandler(wxCommandEvent& event);
+	void OnClickStatHandler(wxCommandEvent& event);
+
+private:
+	wxCheckBox *mSyncCheck;
+	wxCheckBox *mStatTypeCheck;
+	wxCheckBox *mTopAutoscaleCheck;
+	wxCheckBox *mBottomTopAutoscaleCheck;
+	wxNumericCtrl *mTopYMaxCtrl;
+	wxNumericCtrl *mTopYMinCtrl;
+	wxNumericCtrl *mBottomYMaxCtrl;
+	wxNumericCtrl *mBottomYMinCtrl;
+	wxChoice *mLineStyleCombo;
+
+	DECLARE_EVENT_TABLE();
+	
+};
 
 class wxDVTimeSeriesCtrl : public wxPanel
 {
