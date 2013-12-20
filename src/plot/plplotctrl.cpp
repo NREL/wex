@@ -928,8 +928,6 @@ wxPLPlotCtrl::~wxPLPlotCtrl()
 	if ( m_titleLayout != 0 )
 		delete m_titleLayout;
 
-	m_plots.clear();
-
 	for ( std::vector<plot_data>::iterator it = m_plots.begin();
 		it != m_plots.end();
 		++it )
@@ -969,7 +967,7 @@ wxPLPlottable *wxPLPlotCtrl::RemovePlot( wxPLPlottable *p, PlotPos plotPosition 
 		it != m_plots.end();
 		++it )
 	{
-		if ( it->plot == p && it->ppos == plotPosition )
+		if ( it->plot == p && (it->ppos == plotPosition || plotPosition == NPLOTPOS) )
 		{
 			m_plots.erase( it );
 			if ( p->IsShownInLegend() )
