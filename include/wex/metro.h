@@ -71,6 +71,13 @@ public:
 			long style = 0);
 	
 	wxSize DoGetBestSize() const;
+	void SetLabel( const wxString &l ) { m_label = l; }
+	wxString GetLabel() const { return m_label; }
+	void SetBitmap( const wxBitmap &b ) { m_bitmap = b; }
+	wxBitmap GetBitmap() const { return m_bitmap; }
+	void SetStyle( long sty ) { m_style = sty; }
+	long GetStyle() const { return m_style; }
+
 private:
 	wxString m_label;
 	wxBitmap m_bitmap;
