@@ -291,7 +291,11 @@ public:
 	void SetCopyBuffer( wxUIObjectCopyBuffer *cpbuf);
 	void SetPropertyEditor( wxUIPropertyEditor *pe );
 	void EnableTabOrderMode(bool b);
+
 	void ClearSelections();
+	std::vector<wxUIObject*> GetSelections();
+	bool IsSelected( wxUIObject * );
+	bool IsSelected( const wxString &name );
 
 	void Snap( int *x, int *y, int spacing = -1 );
 	int Snap( int p, int spacing = -1 );

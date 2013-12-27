@@ -2072,6 +2072,22 @@ void wxUIFormEditor::ClearSelections()
 	Refresh();
 }
 
+std::vector<wxUIObject*> wxUIFormEditor::GetSelections()
+{
+	return m_selected;
+}
+
+bool wxUIFormEditor::IsSelected( wxUIObject *obj )
+{
+	return std::find( m_selected.begin(), m_selected.end(), obj ) != m_selected.end();
+}
+
+bool wxUIFormEditor::IsSelected( const wxString &name )
+{
+	if ( !m_form ) return false;
+	else return IsSelected( m_form->Find( name ) );
+}
+
 void wxUIFormEditor::SetFormData( wxUIFormData *form )
 {
 	if ( m_propEditor ) m_propEditor->SetObject( 0 );
