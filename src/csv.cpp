@@ -15,12 +15,7 @@ wxCSVData::wxCSVData()
 
 wxCSVData::wxCSVData( const wxCSVData &copy )
 {
-	m_invalidated = copy.m_invalidated;
-	m_nrows = copy.m_nrows;
-	m_ncols = copy.m_ncols;
-	m_cells = copy.m_cells;
-	m_sep = copy.m_sep;
-	m_errorLine = 0;
+	Copy( copy );
 }
 
 wxCSVData::~wxCSVData()
@@ -28,6 +23,24 @@ wxCSVData::~wxCSVData()
 	 // nothing to do
 }
 
+void wxCSVData::Copy( const wxCSVData &copy )
+{
+	if ( this != &copy )
+	{
+		m_invalidated = copy.m_invalidated;
+		m_nrows = copy.m_nrows;
+		m_ncols = copy.m_ncols;
+		m_cells = copy.m_cells;
+		m_sep = copy.m_sep;
+		m_errorLine = 0;
+	}
+}
+
+wxCSVData &wxCSVData::operator=( const wxCSVData &copy )
+{
+	Copy( copy );
+	return *this;
+}
 
 void wxCSVData::Set( size_t r, size_t c, const wxString &val )
 {

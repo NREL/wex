@@ -25,6 +25,9 @@ public:
 	wxCSVData( const wxCSVData &copy );
 	virtual ~wxCSVData();
 
+	void Copy( const wxCSVData &copy );
+	wxCSVData &operator=( const wxCSVData &copy );
+
 	void Set( size_t r, size_t c, const wxString &val );
 	wxString &operator()(size_t r, size_t c);
 	const wxString &Get( size_t r, size_t c ) const;
