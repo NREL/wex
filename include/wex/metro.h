@@ -71,11 +71,11 @@ public:
 			long style = 0);
 	
 	wxSize DoGetBestSize() const;
-	void SetLabel( const wxString &l ) { m_label = l; }
+	void SetLabel( const wxString &l ) { m_label = l; InvalidateBestSize();}
 	wxString GetLabel() const { return m_label; }
-	void SetBitmap( const wxBitmap &b ) { m_bitmap = b; }
+	void SetBitmap( const wxBitmap &b ) { m_bitmap = b; InvalidateBestSize(); }
 	wxBitmap GetBitmap() const { return m_bitmap; }
-	void SetStyle( long sty ) { m_style = sty; }
+	void SetStyle( long sty ) { m_style = sty; InvalidateBestSize(); }
 	long GetStyle() const { return m_style; }
 
 private:
