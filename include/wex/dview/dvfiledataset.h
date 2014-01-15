@@ -32,6 +32,7 @@ public:
 	double GetTimeStep() const;
 	wxString GetSeriesTitle() const;
 	wxString GetUnits() const;
+	void SetDataValue(size_t i, double newYValue);
 
 	/* Functions to set data */
 	void Alloc(int size);

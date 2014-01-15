@@ -36,6 +36,7 @@ public:
 	virtual double GetTimeStep() const = 0;
 	virtual wxString GetSeriesTitle() const = 0;
 	virtual wxString GetUnits() const = 0;
+	virtual void SetDataValue(size_t i, double newYValue) = 0;
 	
 	/*Helper Functions*/
 	wxRealPoint operator[] (size_t i) const;
@@ -62,6 +63,7 @@ public:
 	virtual double GetTimeStep() const;
 	virtual wxString GetSeriesTitle() const;
 	virtual wxString GetUnits() const;
+	virtual void SetDataValue(size_t i, double newYValue);
 	
 private:
 	wxString m_varLabel;
@@ -82,6 +84,7 @@ public:
 	virtual double GetTimeStep() const;
 	virtual wxString GetSeriesTitle() const;
 	virtual wxString GetUnits() const;
+	virtual void SetDataValue(size_t i, double newYValue);
 	void Alloc(int size);
 	void Append(const wxRealPoint& p);
 	

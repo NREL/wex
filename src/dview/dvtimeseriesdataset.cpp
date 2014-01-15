@@ -69,7 +69,7 @@ void wxDVTimeSeriesDataSet::GetMinAndMaxInRange(double* min, double* max, double
 	if (endHour < At(0).x)
 		endHour = At(0).x;
 	size_t startIndex = size_t((startHour - At(0).x)/GetTimeStep());
-	size_t endIndex = size_t((endHour - At(0).x)/GetTimeStep() + 1);
+	size_t endIndex = size_t((endHour - At(0).x)/GetTimeStep() + 2);
 
 	if (startIndex < 0)
 		startIndex = 0;
@@ -148,6 +148,10 @@ wxString wxDVArrayDataSet::GetUnits() const
 	return m_varUnits;
 }
 
+void wxDVArrayDataSet::SetDataValue(size_t i, double newYValue)
+{
+	m_pData[i] = newYValue;
+}
 
 // ******** Point array data set *********** //
 
@@ -180,6 +184,11 @@ wxString wxDVPointArrayDataSet::GetSeriesTitle() const
 wxString wxDVPointArrayDataSet::GetUnits() const 
 {
 	return m_varUnits;
+}
+
+void wxDVPointArrayDataSet::SetDataValue(size_t i, double newYValue)
+{
+	mDataPoints[i].y = newYValue;
 }
 
 void wxDVPointArrayDataSet::Append(const wxRealPoint& p)

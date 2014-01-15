@@ -978,4 +978,8 @@ void wxDVFileDataSet::SetUnits(const wxString& units)
 	mUnits = units;
 }
 
+void wxDVFileDataSet::SetDataValue(size_t i, double newYValue)
+{
+	mDataPoints[i].y = newYValue;
+}
 
