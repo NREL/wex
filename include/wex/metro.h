@@ -6,6 +6,8 @@
 #include <wx/gdicmn.h>
 #include <wx/font.h>
 #include <wx/window.h>
+#include <wx/panel.h>
+#include <wx/scrolwin.h>
 
 
 class wxMetroThemeProvider

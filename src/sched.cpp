@@ -3,6 +3,7 @@
 #include <wx/dcbuffer.h>
 
 #include "wex/sched.h"
+#include "wex/metro.h"
 
 BEGIN_EVENT_TABLE(wxSchedCtrl, wxWindow)
 	EVT_PAINT( wxSchedCtrl::OnPaint )
@@ -23,6 +24,8 @@ DEFINE_EVENT_TYPE( wxEVT_SCHEDCTRL_CHANGE )
 #ifndef MAX
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #endif
+
+#define SCHED_FONT wxFont(8, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD)
 
 wxSchedCtrl::wxSchedCtrl(wxWindow *parent, int id, const wxPoint &pos, const wxSize &sz)
 	: wxWindow(parent, id, pos, sz, wxWANTS_CHARS)
@@ -151,7 +154,7 @@ void wxSchedCtrl::AutosizeHeaders()
 	if (!m_autosizeHeaders) return;
 	
 	wxClientDC dc(this);
-	dc.SetFont( wxFont(8, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD) );
+	dc.SetFont( SCHED_FONT );
 
 	
 	int r, c;
@@ -197,10 +200,8 @@ void wxSchedCtrl::OnPaint( wxPaintEvent & )
 	int rows = NRows();
 	int cols = NCols();
 
-	wxFont f = wxFont(8, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD);
-	dc.SetFont(f);
-
-
+	dc.SetFont( SCHED_FONT );
+	
 	dc.SetPen( *wxTRANSPARENT_PEN );
 	for (r=0;r<rows;r++)
 	{
