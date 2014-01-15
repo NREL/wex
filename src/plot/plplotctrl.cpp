@@ -38,9 +38,9 @@ public:
 		: m_xAxis(x), m_xPhysMin(xmin), m_xPhysMax(xmax), 
 		m_yAxis(y), m_yPhysMin(ymin), m_yPhysMax(ymax) {   }
 	
-	virtual wxPoint ToDevice( double x, double y, bool isHistXAxis ) const
+	virtual wxPoint ToDevice( double x, double y ) const
 	{
-		return wxPoint( m_xAxis->WorldToPhysical( x, m_xPhysMin, m_xPhysMax, isHistXAxis ),
+		return wxPoint( m_xAxis->WorldToPhysical( x, m_xPhysMin, m_xPhysMax ),
 			m_yAxis->WorldToPhysical( y, m_yPhysMin, m_yPhysMax ) );
 	}
 	

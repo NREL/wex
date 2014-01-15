@@ -18,12 +18,12 @@ class wxPLDeviceMapping
 public:
 	wxPLDeviceMapping() { }
 	virtual ~wxPLDeviceMapping() { }
-	virtual wxPoint ToDevice( double x, double y, bool isHistXAxis = false ) const = 0;
+	virtual wxPoint ToDevice( double x, double y ) const = 0;
 	virtual wxRect GetDeviceExtents( ) const = 0;
 	virtual wxRealPoint GetWorldMinimum() const = 0;
 	virtual wxRealPoint GetWorldMaximum() const = 0;
 	
-	inline wxPoint ToDevice( const wxRealPoint &p, bool isHistXAxis = false ) const { return ToDevice(p.x, p.y, isHistXAxis); }
+	inline wxPoint ToDevice( const wxRealPoint &p ) const { return ToDevice(p.x, p.y); }
 };
 
 class wxPLPlottable

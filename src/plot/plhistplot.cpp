@@ -129,7 +129,7 @@ void wxPLHistogramPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 	{
 
 		wxCoord xMin = map.ToDevice( wxPoint(m_dataMin, 0) ).x;
-		wxCoord xMax = map.ToDevice( wxPoint(m_dataMax, 0), true ).x;
+		wxCoord xMax = map.ToDevice( wxRealPoint(m_dataMax, 0) ).x;
 
 		double usableLength = xMax - xMin;
 		

@@ -62,7 +62,7 @@ wxCoord wxPLAxis::WorldToPhysical( double coord, wxCoord phys_min, wxCoord phys_
 	double prop = (double)((coord - m_min) / range);
 	if(isHistXAxis) { prop = (double)((coord - m_min)); }
 	// calculate the physical coordinate.
-	return pmin + prop * (pmax - pmin);
+	return (wxCoord)((double)pmin + prop * (double)(pmax - pmin));
 }
 
 double wxPLAxis::PhysicalToWorld( wxCoord point, wxCoord phys_min, wxCoord phys_max )
