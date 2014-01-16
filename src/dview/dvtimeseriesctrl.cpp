@@ -144,28 +144,71 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 				len = m_data->Length() * 2;
 				points.reserve( len );
 				double timeStep = m_data->GetTimeStep();
+				double lowX;
+				double highX;
+				double priorY;
+				double nextY;
 
 				for (size_t i = 0; i < m_data->Length(); i++)
 				{
 					rpt = m_data->At(i);
+					lowX = GetPeriodLowerBoundary(rpt.x, timeStep);
+					highX = GetPeriodUpperBoundary(rpt.x, timeStep);
 
-					if(rpt.x >= wmin.x && rpt.x <= wmax.x)
+					
+					if(lowX >= wmin.x && highX <= wmax.x)	//Draw points for the lower and upper X boundaries of the point's horizontal range for each range that fits in the boundaries of the plot
 					{
-						if ( i == 0 ) 
+						//If the prior point's lower X boundary is off the left edge of the plot then draw points for the left edge of the plot and the visible point's lower X boundary at the prior point's Y
+						if(i > 0 && GetPeriodLowerBoundary(m_data->At(i - 1).x, timeStep) < wmin.x)
 						{
-							points.push_back( map.ToDevice( wxRealPoint(wmin.x, rpt.y) ) );
-							points.push_back( map.ToDevice( wxRealPoint(GetPeriodUpperBoundary(rpt.x, timeStep), rpt.y) ) );
+							priorY = m_data->At(i - 1).y;
+							points.push_back( map.ToDevice( wxRealPoint(wmin.x, priorY) ) );
+							points.push_back( map.ToDevice( wxRealPoint(lowX, priorY) ) );
 						}
-						else if ( i == m_data->Length() - 1)
+
+						points.push_back( map.ToDevice( wxRealPoint(lowX, rpt.y) ) );
+						points.push_back( map.ToDevice( wxRealPoint(highX, rpt.y) ) );
+
+						//If the next point's upper X boundary is off the right edge of the plot then draw points for the visible point's upper X boundary and the right edge of the plot at the next point's Y
+						if(i < m_data->Length() - 1 && GetPeriodUpperBoundary(m_data->At(i + 1).x, timeStep) > wmax.x)
 						{
-							points.push_back( map.ToDevice( wxRealPoint(GetPeriodLowerBoundary(rpt.x, timeStep), rpt.y) ) );
-							points.push_back( map.ToDevice( wxRealPoint(wmax.x, rpt.y) ) );
+							nextY = m_data->At(i + 1).y;
+							points.push_back( map.ToDevice( wxRealPoint(highX, nextY) ) );
+							points.push_back( map.ToDevice( wxRealPoint(wmax.x, nextY) ) );
+							break;	//Any future points are outside the bounds of the graph
 						}
-						else 
+					}
+					else if(lowX < wmin.x && highX > wmin.x && highX <= wmax.x)	//Draw points for the plot left edge and point's upper X boundary at the point's Y if the lower boundary (only) is off the plot's left edge
+					{
+						points.push_back( map.ToDevice( wxRealPoint(wmin.x, rpt.y) ) );
+						points.push_back( map.ToDevice( wxRealPoint(highX, rpt.y) ) );
+
+						//If the next point's upper X boundary is off the right edge of the plot then draw points for the visible point's upper X boundary and the right edge of the plot at the next point's Y
+						if(i < m_data->Length() - 1 && GetPeriodUpperBoundary(m_data->At(i + 1).x, timeStep) > wmax.x)
 						{
-							points.push_back( map.ToDevice( wxRealPoint(GetPeriodLowerBoundary(rpt.x, timeStep), rpt.y) ) );
-							points.push_back( map.ToDevice( wxRealPoint(GetPeriodUpperBoundary(rpt.x, timeStep), rpt.y) ) );
+							nextY = m_data->At(i + 1).y;
+							points.push_back( map.ToDevice( wxRealPoint(highX, nextY) ) );
+							points.push_back( map.ToDevice( wxRealPoint(wmax.x, nextY) ) );
+							break;	//Any future points are outside the bounds of the graph
 						}
+					}
+					else if(highX > wmax.x && lowX < wmax.x && lowX >= wmin.x)	//Draw points for the point's upper X boundary and the plot right edge at the point's Y if the upper boundary (only) is off the plot's right edge
+					{
+						//If the prior point's lower X boundary is off the left edge of the plot then draw points for the left edge of the plot and the visible point's lower X boundary at the prior point's Y
+						if(i > 0 && GetPeriodLowerBoundary(m_data->At(i - 1).x, timeStep) < wmin.x)
+						{
+							priorY = m_data->At(i - 1).y;
+							points.push_back( map.ToDevice( wxRealPoint(wmin.x, priorY) ) );
+							points.push_back( map.ToDevice( wxRealPoint(lowX, priorY) ) );
+						}
+
+						points.push_back( map.ToDevice( wxRealPoint(wmin.x, rpt.y) ) );
+						points.push_back( map.ToDevice( wxRealPoint(highX, rpt.y) ) );
+					}
+					else if(lowX < wmin.x && highX > wmax.x)	//Draw points for the plot's left and right edges and point's Y if the point's lower X boundary is off the plot's left edge and the upper X boundary is off the right edge
+					{
+						points.push_back( map.ToDevice( wxRealPoint(wmin.x, rpt.y) ) );
+						points.push_back( map.ToDevice( wxRealPoint(highX, rpt.y) ) );
 					}
 				}
 			}
@@ -837,7 +880,7 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 		double currentMonth = 0.0;
 		double year = 0.0;
 
-		d2 = new wxDVPointArrayDataSet(d->GetSeriesTitle(), d->GetUnits(), 730.0 / d->GetTimeStep());
+		d2 = new wxDVPointArrayDataSet(d->GetSeriesTitle(), d->GetUnits(), 744.0 / d->GetTimeStep());
 
 		while(MinHrs > 8760.0)
 		{
