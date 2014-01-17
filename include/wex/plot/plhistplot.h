@@ -21,8 +21,8 @@ public:
 	void SetFillColour( const wxColour &c );
 	void SetNumberOfBins( size_t n );
 	void SetNormalize( NormalizeType n );
-	NormalizeType GetNormalize();
-	int GetNumberOfBins();
+	NormalizeType GetNormalize() const;
+	int GetNumberOfBins() const;
 	double GetNiceYMax();
 	double HistAt( size_t i ) const;
 	wxRealPoint HistBinAt( size_t i ) const;
@@ -41,6 +41,8 @@ public:
 	virtual wxPLAxis *SuggestXAxis();
 	virtual wxPLAxis *SuggestYAxis();
 	virtual bool GetMinMax(double *pxmin, double *pxmax, double *pymin, double *pymax) const;
+	virtual std::vector<wxString> GetExportableDatasetHeaders( wxUniChar sep ) const;
+	virtual std::vector<wxRealPoint> GetExportableDataset(double Xmin, double Xmax, bool visible_only) const;
 
 private:	
 	bool m_normalize;

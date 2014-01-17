@@ -90,7 +90,7 @@ void wxPLHistogramPlot::SetNormalize( NormalizeType n )
 	RecalculateHistogram();
 }
 
-wxPLHistogramPlot::NormalizeType wxPLHistogramPlot::GetNormalize()
+wxPLHistogramPlot::NormalizeType wxPLHistogramPlot::GetNormalize() const
 {
 	if (m_normalize)
 	{
@@ -102,7 +102,7 @@ wxPLHistogramPlot::NormalizeType wxPLHistogramPlot::GetNormalize()
 	return NO_NORMALIZE;
 }
 
-int wxPLHistogramPlot::GetNumberOfBins()
+int wxPLHistogramPlot::GetNumberOfBins() const
 {
 	return m_numberOfBins;
 }
@@ -192,6 +192,43 @@ bool wxPLHistogramPlot::GetMinMax(double *pxmin, double *pxmax, double *pymin, d
 	return true;
 }
 
+std::vector<wxString> wxPLHistogramPlot::GetExportableDatasetHeaders( wxUniChar sep ) const
+{
+	std::vector<wxString> tt;
+	wxString xLabel = GetXDataLabel();
+	wxString yLabel = (GetNormalize() == 0 ? "Point Count" : "% of Points");
+
+	if(xLabel.size() == 0) { xLabel = "Avg Bin Value"; }
+			
+	//Remove sep chars that we don't want
+	while (xLabel.Find(sep) != wxNOT_FOUND)
+	{
+		xLabel = xLabel.BeforeFirst(sep) + xLabel.AfterFirst(sep);
+	}
+
+	while (yLabel.Find(sep) != wxNOT_FOUND)
+	{
+		yLabel = yLabel.BeforeFirst(sep) + yLabel.AfterFirst(sep);
+	}
+
+	tt.push_back(xLabel);
+	tt.push_back(yLabel);
+
+	return tt;
+}
+
+std::vector<wxRealPoint> wxPLHistogramPlot::GetExportableDataset(double Xmin, double Xmax, bool visible_only) const
+{
+	std::vector<wxRealPoint> data;
+
+	for(int i = 0; i < m_numberOfBins; i++)
+	{
+		data.push_back(wxRealPoint((HistBinAt(i).x + HistBinAt(i).y) / 2.0, HistAt(i)));
+	}
+
+	return data;
+}
+
 void wxPLHistogramPlot::RecalculateHistogram()
 {
 	//This method builds histogram data. (basically, just groups and counts WPPlotData)
@@ -236,7 +273,6 @@ void wxPLHistogramPlot::RecalculateHistogram()
 		}
 	}
 	//We now have a histogram...
-
 
 	m_niceMax = 0;
 	if (m_normalize)
