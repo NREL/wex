@@ -217,6 +217,7 @@ public:
 	virtual ~wxMetroListBox();
 
 	void Add( const wxString &label );
+	void Add( const wxArrayString &list );
 	void Delete( size_t idx );
 	void Clear();
 	int Find( const wxString &label );
@@ -224,7 +225,9 @@ public:
 	void Set( size_t idx, const wxString &label );
 	wxString Get( size_t idx );
 	int GetSelection();
+	wxString GetSelectionString();
 	void SetSelection( int idx );
+	bool SetSelectionString( const wxString &s );
 	wxString GetValue();
 
 	void Invalidate();
@@ -245,7 +248,7 @@ private:
 	void OnLeftDown( wxMouseEvent &evt );
 	void OnMouseMove( wxMouseEvent &evt );
 	void OnLeave( wxMouseEvent &evt );
-	void OnDoubleClick( wxMouseEvent &evt );
+	void OnDClick( wxMouseEvent &evt );
 
 	DECLARE_EVENT_TABLE();
 };

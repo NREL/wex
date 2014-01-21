@@ -1038,6 +1038,7 @@ void wxMetroNotebook::SwitchPage( size_t i )
 BEGIN_EVENT_TABLE(wxMetroListBox, wxScrolledWindow)
 	EVT_SIZE( wxMetroListBox::OnResize )	
 	EVT_LEFT_DOWN( wxMetroListBox::OnLeftDown )
+	EVT_LEFT_DCLICK( wxMetroListBox::OnDClick )
 	EVT_PAINT( wxMetroListBox::OnPaint )
 	EVT_MOTION( wxMetroListBox::OnMouseMove )
 	EVT_LEAVE_WINDOW( wxMetroListBox::OnLeave )
@@ -1063,12 +1064,15 @@ wxMetroListBox::~wxMetroListBox()
 
 void wxMetroListBox::Add(const wxString &item)
 {
-	if (Find(item) >= 0)
-		return;
-	
 	_item x;
 	x.name = item;
 	m_items.push_back( x );
+}
+
+void wxMetroListBox::Add( const wxArrayString &list )
+{
+	for( size_t i=0;i<list.size();i++ )
+		Add( list[i] );
 }
 
 void wxMetroListBox::Delete( size_t idx )
@@ -1113,6 +1117,18 @@ void wxMetroListBox::SetSelection(int idx)
 {
 	m_selectedIdx = idx;
 	Refresh();
+}
+
+bool wxMetroListBox::SetSelectionString( const wxString &s )
+{
+	m_selectedIdx = Find( s );
+	Refresh();
+	return m_selectedIdx >= 0;
+}
+
+wxString wxMetroListBox::GetSelectionString()
+{
+	return GetValue();
 }
 
 int wxMetroListBox::GetSelection()
@@ -1216,6 +1232,18 @@ void wxMetroListBox::OnLeftDown(wxMouseEvent &evt)
 			return;
 		}
 	}
+
+	m_selectedIdx = -1;
+	Refresh();
+}
+
+void wxMetroListBox::OnDClick( wxMouseEvent &evt )
+{
+	wxCommandEvent selevt(wxEVT_COMMAND_LISTBOX_DOUBLECLICKED, this->GetId() );
+	selevt.SetEventObject(this);
+	selevt.SetInt( m_selectedIdx );
+	selevt.SetString(GetValue());
+	GetEventHandler()->ProcessEvent(selevt);
 }
 
 void wxMetroListBox::OnMouseMove(wxMouseEvent &evt)
@@ -1228,14 +1256,23 @@ void wxMetroListBox::OnMouseMove(wxMouseEvent &evt)
 	for (int i=0;i<m_items.size();i++)
 	{
 		if (evt.GetY()+vsy > m_items[i].geom.y 
-			&& evt.GetY()+vsy < m_items[i].geom.y+m_items[i].geom.height
-			&& m_hoverIdx != i )
+			&& evt.GetY()+vsy < m_items[i].geom.y+m_items[i].geom.height )
 		{
 			
-			m_hoverIdx = i;
-			Refresh();
+			if ( m_hoverIdx != i )
+			{
+				m_hoverIdx = i;
+				Refresh();
+			}
+
 			return;
 		}
+	}
+
+	if ( m_hoverIdx != -1 )
+	{
+		m_hoverIdx = -1;
+		Refresh();
 	}
 }
 
