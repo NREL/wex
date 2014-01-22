@@ -153,12 +153,19 @@ void wxDVArrayDataSet::SetDataValue(size_t i, double newYValue)
 	m_pData[i] = newYValue;
 }
 
+
 // ******** Point array data set *********** //
+
 
 wxDVPointArrayDataSet::wxDVPointArrayDataSet( const wxString &var, const wxString &units, const double &timestep )
 	: mSeriesTitle(var), m_varUnits(units), m_timestep(timestep)
 {
 	
+}
+
+wxDVPointArrayDataSet::~wxDVPointArrayDataSet()
+{
+	mDataPoints.clear();
 }
 
 wxRealPoint wxDVPointArrayDataSet::At(size_t i) const

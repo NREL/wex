@@ -39,14 +39,24 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 		wxColour m_colour;
 		Style m_style;
 		TimeSeriesType m_seriesType;
+		bool m_ownsDataset;
 
 	public:
-		wxDVTimeSeriesPlot( wxDVTimeSeriesDataSet *ds, TimeSeriesType seriesType )
+		wxDVTimeSeriesPlot( wxDVTimeSeriesDataSet *ds, TimeSeriesType seriesType, bool OwnsDataset = false )
 			: m_data(ds)
 		{
 			m_colour = *wxRED;
 			m_seriesType = seriesType;
 			m_style = seriesType == HOURLY_TIME_SERIES ? NORMAL : STEPPED;
+			m_ownsDataset = OwnsDataset;
+		}
+
+		~wxDVTimeSeriesPlot()
+		{
+			if(m_ownsDataset)
+			{
+				delete m_data;
+			}
 		}
 
 		void SetStyle( Style ss ) { m_style = ss; }
@@ -953,7 +963,7 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 	}
 	else
 	{
-		p = new wxDVTimeSeriesPlot(d2, m_seriesType);
+		p = new wxDVTimeSeriesPlot(d2, m_seriesType, true);
 	}
 
 	p->SetStyle((wxDVTimeSeriesPlot::Style) m_lineStyle);

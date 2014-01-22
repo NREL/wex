@@ -78,6 +78,7 @@ class wxDVPointArrayDataSet : public wxDVTimeSeriesDataSet
 {
 public:
 	wxDVPointArrayDataSet( const wxString &var, const wxString &units, const double &timestep );
+	~wxDVPointArrayDataSet();
 	
 	virtual wxRealPoint At(size_t i) const;
 	virtual size_t Length() const;
