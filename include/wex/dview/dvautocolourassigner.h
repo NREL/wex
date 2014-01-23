@@ -20,7 +20,12 @@ public:
 	void ResetColourList();
 	void DeAssignAll();	
 private:
-	std::vector<wxColour> mAvailableColours;
+
+	struct ColourCounter
+	{
+		wxColour colour;
+		int useCount;
+	};
 
 	struct ColourPair
 	{
@@ -28,6 +33,7 @@ private:
 		wxColour colour;
 	};
 
+	std::vector<ColourCounter> mAvailableColours;
 	std::vector<ColourPair> mAssignedColours;
 };
 
