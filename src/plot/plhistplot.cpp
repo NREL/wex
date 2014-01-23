@@ -127,7 +127,6 @@ void wxPLHistogramPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 {
 	if ( m_histData.size() > 0 )
 	{
-
 		wxCoord xMin = map.ToDevice( wxRealPoint(m_dataMin, 0) ).x;
 		wxCoord xMax = map.ToDevice( wxRealPoint(m_dataMax, 0) ).x;
 

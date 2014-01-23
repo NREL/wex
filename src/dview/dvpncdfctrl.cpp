@@ -259,7 +259,7 @@ void wxDVPnCdfCtrl::RebuildPlotSurface(double maxYPercent)
 	m_plotSurface->GetXAxis1()->SetLabel( label );
 }
 
-void wxDVPnCdfCtrl::ChangePlotDataTo(wxDVTimeSeriesDataSet* d)
+void wxDVPnCdfCtrl::ChangePlotDataTo(wxDVTimeSeriesDataSet* d, bool forceDataRefresh)
 {
 	if (d)
 	{
@@ -300,8 +300,11 @@ void wxDVPnCdfCtrl::ChangePlotDataTo(wxDVTimeSeriesDataSet* d)
 	else
 	{
 		// Read Cdf Data (requires sort) if not already sorted.
-		if (m_cdfPlotData[index]->size() == 0)
+		if (m_cdfPlotData[index]->size() == 0 || forceDataRefresh)
+		{
+			if(forceDataRefresh) { m_cdfPlotData[index]->clear(); }
 			ReadCdfFrom(*d, m_cdfPlotData[index]);
+		}
 
 		m_cdfPlot->SetData( *m_cdfPlotData[index] );
 		m_cdfPlot->SetLabel(d->GetSeriesTitle() + " " + _("Percentile"));
@@ -322,15 +325,19 @@ void wxDVPnCdfCtrl::ReadCdfFrom(wxDVTimeSeriesDataSet& d, std::vector<wxRealPoin
 	wxBusyInfo wait("Please wait, calculating CDF...");
 
 	std::vector<double> sortedValues;
-	sortedValues.reserve(d.Length());
 
-	for(size_t i=0; i<d.Length(); i++)
-		sortedValues.push_back(d.At(i).y);
+	for(size_t i = 0; i < d.Length(); i++)
+	{
+		if(!m_cdfPlot->GetIgnoreZeros() || d.At(i).y != 0.0) { sortedValues.push_back(d.At(i).y); }
+	}
 
-	std::sort( sortedValues.begin(), sortedValues.end() );
+	if(sortedValues.size() > 0)
+	{
+		std::sort( sortedValues.begin(), sortedValues.end() );
 
-	double dataMin = sortedValues[0];
-	double dataMax = sortedValues[sortedValues.size()-1];
+		double dataMin = sortedValues[0];
+		double dataMax = sortedValues[sortedValues.size()-1];
+	}
 
 	cdfArray->reserve( sortedValues.size() );
 	for (int i=0; i < sortedValues.size(); i++)
@@ -373,7 +380,7 @@ void wxDVPnCdfCtrl::OnDataSelection(wxCommandEvent& e)
 
 	if ( m_selectedDataSetIndex < 0 ) return;
 
-	ChangePlotDataTo(m_dataSets[m_selectedDataSetIndex]);
+	ChangePlotDataTo(m_dataSets[m_selectedDataSetIndex], true);
 	UpdateYAxisLabel();
 	InvalidatePlot();
 }
@@ -438,8 +445,16 @@ void wxDVPnCdfCtrl::OnNormalizeChoice(wxCommandEvent& e)
 
 void wxDVPnCdfCtrl::OnShowZerosClick(wxCommandEvent& e)
 {
-	m_pdfPlot->SetIgnoreZeros(!m_pdfPlot->GetIgnoreZeros());
-	m_hideZeros->SetValue(m_pdfPlot->GetIgnoreZeros());
+	bool ignoreZeros = m_hideZeros->GetValue();
+	int index = -1;
+
+	m_pdfPlot->SetIgnoreZeros(ignoreZeros);
+	m_cdfPlot->SetIgnoreZeros(ignoreZeros);
+
+	m_cdfPlotData[m_selectedDataSetIndex]->clear();
+	ReadCdfFrom(*m_dataSets[m_selectedDataSetIndex], m_cdfPlotData[m_selectedDataSetIndex]);
+	m_cdfPlot->SetData( *m_cdfPlotData[m_selectedDataSetIndex] );
+
 	m_plotSurface->GetYAxis1()->SetWorldMax( m_pdfPlot->GetNiceYMax() );
 	m_maxTextBox->SetValue(wxString::Format("%lg", m_pdfPlot->GetNiceYMax()));
 	InvalidatePlot();

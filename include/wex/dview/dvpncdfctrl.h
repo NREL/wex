@@ -40,7 +40,7 @@ public:
 	void SetYMax(double max);
 
 	void ReadCdfFrom( wxDVTimeSeriesDataSet& d, std::vector<wxRealPoint>* cdfArray );
-	void ChangePlotDataTo( wxDVTimeSeriesDataSet* d );
+	void ChangePlotDataTo( wxDVTimeSeriesDataSet* d, bool forceDataRefresh = false );
 	void RebuildPlotSurface( double maxYPercent );
 
 	// Event Handlers
