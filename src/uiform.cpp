@@ -761,6 +761,7 @@ wxUIProperty::wxUIProperty( const wxUIProperty &copy )
   : m_type( copy.m_type ),
 	m_pReference( copy.m_pReference ),
 	m_doubleVal( copy.m_doubleVal ),
+	m_boolVal( copy.m_boolVal ),
 	m_intVal( copy.m_intVal ),
 	m_colour( copy.m_colour ),
 	m_string( copy.m_string ),
@@ -1157,14 +1158,7 @@ bool wxUIObject::Copy( wxUIObject *rhs )
 {
 	DeleteProperties();
 	for( size_t i=0;i<rhs->m_properties.size();i++ )
-	{
-		propdata x;
-		x.name = rhs->m_properties[i].name;
-		x.lowered = rhs->m_properties[i].lowered;
-		x.prop = new wxUIProperty( *rhs->m_properties[i].prop );
-		x.prop->AddUpdateInterface( x.name, this );
-		m_properties.push_back( x );
-	}
+		AddProperty( rhs->m_properties[i].name, new wxUIProperty( *(rhs->m_properties[i].prop) ) );
 
 	return true;
 }

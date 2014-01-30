@@ -318,21 +318,34 @@ public:
 
 		frm->SetSizer( sizer );
 		frm->Show();
-
-
+		
+		*/
+		
+		wxUIObjectTypeProvider::RegisterBuiltinTypes();
+		wxUIFormData *form = new wxUIFormData;
 		wxFrame *frm = new wxFrame( 0, wxID_ANY, "Form Editor", wxDefaultPosition, wxSize(900, 600) );
-		new wxUIEditorWindow( frm, wxID_ANY );
+		wxUIFormDesigner *fd = new wxUIFormDesigner( frm, wxID_ANY );
+
+		wxUIPropertyEditor *pe = new wxUIPropertyEditor(frm, wxID_ANY );
+		wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
+		sizer->Add( pe, 1, wxALL|wxEXPAND, 0 );
+		sizer->Add( fd, 5, wxALL|wxEXPAND, 0 );
+		frm->SetSizer(sizer);
+
+		fd->SetFormData( form );
+		fd->SetPropertyEditor( pe );
 		frm->Show();
 
 		
-		wxUIObjectTypeProvider::RegisterBuiltinTypes();
+
+		
+	/*
 		wxChar sep = ',';
 		bool use_thousep = wxNumberFormatter::GetThousandsSeparatorIfUsed(&sep);
 		wxMessageBox( m_locale.GetLocale() + "\n" + wxString::Format( "thousep? %d sep=%c\n\n", use_thousep ? 1:0, (char)sep)
 			+ wxNumberFormatter::ToString( 12490589.02, 2, wxNumberFormatter::Style_WithThousandsSep ) );
 
 			
-		*/
 
 		
 		
@@ -340,7 +353,7 @@ public:
 		
 		wxSchedCtrl *sched = new wxSchedCtrl( top, wxID_ANY );
 		sched->SetupTOUGrid();
-/*
+
 		wxGrid *grid = new wxGrid( top, wxID_ANY );
 		
 		wxCSVData csv;
@@ -360,7 +373,6 @@ public:
 					grid->SetCellValue( r, c, csv(r,c) );
 		}
 */
-		top->Show();
 		
 		return true;
 	}
