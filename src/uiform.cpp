@@ -757,11 +757,18 @@ wxUIProperty::wxUIProperty()
 	Init();
 }
 
-wxUIProperty::wxUIProperty( wxUIProperty *ref )
+wxUIProperty::wxUIProperty( const wxUIProperty &copy )
+  : m_type( copy.m_type ),
+	m_pReference( copy.m_pReference ),
+	m_doubleVal( copy.m_doubleVal ),
+	m_intVal( copy.m_intVal ),
+	m_colour( copy.m_colour ),
+	m_string( copy.m_string ),
+	m_image( copy.m_image ),
+	m_strList( copy.m_strList ),
+	m_namedOptions( copy.m_namedOptions )
 {
-	Init();
-	m_type = INVALID;
-	m_pReference = ref;
+	// Do not copy over the update interface list
 }
 
 wxUIProperty::wxUIProperty( double dp )

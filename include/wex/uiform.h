@@ -21,7 +21,7 @@ class wxUIProperty
 {
 public:
 	explicit wxUIProperty();
-	explicit wxUIProperty( wxUIProperty *ref );
+	explicit wxUIProperty( const wxUIProperty &copy );
 	explicit wxUIProperty( double d );
 	explicit wxUIProperty( int i );
 	explicit wxUIProperty( int i, const wxArrayString &named_options );
