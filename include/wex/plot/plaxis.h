@@ -36,10 +36,10 @@ public:
 
 	// get & set axis properties
 
-	void SetWorld( double min, double max ) { m_min = min; m_max = max; }
+	virtual void SetWorld( double min, double max );
+	virtual void SetWorldMin( double min );
+	virtual void SetWorldMax( double max );
 	void GetWorld( double *min, double *max ) { if (min) *min = m_min; if (max) *max = m_max; }
-	void SetWorldMin( double min ) { m_min = min; }
-	void SetWorldMax( double max ) { m_max = max; }
 	double GetWorldMin() { return m_min; }
 	double GetWorldMax() { return m_max; }
 	double GetWorldLength() { return m_max - m_min; }
@@ -57,7 +57,7 @@ public:
 	bool IsLabelVisible() { return m_showLabel; }
 	bool IsTickTextVisible() { return m_showTickText; }
 	
-	void ExtendBound( wxPLAxis *a );
+	virtual void ExtendBound( wxPLAxis *a );
 
 protected:
 	void Init();
@@ -125,6 +125,10 @@ public:
 	virtual void GetAxisTicks( wxCoord phys_min, wxCoord phys_max, std::vector<TickData> &list );
 	virtual wxCoord WorldToPhysical( double coord, wxCoord phys_min, wxCoord phys_max );
 	virtual double PhysicalToWorld( wxCoord p, wxCoord phys_min, wxCoord phys_max );
+
+	virtual void SetWorld( double min, double max );
+	virtual void SetWorldMin( double min );
+	virtual void ExtendBound( wxPLAxis *a );
 
 protected:
 	virtual void CalcTicksFirstPass( std::vector<double> &largeticks, std::vector<double> &smallticks) ;

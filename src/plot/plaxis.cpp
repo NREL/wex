@@ -50,6 +50,22 @@ wxPLAxis::~wxPLAxis()
 	/* nothing to do here */
 }
 
+void wxPLAxis::SetWorld( double min, double max )
+{
+	m_min = min;
+	m_max = max;
+}
+
+void wxPLAxis::SetWorldMin( double min )
+{
+	m_min = min;
+}
+
+void wxPLAxis::SetWorldMax( double max )
+{
+	m_max = max;
+}
+
 wxCoord wxPLAxis::WorldToPhysical( double coord, wxCoord phys_min, wxCoord phys_max )
 {
 	wxCoord pmin = phys_min;
@@ -407,6 +423,25 @@ wxPLLogAxis::wxPLLogAxis( const wxPLLogAxis &rhs )
 	/* nothing to configure here */
 }
 
+
+void wxPLLogAxis::SetWorld( double min, double max )
+{
+	wxPLAxis::SetWorld( min, max );
+	if ( m_min <= 0 ) m_min = 0.000001;
+}
+
+void wxPLLogAxis::SetWorldMin( double min )
+{
+	wxPLAxis::SetWorldMin( min );
+	if ( m_min <= 0 ) m_min = 0.000001;
+}
+
+void wxPLLogAxis::ExtendBound( wxPLAxis *a )
+{
+	wxPLAxis::ExtendBound( a );
+	if ( m_min <= 0 ) m_min = 0.000001;
+}
+
 wxPLAxis *wxPLLogAxis::Duplicate()
 {
 	return new wxPLLogAxis( *this );
@@ -579,7 +614,8 @@ void wxPLLogAxis::CalcTicksSecondPass( std::vector<double> &largeticks, std::vec
 	
 double wxPLLogAxis::DetermineTickSpacing()
 {
-	double mag_range = (double)( floor(log10(m_max)) - floor(log10(m_min))+1.0 );
+	double mm = m_min > 0 ? m_min : 0.00001;
+	double mag_range = (double)( floor(log10(m_max)) - floor(log10(mm))+1.0 );
 
 	if ( mag_range > 0.0 )
 	{

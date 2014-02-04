@@ -320,7 +320,9 @@ public:
 		frm->Show();
 		
 		*/
-		
+
+
+/*		
 		wxUIObjectTypeProvider::RegisterBuiltinTypes();
 		wxUIFormData *form = new wxUIFormData;
 		wxFrame *frm = new wxFrame( 0, wxID_ANY, "Form Editor", wxDefaultPosition, wxSize(900, 600) );
@@ -334,10 +336,10 @@ public:
 
 		fd->SetFormData( form );
 		fd->SetPropertyEditor( pe );
-		frm->Show();
+		frm->Show();*/
 
 		
-
+		TestPLPlot( 0 );
 		
 	/*
 		wxChar sep = ',';
