@@ -2678,7 +2678,18 @@ void wxUIFormEditor::OnRightDown(wxMouseEvent &evt)
 	m_popupX = evt.GetX();
 	m_popupY = evt.GetY();
 
+
 	wxMenu popup;	
+	
+	for( size_t i=0; i<m_selected.size();i++ )
+	{
+		wxMenuItem *it = popup.Append( wxID_ANY, "[ " + m_selected[i]->GetTypeName() + ": " + m_selected[i]->GetName() + " ]" );
+		it->Enable( false );
+	}
+
+	if ( m_selected.size() > 0 )
+		popup.AppendSeparator();
+
 	std::vector<wxUIObject*> ctrls = wxUIObjectTypeProvider::GetTypes();
 	for ( size_t i=0;i<ctrls.size();i++ )
 		popup.Append( ID_CREATE_CONTROL+i, "Create '" + ctrls[i]->GetTypeName() + "'");

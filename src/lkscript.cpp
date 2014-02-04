@@ -240,7 +240,7 @@ void fcall_plot( lk::invoke_t &cxt )
 
 void fcall_plotopt( lk::invoke_t &cxt )
 {
-	LK_DOC("plotopt", "Modifies the current plot properties like title, coarse, fine, legend, legendpos, wpos, wsize", "(table:options):void");
+	LK_DOC("plotopt", "Modifies the current plot properties like title, coarse, fine, legend, legendpos, wpos, wsize, autoscale", "(table:options):void");
 	wxPLPlotCtrl *plot = s_curPlot;
 	if (!plot) return;
 
@@ -302,6 +302,12 @@ void fcall_plotopt( lk::invoke_t &cxt )
 				s_curPlotWin->SetClientSize( wxSize(w,h) );
 
 		}
+	}
+
+	if ( lk::vardata_t *arg = cxt.arg(0).lookup("autoscale") )
+	{
+		if ( arg->as_boolean() )
+			plot->RescaleAxes();
 	}
 
 	if (mod)
@@ -406,7 +412,7 @@ void fcall_axis( lk::invoke_t &cxt )
 		axis->ShowLabel( arg->as_boolean() );
 		mod = true;
 	}
-
+	
 	if (mod) plot->Refresh();
 }
 
