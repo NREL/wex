@@ -54,7 +54,7 @@ static void CreatePlot( wxPLPlotCtrl *plot, double *x, double *y, int len, int t
 	p->SetXDataLabel( xlab );
 	p->SetYDataLabel( ylab );
 	plot->AddPlot( p, (wxPLPlotCtrl::AxisPos)xap, (wxPLPlotCtrl::AxisPos) yap );
-	plot->RescaleAxes();
+	//plot->RescaleAxes();
 	plot->Refresh();
 }
 
@@ -303,13 +303,7 @@ void fcall_plotopt( lk::invoke_t &cxt )
 
 		}
 	}
-
-	if ( lk::vardata_t *arg = cxt.arg(0).lookup("autoscale") )
-	{
-		if ( arg->as_boolean() )
-			plot->RescaleAxes();
-	}
-
+	
 	if (mod)
 		plot->Refresh();
 }
