@@ -37,6 +37,7 @@
     <ClInclude Include="..\include\wex\dview\dvtimeseriesdataset.h" />
     <ClInclude Include="..\include\wex\extgrid.h" />
     <ClInclude Include="..\include\wex\exttext.h" />
+    <ClInclude Include="..\include\wex\exttree.h" />
     <ClInclude Include="..\include\wex\jsonreader.h" />
     <ClInclude Include="..\include\wex\jsonval.h" />
     <ClInclude Include="..\include\wex\jsonwriter.h" />
@@ -137,6 +138,7 @@
     <ClCompile Include="..\src\dview\dvtimeseriesdataset.cpp" />
     <ClCompile Include="..\src\extgrid.cpp" />
     <ClCompile Include="..\src\exttext.cpp" />
+    <ClCompile Include="..\src\exttree.cpp" />
     <ClCompile Include="..\src\jsonreader.cpp" />
     <ClCompile Include="..\src\jsonval.cpp" />
     <ClCompile Include="..\src\jsonwriter.cpp" />

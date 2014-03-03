@@ -14,6 +14,7 @@ TARGET = ../$(LIBNAME).a
 	
 OBJECTS = \
 	csv.o \
+	exttree.o \
 	label.o \
 	exttext.o \
 	radiochoice.o \
