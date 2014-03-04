@@ -14,7 +14,7 @@
 #include <wex/exttext.h>
 #include <wex/utils.h>
 #include <wex/uiform.h>
-#include <wex/sched.h>
+#include <wex/diurnal.h>
 
 static wxColour g_uiSelectColor( 135, 135, 135 );
 
@@ -737,7 +737,7 @@ public:
 	virtual bool IsNativeObject() { return true; }
 	virtual bool DrawDottedOutline() { return false; }
 	virtual wxWindow *CreateNative( wxWindow *parent ) {
-		wxSchedCtrl *sc = new wxSchedCtrl( parent, wxID_ANY );
+		wxDiurnalPeriodCtrl *sc = new wxDiurnalPeriodCtrl( parent, wxID_ANY );
 		sc->SetupTOUGrid();
 		return AssignNative( sc );
 	}	
@@ -751,6 +751,51 @@ public:
 		dc.DrawText( "Time of use schedule", geom.x + 2, geom.y + 2 );
 	}
 };
+
+
+class wxUIDiurnalPeriodObject : public wxUIObject
+{
+public:
+	wxUIDiurnalPeriodObject() {
+		AddProperty("TabOrder", new wxUIProperty((int)-1));
+		AddProperty("Schedule", new wxUIProperty(wxString("")));
+		AddProperty("Max", new wxUIProperty((int)9));
+		AddProperty("Min", new wxUIProperty((int)1));
+
+		Property("Width").Set(444);
+		Property("Height").Set(246);
+	}
+	virtual wxString GetTypeName() { return "DiurnalPeriod"; }
+	virtual wxUIObject *Duplicate() { wxUIObject *o = new wxUIDiurnalPeriodObject; o->Copy(this); return o; }
+	virtual bool IsNativeObject() { return true; }
+	virtual wxWindow *CreateNative(wxWindow *parent) {
+		wxDiurnalPeriodCtrl *dp = new wxDiurnalPeriodCtrl(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+		dp->SetupTOUGrid();
+		dp->Schedule(Property("Schedule").GetString());
+		dp->SetMinMax(Property("Min").GetInteger(),Property("Max").GetInteger());
+		return AssignNative(dp);
+	}
+	virtual void OnPropertyChanged(const wxString &id, wxUIProperty *p)
+	{
+		if (wxDiurnalPeriodCtrl *dp = GetNative<wxDiurnalPeriodCtrl>())
+		{
+			if (id == "Schedule") dp->Schedule(p->GetString());
+			if (id == "Min") dp->SetMin(p->GetInteger());
+			if (id == "Max") dp->SetMax(p->GetInteger());
+		}
+	}
+	virtual void Draw(wxWindow *win, wxDC &dc, const wxRect &geom)
+	{
+		dc.SetPen(*wxBLACK_PEN);
+		dc.SetBrush(*wxLIGHT_GREY_BRUSH);
+		dc.DrawRectangle(geom);
+		dc.SetFont(*wxNORMAL_FONT);
+		dc.SetTextForeground(*wxBLUE);
+		dc.DrawText("Diurnal Period", geom.x + 2, geom.y + 2);
+	}
+
+};
+
 
 wxUIProperty::wxUIProperty()
 {
@@ -1688,8 +1733,8 @@ void wxUIObjectTypeProvider::RegisterBuiltinTypes()
 	wxUIObjectTypeProvider::Register( new wxUIImageObject );
 	wxUIObjectTypeProvider::Register( new wxUISliderObject );
 	wxUIObjectTypeProvider::Register( new wxUIHyperlinkObject );
+	wxUIObjectTypeProvider::Register( new wxUIDiurnalPeriodObject );
 	wxUIObjectTypeProvider::Register( new wxUITOUScheduleObject );
-
 }
 
 wxUIFormData::wxUIFormData()

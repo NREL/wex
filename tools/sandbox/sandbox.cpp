@@ -40,7 +40,7 @@ public:
 
 #include "wex/codeedit.h"
 #include "wex/lkscript.h"
-#include "wex/sched.h"
+#include "wex/diurnal.h"
 #include "wex/utils.h"
 
 #include "wex/metro.h"
@@ -312,7 +312,7 @@ public:
 		nb->AddPage( new wxPanel( nb ), "Scripting" );
 		sizer->Add( nb, 1, wxALL|wxEXPAND, 0 );
 
-		//wxSchedCtrl *sch = new wxSchedCtrl( frm, wxID_ANY );
+		//wxDiurnalPeriodCtrl *sch = new wxDiurnalPeriodCtrl( frm, wxID_ANY );
 		//sch->SetupTOUGrid();		
 		//sizer->Add( sch, 1, wxALL|wxEXPAND, 5 );
 
@@ -353,7 +353,7 @@ public:
 		
 		wxFrame *top = new wxFrame(NULL, wxID_ANY, "CSV Read Test", wxDefaultPosition, wxSize(500,500));
 		
-		wxSchedCtrl *sched = new wxSchedCtrl( top, wxID_ANY );
+		wxDiurnalPeriodCtrl *sched = new wxDiurnalPeriodCtrl( top, wxID_ANY );
 		sched->SetupTOUGrid();
 
 		wxGrid *grid = new wxGrid( top, wxID_ANY );

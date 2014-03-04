@@ -20,7 +20,7 @@ OBJECTS = \
 	radiochoice.o \
 	metro.o \
 	uiform.o \
-	sched.o \
+	diurnal.o \
 	utils.o \
 	lkscript.o \
 	codeedit.o \

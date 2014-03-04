@@ -1,60 +1,84 @@
-#ifndef __schedctrl_h
-#define __schedctrl_h
+#ifndef __diurnal_h
+#define __diurnal_h
 
 #include <vector>
 #include <wx/window.h>
 
+
+
+// Diurnal Period control from sched control in wex
+
+
+
 BEGIN_DECLARE_EVENT_TYPES()
-	DECLARE_EVENT_TYPE( wxEVT_SCHEDCTRL_CHANGE, 0)
+DECLARE_EVENT_TYPE(wxEVT_DIURNALPERIODCTRL_CHANGE, 0)
 END_DECLARE_EVENT_TYPES()
 
-#define EVT_SCHEDCTRL(id, func) EVT_COMMAND(id, wxEVT_SCHEDCTRL_CHANGE, func)
+#define EVT_DIURNALPERIODCTRL(id, func) EVT_COMMAND(id, wxEVT_DIURNALPERIODCTRL_CHANGE, func)
 
-class wxSchedCtrl : public wxWindow
+class wxDiurnalPeriodCtrl : public wxWindow
 {
 public:
-	wxSchedCtrl(wxWindow *parent, int id, const wxPoint &pos = wxDefaultPosition, const wxSize &sz = wxDefaultSize);
-	virtual ~wxSchedCtrl();
+	wxDiurnalPeriodCtrl(wxWindow *parent, int id, const wxPoint &pos = wxDefaultPosition, const wxSize &sz = wxDefaultSize);
+	virtual ~wxDiurnalPeriodCtrl();
 
 	void SetupTOUGrid();
 	void SetupDefaultColours();
 
 	void AddColour(const wxColour &c);
 	bool GetColour(int i, wxColour &c);
-	void SetMinMax(int min, int max, bool clamp=false);
-	void Set(int r, int c, int val);
+	void SetMinMax(int min, int max, bool clamp = false);
+	void Set(size_t r, size_t c, int val);
 	void Set(int val);
-	int Get(int r, int c) const;
-	void SetGrid(int nr, int nc);
-	int NRows() const;
-	int NCols() const;
+	int Get(size_t r, size_t c) const;
 	void AddRowLabel(const wxString &s);
 	void AddColLabel(const wxString &s);
 	void ClearLabels();
 	void ClearRowLabels();
 	void ClearColLabels();
+	void SetData( float *data, size_t nr, size_t nc );
+	float *GetData( size_t *nr, size_t *nc );
+
 	bool Schedule(const wxString &sched);
 	wxString Schedule() const;
+
+	void SetMin(int min); 
+	int GetMin();
+
+	void SetMax(int max); 
+	int GetMax();
+	
+	static int ScheduleCharToInt(char c);
+	static char ScheduleIntToChar(int d);
 	
 	virtual wxSize DoGetBestSize() const;
-
-	static bool TranslateSchedule( int tod[8760],
-		const char *weekday, const char *weekend, 
-		int min_val=0, int max_val=9 );
 
 	void AutosizeHeaders();
 private:
 
-	void OnErase( wxEraseEvent & );
+
+	void OnErase(wxEraseEvent &);
 	void OnPaint(wxPaintEvent &evt);
 	void OnResize(wxSizeEvent &evt);
+	void OnKeyDown(wxKeyEvent &evt);
 	void OnChar(wxKeyEvent &evt);
 	void OnMouseDown(wxMouseEvent &evt);
 	void OnMouseUp(wxMouseEvent &evt);
 	void OnMouseMove(wxMouseEvent &evt);
 	void OnLostFocus(wxFocusEvent &evt);
 
-	std::vector<int> m_data;
+#ifdef __WXMSW__
+	virtual bool MSWShouldPreProcessMessage(WXMSG* msg);
+#endif
+
+
+	void Copy();
+	void Paste();
+
+	static const size_t m_nrows = 12;
+	static const size_t m_ncols = 24;
+
+	float m_data[m_nrows*m_ncols];
 	int m_cols;
 
 	bool m_hasFocus, m_mouseDown;

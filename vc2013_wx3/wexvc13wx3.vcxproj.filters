@@ -321,7 +321,7 @@
     <ClInclude Include="..\include\wex\plot\plbarplot.h">
       <Filter>plot\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\wex\sched.h">
+    <ClInclude Include="..\include\wex\diurnal.h">
       <Filter>wex\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\include\wex\metro.h">
@@ -569,7 +569,7 @@
     <ClCompile Include="..\src\plot\plbarplot.cpp">
       <Filter>plot\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\sched.cpp">
+    <ClCompile Include="..\src\diurnal.cpp">
       <Filter>wex\Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\src\metro.cpp">
