@@ -857,3 +857,99 @@ void wxShowTextMessageDialog(const wxString &text, const wxString &title, wxWind
    if( parent ) dlg.CenterOnParent();
    dlg.ShowModal();  
 }
+
+
+int wxNDay[12] = {31,28,31,30,31,30,31,31,30,31,30,31};
+	
+/* returns month number 1..12 given 
+	time: hour index in year 0..8759 */
+int wxMonthOf(double time)
+{
+	if (time < 0) return 0;
+	if (time < 744) return 1;
+	if (time < 1416) return 2;
+	if (time < 2160) return 3;
+	if (time < 2880) return 4;
+	if (time < 3624) return 5;
+	if (time < 4344) return 6;
+	if (time < 5088) return 7;
+	if (time < 5832) return 8;
+	if (time < 6552) return 9;
+	if (time < 7296) return 10;
+	if (time < 8016) return 11;
+	if (time < 8760) return 12;
+	return 0;
+}
+	/* month: 1-12 time: hours, starting 0=jan 1st 12am, returns 1-nday*/
+int wxDayOfMonth(int month, double time)
+{
+	int daynum = ( ((int)(time/24.0)) + 1 );   // day goes 1-365
+	switch(month)
+	{
+	case 1: return  daynum;
+	case 2: return  daynum-31;
+	case 3: return  daynum-31-28;
+	case 4: return  daynum-31-28-31;
+	case 5: return  daynum-31-28-31-30;
+	case 6: return  daynum-31-28-31-30-31;
+	case 7: return  daynum-31-28-31-30-31-30;
+	case 8: return  daynum-31-28-31-30-31-30-31;
+	case 9: return  daynum-31-28-31-30-31-30-31-31;
+	case 10: return daynum-31-28-31-30-31-30-31-31-30;
+	case 11: return daynum-31-28-31-30-31-30-31-31-30-31;
+	case 12: return daynum-31-28-31-30-31-30-31-31-30-31-30; 
+	default: break;
+	}
+	return daynum;
+}
+
+/* converts 'time' (hours since jan 1st 12am, 0 index) to M(1..12), D(1..N), H(0..23), M(0..59) */
+void wxTimeToMDHM( double time, int *mo, int *dy, int *hr, int *min )
+{
+	*mo = wxMonthOf( time );
+	*dy = wxDayOfMonth( *mo, time );
+	*hr = (int)(((int)time)%24);
+
+	if ( min != 0 )
+	{
+		double fraction = time - ((long)time);
+		*min = (int)( fraction*60 );
+	}
+}
+
+/* converts M(1..12), D(1..N), H(0..23) M(0..59) to time in hours since jan 1st 12am, 0 index ) */
+double wxMDHMToTime( int mo, int dy, int hr, int min )
+{
+	// shift to zero index
+	mo--;
+	dy--;
+
+	int time = hr + dy*24;
+
+	for( int m=0;m<mo;m++ )
+		time += wxNDay[m]*24;
+
+	return time + min/60.0;
+}
+
+wxString wxFormatMDHM( int mo, int dy, int hr, int min, bool use_12_hr )
+{
+	static const char *months[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+	if ( mo < 1 ) mo = 1;
+	if ( mo > 12 ) mo = 12;
+
+	if ( use_12_hr )
+		return wxString::Format( "%s %d, %02d:%02d %s", months[mo-1], dy, 
+			 ( hr == 0 ? 12 : (hr > 12 ? hr-12 : hr) ),
+			 min,
+			 hr < 12 ? "am" : "pm" );
+	else
+		return wxString::Format( "%s %d, %d:%d", months[mo-1], dy, hr, min );
+}
+
+wxString wxFormatTime( double time, bool use_12_hr )
+{
+	int mo, dy, hr, min;
+	wxTimeToMDHM( time, &mo, &dy, &hr, &min );
+	return wxFormatMDHM( mo, dy, hr, min, use_12_hr );
+}

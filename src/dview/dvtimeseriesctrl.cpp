@@ -567,6 +567,10 @@ bool wxDVTimeSeriesCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 
 void wxDVTimeSeriesCtrl::RemoveAllDataSets( )
 {
+	ClearAllChannelSelections( wxPLPlotCtrl::PLOT_BOTTOM );
+	ClearAllChannelSelections( wxPLPlotCtrl::PLOT_TOP );
+
+	/*
 	//Remove plottables from plot surfaces
 	for (int i=0; i<m_selectedChannelIndices.size(); i++)
 	{
@@ -577,6 +581,7 @@ void wxDVTimeSeriesCtrl::RemoveAllDataSets( )
 	}
 	
 	Invalidate();
+	*/
 	
 	m_dataSelector->RemoveAll();
 
@@ -963,6 +968,7 @@ void wxDVTimeSeriesCtrl::AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPo
 	
 	wxPLPlotCtrl::AxisPos yap = wxPLPlotCtrl::Y_LEFT;
 	wxString units = m_plots[index]->GetDataSet()->GetUnits();
+
 		
 	wxString y1Units = NO_UNITS, y2Units = NO_UNITS;
 
@@ -980,8 +986,8 @@ void wxDVTimeSeriesCtrl::AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPo
 		yap = wxPLPlotCtrl::Y_LEFT;
 	else
 		yap = wxPLPlotCtrl::Y_RIGHT;
-
-	m_plotSurface->AddPlot( m_plots[index], wxPLPlotCtrl::X_BOTTOM, yap, pPos );
+	
+	m_plotSurface->AddPlot( m_plots[index], wxPLPlotCtrl::X_BOTTOM, yap, pPos, false );
 	m_plotSurface->GetAxis( yap, pPos )->SetLabel( units );
 		
 	//Calculate index from 0-3.  0,1 are top graph L,R axis.  2,3 are L,R axis on bottom graph.
