@@ -1,3 +1,4 @@
+
 #include <wx/clipbrd.h>
 #include <wx/dcbuffer.h>
 #include <wx/dcclient.h>
@@ -54,7 +55,6 @@ wxDiurnalPeriodCtrl::wxDiurnalPeriodCtrl(wxWindow *parent, int id, const wxPoint
 	m_max = 9; // can be set to higher value in SetMinMax
 	
 	SetupTOUGrid();
-	SetupColours();
 }
 
 wxDiurnalPeriodCtrl::~wxDiurnalPeriodCtrl()
