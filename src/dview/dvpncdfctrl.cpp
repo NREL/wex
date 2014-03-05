@@ -21,6 +21,7 @@ BEGIN_EVENT_TABLE(wxDVPnCdfCtrl, wxPanel)
 	EVT_CHOICE(wxID_NORMALIZE_CHOICE, wxDVPnCdfCtrl::OnNormalizeChoice)
 	EVT_COMBOBOX(wxID_BIN_COMBO, wxDVPnCdfCtrl::OnBinComboSelection)
 	EVT_TEXT_ENTER(wxID_BIN_COMBO, wxDVPnCdfCtrl::OnBinTextEnter)
+	EVT_CHECKBOX(wxID_ANY, wxDVPnCdfCtrl::OnShowZerosClick)
 END_EVENT_TABLE()
 
 wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos, 
@@ -44,11 +45,13 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos
 
 	m_dataSelector = new wxChoice(this, wxID_DATA_SELECTOR_CHOICE, wxDefaultPosition, wxDefaultSize, 0, NULL, wxCB_SORT);
 
-
+	m_hideZeros = new wxCheckBox(this, wxID_ANY, "Exclude Zero Values", wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
+	
 	wxBoxSizer *optionsSizer = new wxBoxSizer(wxHORIZONTAL);
 	optionsSizer->Add(m_dataSelector, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxALIGN_CENTER, 2);
 	optionsSizer->Add(new wxStaticText(this, wxID_ANY, wxT("  Y Max:")), 0, wxALIGN_CENTER|wxALL|wxALIGN_CENTER_VERTICAL, 2);
 	optionsSizer->Add(m_maxTextBox, 0, wxALL|wxALIGN_CENTER_VERTICAL, 2);
+	optionsSizer->Add(m_hideZeros, 0, wxALL|wxALIGN_CENTER_VERTICAL, 2);
 	optionsSizer->AddStretchSpacer();
 	
 	m_normalizeChoice = new wxChoice(this, wxID_NORMALIZE_CHOICE);
@@ -256,7 +259,7 @@ void wxDVPnCdfCtrl::RebuildPlotSurface(double maxYPercent)
 	m_plotSurface->GetXAxis1()->SetLabel( label );
 }
 
-void wxDVPnCdfCtrl::ChangePlotDataTo(wxDVTimeSeriesDataSet* d)
+void wxDVPnCdfCtrl::ChangePlotDataTo(wxDVTimeSeriesDataSet* d, bool forceDataRefresh)
 {
 	if (d)
 	{
@@ -297,8 +300,11 @@ void wxDVPnCdfCtrl::ChangePlotDataTo(wxDVTimeSeriesDataSet* d)
 	else
 	{
 		// Read Cdf Data (requires sort) if not already sorted.
-		if (m_cdfPlotData[index]->size() == 0)
+		if (m_cdfPlotData[index]->size() == 0 || forceDataRefresh)
+		{
+			if(forceDataRefresh) { m_cdfPlotData[index]->clear(); }
 			ReadCdfFrom(*d, m_cdfPlotData[index]);
+		}
 
 		m_cdfPlot->SetData( *m_cdfPlotData[index] );
 		m_cdfPlot->SetLabel(d->GetSeriesTitle() + " " + _("Percentile"));
@@ -319,15 +325,19 @@ void wxDVPnCdfCtrl::ReadCdfFrom(wxDVTimeSeriesDataSet& d, std::vector<wxRealPoin
 	wxBusyInfo wait("Please wait, calculating CDF...");
 
 	std::vector<double> sortedValues;
-	sortedValues.reserve(d.Length());
 
-	for(size_t i=0; i<d.Length(); i++)
-		sortedValues.push_back(d.At(i).y);
+	for(size_t i = 0; i < d.Length(); i++)
+	{
+		if(!m_cdfPlot->GetIgnoreZeros() || d.At(i).y != 0.0) { sortedValues.push_back(d.At(i).y); }
+	}
 
-	std::sort( sortedValues.begin(), sortedValues.end() );
+	if(sortedValues.size() > 0)
+	{
+		std::sort( sortedValues.begin(), sortedValues.end() );
 
-	double dataMin = sortedValues[0];
-	double dataMax = sortedValues[sortedValues.size()-1];
+		double dataMin = sortedValues[0];
+		double dataMax = sortedValues[sortedValues.size()-1];
+	}
 
 	cdfArray->reserve( sortedValues.size() );
 	for (int i=0; i < sortedValues.size(); i++)
@@ -370,7 +380,7 @@ void wxDVPnCdfCtrl::OnDataSelection(wxCommandEvent& e)
 
 	if ( m_selectedDataSetIndex < 0 ) return;
 
-	ChangePlotDataTo(m_dataSets[m_selectedDataSetIndex]);
+	ChangePlotDataTo(m_dataSets[m_selectedDataSetIndex], true);
 	UpdateYAxisLabel();
 	InvalidatePlot();
 }
@@ -428,6 +438,23 @@ void wxDVPnCdfCtrl::OnBinTextEnter(wxCommandEvent& e)
 void wxDVPnCdfCtrl::OnNormalizeChoice(wxCommandEvent& e)
 {
 	SetNormalizeType(wxPLHistogramPlot::NormalizeType(m_normalizeChoice->GetSelection()));
+	m_plotSurface->GetYAxis1()->SetWorldMax( m_pdfPlot->GetNiceYMax() );
+	m_maxTextBox->SetValue(wxString::Format("%lg", m_pdfPlot->GetNiceYMax()));
+	InvalidatePlot();
+}
+
+void wxDVPnCdfCtrl::OnShowZerosClick(wxCommandEvent& e)
+{
+	bool ignoreZeros = m_hideZeros->GetValue();
+	int index = -1;
+
+	m_pdfPlot->SetIgnoreZeros(ignoreZeros);
+	m_cdfPlot->SetIgnoreZeros(ignoreZeros);
+
+	m_cdfPlotData[m_selectedDataSetIndex]->clear();
+	ReadCdfFrom(*m_dataSets[m_selectedDataSetIndex], m_cdfPlotData[m_selectedDataSetIndex]);
+	m_cdfPlot->SetData( *m_cdfPlotData[m_selectedDataSetIndex] );
+
 	m_plotSurface->GetYAxis1()->SetWorldMax( m_pdfPlot->GetNiceYMax() );
 	m_maxTextBox->SetValue(wxString::Format("%lg", m_pdfPlot->GetNiceYMax()));
 	InvalidatePlot();

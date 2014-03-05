@@ -15,8 +15,6 @@
 #include <wx/statline.h>
 #include <wx/gdicmn.h>
 
-#include "wex/numeric.h"
-
 #include "wex/plot/pllineplot.h"
 
 #include "wex/icons/zoom_in.cpng"
@@ -26,182 +24,449 @@
 
 #include "wex/dview/dvselectionlist.h"
 #include "wex/dview/dvtimeseriesdataset.h"
-#include "wex/dview/dvplothelper.h"
 #include "wex/dview/dvtimeseriesctrl.h"
 
 static const wxString NO_UNITS("ThereAreNoUnitsForThisAxis.");
-
-class wxDVTimeSeriesSettingsDialog : public wxDialog
-{
-	wxCheckBox *mSyncCheck;
-	wxCheckBox *mAutoscaleCheck;
-	wxNumericCtrl *mTopYMaxCtrl, *mTopYMinCtrl, *mBottomYMaxCtrl, *mBottomYMinCtrl;
-	wxChoice *mLineStyleCombo;
-
-public:
-	wxDVTimeSeriesSettingsDialog( wxWindow *parent, const wxString &title )
-		: wxDialog( parent, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxRESIZE_BORDER|wxDEFAULT_DIALOG_STYLE)
-	{
-		
-		mSyncCheck = new wxCheckBox(this, wxID_ANY, "Synchronize view with heat map" );
-		
-		wxArrayString choices;
-		choices.Add( "Line graph");
-		choices.Add( "Stepped line graph" );
-		mLineStyleCombo = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, choices);
-				
-		mAutoscaleCheck = new wxCheckBox(this, wxID_ANY, "Autoscale y1-axis");
-		
-		wxFlexGridSizer *yBoundSizer = new wxFlexGridSizer(2, 2, 0);
-		yBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Top Y Min:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
-		mTopYMinCtrl = new wxNumericCtrl(this);
-		yBoundSizer->Add(mTopYMinCtrl, 0, wxLEFT|wxRIGHT, 2);
-		yBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Top Y Max:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
-		mTopYMaxCtrl = new wxNumericCtrl(this);
-		yBoundSizer->Add(mTopYMaxCtrl, 0, wxLEFT|wxRIGHT, 2);
-		
-		yBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Bottom Y Min:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
-		mBottomYMinCtrl = new wxNumericCtrl(this);
-		yBoundSizer->Add(mBottomYMinCtrl, 0, wxLEFT|wxRIGHT|wxBOTTOM, 2);
-		yBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Bottom Y Max:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
-		mBottomYMaxCtrl = new wxNumericCtrl(this);
-		yBoundSizer->Add(mBottomYMaxCtrl, 0, wxLEFT|wxRIGHT|wxBOTTOM, 2);
-		
-		wxBoxSizer *boxmain = new wxBoxSizer(wxVERTICAL);
-		boxmain->Add( mSyncCheck, 0, wxALL|wxEXPAND, 10 );
-		boxmain->Add( mLineStyleCombo, 0, wxALL|wxEXPAND, 10 );
-		boxmain->Add( new wxStaticLine( this ), 0, wxALL|wxEXPAND, 0 );
-		boxmain->Add( mAutoscaleCheck, 0, wxALL|wxEXPAND, 10 );
-		boxmain->Add( yBoundSizer, 1, wxALL|wxEXPAND, 10 );
-		boxmain->Add( new wxStaticLine( this ), 0, wxALL|wxEXPAND, 0 );
-		boxmain->Add( CreateButtonSizer( wxOK|wxCANCEL ), 0, wxALL|wxEXPAND, 20 );
-		SetSizer(boxmain);
-		Fit();
-	}
-
-	void SetYBounds( double y1min, double y1max, double y2min, double y2max )
-	{
-		mTopYMinCtrl->SetValue( y1min );
-		mTopYMaxCtrl->SetValue( y1max );
-		mBottomYMinCtrl->SetValue( y2min );
-		mBottomYMaxCtrl->SetValue( y2max );
-	}
-	void GetYBounds( double *y1min, double *y1max, double *y2min, double *y2max )
-	{
-		*y1min = mTopYMinCtrl->Value();
-		*y1max = mTopYMaxCtrl->Value();
-		*y2min = mBottomYMinCtrl->Value();
-		*y2max = mBottomYMaxCtrl->Value();
-
-	}
-
-	void SetLineStyle( int id ) { mLineStyleCombo->SetSelection(id); }
-	int GetLineStyle() { return mLineStyleCombo->GetSelection(); }
-
-	void SetSync( bool b ) { mSyncCheck->SetValue( b ); }
-	bool GetSync() { return mSyncCheck->GetValue(); }
-
-	void SetAutoscale( bool b ) { mAutoscaleCheck->SetValue( b ); }
-	bool GetAutoscale() { return mAutoscaleCheck->GetValue(); }
-};
-
+enum { ID_TopCheckbox = wxID_HIGHEST + 1, ID_BottomCheckbox, ID_StatCheckbox };
 
 class wxDVTimeSeriesPlot : public wxPLPlottable
 {
-public:
-	enum Style { NORMAL, STEPPED };
+	public:
+		enum Style { NORMAL, STEPPED };
 
-private:
-	wxDVTimeSeriesDataSet *m_data;
-	wxColour m_colour;
-	Style m_style;
-public:
+	private:
+		wxDVTimeSeriesDataSet *m_data;
+		wxColour m_colour;
+		Style m_style;
+		TimeSeriesType m_seriesType;
+		bool m_ownsDataset;
 
-
-	wxDVTimeSeriesPlot( wxDVTimeSeriesDataSet *ds )
-		: m_data(ds)
-	{
-		m_colour = *wxRED;
-		m_style = NORMAL;
-	}
-
-	void SetStyle( Style ss ) { m_style = ss; }
-	void SetColour( const wxColour &col ) { m_colour = col; }
-
-	virtual wxString GetXDataLabel() const 
-	{
-		return _("Hours since 00:00 Jan 1");
-	}
-
-	virtual wxString GetYDataLabel() const
-	{
-		wxString label = m_data->GetSeriesTitle();
-		if ( !m_data->GetUnits().IsEmpty() )
-			label += " (" + m_data->GetUnits() + ")";
-		return label;
-	}
-
-	virtual wxRealPoint At( size_t i ) const
-	{
-		return ( i < m_data->Length() )
-			? m_data->At(i) 
-			: wxRealPoint( std::numeric_limits<double>::quiet_NaN(),std::numeric_limits<double>::quiet_NaN() ); 
-	}
-
-	virtual size_t Len() const
-	{
-		return m_data->Length();
-	}
-
-	virtual void Draw( wxDC &dc, const wxPLDeviceMapping &map )
-	{
-		if ( !m_data || m_data->Length() < 2 ) return;
-
-		wxPoint start = map.ToDevice( At(0).x, At(0).y );
-
-		size_t len = m_data->Length();
-		wxRealPoint wmin = map.GetWorldMinimum();
-		wxRealPoint wmax = map.GetWorldMaximum();
-		std::vector< wxPoint > points;
-		points.reserve( len );
-		for ( size_t i = 0; i<len; i++ )
+	public:
+		wxDVTimeSeriesPlot( wxDVTimeSeriesDataSet *ds, TimeSeriesType seriesType, bool OwnsDataset = false )
+			: m_data(ds)
 		{
-			wxRealPoint rpt = m_data->At(i);
-			if ( rpt.x < wmin.x || rpt.x > wmax.x ) continue;
-			points.push_back( map.ToDevice( At(i) ) );
+			m_colour = *wxRED;
+			m_seriesType = seriesType;
+			m_style = seriesType == HOURLY_TIME_SERIES ? NORMAL : STEPPED;
+			m_ownsDataset = OwnsDataset;
 		}
 
-		if ( points.size() == 0 ) return;
-		
-		dc.SetPen( wxPen( m_colour, 2, wxPENSTYLE_SOLID ) );
-
-		if ( m_style == STEPPED )
+		~wxDVTimeSeriesPlot()
 		{
-			std::vector<wxPoint> drawpts( points.size() * 2 );
-
-			for (size_t i=0;i<points.size();i++)
+			if(m_ownsDataset)
 			{
-				if ( i > 0 ) drawpts[2*i].x = points[i-1].x;
-				else drawpts[2*i].x = points[i].x;
-				
-				drawpts[2*i].y = points[i].y;				
-				drawpts[2*i+1].x = points[i].x;
-				drawpts[2*i+1].y = points[i].y;
+				delete m_data;
+			}
+		}
+
+		void SetStyle( Style ss ) { m_style = ss; }
+		void SetColour( const wxColour &col ) { m_colour = col; }
+
+		virtual wxString GetXDataLabel() const 
+		{
+			return _("Hours since 00:00 Jan 1");
+		}
+
+		virtual wxString GetYDataLabel() const
+		{
+			wxString label = m_data->GetSeriesTitle();
+			if ( !m_data->GetUnits().IsEmpty() )
+				label += " (" + m_data->GetUnits() + ")";
+			return label;
+		}
+
+		virtual wxRealPoint At( size_t i ) const
+		{
+			return ( i < m_data->Length() )
+				? m_data->At(i) 
+				: wxRealPoint( std::numeric_limits<double>::quiet_NaN(),std::numeric_limits<double>::quiet_NaN() ); 
+		}
+
+		virtual size_t Len() const
+		{
+			return m_data->Length();
+		}
+
+		virtual void Draw( wxDC &dc, const wxPLDeviceMapping &map )
+		{
+			if ( !m_data || m_data->Length() < 2 ) return;
+
+			size_t len;
+			std::vector< wxPoint > points;
+			wxRealPoint rpt;
+			wxRealPoint rpt2;
+			double tempY;
+			wxRealPoint wmin = map.GetWorldMinimum();
+			wxRealPoint wmax = map.GetWorldMaximum();
+		
+			dc.SetPen( wxPen( m_colour, 2, wxPENSTYLE_SOLID ) );
+
+			if(m_style == NORMAL)
+			{
+				len = m_data->Length();
+				if(m_data->At(0).x < wmin.x) { len++; }
+				if(m_data->At(m_data->Length() - 1).x > wmax.x) { len++; }
+
+				points.reserve( len );
+
+				//If this is a line plot then add a point at the left edge of the graph if there isn't one there in the data
+				if(m_style == NORMAL && m_data->At(0).x < wmin.x)
+				{
+					for ( size_t i = 1; i < m_data->Length(); i++ )
+					{
+						rpt = m_data->At(i);
+						rpt2 = m_data->At(i - 1);
+						if ( rpt.x > wmin.x )
+						{
+							tempY = rpt2.y + ((rpt.y - rpt2.y) * (wmin.x - rpt2.x) / (rpt.x - rpt2.x));
+							points.push_back( map.ToDevice( wxRealPoint(wmin.x, tempY) ) );
+							break;
+						}
+					}
+				}
+
+				for ( size_t i = 0; i < m_data->Length(); i++ )
+				{
+					rpt = m_data->At(i);
+					if ( rpt.x < wmin.x || rpt.x > wmax.x ) continue;
+					points.push_back( map.ToDevice( m_data->At(i) ) );
+				}
+
+				//If this is a line plot then add a point at the right edge of the graph if there isn't one there in the data
+				if(m_style == NORMAL && m_data->At(m_data->Length() - 1).x > wmax.x)
+				{
+					for ( size_t i = m_data->Length() - 2; i >= 0; i-- )
+					{
+						rpt = m_data->At(i);
+						rpt2 = m_data->At(i + 1);
+						if ( rpt.x < wmax.x )
+						{
+							tempY = rpt.y + ((rpt2.y - rpt.y) * (wmax.x - rpt.x) / (rpt2.x - rpt.x));
+							points.push_back( map.ToDevice( wxRealPoint(wmax.x, tempY) ) );
+							break;
+						}
+					}
+				}
+			}
+			else
+			{
+				//For stepped graphs create an array twice as big as the original and replace each single x value with two x values, one with the prior y value and one with the current y value
+				len = m_data->Length() * 2;
+				points.reserve( len );
+				double timeStep = m_data->GetTimeStep();
+				double lowX;
+				double highX;
+				double priorY;
+				double nextY;
+
+				for (size_t i = 0; i < m_data->Length(); i++)
+				{
+					rpt = m_data->At(i);
+					lowX = GetPeriodLowerBoundary(rpt.x, timeStep);
+					highX = GetPeriodUpperBoundary(rpt.x, timeStep);
+
+					
+					if(lowX >= wmin.x && highX <= wmax.x)	//Draw points for the lower and upper X boundaries of the point's horizontal range for each range that fits in the boundaries of the plot
+					{
+						//If the prior point's lower X boundary is off the left edge of the plot then draw points for the left edge of the plot and the visible point's lower X boundary at the prior point's Y
+						if(i > 0 && GetPeriodLowerBoundary(m_data->At(i - 1).x, timeStep) < wmin.x)
+						{
+							priorY = m_data->At(i - 1).y;
+							points.push_back( map.ToDevice( wxRealPoint(wmin.x, priorY) ) );
+							points.push_back( map.ToDevice( wxRealPoint(lowX, priorY) ) );
+						}
+
+						points.push_back( map.ToDevice( wxRealPoint(lowX, rpt.y) ) );
+						points.push_back( map.ToDevice( wxRealPoint(highX, rpt.y) ) );
+
+						//If the next point's upper X boundary is off the right edge of the plot then draw points for the visible point's upper X boundary and the right edge of the plot at the next point's Y
+						if(i < m_data->Length() - 1 && GetPeriodUpperBoundary(m_data->At(i + 1).x, timeStep) > wmax.x)
+						{
+							nextY = m_data->At(i + 1).y;
+							points.push_back( map.ToDevice( wxRealPoint(highX, nextY) ) );
+							points.push_back( map.ToDevice( wxRealPoint(wmax.x, nextY) ) );
+							break;	//Any future points are outside the bounds of the graph
+						}
+					}
+					else if(lowX < wmin.x && highX > wmin.x && highX <= wmax.x)	//Draw points for the plot left edge and point's upper X boundary at the point's Y if the lower boundary (only) is off the plot's left edge
+					{
+						points.push_back( map.ToDevice( wxRealPoint(wmin.x, rpt.y) ) );
+						points.push_back( map.ToDevice( wxRealPoint(highX, rpt.y) ) );
+
+						//If the next point's upper X boundary is off the right edge of the plot then draw points for the visible point's upper X boundary and the right edge of the plot at the next point's Y
+						if(i < m_data->Length() - 1 && GetPeriodUpperBoundary(m_data->At(i + 1).x, timeStep) > wmax.x)
+						{
+							nextY = m_data->At(i + 1).y;
+							points.push_back( map.ToDevice( wxRealPoint(highX, nextY) ) );
+							points.push_back( map.ToDevice( wxRealPoint(wmax.x, nextY) ) );
+							break;	//Any future points are outside the bounds of the graph
+						}
+					}
+					else if(highX > wmax.x && lowX < wmax.x && lowX >= wmin.x)	//Draw points for the point's upper X boundary and the plot right edge at the point's Y if the upper boundary (only) is off the plot's right edge
+					{
+						//If the prior point's lower X boundary is off the left edge of the plot then draw points for the left edge of the plot and the visible point's lower X boundary at the prior point's Y
+						if(i > 0 && GetPeriodLowerBoundary(m_data->At(i - 1).x, timeStep) < wmin.x)
+						{
+							priorY = m_data->At(i - 1).y;
+							points.push_back( map.ToDevice( wxRealPoint(wmin.x, priorY) ) );
+							points.push_back( map.ToDevice( wxRealPoint(lowX, priorY) ) );
+						}
+
+						points.push_back( map.ToDevice( wxRealPoint(wmin.x, rpt.y) ) );
+						points.push_back( map.ToDevice( wxRealPoint(highX, rpt.y) ) );
+					}
+					else if(lowX < wmin.x && highX > wmax.x)	//Draw points for the plot's left and right edges and point's Y if the point's lower X boundary is off the plot's left edge and the upper X boundary is off the right edge
+					{
+						points.push_back( map.ToDevice( wxRealPoint(wmin.x, rpt.y) ) );
+						points.push_back( map.ToDevice( wxRealPoint(highX, rpt.y) ) );
+					}
+				}
 			}
 
-			dc.DrawLines( drawpts.size(), &drawpts[0] );
-		}
-		else			
+			if ( points.size() == 0 ) return;
+
 			dc.DrawLines( points.size(), &points[0] );
-	}
+		}
 
-	virtual void DrawInLegend( wxDC &dc, const wxRect &rct )
-	{
-		// nothing to do here
-	}
+		virtual void DrawInLegend( wxDC &dc, const wxRect &rct )
+		{
+			// nothing to do here
+		}
 
-	wxDVTimeSeriesDataSet *GetDataSet() const { return m_data; }
+		double GetPeriodLowerBoundary(double hourNumber, double timeStep)
+		{
+			if(m_seriesType == DAILY_TIME_SERIES)
+			{
+				hourNumber = hourNumber - fmod(hourNumber, 24);
+			}
+			else if (m_seriesType == MONTHLY_TIME_SERIES)
+			{
+				hourNumber = fmod(hourNumber, 8760);
+
+				if(hourNumber >= 0.0 && hourNumber < 744.0) { hourNumber = 0.0; }
+				else if(hourNumber >= 744.0 && hourNumber < 1416.0) { hourNumber = 744.0; }
+				else if(hourNumber >= 1416.0 && hourNumber < 2160.0) { hourNumber = 1416.0; }
+				else if(hourNumber >= 2160.0 && hourNumber < 2880.0) { hourNumber = 2160.0; }
+				else if(hourNumber >= 2880.0 && hourNumber < 3624.0) { hourNumber = 2880.0; }
+				else if(hourNumber >= 3624.0 && hourNumber < 4344.0) { hourNumber = 3624.0; }
+				else if(hourNumber >= 4344.0 && hourNumber < 5088.0) { hourNumber = 4344.0; }
+				else if(hourNumber >= 5088.0 && hourNumber < 5832.0) { hourNumber = 5088.0; }
+				else if(hourNumber >= 5832.0 && hourNumber < 6552.0) { hourNumber = 5832.0; }
+				else if(hourNumber >= 6552.0 && hourNumber < 7296.0) { hourNumber = 6552.0; }
+				else if(hourNumber >= 7296.0 && hourNumber < 8016.0) { hourNumber = 7296.0; }
+				else if(hourNumber >= 8016.0 && hourNumber < 8760.0) { hourNumber = 8016.0; }
+			}
+			else
+			{
+				hourNumber = hourNumber - fmod(hourNumber, timeStep);
+			}
+
+			return hourNumber;
+		}
+
+		double GetPeriodUpperBoundary(double hourNumber, double timeStep)
+		{
+			if(m_seriesType == DAILY_TIME_SERIES)
+			{
+				hourNumber = hourNumber - fmod(hourNumber, 24) + 24;
+			}
+			else if (m_seriesType == MONTHLY_TIME_SERIES)
+			{
+				hourNumber = fmod(hourNumber, 8760);
+
+				if(hourNumber >= 0.0 && hourNumber < 744.0) { hourNumber = 744.0; }
+				else if(hourNumber >= 744.0 && hourNumber < 1416.0) { hourNumber = 1416.0; }
+				else if(hourNumber >= 1416.0 && hourNumber < 2160.0) { hourNumber = 2160.0; }
+				else if(hourNumber >= 2160.0 && hourNumber < 2880.0) { hourNumber = 2880.0; }
+				else if(hourNumber >= 2880.0 && hourNumber < 3624.0) { hourNumber = 3624.0; }
+				else if(hourNumber >= 3624.0 && hourNumber < 4344.0) { hourNumber = 4344.0; }
+				else if(hourNumber >= 4344.0 && hourNumber < 5088.0) { hourNumber = 5088.0; }
+				else if(hourNumber >= 5088.0 && hourNumber < 5832.0) { hourNumber = 5832.0; }
+				else if(hourNumber >= 5832.0 && hourNumber < 6552.0) { hourNumber = 6552.0; }
+				else if(hourNumber >= 6552.0 && hourNumber < 7296.0) { hourNumber = 7296.0; }
+				else if(hourNumber >= 7296.0 && hourNumber < 8016.0) { hourNumber = 8016.0; }
+				else if(hourNumber >= 8016.0 && hourNumber < 8760.0) { hourNumber = 8760.0; }
+			}
+			else
+			{
+				hourNumber = hourNumber - fmod(hourNumber, timeStep) + timeStep;
+			}
+
+			return hourNumber;
+		}
+
+		virtual void UpdateSummaryData(bool divide)
+		{
+			double factor = 24.0;
+
+			for(size_t i = 0; i < m_data->Length(); i++)
+			{
+				if (m_seriesType == MONTHLY_TIME_SERIES)
+				{
+					factor = fmod(m_data->At(i).x, 8760);
+
+					if(factor >= 0.0 && factor < 744.0) { factor = 744.0; }
+					else if(factor >= 744.0 && factor < 1416.0) { factor = 672.0; }
+					else if(factor >= 1416.0 && factor < 2160.0) { factor = 744.0; }
+					else if(factor >= 2160.0 && factor < 2880.0) { factor = 720.0; }
+					else if(factor >= 2880.0 && factor < 3624.0) { factor = 744.0; }
+					else if(factor >= 3624.0 && factor < 4344.0) { factor = 720.0; }
+					else if(factor >= 4344.0 && factor < 5088.0) { factor = 744.0; }
+					else if(factor >= 5088.0 && factor < 5832.0) { factor = 744.0; }
+					else if(factor >= 5832.0 && factor < 6552.0) { factor = 720.0; }
+					else if(factor >= 6552.0 && factor < 7296.0) { factor = 744.0; }
+					else if(factor >= 7296.0 && factor < 8016.0) { factor = 720.0; }
+					else if(factor >= 8016.0 && factor < 8760.0) { factor = 744.0; }
+				}
+				else if (m_seriesType == DAILY_TIME_SERIES)
+				{
+					factor = 24.0;
+				}
+				else
+				{
+					factor = m_data->GetTimeStep();
+				}
+
+				if(divide)
+				{
+					m_data->SetDataValue(i, m_data->At(i).y / factor);
+				}
+				else
+				{
+					m_data->SetDataValue(i, m_data->At(i).y * factor);
+				}
+			}
+		}
+
+		wxDVTimeSeriesDataSet *GetDataSet() const { return m_data; }
 };
+
+BEGIN_EVENT_TABLE(wxDVTimeSeriesSettingsDialog, wxDialog)
+	EVT_CHECKBOX(ID_TopCheckbox, wxDVTimeSeriesSettingsDialog::OnClickTopHandler)
+	EVT_CHECKBOX(ID_BottomCheckbox, wxDVTimeSeriesSettingsDialog::OnClickBottomHandler)
+	EVT_CHECKBOX(ID_StatCheckbox, wxDVTimeSeriesSettingsDialog::OnClickStatHandler)
+END_EVENT_TABLE()
+
+wxDVTimeSeriesSettingsDialog::wxDVTimeSeriesSettingsDialog( wxWindow *parent, const wxString &title, bool isBottomGraphVisible )
+	: wxDialog( parent, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxRESIZE_BORDER|wxDEFAULT_DIALOG_STYLE)
+{
+	mSyncCheck = new wxCheckBox(this, wxID_ANY, "Synchronize view with heat map" );
+	mStatTypeCheck = new wxCheckBox(this, ID_StatCheckbox, "Use SUM (not AVG) for plots" );
+		
+	wxArrayString choices;
+	choices.Add( "Line graph");
+	choices.Add( "Stepped line graph" );
+	mLineStyleCombo = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, choices);
+				
+	mTopAutoscaleCheck = new wxCheckBox(this, ID_TopCheckbox, "Autoscale top y1-axis");
+	mBottomTopAutoscaleCheck = new wxCheckBox(this, ID_BottomCheckbox, "Autoscale bottom y1-axis");
+		
+	wxFlexGridSizer *yTopBoundSizer = new wxFlexGridSizer(2, 2, 0);
+	yTopBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Top Y Min:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
+	mTopYMinCtrl = new wxNumericCtrl(this);
+	yTopBoundSizer->Add(mTopYMinCtrl, 0, wxLEFT|wxRIGHT, 2);
+	yTopBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Top Y Max:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
+	mTopYMaxCtrl = new wxNumericCtrl(this);
+	yTopBoundSizer->Add(mTopYMaxCtrl, 0, wxLEFT|wxRIGHT, 2);
+		
+	wxFlexGridSizer *yBottomBoundSizer = new wxFlexGridSizer(2, 2, 0);
+	if(isBottomGraphVisible) { yBottomBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Bottom Y Min:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2); }
+	mBottomYMinCtrl = new wxNumericCtrl(this);
+	yBottomBoundSizer->Add(mBottomYMinCtrl, 0, wxLEFT|wxRIGHT|wxBOTTOM, 2);
+	if(isBottomGraphVisible) { yBottomBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Bottom Y Max:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2); }
+	mBottomYMaxCtrl = new wxNumericCtrl(this);
+	yBottomBoundSizer->Add(mBottomYMaxCtrl, 0, wxLEFT|wxRIGHT|wxBOTTOM, 2);
+		
+	wxBoxSizer *boxmain = new wxBoxSizer(wxVERTICAL);
+	boxmain->Add( mSyncCheck, 0, wxALL|wxEXPAND, 10 );
+	boxmain->Add( mStatTypeCheck, 0, wxALL|wxEXPAND, 10 );
+	boxmain->Add( mLineStyleCombo, 0, wxALL|wxEXPAND, 10 );
+	boxmain->Add( new wxStaticLine( this ), 0, wxALL|wxEXPAND, 0 );
+	boxmain->Add( mTopAutoscaleCheck, 0, wxALL|wxEXPAND, 10 );
+	boxmain->Add( yTopBoundSizer, 1, wxALL|wxEXPAND, 10 );
+	if(isBottomGraphVisible) { boxmain->Add( new wxStaticLine( this ), 0, wxALL|wxEXPAND, 0 ); }
+	boxmain->Add( mBottomTopAutoscaleCheck, 0, wxALL|wxEXPAND, 10 );
+	boxmain->Add( yBottomBoundSizer, 1, wxALL|wxEXPAND, 10 );
+	boxmain->Add( new wxStaticLine( this ), 0, wxALL|wxEXPAND, 0 );
+	boxmain->Add( CreateButtonSizer( wxOK|wxCANCEL ), 0, wxALL|wxEXPAND, 20 );
+	SetSizer(boxmain);
+	Fit();
+
+	if(!isBottomGraphVisible)
+	{
+		mBottomTopAutoscaleCheck->Hide();
+		mBottomYMaxCtrl->Hide();
+		mBottomYMinCtrl->Hide();
+	}
+}
+
+wxDVTimeSeriesSettingsDialog::~wxDVTimeSeriesSettingsDialog()
+{
+}
+
+void wxDVTimeSeriesSettingsDialog::SetTopYBounds( double y1min, double y1max )
+{
+	mTopYMinCtrl->SetValue( y1min );
+	mTopYMaxCtrl->SetValue( y1max );
+}
+
+void wxDVTimeSeriesSettingsDialog::SetBottomYBounds( double y2min, double y2max )
+{
+	mBottomYMinCtrl->SetValue( y2min );
+	mBottomYMaxCtrl->SetValue( y2max );
+}
+
+void wxDVTimeSeriesSettingsDialog::GetTopYBounds( double *y1min, double *y1max )
+{
+	*y1min = mTopYMinCtrl->Value();
+	*y1max = mTopYMaxCtrl->Value();
+}
+
+void wxDVTimeSeriesSettingsDialog::GetBottomYBounds( double *y2min, double *y2max )
+{
+	*y2min = mBottomYMinCtrl->Value();
+	*y2max = mBottomYMaxCtrl->Value();
+}
+
+void wxDVTimeSeriesSettingsDialog::SetLineStyle( int id ) { mLineStyleCombo->SetSelection(id); }
+int wxDVTimeSeriesSettingsDialog::GetLineStyle() { return mLineStyleCombo->GetSelection(); }
+
+void wxDVTimeSeriesSettingsDialog::SetSync( bool b ) { mSyncCheck->SetValue( b ); }
+bool wxDVTimeSeriesSettingsDialog::GetSync() { return mSyncCheck->GetValue(); }
+
+void wxDVTimeSeriesSettingsDialog::SetStatType( StatType statType ) { mStatTypeCheck->SetValue( statType == StatType::SUM ? true : false ); }
+StatType wxDVTimeSeriesSettingsDialog::GetStatType() { return mStatTypeCheck->GetValue() ? StatType::SUM : StatType::AVERAGE; }
+
+void wxDVTimeSeriesSettingsDialog::SetAutoscale( bool b ) 
+{ 
+	mTopAutoscaleCheck->SetValue( b ); 
+	mTopYMaxCtrl->Enable(!b);
+	mTopYMinCtrl->Enable(!b);
+}
+bool wxDVTimeSeriesSettingsDialog::GetAutoscale() { return mTopAutoscaleCheck->GetValue(); }
+
+void wxDVTimeSeriesSettingsDialog::SetBottomAutoscale( bool b ) 
+{ 
+	mBottomTopAutoscaleCheck->SetValue( b ); 
+	mBottomYMaxCtrl->Enable(!b);
+	mBottomYMinCtrl->Enable(!b);
+}
+bool wxDVTimeSeriesSettingsDialog::GetBottomAutoscale() { return mBottomTopAutoscaleCheck->GetValue(); }
+
+void wxDVTimeSeriesSettingsDialog::OnClickTopHandler(wxCommandEvent& event)
+{
+	SetAutoscale( mTopAutoscaleCheck->IsChecked() );
+}
+
+void wxDVTimeSeriesSettingsDialog::OnClickBottomHandler(wxCommandEvent& event)
+{
+	SetBottomAutoscale( mBottomTopAutoscaleCheck->IsChecked() );
+}
+
+void wxDVTimeSeriesSettingsDialog::OnClickStatHandler(wxCommandEvent& event)
+{
+	SetStatType( mStatTypeCheck->IsChecked() ? StatType::SUM : StatType::AVERAGE );
+}
 
 
 enum{
@@ -238,13 +503,16 @@ END_EVENT_TABLE()
 
 
 /*Constructors and Destructors*/
-wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id)
+wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, TimeSeriesType seriesType, StatType statType)
 : wxPanel(parent, id)
 {	
-	m_autoScale = true;
+	m_topAutoScale = true;
+	m_bottomAutoScale = true;
 	m_syncToHeatMap = false;
-	m_lineStyle = 0; // line, stepped, points
-	
+	m_lineStyle = (seriesType == HOURLY_TIME_SERIES ? wxDVTimeSeriesPlot::NORMAL : wxDVTimeSeriesPlot::STEPPED); // line, stepped, points
+	m_seriesType = seriesType;
+	m_statType = statType;
+
 	m_plotSurface = new wxPLPlotCtrl(this, ID_PLOT_SURFACE); 
 	m_plotSurface->SetAllowHighlighting(true);
 	m_plotSurface->ShowTitle( false );
@@ -299,13 +567,16 @@ wxDVTimeSeriesCtrl::~wxDVTimeSeriesCtrl(void)
 		delete m_selectedChannelIndices[i];
 }
 
-
 void wxDVTimeSeriesCtrl::Invalidate()
 {
 	m_plotSurface->Invalidate();
 	m_plotSurface->Refresh();
 }
 
+TimeSeriesType wxDVTimeSeriesCtrl::GetTimeSeriesType()
+{
+	return m_seriesType;
+}
 
 
 /*** EVENT HANDLERS ***/
@@ -337,6 +608,16 @@ void wxDVTimeSeriesCtrl::OnZoomFit(wxCommandEvent& e)
 void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 {
 	double y1min = 0, y1max = 0, y2min = 0, y2max = 0;
+	bool isBottomGraphVisible = false;
+
+	for(int i = 0; i < m_dataSelector->Length(); i++)
+	{
+		if(m_dataSelector->IsSelected(i, 1))
+		{
+			isBottomGraphVisible = true;
+			break;
+		}
+	}
 
 	if ( m_plotSurface->GetYAxis1( wxPLPlotCtrl::PLOT_TOP ) != 0 )
 		m_plotSurface->GetYAxis1( wxPLPlotCtrl::PLOT_TOP )->GetWorld( &y1min, &y1max );
@@ -344,36 +625,72 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 	if ( m_plotSurface->GetYAxis1( wxPLPlotCtrl::PLOT_BOTTOM ) != 0 )
 		m_plotSurface->GetYAxis1( wxPLPlotCtrl::PLOT_BOTTOM )->GetWorld( &y2min, &y2max );
 
-	wxDVTimeSeriesSettingsDialog dlg(  this, "View Settings" );
+	wxDVTimeSeriesSettingsDialog dlg(  this, "View Settings", isBottomGraphVisible );
 	dlg.CentreOnParent();
 	dlg.SetSync( m_syncToHeatMap );
+	dlg.SetStatType( m_statType );
 	dlg.SetLineStyle( m_lineStyle );
-	dlg.SetAutoscale( m_autoScale );
-	dlg.SetYBounds( y1min, y1max, y2min, y2max );
+	dlg.SetAutoscale( m_topAutoScale );
+	dlg.SetBottomAutoscale( m_bottomAutoScale );
+	dlg.SetTopYBounds( y1min, y1max );
+	dlg.SetBottomYBounds( y2min, y2max );
 	if (wxID_OK == dlg.ShowModal())
 	{
 		m_syncToHeatMap = dlg.GetSync();
-		
 		m_lineStyle = dlg.GetLineStyle();
 
-		for (int i=0; i<m_plots.size(); i++)
-			m_plots[i]->SetStyle( (wxDVTimeSeriesPlot::Style) m_lineStyle );
-
-		m_autoScale = dlg.GetAutoscale();
-		if ( m_autoScale )
+		if(m_statType != dlg.GetStatType())
 		{
-			AutoscaleYAxis( true );
+			m_statType = dlg.GetStatType();
+
+			for(size_t i = 0; i < m_plots.size(); i++)
+			{
+				m_plots[i]->SetStyle( (wxDVTimeSeriesPlot::Style) m_lineStyle );
+				m_plots[i]->UpdateSummaryData(m_statType == AVERAGE ? true : false);
+			}
 		}
 		else
 		{
-			double y1min, y1max, y2min, y2max;
-			dlg.GetYBounds( &y1min, &y1max, &y2min, &y2max );
+			for (size_t i=0; i<m_plots.size(); i++)
+			{
+				m_plots[i]->SetStyle( (wxDVTimeSeriesPlot::Style) m_lineStyle );
+			}
+		}
+
+		m_topAutoScale = dlg.GetAutoscale();
+		m_bottomAutoScale = dlg.GetBottomAutoscale();
+		if ( m_topAutoScale )
+		{
+			if (m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP))
+				AutoscaleYAxis(m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP), *m_selectedChannelIndices[TOP_LEFT_AXIS], true);
+			if (m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_TOP))
+				AutoscaleYAxis(m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_TOP), 
+				m_selectedChannelIndices[TOP_RIGHT_AXIS]->size() > 0 ? *m_selectedChannelIndices[TOP_RIGHT_AXIS] : *m_selectedChannelIndices[TOP_LEFT_AXIS], 
+				true);
+		}
+		else
+		{
+			dlg.GetTopYBounds( &y1min, &y1max );
 
 			if (y1max > y1min)
 			{
 				if (m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP))
 					m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP)->SetWorld( y1min, y1max );
 			}
+		}
+
+		if ( m_bottomAutoScale )
+		{
+			if (m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM))
+				AutoscaleYAxis(m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM), *m_selectedChannelIndices[BOTTOM_LEFT_AXIS], true);
+			if (m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_BOTTOM))
+				AutoscaleYAxis(m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_BOTTOM), 
+				m_selectedChannelIndices[BOTTOM_RIGHT_AXIS]->size() > 0 ? *m_selectedChannelIndices[BOTTOM_RIGHT_AXIS] : *m_selectedChannelIndices[BOTTOM_LEFT_AXIS], 
+				true);	
+		}
+		else
+		{
+			dlg.GetBottomYBounds( &y2min, &y2max );
 
 			if (y2max > y2min)
 			{		
@@ -511,7 +828,145 @@ void wxDVTimeSeriesCtrl::OnPlotDragEnd(wxCommandEvent& e)
 
 void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, bool refresh_ui)
 {
-	wxDVTimeSeriesPlot *p = new wxDVTimeSeriesPlot(d);
+	wxDVTimeSeriesPlot *p;
+
+	//For daily and monthly time series create a dataset with the average x and y values for the day/month
+	//For stepped graphs we have to start the array with the average y value for the first period at x = 0, have each avg y value at the beginning of the period (leftmost x for the period),
+	//and end it with the average y value for the final period duplicated at x = max
+	double sum = 0.0;
+	double avg = 0.0;
+	double counter = 0.0;
+	double MinHrs = d->GetMinHours();
+	double MaxHrs = d->GetMaxHours();
+	wxDVPointArrayDataSet *d2;
+
+	//Create daily data set (avg value of data by day) from m_data
+	if(m_seriesType == DAILY_TIME_SERIES)
+	{
+		double nextDay = 0.0;
+		double currentDay = 0.0;
+
+		d2 = new wxDVPointArrayDataSet(d->GetSeriesTitle(), d->GetUnits(), 24.0 / d->GetTimeStep());
+
+		while (nextDay < MinHrs)
+		{
+			nextDay += 24.0;
+		}
+
+		currentDay = nextDay - 24.0;
+
+		for (size_t i = 0; i < d->Length(); i++)
+		{
+			if(d->At(i).x >= nextDay)
+			{
+				if(i != 0 && counter != 0)
+				{ 
+					avg = sum / counter;
+					d2->Append(wxRealPoint((double) currentDay + (double)(nextDay - currentDay) / 2.0, (m_statType == AVERAGE ? avg : sum))); 
+					currentDay = nextDay;
+					nextDay += 24;
+				}
+
+				counter = 0.0;
+				sum = 0.0;
+			}
+
+			counter += 1.0;
+			sum += d->At(i).y;
+		}
+
+		avg = sum / counter;
+
+		//Prevent appending the final point if it represents 12/31 24:00, which the system interprets as 1/1 0:00 and creates a point for January of the next year
+		if(MaxHrs > 0.0 && fmod(MaxHrs, 8760.0) != 0)
+		{
+			d2->Append(wxRealPoint((double) currentDay + (double)(nextDay - currentDay) / 2.0, (m_statType == AVERAGE ? avg : sum))); 
+		}
+	}
+	else if (m_seriesType == MONTHLY_TIME_SERIES)
+	{
+		//Create monthly data set (avg value of data by month) from m_data
+		double nextMonth = 0.0;
+		double currentMonth = 0.0;
+		double year = 0.0;
+
+		d2 = new wxDVPointArrayDataSet(d->GetSeriesTitle(), d->GetUnits(), 744.0 / d->GetTimeStep());
+
+		while(MinHrs > 8760.0)
+		{
+			year += 8760.0;
+			MinHrs -= 8760.0;
+		}
+
+		if(MinHrs >= 0.0 && MinHrs < 744.0) { currentMonth = year; nextMonth = year + 744.0; }
+		else if(MinHrs >= 744.0 && MinHrs < 1416.0) { currentMonth = year + 744.0; nextMonth = year + 1416.0; }
+		else if(MinHrs >= 1416.0 && MinHrs < 2160.0) { currentMonth = year + 1416.0; nextMonth = year + 2160.0; }
+		else if(MinHrs >= 2160.0 && MinHrs < 2880.0) { currentMonth = year + 2160.0; nextMonth = year + 2880.0; }
+		else if(MinHrs >= 2880.0 && MinHrs < 3624.0) { currentMonth = year + 2880.0; nextMonth = year + 3624.0; }
+		else if(MinHrs >= 3624.0 && MinHrs < 4344.0) { currentMonth = year + 3624.0; nextMonth = year + 4344.0; }
+		else if(MinHrs >= 4344.0 && MinHrs < 5088.0) { currentMonth = year + 4344.0; nextMonth = year + 5088.0; }
+		else if(MinHrs >= 5088.0 && MinHrs < 5832.0) { currentMonth = year + 5088.0; nextMonth = year + 5832.0; }
+		else if(MinHrs >= 5832.0 && MinHrs < 6552.0) { currentMonth = year + 5832.0; nextMonth = year + 6552.0; }
+		else if(MinHrs >= 6552.0 && MinHrs < 7296.0) { currentMonth = year + 6552.0; nextMonth = year + 7296.0; }
+		else if(MinHrs >= 7296.0 && MinHrs < 8016.0) { currentMonth = year + 7296.0; nextMonth = year + 8016.0; }
+		else if(MinHrs >= 8016.0 && MinHrs < 8760.0) { currentMonth = year + 8016.0; nextMonth = year + 8760.0; }
+
+		for (size_t i = 0; i < d->Length(); i++)
+		{
+			if(d->At(i).x >= nextMonth)
+			{
+				if(i != 0 && counter != 0)
+				{ 
+					avg = sum / counter;
+
+					d2->Append(wxRealPoint((double) currentMonth + (double)(nextMonth - currentMonth) / 2.0, (m_statType == AVERAGE ? avg : sum))); 
+
+					currentMonth = nextMonth;
+					if(nextMonth == 744.0 + year) { nextMonth = 1416.0 + year; }
+					else if(nextMonth == 1416.0 + year) { nextMonth = 2160.0 + year; }
+					else if(nextMonth == 2160.0 + year) { nextMonth = 2880.0 + year; }
+					else if(nextMonth == 2880.0 + year) { nextMonth = 3624.0 + year; }
+					else if(nextMonth == 3624.0 + year) { nextMonth = 4344.0 + year; }
+					else if(nextMonth == 4344.0 + year) { nextMonth = 5088.0 + year; }
+					else if(nextMonth == 5088.0 + year) { nextMonth = 5832.0 + year; }
+					else if(nextMonth == 5832.0 + year) { nextMonth = 6552.0 + year; }
+					else if(nextMonth == 6552.0 + year) { nextMonth = 7296.0 + year; }
+					else if(nextMonth == 7296.0 + year) { nextMonth = 8016.0 + year; }
+					else if(nextMonth == 8016.0 + year) { nextMonth = 8760.0 + year; }
+					else if(nextMonth == 8760.0 + year) 
+					{ 
+						year += 8760.0;
+						nextMonth = 744.0 + year; 
+					}
+				}
+
+				counter = 0.0;
+				sum = 0.0;
+			}
+
+			counter += 1.0;
+			sum += d->At(i).y;
+		}
+
+		avg = sum / counter;
+
+		//Prevent appending the final point if it represents 12/31 24:00, which the system interprets as 1/1 0:00 and creates a point for January of the next year
+		if(MaxHrs > 0.0 && fmod(MaxHrs, 8760.0) != 0)
+		{
+			d2->Append(wxRealPoint((double) currentMonth + (double)(nextMonth - currentMonth) / 2.0, (m_statType == AVERAGE ? avg : sum))); 
+		}
+	}
+				
+	if(m_seriesType == HOURLY_TIME_SERIES)
+	{
+		p = new wxDVTimeSeriesPlot(d, m_seriesType);
+	}
+	else
+	{
+		p = new wxDVTimeSeriesPlot(d2, m_seriesType, true);
+	}
+
+	p->SetStyle((wxDVTimeSeriesPlot::Style) m_lineStyle);
 	m_plots.push_back(p); //Add to data sets list.
 	m_dataSelector->Append( d->GetTitleWithUnits(), group );
 
@@ -527,7 +982,7 @@ bool wxDVTimeSeriesCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 	wxDVTimeSeriesPlot *plotToRemove = NULL;
 	int removedIndex = 0;
 	//Find the plottable:
-	for (int i=0; i<m_plots.size(); i++)
+	for (size_t i=0; i<m_plots.size(); i++)
 	{
 		if (m_plots[i]->GetDataSet() == d)
 		{
@@ -551,9 +1006,9 @@ bool wxDVTimeSeriesCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 
 	//We base our logic for showing/hiding plots, etc on indices, so when a single data set is removed
 	//we have to re-index everything.
-	for (int i=0; i<m_selectedChannelIndices.size(); i++)
+	for (size_t i=0; i<m_selectedChannelIndices.size(); i++)
 	{
-		for(int k=0; k<m_selectedChannelIndices[i]->size(); k++)
+		for(size_t k=0; k<m_selectedChannelIndices[i]->size(); k++)
 		{
 			if ((*m_selectedChannelIndices[i])[k] > removedIndex)
 				(*m_selectedChannelIndices[i])[k]--;
@@ -572,9 +1027,9 @@ void wxDVTimeSeriesCtrl::RemoveAllDataSets( )
 
 	/*
 	//Remove plottables from plot surfaces
-	for (int i=0; i<m_selectedChannelIndices.size(); i++)
+	for (size_t i=0; i<m_selectedChannelIndices.size(); i++)
 	{
-		for (int k=0; k<m_selectedChannelIndices[i]->size(); k++)
+		for (size_t k=0; k<m_selectedChannelIndices[i]->size(); k++)
 			m_plotSurface->RemovePlot(m_plots[(*m_selectedChannelIndices[i])[k]] );
 
 		m_selectedChannelIndices[i]->clear();
@@ -586,12 +1041,11 @@ void wxDVTimeSeriesCtrl::RemoveAllDataSets( )
 	m_dataSelector->RemoveAll();
 
 	//Remove all data sets. Deleting a data set also deletes its plottable.
-	for(int i=0; i<m_plots.size(); i++)
+	for(size_t i=0; i<m_plots.size(); i++)
 		delete m_plots[i];
 
 	m_plots.clear();
 }
-
 
 
 /*** VIEW METHODS ***/
@@ -644,7 +1098,7 @@ void wxDVTimeSeriesCtrl::GetVisibleDataMinAndMax(double* min, double* max, const
 		double worldMin = m_xAxis->GetWorldMin();
 		double worldMax = m_xAxis->GetWorldMax();
 
-		for(int i=0; i<selectedChannelIndices.size(); i++)
+		for(size_t i=0; i<selectedChannelIndices.size(); i++)
 		{
 			m_plots[selectedChannelIndices[i]]->GetDataSet()->GetMinAndMaxInRange(&tempMin, &tempMax, worldMin, worldMax);
 			if (tempMin < *min)
@@ -655,7 +1109,7 @@ void wxDVTimeSeriesCtrl::GetVisibleDataMinAndMax(double* min, double* max, const
 	}
 	else
 	{
-		for(int i=0; i<selectedChannelIndices.size(); i++)
+		for(size_t i=0; i<selectedChannelIndices.size(); i++)
 		{
 			m_plots[selectedChannelIndices[i]]->GetDataSet()->GetDataMinAndMax(&tempMin, &tempMax);
 			if (tempMin < *min)
@@ -669,7 +1123,7 @@ void wxDVTimeSeriesCtrl::GetVisibleDataMinAndMax(double* min, double* max, const
 double wxDVTimeSeriesCtrl::GetMinPossibleTimeForVisibleChannels()
 {
 	double min = 8760;
-	for(int i=0; i<m_plots.size(); i++)
+	for(size_t i=0; i<m_plots.size(); i++)
 	{
 		if (m_dataSelector->IsRowSelected(i))
 		{
@@ -684,7 +1138,7 @@ double wxDVTimeSeriesCtrl::GetMinPossibleTimeForVisibleChannels()
 double wxDVTimeSeriesCtrl::GetMaxPossibleTimeForVisibleChannels()
 {
 	double max = 0;
-	for(int i=0; i<m_plots.size(); i++)
+	for(size_t i=0; i<m_plots.size(); i++)
 	{
 		if (m_dataSelector->IsRowSelected(i))
 		{
@@ -709,7 +1163,7 @@ void wxDVTimeSeriesCtrl::KeepNewBoundsWithinLimits(double* newMin, double* newMa
 	//This can only happen zooming out.
 	int visDataMin = m_plots[0]->GetDataSet()->GetMinHours();
 	int visDataMax = m_plots[0]->GetDataSet()->GetMaxHours();
-	for (int i=1; i<m_plots.size(); i++)
+	for (size_t i=1; i<m_plots.size(); i++)
 	{
 		if (m_dataSelector->IsRowSelected(i))
 		{
@@ -746,7 +1200,7 @@ void wxDVTimeSeriesCtrl::KeepNewBoundsWithinLowerLimit(double* newMin, double* n
 
 	int visDataMin = m_plots[0]->GetDataSet()->GetMinHours();
 	int visDataMax = m_plots[0]->GetDataSet()->GetMaxHours();
-	for (int i=1; i<m_plots.size(); i++)
+	for (size_t i=1; i<m_plots.size(); i++)
 	{
 		if (m_dataSelector->IsRowSelected(i))
 		{
@@ -798,9 +1252,9 @@ bool wxDVTimeSeriesCtrl::CanZoomOut()
 	double min, max;
 	m_xAxis->GetWorld(&min,&max);
 	//Don't zoom out past data range.
-	for (int i=0; i<m_selectedChannelIndices.size(); i++)
+	for (size_t i=0; i<m_selectedChannelIndices.size(); i++)
 	{
-		for (int k=0; k<m_selectedChannelIndices[i]->size(); k++)
+		for (size_t k=0; k<m_selectedChannelIndices[i]->size(); k++)
 		{
 			if ( max-min < m_plots[(*m_selectedChannelIndices[i])[k]]->GetDataSet()->GetTotalHours())
 				return true;
@@ -864,7 +1318,6 @@ void wxDVTimeSeriesCtrl::PanByPercent(double p)
 	SetViewRange(newMin, newMax);
 }
 
-
 void wxDVTimeSeriesCtrl::UpdateScrollbarPosition()
 {
 	if(m_plots.size() == 0)
@@ -889,8 +1342,6 @@ void wxDVTimeSeriesCtrl::UpdateScrollbarPosition()
 	}
 }
 
-
-
 void wxDVTimeSeriesCtrl::AutoscaleYAxis(bool forceUpdate)
 {
 	//It is probably best to avoid this function and use the more specific version where possible.
@@ -912,14 +1363,15 @@ void wxDVTimeSeriesCtrl::AutoscaleYAxis( wxPLAxis *axisToScale, const std::vecto
 {
 	//If autoscaling is off don't scale y1 axis
 	// But do scale y2 axis (since we don't allow manual scaling there for UI simplicity).
-	if (!m_autoScale && 
-		axisToScale != m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_TOP) &&
-		axisToScale != m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_BOTTOM)) return;
+	if (!m_topAutoScale && axisToScale == m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP)) { return; }
+	if (!m_bottomAutoScale && axisToScale == m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM)) { return; }
 
 	//Force Update is used to rescale even if data is still in acceptable range
 	bool needsRescale = false;
 	double dataMax; 
 	double dataMin; 
+	double timestep = 1.0;
+
 	GetVisibleDataMinAndMax(&dataMin, &dataMax, selectedChannelIndices);
 
 	//If the maximum of the visible data is outside the acceptable range
@@ -961,13 +1413,15 @@ void wxDVTimeSeriesCtrl::AutoscaleYAxis( wxPLAxis *axisToScale, const std::vecto
 
 void wxDVTimeSeriesCtrl::AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPos, int index)
 {
-	if (index < 0 || index >= m_plots.size()) return;
+	if (index < 0 || index >= (int)m_plots.size()) return;
+
+	size_t idx = (size_t)index;
 
 	//Set our line colour correctly.  Assigned by data selection window.
-	m_plots[index]->SetColour(m_dataSelector->GetColourForIndex(index) );
+	m_plots[idx]->SetColour(m_dataSelector->GetColourForIndex(index) );
 	
 	wxPLPlotCtrl::AxisPos yap = wxPLPlotCtrl::Y_LEFT;
-	wxString units = m_plots[index]->GetDataSet()->GetUnits();
+	wxString units = m_plots[idx]->GetDataSet()->GetUnits();
 
 		
 	wxString y1Units = NO_UNITS, y2Units = NO_UNITS;
@@ -997,7 +1451,7 @@ void wxDVTimeSeriesCtrl::AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPo
 	if (yap == wxPLPlotCtrl::Y_RIGHT)
 		graphIndex += 1;
 
-	m_selectedChannelIndices[graphIndex]->push_back(index);
+	m_selectedChannelIndices[graphIndex]->push_back(idx);
 	
 	switch(yap)
 	{
@@ -1035,7 +1489,7 @@ void wxDVTimeSeriesCtrl::RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos 
 	if (m_selectedChannelIndices[graphIndex]->size() > 0)
 		keepAxis = true;
 
-	m_plotSurface->RemovePlot(m_plots[index]);
+	m_plotSurface->RemovePlot(m_plots[index], pPos);
 
 	//See if axis is still in use or not, and to some cleanup.
 	wxPLLinearAxis *axisThatWasUsed;
@@ -1080,7 +1534,7 @@ void wxDVTimeSeriesCtrl::RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos 
 				m_selectedChannelIndices[otherAxisIndex] = temp;
 
 				//Set the y axis to the left side (instead of the right)
-				for (int i=0; i<m_selectedChannelIndices[graphIndex]->size(); i++)
+				for (size_t i=0; i<m_selectedChannelIndices[graphIndex]->size(); i++)
 				{
 					m_plotSurface->RemovePlot(m_plots[(*m_selectedChannelIndices[graphIndex])[i]]);
 					m_plotSurface->AddPlot( m_plots[(*m_selectedChannelIndices[graphIndex])[i]], 
@@ -1111,7 +1565,7 @@ void wxDVTimeSeriesCtrl::ClearAllChannelSelections(wxPLPlotCtrl::PlotPos pPos)
 		graphIndex += 2;
 	for (int i=graphIndex; i<graphIndex+2; i++)
 	{
-		for (int j=0; j<m_selectedChannelIndices[i]->size(); j++)
+		for (size_t j=0; j<m_selectedChannelIndices[i]->size(); j++)
 		{
 			m_plotSurface->RemovePlot(m_plots[m_selectedChannelIndices[i]->at(j)] ); 
 		}
@@ -1204,5 +1658,15 @@ bool wxDVTimeSeriesCtrl::GetSyncWithHeatMap()
 void wxDVTimeSeriesCtrl::SetSyncWithHeatMap(bool b)
 {
 	m_syncToHeatMap = b;
+}
+
+StatType wxDVTimeSeriesCtrl::GetStatType()
+{
+	return m_statType;
+}
+
+void wxDVTimeSeriesCtrl::SetStatType(StatType statType)
+{
+	m_statType = statType;
 }
 

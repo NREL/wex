@@ -72,6 +72,8 @@ public:
 
 	virtual bool GetMinMax(double *pxmin, double *pxmax, double *pymin, double *pymax) const;
 	virtual bool ExtendMinMax(double *pxmin, double *pxmax, double *pymin, double *pymax) const;
+	virtual std::vector<wxString> GetExportableDatasetHeaders( wxUniChar sep ) const;
+	virtual std::vector<wxRealPoint> GetExportableDataset(double Xmin, double Xmax, bool visible_only) const;
 };
 
 class wxPLSideWidgetBase
@@ -117,7 +119,7 @@ public:
 	enum LegendPos { FLOATING, NORTHWEST, SOUTHWEST, NORTHEAST, SOUTHEAST, NORTH, SOUTH, EAST, WEST, BOTTOM, RIGHT  };
 
 	void AddPlot( wxPLPlottable *p, AxisPos xap = X_BOTTOM, AxisPos yap = Y_LEFT, PlotPos ppos = PLOT_TOP, bool update_axes = true );
-	wxPLPlottable *RemovePlot( wxPLPlottable *p );
+	wxPLPlottable *RemovePlot( wxPLPlottable *p, PlotPos plotPosition = NPLOTPOS );
 	void DeleteAllPlots();
 	size_t GetPlotCount();
 	wxPLPlottable *GetPlot( size_t i );

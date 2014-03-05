@@ -33,14 +33,25 @@ bool wxDVAutoColourAssigner::IsColourAssigned( int index )
 wxColour wxDVAutoColourAssigner::AssignLineColour(int index)
 {
 	ColourPair cp;
-	cp.index = index;
-	cp.colour = *wxRED;
+	wxColour tempColor = *wxRED;
+	int tempUseCount = 1000000000;	//Start with an impossibly high number of uses.  We'll reduce it until we find the lowest use count.
+	int colorIndex;
 
-	if (mAvailableColours.size() > 0)
+	for(int i = 0; i < mAvailableColours.size(); i++)
 	{
-		cp.colour = mAvailableColours[0];
-		mAvailableColours.erase( mAvailableColours.begin() );
+		if(tempUseCount > mAvailableColours[i].useCount)
+		{
+			colorIndex = i;
+			tempUseCount = mAvailableColours[i].useCount;
+			tempColor = mAvailableColours[i].colour;
+			if(tempUseCount == 0) { break; }
+		}
 	}
+
+	mAvailableColours[colorIndex].useCount++;
+
+	cp.index = index;
+	cp.colour = tempColor;
 	
 	mAssignedColours.push_back(cp);
 	
@@ -49,17 +60,49 @@ wxColour wxDVAutoColourAssigner::AssignLineColour(int index)
 
 void wxDVAutoColourAssigner::ResetColourList()
 {
+	ColourCounter cc;
+
 	mAvailableColours.clear();
-	mAvailableColours.push_back("red");
-	mAvailableColours.push_back("forest green");
-	mAvailableColours.push_back("blue");
-	mAvailableColours.push_back("purple");
-	mAvailableColours.push_back("goldenrod");
-	mAvailableColours.push_back("salmon");
-	mAvailableColours.push_back("magenta");
-	mAvailableColours.push_back("grey");
-	mAvailableColours.push_back("aquamarine");
-	mAvailableColours.push_back("brown");
+
+	cc.colour = "red";
+	cc.useCount = 0;
+	mAvailableColours.push_back(cc);
+
+	cc.colour = "forest green";
+	cc.useCount = 0;
+	mAvailableColours.push_back(cc);
+
+	cc.colour = "blue";
+	cc.useCount = 0;
+	mAvailableColours.push_back(cc);
+
+	cc.colour = "purple";
+	cc.useCount = 0;
+	mAvailableColours.push_back(cc);
+
+	//cc.colour = "goldenrod";
+	//cc.useCount = 0;
+	//mAvailableColours.push_back(cc);
+
+	cc.colour = "salmon";
+	cc.useCount = 0;
+	mAvailableColours.push_back(cc);
+
+	cc.colour = "magenta";
+	cc.useCount = 0;
+	mAvailableColours.push_back(cc);
+
+	cc.colour = "grey";
+	cc.useCount = 0;
+	mAvailableColours.push_back(cc);
+
+	cc.colour = "aquamarine";
+	cc.useCount = 0;
+	mAvailableColours.push_back(cc);
+
+	cc.colour = "brown";
+	cc.useCount = 0;
+	mAvailableColours.push_back(cc);
 }
 
 void wxDVAutoColourAssigner::DeAssignAll()
@@ -70,13 +113,21 @@ void wxDVAutoColourAssigner::DeAssignAll()
 
 void wxDVAutoColourAssigner::DeAssignLineColour(int index)
 {
-	for (int i=0; i<mAssignedColours.size(); i++)
+	for (int i = 0; i < mAssignedColours.size(); i++)
 	{
 		if (mAssignedColours[i].index == index)
 		{
-			mAvailableColours.push_back(mAssignedColours[i].colour);
-			mAssignedColours.erase( mAssignedColours.begin() + i );
-			return;
+			for(int j = 0; j < mAvailableColours.size(); j++)
+			{
+				if(mAvailableColours[j].colour == mAssignedColours[i].colour) 
+				{
+					mAssignedColours.erase( mAssignedColours.begin() + i );
+					mAvailableColours[j].useCount--;
+					if(mAvailableColours[j].useCount < 0) { mAvailableColours[j].useCount = 0; }
+
+					return;
+				}
+			}
 		}
 	}
 }

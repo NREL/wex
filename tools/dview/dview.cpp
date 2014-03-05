@@ -22,6 +22,7 @@
 #include <wx/wfstream.h>
 #include <wx/txtstrm.h>
 #include <wx/cmdline.h>
+#include <wx/msgdlg.h>
 
 #include "wex/dview/dvplotctrl.h"
 #include "wex/dview/dvfiledataset.h"
@@ -120,7 +121,6 @@ public:
 		UpdateRecentMenu();
 	}
 	
-
 	void UpdateRecentMenu()
 	{
 		int i;
@@ -233,7 +233,6 @@ public:
 		}
 	}
 
-
 	void OnCloseFrame( wxCloseEvent &evt )
 	{	
 
@@ -271,8 +270,15 @@ public:
 		wxBeginBusyCursor();
 		for(size_t i=0; i<filenames.GetCount(); i++)
 		{	
-			wxDVFileDataSet::FastRead(mPlotCtrl, filenames[i]);
-			AddRecent(filenames[i]);
+			if(!wxDVFileDataSet::FastRead(mPlotCtrl, filenames[i]))
+			{
+				wxMessageBox( wxT("The selected file no longer exists, is not of the correct format, or you do not have permission to open it."), wxT("Error opening file."), wxICON_ERROR);
+				RemoveRecent(filenames[i]);
+			}
+			else
+			{
+				AddRecent(filenames[i]);
+			}
 		}
 		
 		UpdateRecentMenu();
@@ -282,7 +288,7 @@ public:
 
 	void Open()
 	{
-		wxFileDialog fdlg(this, "Open Data File", mLastDir, "", "All Files|*.*|CSV Files(*.csv)|*.csv|TXT Files(*.txt)|*.txt|TMY3 Files(*.tmy3)|*.tmy3", wxFD_OPEN | wxFD_MULTIPLE);
+		wxFileDialog fdlg(this, "Open Data File", mLastDir, "", "All Files|*.*|CSV Files(*.csv)|*.csv|TXT Files(*.txt)|*.txt|TMY3 Files(*.tmy3)|*.tmy3|EPW Files(*.epw)|*.epw", wxFD_OPEN | wxFD_MULTIPLE);
 		wxArrayString myFilePaths;
 		if (fdlg.ShowModal() == wxID_OK)
 		{

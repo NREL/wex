@@ -40,6 +40,7 @@ void wxPLLinePlot::Init()
 	m_thickness = 2;
 	m_scaleThickness = false;
 	m_style = SOLID;
+	m_ignoreZeros = false;
 }
 
 wxRealPoint wxPLLinePlot::At( size_t i ) const
@@ -52,6 +53,15 @@ size_t wxPLLinePlot::Len() const
 	return m_data.size();
 }
 
+bool wxPLLinePlot::GetIgnoreZeros()
+{
+	return m_ignoreZeros;
+}
+
+void wxPLLinePlot::SetIgnoreZeros(bool value)
+{
+	m_ignoreZeros = value;
+}
 
 void wxPLLinePlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 {
@@ -61,9 +71,11 @@ void wxPLLinePlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 	dc.SetPen( wxPen( m_colour, m_thickness, GetWxLineStyle(m_style) ) );
 	wxPoint start = map.ToDevice( At(0).x, At(0).y );
 
-	std::vector< wxPoint > points( len );
+	std::vector< wxPoint > points;
 	for ( size_t i = 0; i<len; i++ )
-		points[i] = map.ToDevice( At(i) );
+	{
+		points.push_back(map.ToDevice( At(i) ));
+	}
 	
 	dc.DrawLines( points.size(), &points[0] );
 	

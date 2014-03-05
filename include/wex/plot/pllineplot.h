@@ -23,6 +23,9 @@ public:
 	virtual void Draw( wxDC &dc, const wxPLDeviceMapping &map );
 	virtual void DrawInLegend( wxDC &dc, const wxRect &rct);
 
+	bool GetIgnoreZeros();
+	void SetIgnoreZeros(bool value = true);
+
 	void SetColour( const wxColour &col ) { m_colour = col; }
 	void SetThickness( int thick, bool scale = false ) { m_thickness = thick; m_scaleThickness = scale; }
 	void SetStyle( Style ss ) { m_style = ss; }
@@ -35,6 +38,9 @@ protected:
 	Style m_style;
 	bool m_scaleThickness;
 	std::vector< wxRealPoint > m_data;
+
+private:	
+	bool m_ignoreZeros;
 };
 #endif
 

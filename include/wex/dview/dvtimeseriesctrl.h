@@ -12,8 +12,10 @@
  */
 
 #include <wx/panel.h>
-
+#include <wx/dialog.h>
+#include "wex/numeric.h"
 #include "wex/plot/plplotctrl.h"
+#include "wex/dview/dvplothelper.h"
 
 class wxDVTimeSeriesDataSet;
 class wxPLTimeAxis;
@@ -24,15 +26,59 @@ class wxCheckBox;
 class wxDVTimeSeriesPlot;
 class wxScrollBar;
 
+enum StatType { AVERAGE = 0, SUM };
+enum TimeSeriesType { HOURLY_TIME_SERIES = 0, DAILY_TIME_SERIES, MONTHLY_TIME_SERIES};
+
+class wxDVTimeSeriesSettingsDialog : public wxDialog
+{
+public:
+	wxDVTimeSeriesSettingsDialog( wxWindow *parent, const wxString &title, bool isBottomGraphVisible = true );
+	~wxDVTimeSeriesSettingsDialog();
+
+	void SetTopYBounds( double y1min, double y1max );
+	void SetBottomYBounds( double y2min, double y2max );
+	void GetTopYBounds( double *y1min, double *y1max );
+	void GetBottomYBounds( double *y2min, double *y2max );
+
+	void SetLineStyle( int id );
+	int GetLineStyle();
+	void SetSync( bool b );
+	bool GetSync();
+	void SetStatType( StatType statType );
+	StatType GetStatType();
+	void SetAutoscale( bool b );
+	bool GetAutoscale();
+	void SetBottomAutoscale( bool b );
+	bool GetBottomAutoscale();
+
+protected:
+	void OnClickTopHandler(wxCommandEvent& event);
+	void OnClickBottomHandler(wxCommandEvent& event);
+	void OnClickStatHandler(wxCommandEvent& event);
+
+private:
+	wxCheckBox *mSyncCheck;
+	wxCheckBox *mStatTypeCheck;
+	wxCheckBox *mTopAutoscaleCheck;
+	wxCheckBox *mBottomTopAutoscaleCheck;
+	wxNumericCtrl *mTopYMaxCtrl;
+	wxNumericCtrl *mTopYMinCtrl;
+	wxNumericCtrl *mBottomYMaxCtrl;
+	wxNumericCtrl *mBottomYMinCtrl;
+	wxChoice *mLineStyleCombo;
+
+	DECLARE_EVENT_TABLE();
+	
+};
 
 class wxDVTimeSeriesCtrl : public wxPanel
 {
 public:
-	wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id);
+	wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, TimeSeriesType seriesType, StatType statType);
 	virtual ~wxDVTimeSeriesCtrl();
 
 	//When a data set is added, wxDVTimeSeriesCtrl creates a plottable with a pointer to that data.  Does not take ownership.
-	void AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, bool refresh_ui );
+	void AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, bool refresh_ui);
 	bool RemoveDataSet(wxDVTimeSeriesDataSet *d); //Releases ownership, does not delete. //true if found & removed.
 	void RemoveAllDataSets(); //Clears all data sets from graphs and memory.
 
@@ -60,6 +106,9 @@ public:
 
 	bool GetSyncWithHeatMap();
 	void SetSyncWithHeatMap(bool b);
+	TimeSeriesType GetTimeSeriesType();
+	StatType GetStatType();
+	void SetStatType(StatType statType);
 
 	/*Graph Specific Methods*/
 	bool CanZoomIn(void);
@@ -116,9 +165,10 @@ private:
 	wxScrollBar *m_graphScrollBar;
 	wxDVSelectionListCtrl *m_dataSelector;
 
-	bool m_autoScale, m_syncToHeatMap;
+	bool m_topAutoScale, m_bottomAutoScale, m_syncToHeatMap;
 	int m_lineStyle; // line, stepped, points
-
+	TimeSeriesType m_seriesType;
+	StatType m_statType;
 
 	void AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPos, int index);
 	void RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPos, int index);

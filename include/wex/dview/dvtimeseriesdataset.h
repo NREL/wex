@@ -36,6 +36,7 @@ public:
 	virtual double GetTimeStep() const = 0;
 	virtual wxString GetSeriesTitle() const = 0;
 	virtual wxString GetUnits() const = 0;
+	virtual void SetDataValue(size_t i, double newYValue) = 0;
 	
 	/*Helper Functions*/
 	wxRealPoint operator[] (size_t i) const;
@@ -62,6 +63,7 @@ public:
 	virtual double GetTimeStep() const;
 	virtual wxString GetSeriesTitle() const;
 	virtual wxString GetUnits() const;
+	virtual void SetDataValue(size_t i, double newYValue);
 	
 private:
 	wxString m_varLabel;
@@ -71,4 +73,27 @@ private:
 	std::vector<double> m_pData;
 	
 };
+
+class wxDVPointArrayDataSet : public wxDVTimeSeriesDataSet
+{
+public:
+	wxDVPointArrayDataSet( const wxString &var, const wxString &units, const double &timestep );
+	~wxDVPointArrayDataSet();
+	
+	virtual wxRealPoint At(size_t i) const;
+	virtual size_t Length() const;
+	virtual double GetTimeStep() const;
+	virtual wxString GetSeriesTitle() const;
+	virtual wxString GetUnits() const;
+	virtual void SetDataValue(size_t i, double newYValue);
+	void Alloc(int size);
+	void Append(const wxRealPoint& p);
+	
+private:
+	wxString mSeriesTitle;
+	wxString m_varUnits;
+	double m_timestep; // timestep in hours - fractional hours okay
+	std::vector<wxRealPoint> mDataPoints;
+};
+
 #endif

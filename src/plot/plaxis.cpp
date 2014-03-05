@@ -75,9 +75,9 @@ wxCoord wxPLAxis::WorldToPhysical( double coord, wxCoord phys_min, wxCoord phys_
 	if (range == 0)
 		return 1;
 
-	double prop = (double)((coord - m_min) / range);
+	double prop = (coord - m_min) / range;
 	// calculate the physical coordinate.
-	return pmin + prop * (pmax - pmin);
+	return (wxCoord)((double)pmin + prop * (double)(pmax - pmin));
 }
 
 double wxPLAxis::PhysicalToWorld( wxCoord point, wxCoord phys_min, wxCoord phys_max )

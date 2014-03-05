@@ -344,6 +344,7 @@ void wxDVSelectionListCtrl::OnPaint(wxPaintEvent &evt)
 
 		int x = m_xOffset;
 		int yoff = (m_itemHeight-m_boxSize)/2;
+		int radius = m_boxSize / 2;
 		
 		if ( IsRowSelected(m_orderedItems[i]->row_index, m_radioFirstCol ? 1 : 0) )
 		{
@@ -360,10 +361,24 @@ void wxDVSelectionListCtrl::OnPaint(wxPaintEvent &evt)
 			m_orderedItems[i]->geom[c] = wxRect( x, y+yoff, m_boxSize, m_boxSize ); // save geometry to speed up mouse clicks
 			
 			dc.SetBrush( wxBrush( color, wxSOLID ) );
-			dc.DrawRectangle( x, y+yoff, m_boxSize, m_boxSize );
+			if(m_radioFirstCol && c == 0)
+			{
+				dc.DrawCircle(x + radius, y + radius + yoff, radius);
+			}
+			else
+			{
+				dc.DrawRectangle( x, y+yoff, m_boxSize, m_boxSize );
+			}
 			
 			dc.SetBrush( wxBrush( *wxWHITE, m_orderedItems[i]->value[ c ] ? wxTRANSPARENT : wxSOLID ) );
-			dc.DrawRectangle( x+2, y+yoff+2, m_boxSize-4, m_boxSize-4 );
+			if(m_radioFirstCol && c == 0)
+			{
+				dc.DrawCircle(x + radius, y + radius + yoff, radius - 2);
+			}
+			else
+			{
+				dc.DrawRectangle( x+2, y+yoff+2, m_boxSize-4, m_boxSize-4 );
+			}
 
 			x += m_boxSize + yoff;
 		}

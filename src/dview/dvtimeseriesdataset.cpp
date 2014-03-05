@@ -69,7 +69,7 @@ void wxDVTimeSeriesDataSet::GetMinAndMaxInRange(double* min, double* max, double
 	if (endHour < At(0).x)
 		endHour = At(0).x;
 	size_t startIndex = size_t((startHour - At(0).x)/GetTimeStep());
-	size_t endIndex = size_t((endHour - At(0).x)/GetTimeStep() + 1);
+	size_t endIndex = size_t((endHour - At(0).x)/GetTimeStep() + 2);
 
 	if (startIndex < 0)
 		startIndex = 0;
@@ -146,4 +146,64 @@ wxString wxDVArrayDataSet::GetSeriesTitle() const
 wxString wxDVArrayDataSet::GetUnits() const
 {
 	return m_varUnits;
+}
+
+void wxDVArrayDataSet::SetDataValue(size_t i, double newYValue)
+{
+	m_pData[i] = newYValue;
+}
+
+
+// ******** Point array data set *********** //
+
+
+wxDVPointArrayDataSet::wxDVPointArrayDataSet( const wxString &var, const wxString &units, const double &timestep )
+	: mSeriesTitle(var), m_varUnits(units), m_timestep(timestep)
+{
+	
+}
+
+wxDVPointArrayDataSet::~wxDVPointArrayDataSet()
+{
+	mDataPoints.clear();
+}
+
+wxRealPoint wxDVPointArrayDataSet::At(size_t i) const
+{
+	return mDataPoints[i];
+}
+
+size_t wxDVPointArrayDataSet::Length() const
+{
+	return mDataPoints.size();
+}
+
+double wxDVPointArrayDataSet::GetTimeStep() const
+{
+	return m_timestep;
+}
+
+wxString wxDVPointArrayDataSet::GetSeriesTitle() const
+{
+	return mSeriesTitle;
+}
+
+wxString wxDVPointArrayDataSet::GetUnits() const 
+{
+	return m_varUnits;
+}
+
+void wxDVPointArrayDataSet::SetDataValue(size_t i, double newYValue)
+{
+	mDataPoints[i].y = newYValue;
+}
+
+void wxDVPointArrayDataSet::Append(const wxRealPoint& p)
+{
+	mDataPoints.push_back(p);
+}
+
+void wxDVPointArrayDataSet::Alloc(int size)
+{
+	mDataPoints.reserve(size);
 }

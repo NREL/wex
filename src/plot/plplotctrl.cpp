@@ -17,6 +17,7 @@
 #include <wx/sstream.h>
 #include <wx/dcsvg.h>
 
+#include "wex/plot/plhistplot.h"
 #include "wex/plot/plplotctrl.h"
 #include "wex/pdf/pdfdc.h"
 
@@ -82,7 +83,6 @@ wxPLAxis *wxPLPlottable::SuggestYAxis() const
 	return new wxPLLinearAxis( ymin, ymax );
 }
 
-
 bool wxPLPlottable::GetMinMax(double *pxmin, double *pxmax, double *pymin, double *pymax) const
 {
 	if (Len() == 0) return false;
@@ -116,6 +116,43 @@ bool wxPLPlottable::ExtendMinMax(double *pxmin, double *pxmax, double *pymin, do
 	if (pymin && ymin < *pymin) *pymin = ymin;
 	if (pymax && ymax > *pymax) *pymax = ymax;
 	return true;
+}
+
+std::vector<wxString> wxPLPlottable::GetExportableDatasetHeaders( wxUniChar sep ) const
+{
+	std::vector<wxString> tt;
+	wxString xLabel = GetXDataLabel();
+	wxString yLabel = GetYDataLabel();
+			
+	//Remove sep chars that we don't want
+	while (xLabel.Find(sep) != wxNOT_FOUND)
+	{
+		xLabel = xLabel.BeforeFirst(sep) + xLabel.AfterFirst(sep);
+	}
+
+	while (yLabel.Find(sep) != wxNOT_FOUND)
+	{
+		yLabel = yLabel.BeforeFirst(sep) + yLabel.AfterFirst(sep);
+	}
+
+	tt.push_back(xLabel);
+	tt.push_back(yLabel);
+
+	return tt;
+}
+
+std::vector<wxRealPoint> wxPLPlottable::GetExportableDataset(double Xmin, double Xmax, bool visible_only) const
+{
+	std::vector<wxRealPoint> data;
+	wxRealPoint pt;
+
+	for (size_t i = 0; i < Len(); i++)
+	{
+		pt = At(i);
+		if((pt.x >= Xmin && pt.x <= Xmax) || !visible_only) { data.push_back(At(i)); }
+	}
+
+	return data;
 }
 
 wxPLSideWidgetBase::wxPLSideWidgetBase()
@@ -963,13 +1000,13 @@ void wxPLPlotCtrl::AddPlot( wxPLPlottable *p, AxisPos xap, AxisPos yap, PlotPos 
 		UpdateAxes( false );
 }
 
-wxPLPlottable *wxPLPlotCtrl::RemovePlot( wxPLPlottable *p )
+wxPLPlottable *wxPLPlotCtrl::RemovePlot( wxPLPlottable *p, PlotPos plotPosition )
 {
 	for ( std::vector<plot_data>::iterator it = m_plots.begin();
 		it != m_plots.end();
 		++it )
 	{
-		if ( it->plot == p )
+		if ( it->plot == p && (it->ppos == plotPosition || plotPosition == NPLOTPOS) )
 		{
 			m_plots.erase( it );
 			if ( p->IsShownInLegend() )
@@ -1041,7 +1078,6 @@ void wxPLPlotCtrl::SetTitle( const wxString &title )
 	m_title = title;
 }
 
-
 void wxPLPlotCtrl::SetLegendLocation( LegendPos pos, double xpercent, double ypercent )
 {
 	if ( xpercent < -10 ) xpercent = -10;
@@ -1053,7 +1089,6 @@ void wxPLPlotCtrl::SetLegendLocation( LegendPos pos, double xpercent, double ype
 	m_legendPosPercent.y = ypercent;
 	m_legendPos = pos;
 }
-
 
 bool wxPLPlotCtrl::SetLegendLocation( const wxString &spos )
 {
@@ -1104,95 +1139,115 @@ wxPLSideWidgetBase *wxPLPlotCtrl::ReleaseSideWidget( AxisPos pos )
 
 void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visible_only, bool include_x )
 {
-	if ( m_plots.size() == 0 )
-		return;
+	if ( m_plots.size() == 0 ) { return; }
 
 	wxTextOutputStream tt(os);
 	wxString sepstr(sep);
-
-	//We only include the x column on a plot if we are including X and if its x header is different than the previous column's.
+	wxString xDataLabel = "";
+	wxPLAxis *xaxis;
+	wxPLPlottable *plot;
+	double worldMin;
+	double worldMax;
+	wxPLHistogramPlot* histPlot;
 	std::vector<bool> includeXForPlot( m_plots.size(), false );
-	includeXForPlot[0] = true;
-	for ( size_t i=1; i<m_plots.size(); i++ )
-		includeXForPlot[i] = (m_plots[i].plot->GetXDataLabel() != m_plots[i-1].plot->GetXDataLabel());
-		
+	std::vector<wxString> Headers;
+	std::vector <std::vector<wxRealPoint>> data;
 	size_t maxLength = 0;
-	//Do header info
+	bool keepGoing; //Used to stop early if all columns are no longer visible.
+
+	//Add column headers
 	for ( size_t i = 0; i < m_plots.size(); i++ )
 	{
-		wxPLPlottable *plot = m_plots[i].plot;
-		
+		plot = m_plots[i].plot;
+
+		worldMin = 0.0;
+		worldMax = plot->At(plot->Len() - 1).x;
+
+		//We only include the x column on a plot if we are including X and if its x header is different than the previous column's.
+		if(i == 0)
+		{
+			includeXForPlot[i] = true;
+		}
+		else if(histPlot = dynamic_cast<wxPLHistogramPlot*>( plot )) 
+		{ 
+			includeXForPlot[i] = true;
+
+			//For CDF plots there is no X data label. The closest useful label is the Y label of the companion PDF histogram plot, so we need to store for use by the CDF plot.
+			if(xDataLabel == "") { xDataLabel = m_plots[i].plot->GetYDataLabel(); }
+		}
+		else if(histPlot = dynamic_cast<wxPLHistogramPlot*>( m_plots[i - 1].plot ))
+		{
+			includeXForPlot[i] = true;
+		}
+		else
+		{
+			includeXForPlot[i] = (m_plots[i].plot->GetXDataLabel() != m_plots[i-1].plot->GetXDataLabel());
+		}
+
+		if(histPlot = dynamic_cast<wxPLHistogramPlot*>( m_plots[i].plot ))
+		{
+			//Do nothing
+		}
+		else
+		{
+			xaxis = GetAxis( m_plots[i].xap, m_plots[i].ppos );
+			if ( xaxis )
+			{
+				worldMin = xaxis->GetWorldMin();
+				worldMax = xaxis->GetWorldMax();
+			}
+		}
+
+		Headers = plot->GetExportableDatasetHeaders(sep);
+		data.push_back(plot->GetExportableDataset(worldMin, worldMax, visible_only));
+
 		if (include_x && includeXForPlot[i])
 		{
-			wxString xLabel = plot->GetXDataLabel();
-			//Remove sep chars that we don't want
-			while (xLabel.Find(sep) != wxNOT_FOUND)
-				xLabel = xLabel.BeforeFirst(sep) + xLabel.AfterFirst(sep);
-
-			if (i > 0)
-				tt << sepstr; //Extra column since we have a new set of x values.
-
-			tt << xLabel;
+			if (i > 0) { tt << sepstr;}	//Extra column since we have a new set of x values.
+			tt << (Headers[0].IsEmpty() ? xDataLabel : Headers[0]);
 			tt << sepstr;
 		}
 
-		wxString yLabel = plot->GetYDataLabel();
-		//Remove sep chars that we don't want
-		while (yLabel.Find(sep) != wxNOT_FOUND)
-			yLabel = yLabel.BeforeFirst(sep) + yLabel.AfterFirst(sep);
-		tt << yLabel;
-		if ( i < m_plots.size() - 1 ) 
-			tt << sepstr;
-
-		if ( plot->Len() > maxLength )
-			maxLength = plot->Len();
+		tt << Headers[1];
+		if ( i < m_plots.size() - 1 ) { tt << sepstr; }
+		if ( data[i].size() > maxLength ) { maxLength = data[i].size(); }
 	}
 
 	tt << "\n";
 
 	//Add data
-	std::vector<int> rowCounterForPlot( m_plots.size(), 0 );
-	for (size_t i=0; i<maxLength; i++)
+	for (size_t RowNum = 0; RowNum < maxLength; RowNum++)
 	{
-		bool keepGoing = false; //Used to stop early if all columns are no longer visible.
-		for ( size_t j=0; j<m_plots.size(); j++ )
+		keepGoing = false;
+
+		for ( size_t PlotNum = 0; PlotNum < m_plots.size(); PlotNum++ )
 		{
-			wxPLPlottable *plot = m_plots[j].plot;
-			wxPLAxis *xaxis = GetAxis( m_plots[j].xap, m_plots[j].ppos );
-			wxPLAxis *yaxis = GetAxis( m_plots[j].yap, m_plots[j].ppos );
-			if ( !xaxis ) continue;
+			plot = m_plots[PlotNum].plot;
 
-			double worldMin = xaxis->GetWorldMin();
-			double worldMax = xaxis->GetWorldMax();
-
-			//Find next entry for this column that is visible.
-			if ( visible_only )
-			{
-				while( rowCounterForPlot[j] < plot->Len() 
-					&& ( plot->At(rowCounterForPlot[j]).x < worldMin 
-					    || plot->At(rowCounterForPlot[j]).x > worldMax))
-					rowCounterForPlot[j]++;
-			}
-
-			if ( rowCounterForPlot[j] < plot->Len() )
+			if ( RowNum < data[PlotNum].size() )
 			{
 				keepGoing = true;
-				if ( include_x && includeXForPlot[j] )
+
+				if ( include_x && includeXForPlot[PlotNum] )
 				{
-					if (j > 0) tt << sepstr; //extra sep before to add blank column before new x values, as in header.
-					tt << wxString::Format("%lg", plot->At(rowCounterForPlot[j]).x );
+					if (PlotNum > 0) tt << sepstr; //extra sep before to add blank column before new x values, as in header.
+					tt << wxString::Format("%lg", data[PlotNum][RowNum].x );
 					tt << sepstr; 
 				}
 
-				tt << wxString::Format("%lg", plot->At(rowCounterForPlot[j]).y);
-				rowCounterForPlot[j]++;
+				tt << wxString::Format("%lg", data[PlotNum][RowNum].y);
+			}
+			else
+			{
+				if (PlotNum > 0) tt << sepstr; //extra sep before to add blank column before new x values, as in header.
+				tt << sepstr; 
 			}
 
-			if ( j < m_plots.size() - 1 )
-				tt << sepstr;
+			if ( PlotNum < m_plots.size() - 1 ) { tt << sepstr; }
 		}
 
 		if (!keepGoing) break;
+
 		tt << "\n";
 	}
 }
@@ -1881,7 +1936,6 @@ void wxPLPlotCtrl::DrawGrid( wxDC &dc, wxPLAxis::TickData::TickSize size )
 	}
 }
 
-
 wxPLPlotCtrl::legend_item::legend_item( wxDC &dc, wxPLPlottable *p )
 {
 	plot = p;
@@ -2344,7 +2398,6 @@ void wxPLPlotCtrl::OnMouseCaptureLost( wxMouseCaptureLostEvent & )
 		Refresh();
 	}
 }
-
 
 void wxPLPlotCtrl::DeleteAxes()
 {
