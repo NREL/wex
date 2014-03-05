@@ -84,7 +84,6 @@ void wxDVSelectionListCtrl::RemoveAll()
 {
 	DeAssignAll();
 	FreeRowItems();
-	m_orderedItems.clear();
 	Invalidate();
 }
 

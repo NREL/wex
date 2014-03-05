@@ -118,7 +118,7 @@ public:
 	enum PlotPos { PLOT_TOP, PLOT_BOTTOM, NPLOTPOS };
 	enum LegendPos { FLOATING, NORTHWEST, SOUTHWEST, NORTHEAST, SOUTHEAST, NORTH, SOUTH, EAST, WEST, BOTTOM, RIGHT  };
 
-	void AddPlot( wxPLPlottable *p, AxisPos xap = X_BOTTOM, AxisPos yap = Y_LEFT, PlotPos ppos = PLOT_TOP );
+	void AddPlot( wxPLPlottable *p, AxisPos xap = X_BOTTOM, AxisPos yap = Y_LEFT, PlotPos ppos = PLOT_TOP, bool update_axes = true );
 	wxPLPlottable *RemovePlot( wxPLPlottable *p, PlotPos plotPosition = NPLOTPOS );
 	void DeleteAllPlots();
 	size_t GetPlotCount();
@@ -177,6 +177,7 @@ public:
 		int width=-1, int height=-1 );
 	wxBitmap GetBitmap( int width=-1, int height=-1 );
 	
+	void UpdateAxes( bool recalculate_all = false );
 	void RescaleAxes();
 	void DeleteAxes();
 

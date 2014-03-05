@@ -1,0 +1,92 @@
+﻿Build started 3/5/2014 1:35:02 PM.
+     1>Project "C:\Work\DView\vc2012_wx3_unicode\wexlib.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /IC:\Work\DView\vc2012_wx3_unicode\\..\include /I"c:\wxWidgets-2.9.5-win32\lib\vc_lib\mswud" /IC:\Work\LK /I"c:\wxWidgets-2.9.5-win32\include" /I. /I"c:\wxWidgets-2.9.5-win32\samples" /Zi /nologo /W4 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CRT_SECURE_NO_DEPRECATE=1 /D _CRT_NON_CONFORMING_SWPRINTFS=1 /D _SCL_SECURE_NO_WARNINGS=1 /D __WXMSW__ /D _UNICODE /D _WINDOWS /D NOPCH /D _UNICODE /D UNICODE /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /GR /Fo"vc_mswud\wexlib\\" /Fd"vc_mswud\wex.pdb" /Gd /TP /analyze- /errorReport:prompt /MP ..\src\sched.cpp
+         sched.cpp
+       Lib:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\Lib.exe /OUT:"C:\Work\DView\vc2012_wx3_unicode\..\wexvc12wx3d.lib" /NOLOGO vc_mswud\wexlib\codeedit.obj
+         vc_mswud\wexlib\dvautocolourassigner.obj
+         vc_mswud\wexlib\dvcolourmap.obj
+         vc_mswud\wexlib\dvdcctrl.obj
+         vc_mswud\wexlib\dvdmapctrl.obj
+         vc_mswud\wexlib\dvfiledataset.obj
+         vc_mswud\wexlib\dvplotctrl.obj
+         vc_mswud\wexlib\dvplotctrlsettings.obj
+         vc_mswud\wexlib\dvplothelper.obj
+         vc_mswud\wexlib\dvpncdfctrl.obj
+         vc_mswud\wexlib\dvprofilectrl.obj
+         vc_mswud\wexlib\dvscatterplotctrl.obj
+         vc_mswud\wexlib\dvselectionlist.obj
+         vc_mswud\wexlib\dvtimeseriesctrl.obj
+         vc_mswud\wexlib\dvtimeseriesdataset.obj
+         vc_mswud\wexlib\extgrid.obj
+         vc_mswud\wexlib\exttext.obj
+         vc_mswud\wexlib\jsonreader.obj
+         vc_mswud\wexlib\jsonval.obj
+         vc_mswud\wexlib\jsonwriter.obj
+         vc_mswud\wexlib\label.obj
+         vc_mswud\wexlib\lkscript.obj
+         vc_mswud\wexlib\md5.obj
+         vc_mswud\wexlib\metro.obj
+         vc_mswud\wexlib\radiochoice.obj
+         vc_mswud\wexlib\sched.obj
+         vc_mswud\wexlib\numeric.obj
+         vc_mswud\wexlib\activex.obj
+         vc_mswud\wexlib\excelauto.obj
+         vc_mswud\wexlib\iehtmlwin.obj
+         vc_mswud\wexlib\pdfannotation.obj
+         vc_mswud\wexlib\pdfbarcode.obj
+         vc_mswud\wexlib\pdfcffdecoder.obj
+         vc_mswud\wexlib\pdfcffindex.obj
+         vc_mswud\wexlib\pdfcolour.obj
+         vc_mswud\wexlib\pdfdc.obj
+         vc_mswud\wexlib\pdfdecode.obj
+         vc_mswud\wexlib\pdfdocument.obj
+         vc_mswud\wexlib\pdfencoding.obj
+         vc_mswud\wexlib\pdfencrypt.obj
+         vc_mswud\wexlib\pdffont.obj
+         vc_mswud\wexlib\pdffontdata.obj
+         vc_mswud\wexlib\pdffontdatacore.obj
+         vc_mswud\wexlib\pdffontdataopentype.obj
+         vc_mswud\wexlib\pdffontdatatruetype.obj
+         vc_mswud\wexlib\pdffontdatatype0.obj
+         vc_mswud\wexlib\pdffontdatatype1.obj
+         vc_mswud\wexlib\pdffontdescription.obj
+         vc_mswud\wexlib\pdffontdetails.obj
+         vc_mswud\wexlib\pdffontextended.obj
+         vc_mswud\wexlib\pdffontmanager.obj
+         vc_mswud\wexlib\pdffontparser.obj
+         vc_mswud\wexlib\pdffontparsertruetype.obj
+         vc_mswud\wexlib\pdffontparsertype1.obj
+         vc_mswud\wexlib\pdffontsubsetcff.obj
+         vc_mswud\wexlib\pdffontsubsettruetype.obj
+         vc_mswud\wexlib\pdffontvolt.obj
+         vc_mswud\wexlib\pdfform.obj
+         vc_mswud\wexlib\pdfgradient.obj
+         vc_mswud\wexlib\pdfgraphics.obj
+         vc_mswud\wexlib\pdfimage.obj
+         vc_mswud\wexlib\pdfkernel.obj
+         vc_mswud\wexlib\pdflayer.obj
+         vc_mswud\wexlib\pdfobjects.obj
+         vc_mswud\wexlib\pdfocg.obj
+         vc_mswud\wexlib\pdfparser.obj
+         vc_mswud\wexlib\pdfpattern.obj
+         vc_mswud\wexlib\pdfprint.obj
+         vc_mswud\wexlib\pdfrijndael.obj
+         vc_mswud\wexlib\pdftemplate.obj
+         vc_mswud\wexlib\pdfutility.obj
+         vc_mswud\wexlib\pdfxml.obj
+         vc_mswud\wexlib\plaxis.obj
+         vc_mswud\wexlib\plbarplot.obj
+         vc_mswud\wexlib\plhistplot.obj
+         vc_mswud\wexlib\pllineplot.obj
+         vc_mswud\wexlib\plplotctrl.obj
+         vc_mswud\wexlib\plscatterplot.obj
+         vc_mswud\wexlib\uiform.obj
+         vc_mswud\wexlib\utils.obj
+         wexlib.vcxproj -> C:\Work\DView\vc2012_wx3_unicode\..\wexvc12wx3d.lib
+     1>Done Building Project "C:\Work\DView\vc2012_wx3_unicode\wexlib.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:03.69

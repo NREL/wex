@@ -36,7 +36,7 @@ public:
 	void Paste(bool all=false);
 
 	void ResizeGrid(int nr, int nc);
-
+	
 private:
 	void OnGridKey( wxKeyEvent &evt );
 	void OnGridCellChange(wxGridEvent &evt);

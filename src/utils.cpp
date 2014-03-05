@@ -638,175 +638,318 @@ std::vector<int> wxCommaDashListToIndices(const wxString &value)
 }
 
 
-/*
-// this will interpolate or extrapolate as necessary
-// if slope is infinite (x1 = x2), it will just return the first Y value
-double Interpolate(double x1, double y1, double x2, double y2, double xValueToGetYValueFor)
+int wxDrawWordWrappedText(wxDC& dc, const wxString &str, int width, bool draw, int x, int y, wxArrayString *lines)
 {
-	if (x1 == x2) return y1;
-	if (y1 == y2) return y1;
+	int line = 0;
+	int line_height = dc.GetCharHeight();
+	wxString remaining = str;
 
-	double slope = (y2 - y1)/(x2 - x1);
-	double inter = y1 - (slope * x1);
-	return (slope*xValueToGetYValueFor) + inter;
-}
-
-*/
-
-/*
-struct csvcell
-{
-	size_t r, c;
-	wxString text;
-};
- 
-int CSVRead( const wxString &file, Mat2D<wxString> &csv )
-{
-	FILE *fp = fopen( (const char*)file.c_str(), "r" );
-	if ( !fp ) return 0;
-	
-	size_t size = BUFSIZ;
-	char *buf = new char[size];
-
-	size_t max_row = 0;
-	size_t max_col = 0;
-
-	std::vector< csvcell* > cells;
-	int errflag = 0;
-
-	while ( !feof(fp) )
+	while ( !remaining.IsEmpty() )
 	{
-		// read a full line, extending buf as needed
-		size_t last = 0;
-		size_t len = 0;
-		bool has_line = false;
-		while ( !feof(fp) )
+		wxString line_text = remaining;
+		wxCoord line_width;
+		dc.GetTextExtent(line_text, &line_width, NULL);
+		while(line_width > 5 && line_width >= width-3 && line_text.Len() > 0)
 		{
-			char *line = fgets( buf + last, size - last, fp );
-			len = strlen(buf);
-			last = len - 1;
-
-			if ( buf[last] != '\n' ) // buffer was too short for the line
-			{
-				// reallocate it, copying over old buffer contents
-				char *pnew = new char[size+BUFSIZ];
-				for (size_t k=0;k<size;k++)
-					pnew[k] = buf[k];
-				delete [] buf;
-				buf = pnew;
-				size += BUFSIZ;
-				continue;
-			}
+			int pos = line_text.Find(' ', true);
+			if (pos < 0)
+				line_text.Truncate( line_text.Len()-1 );
 			else
-			{
-				has_line = ( line != 0 && len > 0 && buf[last] == '\n' );
-				break; // full line read into buf.
-			}
+				line_text.Truncate(pos);
+
+			dc.GetTextExtent(line_text, &line_width, NULL);
 		}
 
-		if ( !has_line ) break;
+		if (line_text.IsEmpty() || line_width < 5)
+			break;
 
-		// at this point, buf contains a null terminated string representing 
-		// one full line of the CSV file.
-		// scan through one character at a time, determine
+		if (lines) lines->Add( line_text );
 		
-		size_t cur_col = 0;
-		char *p = buf;
+		if (draw)
+			dc.DrawText(line_text, x, y+line*line_height);
 
-		while( len > 0 && p && *p && *p != '\n' )
-		{
-			csvcell *cell = new csvcell;
-			cell->r = max_row;
-			cell->c = cur_col;
-			cells.push_back( cell );
+		line++;
 
-			if (*p == '"')
-			{
-				p++; // skip the initial quote
-
-				// read a quoted cell
-				while ( p && *p )
-				{
-					if ( *p == '"' )
-					{
-						if ( *(p+1) == '"')
-						{
-							cell->text += '"';
-							p++; p++;
-						}
-						else
-						{
-							p++; // skip current quote
-							break; // end of quoted cell
-						}
-					}
-					else
-					{
-						cell->text += *p++;
-					}
-				}
-			}
-			else
-			{
-				// read a normal cell
-				char prev = 0;
-				while ( p && *p && *p != ',' && *p != '\n' )
-				{
-					if ( *p == '"' && prev == '"' )
-					{
-						cell->text += '"';
-						prev = *p;
-						p++;
-					}
-					else
-					{
-						cell->text += *p;
-						prev = *p;
-						p++;
-					}
-				}
-			}
-
-			if (*p == ',' || *p == '\n')
-			{
-				p++; // skip over the comma
-				cur_col++;
-				if ( cur_col > max_col )
-					max_col = cur_col;
-			}
-			else
-			{
-				// flag error on the first row with a formatting problem
-				if (errflag == 0)
-					errflag = -( (int)max_row+1 );
-			}
-		}
-
-		max_row++;
-	}
-	
-	fclose(fp);
-	delete [] buf;
-
-	// copy csv cells into matrix
-	if (max_row > 0 && max_col > 0)
-		csv.resize( max_row, max_col, wxEmptyString, false );
-
-	for ( std::vector< csvcell* >::iterator it = cells.begin();
-		it != cells.end();
-		++it )
-	{
-	
-		size_t r = (*it)->r;
-		size_t c = (*it)->c;
-		if (r < max_row && c < max_col)
-			csv.at( r, c ) = (*it)->text;
-
-		delete (*it);
+		remaining = remaining.Mid(line_text.Len());
+		remaining.Trim(false).Trim();
 	}
 
-
-	return (0 == errflag);
+	return line*line_height;
 }
 
-*/
+void wxDrawRaisedPanel(wxDC &dc, int x, int y, int width, int height)
+{	
+	dc.DrawRectangle(x, y, width, height);
+	
+	wxPen savedPen = dc.GetPen();
+	dc.SetPen(*wxWHITE_PEN);
+
+	dc.DrawLine(x, 				y+1, 				x+width-1, 		y+1);
+	dc.DrawLine(x, 				y+1, 					x, 				y+height-1);
+	dc.DrawLine(x+1, 				y+1, 				x+width-2, 		y+1);
+	
+	dc.SetPen(*wxLIGHT_GREY_PEN);
+	dc.DrawLine(x+1, 			y+height-2,			x+width-2, 		y+height-2);
+	dc.DrawLine(x+width-2, 	y+2, 				x+width-2, 		y+height-2);
+	
+	dc.SetPen(*wxBLACK_PEN);
+	dc.DrawLine(x, 				y+height-1, 	x+width-1, 		y+height-1);
+	dc.DrawLine(x+width-1, 		y, 				x+width-1, 		y+height);	
+	
+	dc.SetPen(savedPen);
+}
+
+
+void wxDrawSunkenPanel(wxDC &dc, int x, int y, int width, int height)
+{
+	dc.DrawRectangle(x, y, width, height);
+
+	wxPen savedPen = dc.GetPen();
+	wxBrush savedBrush = dc.GetBrush();
+	
+	dc.SetBrush(*wxTRANSPARENT_BRUSH);
+	dc.SetPen(*wxBLACK_PEN);
+	dc.DrawRectangle(x, y, width-1, height-1);
+	
+	dc.SetPen(*wxGREY_PEN);
+	dc.DrawRectangle(x+1, y+1, width-2, height-2);
+
+	dc.SetBrush(savedBrush);
+	dc.SetPen(savedPen);
+}
+
+
+void wxDrawEngravedPanel(wxDC &dc, int x, int y, int width, int height, bool fill)
+{
+	wxBrush savedBrush = dc.GetBrush();
+	wxPen savedPen = dc.GetPen();
+	
+	if (fill)
+	{
+		dc.DrawRectangle(x, y, width, height);
+	}
+
+	dc.SetBrush(*wxTRANSPARENT_BRUSH);
+	dc.SetPen(*wxGREY_PEN);
+	dc.DrawRectangle(x, y, width-2, height-2);
+	
+	dc.SetPen(*wxWHITE_PEN);
+	dc.DrawRectangle(x+1, y+1, width-2, height-2);
+	dc.SetBrush(savedBrush);
+	dc.SetPen(savedPen);
+}
+
+
+void wxDrawScrollBar(wxDC &dc, bool vertical, int x, int y, int width, int height)
+{
+	wxPen savedPen = dc.GetPen();
+	wxBrush savedBrush = dc.GetBrush();
+	
+	dc.SetPen(*wxLIGHT_GREY_PEN);
+	dc.SetBrush(*wxLIGHT_GREY_BRUSH);
+	dc.DrawRectangle(x, y, width, height);	
+
+	dc.SetBrush(savedBrush);
+	dc.SetPen(savedPen);
+	if (vertical)
+	{
+		wxDrawArrowButton(dc, wxARROW_UP, x, y, width, width);
+		if (height > 2.5*width)
+			wxDrawRaisedPanel(dc, x, y+width+1, width, 0.3*height);
+
+		wxDrawArrowButton(dc, wxARROW_DOWN, x, y+height-width, width, width);
+	}
+	else
+	{
+		wxDrawArrowButton(dc, wxARROW_LEFT, x, y, height, height);
+		if (width > 2.5*height)
+			wxDrawRaisedPanel(dc, x+height+1, y, 0.3*width, height);
+
+		wxDrawArrowButton(dc, wxARROW_RIGHT, x+width-height, y, height, height);
+	}
+	dc.SetBrush(savedBrush);
+	dc.SetPen(savedPen);
+}
+
+
+void wxDrawArrowButton(wxDC &dc, wxArrowType type, int x, int y, int width, int height)
+{
+	int asize = width < height ? width/2 : height/2;
+	
+	wxBrush savedBrush = dc.GetBrush();
+	wxPen savedPen = dc.GetPen();
+	wxDrawRaisedPanel(dc, x, y, width, height);
+	dc.SetBrush(*wxBLACK_BRUSH);
+	dc.SetPen(*wxBLACK_PEN);
+	
+	switch(type)
+	{
+	case wxARROW_UP:
+	case wxARROW_DOWN:
+		wxDrawArrow(dc, type, x+(width-asize)/2, y+(height-asize)/2, asize, asize);
+		break;
+	default:
+		wxDrawArrow(dc, type, x+(width-asize)/2, y+(height-asize)/2, asize, asize);
+	}
+	
+	dc.SetBrush(savedBrush);
+	dc.SetPen(savedPen);
+}
+
+
+
+void wxDrawArrow(wxDC &dc, wxArrowType type, int x, int y, int width, int height)
+{
+	wxPoint pts[3];
+	switch(type)
+	{
+	case wxARROW_RIGHT:
+      pts[0] = wxPoint(x,y);
+      pts[1] = wxPoint(x, y+height);
+      pts[2] = wxPoint(x+width, y+height/2);
+      break;
+   case wxARROW_LEFT:
+      pts[0] = wxPoint(x+width,y);
+      pts[1] = wxPoint(x+width, y+height);
+      pts[2] = wxPoint(x, y+height/2);
+      break;
+   case wxARROW_UP:
+      pts[0] = wxPoint(x,y+height);
+      pts[1] = wxPoint(x+width, y+height);
+      pts[2] = wxPoint(x+width/2, y);
+      break;
+   case wxARROW_DOWN:
+      pts[0] = wxPoint(x,y);
+      pts[1] = wxPoint(x+width, y);
+      pts[2] = wxPoint(x+width/2, y+height);
+      break;
+   default:
+   	return;
+  	}
+
+	dc.DrawPolygon(3, pts);
+}
+
+
+class TextMessageDialog : public wxDialog
+{
+public:
+	TextMessageDialog(const wxString &text, const wxString &title, wxWindow *parent, const wxSize &size = wxSize(600,400))
+		: wxDialog( parent, wxID_ANY, title, wxDefaultPosition, size, 
+			wxRESIZE_BORDER|wxDEFAULT_DIALOG_STYLE )
+	{
+		wxTextCtrl *txtctrl = new wxTextCtrl(this, -1, text, 
+			wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_DONTWRAP|wxTE_READONLY|wxBORDER_NONE);
+		txtctrl->SetFont( wxFont(10, wxMODERN, wxNORMAL, wxNORMAL) );
+		
+		wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+		sizer->Add( txtctrl, 1, wxALL|wxEXPAND, 0 );
+		sizer->Add( CreateButtonSizer( wxOK ), 0, wxALL|wxEXPAND, 4 );
+		SetSizer( sizer );
+
+		SetEscapeId( wxID_CANCEL );
+	}
+};
+
+void wxShowTextMessageDialog(const wxString &text, const wxString &title, wxWindow *parent, const wxSize &size )
+{
+   TextMessageDialog dlg(text, "Notice", parent, size);
+   if( parent ) dlg.CenterOnParent();
+   dlg.ShowModal();  
+}
+
+
+int wxNDay[12] = {31,28,31,30,31,30,31,31,30,31,30,31};
+	
+/* returns month number 1..12 given 
+	time: hour index in year 0..8759 */
+int wxMonthOf(double time)
+{
+	if (time < 0) return 0;
+	if (time < 744) return 1;
+	if (time < 1416) return 2;
+	if (time < 2160) return 3;
+	if (time < 2880) return 4;
+	if (time < 3624) return 5;
+	if (time < 4344) return 6;
+	if (time < 5088) return 7;
+	if (time < 5832) return 8;
+	if (time < 6552) return 9;
+	if (time < 7296) return 10;
+	if (time < 8016) return 11;
+	if (time < 8760) return 12;
+	return 0;
+}
+	/* month: 1-12 time: hours, starting 0=jan 1st 12am, returns 1-nday*/
+int wxDayOfMonth(int month, double time)
+{
+	int daynum = ( ((int)(time/24.0)) + 1 );   // day goes 1-365
+	switch(month)
+	{
+	case 1: return  daynum;
+	case 2: return  daynum-31;
+	case 3: return  daynum-31-28;
+	case 4: return  daynum-31-28-31;
+	case 5: return  daynum-31-28-31-30;
+	case 6: return  daynum-31-28-31-30-31;
+	case 7: return  daynum-31-28-31-30-31-30;
+	case 8: return  daynum-31-28-31-30-31-30-31;
+	case 9: return  daynum-31-28-31-30-31-30-31-31;
+	case 10: return daynum-31-28-31-30-31-30-31-31-30;
+	case 11: return daynum-31-28-31-30-31-30-31-31-30-31;
+	case 12: return daynum-31-28-31-30-31-30-31-31-30-31-30; 
+	default: break;
+	}
+	return daynum;
+}
+
+/* converts 'time' (hours since jan 1st 12am, 0 index) to M(1..12), D(1..N), H(0..23), M(0..59) */
+void wxTimeToMDHM( double time, int *mo, int *dy, int *hr, int *min )
+{
+	*mo = wxMonthOf( time );
+	*dy = wxDayOfMonth( *mo, time );
+	*hr = (int)(((int)time)%24);
+
+	if ( min != 0 )
+	{
+		double fraction = time - ((long)time);
+		*min = (int)( fraction*60 );
+	}
+}
+
+/* converts M(1..12), D(1..N), H(0..23) M(0..59) to time in hours since jan 1st 12am, 0 index ) */
+double wxMDHMToTime( int mo, int dy, int hr, int min )
+{
+	// shift to zero index
+	mo--;
+	dy--;
+
+	int time = hr + dy*24;
+
+	for( int m=0;m<mo;m++ )
+		time += wxNDay[m]*24;
+
+	return time + min/60.0;
+}
+
+wxString wxFormatMDHM( int mo, int dy, int hr, int min, bool use_12_hr )
+{
+	static const char *months[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+	if ( mo < 1 ) mo = 1;
+	if ( mo > 12 ) mo = 12;
+
+	if ( use_12_hr )
+		return wxString::Format( "%s %d, %02d:%02d %s", months[mo-1], dy, 
+			 ( hr == 0 ? 12 : (hr > 12 ? hr-12 : hr) ),
+			 min,
+			 hr < 12 ? "am" : "pm" );
+	else
+		return wxString::Format( "%s %d, %d:%d", months[mo-1], dy, hr, min );
+}
+
+wxString wxFormatTime( double time, bool use_12_hr )
+{
+	int mo, dy, hr, min;
+	wxTimeToMDHM( time, &mo, &dy, &hr, &min );
+	return wxFormatMDHM( mo, dy, hr, min, use_12_hr );
+}

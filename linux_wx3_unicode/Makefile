@@ -12,8 +12,14 @@ LIBNAME = wexuxwx3
 TARGET = ../$(LIBNAME).a
 	
 OBJECTS = \
+	csv.o \
+	exttree.o \
+	label.o \
+	exttext.o \
+	radiochoice.o \
 	metro.o \
-	sched.o \
+	uiform.o \
+	diurnal.o \
 	utils.o \
 	lkscript.o \
 	codeedit.o \
@@ -23,7 +29,6 @@ OBJECTS = \
 	jsonwriter.o \
 	md5.o \
 	numeric.o \
-	ribbonbook.o \
 	dvautocolourassigner.o \
 	dvcolourmap.o \
 	dvdcctrl.o \

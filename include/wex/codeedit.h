@@ -1,6 +1,8 @@
 #ifndef __codedit_h
 #define __codedit_h
 
+#include <vector>
+
 #if defined(__APPLE__)||defined(__GNUC__)
 #include <tr1/unordered_map>
 using namespace std::tr1;
@@ -20,6 +22,9 @@ class wxCodeEditCtrl : public wxStyledTextCtrl
 public:
 	wxCodeEditCtrl( wxWindow *parent, int id = wxID_ANY, 
 		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize );
+
+	bool ReadAscii( const wxString &file );
+	bool WriteAscii( const wxString &file );
 
 	enum Language { NONE, CPP, C, LK, VBA, HTML, TEXT, TRNSYS, PYTHON };
 

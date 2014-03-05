@@ -11,44 +11,18 @@
 #if !defined( _WX_JSONVAL_H )
 #define _WX_JSONVAL_H
 
-#ifdef __GNUG__
-    #pragma interface "jsonval.h"
-#endif
-
-// For compilers that support precompilation, includes "wx/wx.h".
-#include "wx/wxprec.h"
-
-#ifdef __BORLANDC__
-    #pragma hdrstop
-#endif
-
 // for all others, include the necessary headers (this file is usually all you
 // need because it includes almost all "standard" wxWidgets headers)
-#ifndef WX_PRECOMP
-    #include <wx/object.h>
-    #include <wx/hashmap.h>
-    #include <wx/dynarray.h>
-    #include <wx/arrstr.h>
-#endif
-
+#include <wx/object.h>
+#include <wx/hashmap.h>
+#include <wx/dynarray.h>
+#include <wx/arrstr.h>
 
 #include "json_defs.h"
 
 // forward declarations
-class WXDLLIMPEXP_JSON wxJSONReader;
-class WXDLLIMPEXP_JSON wxJSONRefData;
-
-#if defined( wxJSON_USE_STL )
-    // if compiling on MinGW we use the STL-style declaration of wxWidget's
-    // container classes
-    class WXDLLIMPEXP_JSON wxJSONValue;
-    WX_DECLARE_OBJARRAY( wxJSONValue, wxJSONInternalArray );
-    WX_DECLARE_STRING_HASH_MAP( wxJSONValue, wxJSONInternalMap );
-#else
-    class WXDLLIMPEXP_JSON wxJSONInternalMap;
-    class WXDLLIMPEXP_JSON wxJSONInternalArray;
-#endif
-
+class wxJSONReader;
+class wxJSONRefData;
 
 //! The type of the value held by the wxJSONRefData class
 enum wxJSONType {
@@ -175,9 +149,6 @@ public:
     wxMemoryBuffer AsMemoryBuff() const;
     bool        AsMemoryBuff( wxMemoryBuffer& buff ) const;
 
-    const wxJSONInternalMap*   AsMap() const;
-    const wxJSONInternalArray* AsArray() const;
-
     // get members names, size and other info
     bool      HasMember( unsigned index ) const;
     bool      HasMember( const wxString& key ) const;
@@ -299,12 +270,8 @@ protected:
 };
 
 
-#if !defined( wxJSON_USE_STL )
-    // if using wxWidget's implementation of container classes we declare
-    // the OBJARRAY are HASH_MAP _after_ the wxJSONValue is fully known
-    WX_DECLARE_OBJARRAY( wxJSONValue, wxJSONInternalArray );
-    WX_DECLARE_STRING_HASH_MAP( wxJSONValue, wxJSONInternalMap );
-#endif
+WX_DECLARE_OBJARRAY( wxJSONValue, wxJSONInternalArray );
+WX_DECLARE_STRING_HASH_MAP( wxJSONValue, wxJSONInternalMap );
 
 
 /***********************************************************************
@@ -439,6 +406,9 @@ public:
 #endif
 };
 
+
+const wxJSONInternalArray* wxJSONValueAsArray( const wxJSONValue &val );
+const wxJSONInternalMap* wxJSONValueAsMap( const wxJSONValue &val );
 
 #endif            // not defined _WX_JSONVAL_H
 

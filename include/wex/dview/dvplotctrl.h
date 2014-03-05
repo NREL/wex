@@ -19,7 +19,7 @@
 #include "wex/dview/dvscatterplotctrl.h"
 #include "wex/dview/dvplotctrlsettings.h"
 
-class wxRibbonNotebook;
+class wxMetroNotebook;
 
 class wxDVPlotCtrl : public wxPanel
 {
@@ -54,7 +54,7 @@ public:
 private:
 	std::vector<wxDVTimeSeriesDataSet*> m_dataSets;
 
-	wxRibbonNotebook *m_plotNotebook;
+	wxMetroNotebook *m_plotNotebook;
 	wxDVTimeSeriesCtrl *m_timeSeries;
 	wxDVTimeSeriesCtrl *m_dailyTimeSeries;
 	wxDVTimeSeriesCtrl *m_monthlyTimeSeries;

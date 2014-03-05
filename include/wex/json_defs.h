@@ -193,9 +193,9 @@
 // we have to use different aproaches when declaring the array and
 // key/value containers (see the docs: wxJSON internals: array and hash_map
 #undef wxJSON_USE_STL
-#if defined( wxUSE_STL ) && wxUSE_STL == 1
-#define wxJSON_USE_STL
-#endif
+//#if defined( wxUSE_STL ) && wxUSE_STL == 1
+//#define wxJSON_USE_STL
+//#endif
 
 //
 // defines the MIN and MAX macro for numeric arguments

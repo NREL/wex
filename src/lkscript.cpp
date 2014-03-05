@@ -21,16 +21,56 @@
 #include "wex/plot/pllineplot.h"
 #include "wex/plot/plscatterplot.h"
 
+enum { BAR, LINE, SCATTER };
+static void CreatePlot( wxPLPlotCtrl *plot, double *x, double *y, int len, int thick, wxColour &col, int type,
+	const wxString &xlab, const wxString &ylab, const wxString &series,
+	int xap, int yap)
+{
+	if (len <= 0 ) return;
+		
+	std::vector<wxRealPoint> data;
+	data.reserve( len );
+	for (int i=0;i<len;i++)
+		data.push_back( wxRealPoint( x[i], y[i] ) );
+
+	wxPLPlottable *p = 0;
+
+	switch (type )
+	{
+	case BAR:
+		p = new wxPLBarPlot( data, series, col );
+		break;
+	case LINE:
+		p = new wxPLLinePlot( data, series, col, wxPLLinePlot::SOLID, thick, false );
+		break;
+	case SCATTER:
+		p = new wxPLScatterPlot( data, series, col, thick, false );
+		break;
+	}
+
+	if (!p)
+		return;
+
+	p->SetXDataLabel( xlab );
+	p->SetYDataLabel( ylab );
+	plot->AddPlot( p, (wxPLPlotCtrl::AxisPos)xap, (wxPLPlotCtrl::AxisPos) yap );
+	//plot->RescaleAxes();
+	plot->Refresh();
+}
+
+
 class PlotWin;
 
+static wxWindow *s_curToplevelParent = 0;
 static int _iplot = 1;
-static PlotWin *_curplot = 0;
+static PlotWin *s_curPlotWin = 0;
+static wxPLPlotCtrl *s_curPlot = 0;
 
 class PlotWin : public wxFrame
 {
-private:
-	wxPLPlotCtrl *m_plot;
 public:
+	wxPLPlotCtrl *m_plot;
+
 	PlotWin( wxWindow *parent )
 		: wxFrame( parent, wxID_ANY, 
 			wxString::Format("plot %d", _iplot++),
@@ -38,67 +78,64 @@ public:
 	{
 		m_plot = new wxPLPlotCtrl( this, wxID_ANY );
 		m_plot->SetBackgroundColour(*wxWHITE);
-		_curplot = this;
 		Show();
 	}
 
 	virtual ~PlotWin()
 	{
-		if ( _curplot == this )
-			_curplot = 0;
-	}
+		if ( s_curPlot == m_plot )
+			s_curPlot = 0;
 
-	enum { BAR, LINE, SCATTER };
-	void Add( double *x, double *y, int len, int thick, wxColour &col, int type,
-		const wxString &xlab, const wxString &ylab, const wxString &series,
-		int xap, int yap)
-	{
-		if (len <= 0 ) return;
-		
-		std::vector<wxRealPoint> data;
-		data.reserve( len );
-		for (int i=0;i<len;i++)
-			data.push_back( wxRealPoint( x[i], y[i] ) );
+		if ( s_curPlotWin == this )
+			s_curPlotWin = 0;
 
-		wxPLPlottable *p = 0;
-
-		switch (type )
-		{
-		case BAR:
-			p = new wxPLBarPlot( data, series, col );
-			break;
-		case LINE:
-			p = new wxPLLinePlot( data, series, col, wxPLLinePlot::SOLID, thick, false );
-			break;
-		case SCATTER:
-			p = new wxPLScatterPlot( data, series, col, thick, false );
-			break;
-		}
-
-		if (!p)
-			return;
-
-		p->SetXDataLabel( xlab );
-		p->SetYDataLabel( ylab );
-		m_plot->AddPlot( p, (wxPLPlotCtrl::AxisPos)xap, (wxPLPlotCtrl::AxisPos) yap );
-		m_plot->RescaleAxes();
-		m_plot->Refresh();
-	}
-
-	static PlotWin *Current() { return _curplot; }
-	static void NewPlot( ) { _curplot = 0; }
-	static wxPLPlotCtrl *Surface()
-	{
-		if ( Current() ) return Current()->m_plot;
-		else return 0;
 	}
 };
 
+static void ClearPlotSurface()
+{
+	s_curPlot = 0;
+	s_curPlotWin = 0;
+}
+
+static wxPLPlotCtrl *GetPlotSurface( wxWindow *parent )
+{
+	// somebody externally defined the plot target?
+	if ( s_curPlot != 0 ) 
+		return s_curPlot;
+
+	// there is current window
+	if ( s_curPlotWin != 0 ) {
+		s_curPlot = s_curPlotWin->m_plot;
+		return s_curPlot;
+	}
+
+	// create a new window
+	s_curPlotWin = new PlotWin( parent );
+	s_curPlot = s_curPlotWin->m_plot;
+	return s_curPlot;
+}
+
+
+void wxLKSetToplevelParent( wxWindow *parent )
+{
+	s_curToplevelParent = parent;
+}
+
+void wxLKSetPlotTarget( wxPLPlotCtrl *plot )
+{
+	s_curPlot = plot;
+}
+
+wxPLPlotCtrl *wxLKGetPlotTarget()
+{
+	return s_curPlot;
+}
 
 void fcall_newplot( lk::invoke_t &cxt )
 {
 	LK_DOC("newplot", "Switches to a new plotting window on the next call to plot.", "([boolean:remove all]):none");
-	PlotWin::NewPlot(  );
+	ClearPlotSurface();
 
 	if ( cxt.arg_count() == 1 && cxt.arg(0).as_boolean() )
 	{
@@ -112,12 +149,8 @@ void fcall_newplot( lk::invoke_t &cxt )
 void fcall_plot( lk::invoke_t &cxt )
 {
 	LK_DOC("plot", "Creates an XY line, bar, or scatter plot. Options include thick, type, color, xap, yap, xlabel, ylabel, series.", "(array:x, array:y, table:options):void");
-
-	wxLKScriptCtrl *lksc = (wxLKScriptCtrl*)cxt.user_data();
-
-	PlotWin *plot = PlotWin::Current();
-	if ( plot == 0 )
-		plot = new PlotWin( lksc->GetTopLevelWindowForScript() );
+	
+	wxPLPlotCtrl *plot = GetPlotSurface( s_curToplevelParent );
 
 	lk::vardata_t &a0 = cxt.arg(0).deref();
 	lk::vardata_t &a1 = cxt.arg(1).deref();
@@ -128,7 +161,7 @@ void fcall_plot( lk::invoke_t &cxt )
 		&& a0.length() > 0 )
 	{
 		int thick = 1;
-		int type = PlotWin::LINE;
+		int type = LINE;
 		wxColour col = *wxBLUE;
 		wxString xlab = "x";
 		wxString ylab = "y";
@@ -149,8 +182,8 @@ void fcall_plot( lk::invoke_t &cxt )
 			{
 				wxString stype = arg->as_string().c_str();
 				stype.Lower();
-				if (stype == "bar") type = PlotWin::BAR;
-				else if (stype == "scatter") type = PlotWin::SCATTER;
+				if (stype == "bar") type = BAR;
+				else if (stype == "scatter") type = SCATTER;
 			}
 			
 			if (lk::vardata_t *arg = t.lookup("color") )
@@ -198,7 +231,7 @@ void fcall_plot( lk::invoke_t &cxt )
 			y[i] = a1.index(i)->as_number();
 		}
 
-		plot->Add( x, y, len, thick, col, type, xlab, ylab, series, xap, yap );
+		CreatePlot( plot, x, y, len, thick, col, type, xlab, ylab, series, xap, yap );
 
 		delete [] x;
 		delete [] y;
@@ -207,8 +240,8 @@ void fcall_plot( lk::invoke_t &cxt )
 
 void fcall_plotopt( lk::invoke_t &cxt )
 {
-	LK_DOC("plotopt", "Modifies the current plot properties like title, coarse, fine, legend, legendpos, wpos, wsize", "(table:options):void");
-	wxPLPlotCtrl *plot = PlotWin::Surface();
+	LK_DOC("plotopt", "Modifies the current plot properties like title, coarse, fine, legend, legendpos, wpos, wsize, autoscale", "(table:options):void");
+	wxPLPlotCtrl *plot = s_curPlot;
 	if (!plot) return;
 
 	bool mod = false;
@@ -254,7 +287,7 @@ void fcall_plotopt( lk::invoke_t &cxt )
 
 	if ( lk::vardata_t *arg = cxt.arg(0).lookup("window") )
 	{
-		if (PlotWin::Current()
+		if ( s_curPlotWin
 			&& arg->type() == lk::vardata_t::VECTOR 
 			&& arg->length() == 4 )
 		{
@@ -263,14 +296,14 @@ void fcall_plotopt( lk::invoke_t &cxt )
 			int w = arg->index(2)->as_integer();
 			int h = arg->index(3)->as_integer();
 			if ( x >= 0 && y >= 0 )
-				PlotWin::Current()->SetPosition( wxPoint(x, y) );
+				s_curPlotWin->SetPosition( wxPoint(x, y) );
 
 			if ( w > 0 && h > 0 )
-				PlotWin::Current()->SetClientSize( wxSize(w,h) );
+				s_curPlotWin->SetClientSize( wxSize(w,h) );
 
 		}
 	}
-
+	
 	if (mod)
 		plot->Refresh();
 }
@@ -278,7 +311,7 @@ void fcall_plotopt( lk::invoke_t &cxt )
 void fcall_plotpng( lk::invoke_t &cxt )
 {
 	LK_DOC( "plotpng", "Export the current plot as rendered on the screen to a PNG image file.", "(string:file name):boolean" );
-	wxPLPlotCtrl *plot = PlotWin::Surface();
+	wxPLPlotCtrl *plot = s_curPlot;
 	if (!plot) return;
 	cxt.result().assign( plot->Export( cxt.arg(0).as_string() ) );
 }
@@ -287,7 +320,7 @@ void fcall_axis( lk::invoke_t &cxt )
 {
 	LK_DOC("axis", "Modifies axis properties (type, label, showlabel, min, max, ticklabels) on the current plot.", "(string:axis name 'x1' 'y1' 'x2' 'y2', table:options):void");
 	lk_string axname = cxt.arg(0).as_string();
-	wxPLPlotCtrl *plot = PlotWin::Surface();
+	wxPLPlotCtrl *plot = s_curPlot;
 	if (!plot) return;
 	wxPLAxis *axis = 0;
 	if (axname == "x1") axis = plot->GetXAxis1();
@@ -373,7 +406,7 @@ void fcall_axis( lk::invoke_t &cxt )
 		axis->ShowLabel( arg->as_boolean() );
 		mod = true;
 	}
-
+	
 	if (mod) plot->Refresh();
 }
 
@@ -431,7 +464,42 @@ void fcall_in(  lk::invoke_t &cxt )
 	cxt.result().assign( wxGetTextFromUser("Standard Input:") );	
 }
 
-lk::fcall_t* wexlib_lkfuncs()
+
+lk::fcall_t* wxLKPlotFunctions()
+{
+	static const lk::fcall_t vec[] = {
+		fcall_httpget,
+		fcall_httpdownload,
+		0 };
+		
+	return (lk::fcall_t*)vec;
+}
+
+lk::fcall_t* wxLKHttpFunctions()
+{
+	static const lk::fcall_t vec[] = {
+		fcall_newplot,
+		fcall_plot,
+		fcall_plotopt,
+		fcall_plotpng,
+		fcall_axis, 
+		0 };
+		
+	return (lk::fcall_t*)vec;
+}
+
+lk::fcall_t* wxLKMiscFunctions()
+{
+	static const lk::fcall_t vec[] = {
+		fcall_decompress, 
+		fcall_rand,
+		0 };
+		
+	return (lk::fcall_t*)vec;
+}
+
+
+static lk::fcall_t* wexlib_funcs()
 {
 	static const lk::fcall_t vec[] = {
 		fcall_in,
@@ -452,16 +520,6 @@ lk::fcall_t* wexlib_lkfuncs()
 }
 
 
-
-static bool eval_callback( int line, void *cbdata )
-{
-	wxLKScriptCtrl *sc = ((wxLKScriptCtrl*)cbdata);
-
-	if (!sc->OnEval( line )) return false;
-
-	return !sc->IsStopFlagSet();
-}
-
 enum { IDT_TIMER = wxID_HIGHEST+213 };
 
 BEGIN_EVENT_TABLE( wxLKScriptCtrl, wxCodeEditCtrl )	
@@ -470,7 +528,7 @@ BEGIN_EVENT_TABLE( wxLKScriptCtrl, wxCodeEditCtrl )
 END_EVENT_TABLE()
 
 wxLKScriptCtrl::wxLKScriptCtrl( wxWindow *parent, int id,
-	const wxPoint &pos, const wxSize &size )
+	const wxPoint &pos, const wxSize &size, unsigned long libs )
 	: wxCodeEditCtrl( parent, id, pos, size ),
 		m_timer( this, IDT_TIMER )
 {
@@ -482,11 +540,11 @@ wxLKScriptCtrl::wxLKScriptCtrl( wxWindow *parent, int id,
 	SetLanguage( LK );
 	EnableCallTips( true );
 	
-	RegisterLibrary( wexlib_lkfuncs(), "I/O and Plotting Functions", this );
-	RegisterLibrary( lk::stdlib_basic(), "Standard Operations" );
-	RegisterLibrary( lk::stdlib_string(), "String Functions" );
-	RegisterLibrary( lk::stdlib_math(), "Math Functions" );
-	RegisterLibrary( lk::stdlib_wxui(), "User interface Functions" );
+	if( libs & wxLK_STDLIB_BASIC ) RegisterLibrary( lk::stdlib_basic(), "Standard Operations" );
+	if( libs & wxLK_STDLIB_STRING ) RegisterLibrary( lk::stdlib_string(), "String Functions" );
+	if( libs & wxLK_STDLIB_MATH ) RegisterLibrary( lk::stdlib_math(), "Math Functions" );
+	if( libs & wxLK_STDLIB_WXUI ) RegisterLibrary( lk::stdlib_wxui(), "User interface Functions" );
+	if( libs & wxLK_STDLIB_WEXPLOT ) RegisterLibrary( wexlib_funcs(), "I/O and Plotting Functions", this );
 	
 	wxFont font( *wxNORMAL_FONT );
 	AnnotationSetStyleOffset( 512 );
@@ -575,7 +633,7 @@ void wxLKScriptCtrl::OnScriptTextChanged( wxStyledTextEvent &evt )
 		AnnotationClearLine( GetCurrentLine() );
 
 		m_timer.Stop();
-		m_timer.Start( 900, true );
+		m_timer.Start( 1500, true );
 		evt.Skip();
 	}
 }
@@ -649,6 +707,25 @@ void wxLKScriptCtrl::Stop()
 	m_stopScriptFlag = true;
 }
 
+
+class my_eval : public lk::eval
+{
+	wxLKScriptCtrl *m_lcs;
+public:
+	my_eval( lk::node_t *tree, lk::env_t *env, wxLKScriptCtrl *lcs ) 
+		: lk::eval( tree, env ), m_lcs(lcs)
+	{
+	}
+
+	virtual bool on_run( int line )
+	{
+		if ( !m_lcs->OnEval( line ) ) return false;
+
+		return !m_lcs->IsStopFlagSet();
+	}
+};
+
+
 bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 							 wxWindow *toplevel )
 {
@@ -664,6 +741,7 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 	m_scriptRunning = true;
 	m_stopScriptFlag = false;
 	m_topLevelWindow = toplevel;
+	s_curToplevelParent = toplevel;
 
 	//m_stopButton->Show();
 
@@ -701,11 +779,10 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 		m_env->clear_vars();
 		m_env->clear_objs();
 
-		lk::vardata_t result;
-		unsigned int ctl_id = lk::CTL_NONE;
 		wxStopWatch sw;
-		std::vector<lk_string> errors;
-		if ( lk::eval( m_tree, m_env, errors, result, 0, ctl_id, eval_callback, this ) )
+		my_eval e( m_tree, m_env, this );
+
+		if ( e.run() )
 		{
 			long time = sw.Time();
 			OnOutput(wxString::Format("elapsed time: %ld msec\n", time));
@@ -726,8 +803,8 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 		else
 		{
 			OnOutput("eval fail\n");
-			for (size_t i=0;i<errors.size();i++)
-				OnOutput( wxString(errors[i].c_str()) + "\n");
+			for (size_t i=0;i<e.error_count();i++)
+				OnOutput( e.get_error(i) + "\n");
 
 		}
 	}

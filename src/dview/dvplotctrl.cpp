@@ -8,14 +8,14 @@
 #include "wex/dview/dvselectionlist.h"
 #include "wex/dview/dvcolourmap.h"
 
-#include "wex/ribbonbook.h"
-
 #include "wex/icons/time.cpng"
 #include "wex/icons/dmap.cpng"
 #include "wex/icons/calendar.cpng"
 #include "wex/icons/barchart.cpng"
 #include "wex/icons/curve.cpng"
 #include "wex/icons/scatter.cpng"
+
+#include "wex/metro.h"
 
 
 enum { ID_NOTEBOOK = wxID_HIGHEST + 141 };
@@ -46,7 +46,7 @@ wxDVPlotCtrl::wxDVPlotCtrl(wxWindow* parent, wxWindowID id,
 	wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(topSizer);
 
-	m_plotNotebook = new wxRibbonNotebook(this, ID_NOTEBOOK);
+	m_plotNotebook = new wxMetroNotebook(this, ID_NOTEBOOK, wxDefaultPosition, wxDefaultSize, wxMT_LIGHTTHEME);
 	topSizer->Add(m_plotNotebook, 1, wxEXPAND, 0);
 
 	m_timeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, HOURLY_TIME_SERIES, StatType::AVERAGE);
@@ -58,16 +58,16 @@ wxDVPlotCtrl::wxDVPlotCtrl(wxWindow* parent, wxWindowID id,
 	m_durationCurve = new wxDVDCCtrl(m_plotNotebook, wxID_ANY);
 	m_scatterPlot = new wxDVScatterPlotCtrl(m_plotNotebook, wxID_ANY);
 
-	m_plotNotebook->SetTextOnRight( true );
+//	m_plotNotebook->SetTextOnRight( true );
 
-	m_plotNotebook->AddPage(m_timeSeries, _("Hourly"), wxBITMAP_PNG_FROM_DATA( time ), true);
-	m_plotNotebook->AddPage(m_dailyTimeSeries, _("Daily"), wxBITMAP_PNG_FROM_DATA( time ), false);
-	m_plotNotebook->AddPage(m_monthlyTimeSeries, _("Monthly"), wxBITMAP_PNG_FROM_DATA( time ), false);
-	m_plotNotebook->AddPage(m_dMap, _("Heat Map"), wxBITMAP_PNG_FROM_DATA( dmap ), false);
-	m_plotNotebook->AddPage(m_profilePlots, _("Monthly Profile"), wxBITMAP_PNG_FROM_DATA( calendar ), false);
-	m_plotNotebook->AddPage(m_pnCdf, _("PDF / CDF"), wxBITMAP_PNG_FROM_DATA( barchart ), false);
-	m_plotNotebook->AddPage(m_durationCurve, _("Duration Curve"), wxBITMAP_PNG_FROM_DATA( curve ), false);
-	m_plotNotebook->AddPage(m_scatterPlot, _("Scatter Plot"), wxBITMAP_PNG_FROM_DATA( scatter ), false);
+	m_plotNotebook->AddPage(m_timeSeries, _("Hourly"), /*wxBITMAP_PNG_FROM_DATA( time ), */true);
+	m_plotNotebook->AddPage(m_dailyTimeSeries, _("Daily"), /*wxBITMAP_PNG_FROM_DATA( time ), */false);
+	m_plotNotebook->AddPage(m_monthlyTimeSeries, _("Monthly"), /*wxBITMAP_PNG_FROM_DATA( time ), */false);
+	m_plotNotebook->AddPage(m_dMap, _("Heat Map"), /*wxBITMAP_PNG_FROM_DATA( dmap ), */false);
+	m_plotNotebook->AddPage(m_profilePlots, _("Monthly Profile"), /*wxBITMAP_PNG_FROM_DATA( calendar ), */false);
+	m_plotNotebook->AddPage(m_pnCdf, _("PDF / CDF"), /*wxBITMAP_PNG_FROM_DATA( barchart ), */false);
+	m_plotNotebook->AddPage(m_durationCurve, _("Duration Curve"), /*wxBITMAP_PNG_FROM_DATA( curve ), */false);
+	m_plotNotebook->AddPage(m_scatterPlot, _("Scatter Plot"), /*wxBITMAP_PNG_FROM_DATA( scatter ), */false);
 }
 
 wxDVPlotCtrl::~wxDVPlotCtrl()

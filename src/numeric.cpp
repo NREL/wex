@@ -34,12 +34,6 @@ void wxNumericCtrl::OnTextEnter( wxCommandEvent &evt )
 		m_focusStrVal = GetValue();
 		Translate();
 		SetSelection(0,this->GetValue().Len());
-
-		
-		wxCommandEvent enterpress(wxEVT_COMMAND_TEXT_ENTER, this->GetId() );
-		enterpress.SetEventObject( this );
-		enterpress.SetString( GetValue() );
-		GetEventHandler()->ProcessEvent(enterpress);
 		evt.Skip();
 	}
 }
@@ -115,45 +109,50 @@ void wxNumericCtrl::Translate()
 	SetValue( wxAtof( buf ) );
 }
 
-void wxNumericCtrl::DoFormat()
+wxString wxNumericCtrl::Format( double val, Mode mode, int deci, bool thousep, const wxString &pre, const wxString &post )
 {
 	wxString buf;
 
-	if ( m_mode == INTEGER )
+	if ( mode == INTEGER )
 	{
-		if ( m_decimals == HEXADECIMAL ) buf.Printf( "0x%x", (int)m_value );
+		if ( deci == HEXADECIMAL ) buf.Printf( "0x%x", (int)val );
 		else
 		{
-			if ( m_thouSep ) buf = wxNumberFormatter::ToString( (long)m_value );
-			else buf.Printf( "%d", (int)m_value );
+			if ( thousep ) buf = wxNumberFormatter::ToString( (long)val, wxNumberFormatter::Style_WithThousandsSep );
+			else buf.Printf( "%d", (int)val );
 		}
 	}
 	else
 	{
-		if ( m_decimals == GENERIC ) buf.Printf( "%lg", m_value );
-		else if ( m_decimals == EXPONENTIAL ) buf.Printf( "%le", m_value );
+		if ( deci == GENERIC ) buf.Printf( "%lg", val );
+		else if ( deci == EXPONENTIAL ) buf.Printf( "%le", val );
 		else
 		{
-			if ( m_decimals <= 0 )
+			if ( deci <= 0 )
 			{
-				if ( m_thouSep ) buf = wxNumberFormatter::ToString( (long)m_value );
-				else buf.Printf( "%d", (int)m_value );
+				if ( thousep ) buf = wxNumberFormatter::ToString( (long)val, wxNumberFormatter::Style_WithThousandsSep );
+				else buf.Printf( "%d", (int)val );
 			}
 			else
 			{
-				if ( m_thouSep )
-					buf = wxNumberFormatter::ToString( m_value, m_decimals );
+				if ( thousep )
+					buf = wxNumberFormatter::ToString( val, deci, wxNumberFormatter::Style_WithThousandsSep );
 				else
 				{
 					wxString fmt;
-					fmt.Printf( "%%.%dlf", m_decimals );
-					buf.Printf( fmt, m_value );
+					fmt.Printf( "%%.%dlf", deci );
+					buf.Printf( fmt, val );
 				}
 			}
 		}
 	}
-	
-	ChangeValue( m_preText + buf + m_postText );
+
+	return pre + buf + post;
+}
+
+void wxNumericCtrl::DoFormat()
+{	
+	ChangeValue( Format( m_value, m_mode, m_decimals, m_thouSep, m_preText, m_postText ) );
 }
 
 void wxNumericCtrl::SetValue( double val )

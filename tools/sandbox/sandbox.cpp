@@ -3,6 +3,8 @@
 #include <wx/stc/stc.h>
 #include <wx/webview.h>
 #include <wx/statbmp.h>
+#include <wx/numformatter.h>
+#include <wx/grid.h>
 
 #include "wex/icons/time.cpng"
 #include "wex/icons/dmap.cpng"
@@ -10,6 +12,7 @@
 #include "wex/icons/barchart.cpng"
 #include "wex/icons/curve.cpng"
 #include "wex/icons/scatter.cpng"
+
 
 class PngTestApp : public wxApp
 {
@@ -26,7 +29,7 @@ public:
 	}
 };
 
-IMPLEMENT_APP( PngTestApp );
+//IMPLEMENT_APP( PngTestApp );
 
 
 #include "wex/plot/plplotctrl.h"
@@ -37,7 +40,8 @@ IMPLEMENT_APP( PngTestApp );
 
 #include "wex/codeedit.h"
 #include "wex/lkscript.h"
-#include "wex/sched.h"
+#include "wex/diurnal.h"
+#include "wex/utils.h"
 
 #include "wex/metro.h"
 
@@ -45,6 +49,8 @@ IMPLEMENT_APP( PngTestApp );
 #include "wex/icons/qmark.cpng"
 
 #include "demo_bitmap.cpng"
+
+#include "wex/uiform.h"
 
 
 void TestPLPlot( wxWindow *parent )
@@ -185,19 +191,93 @@ void TestDView( wxWindow *parent )
 	frame->Show();
 }
 
+#include <wex/numeric.h>
+#include <wex/exttext.h>
+enum { ID_NUMERIC = wxID_HIGHEST+121, ID_EXTTEXT, ID_CLEAR };
+class NumericTest : public wxFrame
+{
+	int m_counter;
+	wxNumericCtrl *m_num;
+	wxExtTextCtrl *m_txt;
+	wxTextCtrl *m_log;
+public:
+	NumericTest() : wxFrame( NULL, wxID_ANY, "Numeric Test", wxDefaultPosition, wxSize(500,400) )
+	{
+		wxPanel *panel = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+
+		m_counter = 0;
+		m_num = new wxNumericCtrl( panel, ID_NUMERIC );
+		m_txt = new wxExtTextCtrl( panel, ID_EXTTEXT );
+
+		m_log = new wxTextCtrl( panel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY );
+
+		wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL );
+		sizer->Add( m_num, 0, wxALL|wxEXPAND, 10 );
+		sizer->Add( m_txt, 0, wxALL|wxEXPAND, 10 );
+		sizer->AddStretchSpacer();
+		sizer->Add( new wxButton( panel, ID_CLEAR, "Clear" ), 0, wxALL|wxEXPAND, 10 );
+
+		wxBoxSizer *main = new wxBoxSizer( wxVERTICAL );
+		main->Add( sizer, 0, wxALL|wxEXPAND, 10 );
+		main->Add( m_log, 1, wxALL|wxEXPAND, 10 );
+
+		panel->SetSizer( main );
+	}
+
+	void OnNumeric( wxCommandEvent &evt )
+	{
+		m_log->AppendText( wxString::Format("%d --> numeric changed %.6lf\n", ++m_counter, m_num->Value()) );
+	}
+
+	void OnExtText( wxCommandEvent &evt )
+	{
+		m_log->AppendText( wxString::Format("%d --> exttext changed\n", ++m_counter) );
+	}
+
+	void OnClear( wxCommandEvent & )
+	{
+		m_log->Clear();
+	}
+
+	DECLARE_EVENT_TABLE();
+};
+
+BEGIN_EVENT_TABLE( NumericTest, wxFrame )
+	EVT_NUMERIC( ID_NUMERIC, NumericTest::OnNumeric )
+	EVT_TEXT_ENTER( ID_EXTTEXT, NumericTest::OnExtText )
+	EVT_BUTTON( ID_CLEAR, NumericTest::OnClear )
+END_EVENT_TABLE()
+
+
 class MyApp : public wxApp
 {
+	wxLocale m_locale;
 public:
 	bool OnInit()
 	{
+		if ( !wxApp::OnInit() )
+			return false;
+
+		m_locale.Init();
+
 		wxInitAllImageHandlers();
-		//TestDView( 0 );
+		//TestPLPlot( 0 );
+
+		//(new NumericTest())->Show();
+
+		/*
+		wxFrame *frame = new wxFrame(NULL, wxID_ANY, "Test LKEdit", wxDefaultPosition, wxSize(600,400) );
+		new wxLKScriptCtrl(frame, wxID_ANY );
+		frame->Show();
+		*/
+
+		/*
 		
 		wxFrame *frm = new wxFrame(NULL, wxID_ANY, "SchedCtrl", wxDefaultPosition, wxSize(1100,700));
 		frm->SetBackgroundColour( *wxWHITE );
 		
 		wxBoxSizer *tools = new wxBoxSizer( wxHORIZONTAL );
-		tools->Add( new wxMetroButton( frm, wxID_ANY, wxEmptyString, wxBITMAP_PNG_FROM_DATA( demo_bitmap ), wxDefaultPosition, wxDefaultSize /*, wxMB_DOWNARROW */), 0, wxALL|wxEXPAND, 0 );
+		tools->Add( new wxMetroButton( frm, wxID_ANY, wxEmptyString, wxBITMAP_PNG_FROM_DATA( demo_bitmap ), wxDefaultPosition, wxDefaultSize ), 0, wxALL|wxEXPAND, 0 );
 		tools->Add( new wxMetroButton( frm, wxID_ANY, "New", wxBITMAP_PNG_FROM_DATA( cirplus ), wxDefaultPosition, wxDefaultSize), 0, wxALL|wxEXPAND, 0 );
 		wxMetroTabList *tabs = new wxMetroTabList( frm, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxMT_MENUBUTTONS );
 		tabs->Append( "photovoltaic #1" );
@@ -232,17 +312,72 @@ public:
 		nb->AddPage( new wxPanel( nb ), "Scripting" );
 		sizer->Add( nb, 1, wxALL|wxEXPAND, 0 );
 
-		//wxSchedCtrl *sch = new wxSchedCtrl( frm, wxID_ANY );
+		//wxDiurnalPeriodCtrl *sch = new wxDiurnalPeriodCtrl( frm, wxID_ANY );
 		//sch->SetupTOUGrid();		
 		//sizer->Add( sch, 1, wxALL|wxEXPAND, 5 );
 
 		frm->SetSizer( sizer );
 		frm->Show();
 		
-		
+		*/
 
+
+/*		
+		wxUIObjectTypeProvider::RegisterBuiltinTypes();
+		wxUIFormData *form = new wxUIFormData;
+		wxFrame *frm = new wxFrame( 0, wxID_ANY, "Form Editor", wxDefaultPosition, wxSize(900, 600) );
+		wxUIFormDesigner *fd = new wxUIFormDesigner( frm, wxID_ANY );
+
+		wxUIPropertyEditor *pe = new wxUIPropertyEditor(frm, wxID_ANY );
+		wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
+		sizer->Add( pe, 1, wxALL|wxEXPAND, 0 );
+		sizer->Add( fd, 5, wxALL|wxEXPAND, 0 );
+		frm->SetSizer(sizer);
+
+		fd->SetFormData( form );
+		fd->SetPropertyEditor( pe );
+		frm->Show();*/
+
+		
+		TestPLPlot( 0 );
+		
+	/*
+		wxChar sep = ',';
+		bool use_thousep = wxNumberFormatter::GetThousandsSeparatorIfUsed(&sep);
+		wxMessageBox( m_locale.GetLocale() + "\n" + wxString::Format( "thousep? %d sep=%c\n\n", use_thousep ? 1:0, (char)sep)
+			+ wxNumberFormatter::ToString( 12490589.02, 2, wxNumberFormatter::Style_WithThousandsSep ) );
+
+			
+
+		
+		
+		wxFrame *top = new wxFrame(NULL, wxID_ANY, "CSV Read Test", wxDefaultPosition, wxSize(500,500));
+		
+		wxDiurnalPeriodCtrl *sched = new wxDiurnalPeriodCtrl( top, wxID_ANY );
+		sched->SetupTOUGrid();
+
+		wxGrid *grid = new wxGrid( top, wxID_ANY );
+		
+		wxCSVData csv;
+		wxStopWatch sw;
+		bool ok = csv.ReadFile( "c:/Users/adobos/Desktop/csv_test.csv" );
+		int msec = sw.Time();
+		csv.WriteFile("c:/Users/adobos/Desktop/csv_test2.csv");
+		int nr = (int)csv.NumRows()+1;
+		int nc = (int)csv.NumCols()+1;
+		top->SetTitle( wxString::Format("CSVRead: (%d ms) %d %s [%d x %d]", msec, csv.GetErrorLine(), ok?"ok":"fail", nr, nc) );
+
+		if (nr > 0 && nc > 0)
+		{
+			grid->CreateGrid( nr, nc );
+			for ( size_t r = 0; r < nr; r++ )
+				for ( size_t c = 0; c < nc; c++ )
+					grid->SetCellValue( r, c, csv(r,c) );
+		}
+*/
+		
 		return true;
 	}
 };
 
-//IMPLEMENT_APP( MyApp );
+IMPLEMENT_APP( MyApp );

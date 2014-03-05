@@ -327,6 +327,21 @@
     <ClInclude Include="..\include\wex\metro.h">
       <Filter>wex\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\wex\uiform.h">
+      <Filter>wex\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\exttext.h">
+      <Filter>wex\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\label.h">
+      <Filter>wex\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\radiochoice.h">
+      <Filter>wex\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\choicetree.h">
+      <Filter>wex\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
@@ -558,6 +573,21 @@
       <Filter>wex\Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\src\metro.cpp">
+      <Filter>wex\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\uiform.cpp">
+      <Filter>wex\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\exttext.cpp">
+      <Filter>wex\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\label.cpp">
+      <Filter>wex\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\radiochoice.cpp">
+      <Filter>wex\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\choicetree.cpp">
       <Filter>wex\Sources</Filter>
     </ClCompile>
   </ItemGroup>

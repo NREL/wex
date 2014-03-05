@@ -1,0 +1,419 @@
+﻿Build started 7/24/2013 11:48:17 AM.
+     1>Project "C:\Work\DView\vc2012_wx3_unicode\wexlib.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /IC:\Work\DView\vc2012_wx3_unicode\\..\include /I"c:\wxWidgets-2.9.5-win32\lib\vc_lib\mswu" /IC:\Work\LK /I"c:\wxWidgets-2.9.5-win32\include" /I. /I"c:\wxWidgets-2.9.5-win32\samples" /Zi /nologo /W4 /WX- /O2 /Oy- /D WIN32 /D _CRT_SECURE_NO_DEPRECATE=1 /D _CRT_NON_CONFORMING_SWPRINTFS=1 /D _SCL_SECURE_NO_WARNINGS=1 /D __WXMSW__ /D NDEBUG /D _UNICODE /D _WINDOWS /D NOPCH /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /fp:precise /Zc:wchar_t /Zc:forScope /GR /Fo"vc_mswu\wexlib\\" /Fd"vc_mswu\wex.pdb" /Gd /TP /analyze- /errorReport:prompt /MP ..\src\codeedit.cpp ..\src\dview\dvautocolourassigner.cpp ..\src\dview\dvcolourmap.cpp ..\src\dview\dvdcctrl.cpp ..\src\dview\dvdmapctrl.cpp ..\src\dview\dvfiledataset.cpp ..\src\dview\dvplotctrl.cpp ..\src\dview\dvplotctrlsettings.cpp ..\src\dview\dvplothelper.cpp ..\src\dview\dvpncdfctrl.cpp ..\src\dview\dvprofilectrl.cpp ..\src\dview\dvscatterplotctrl.cpp ..\src\dview\dvselectionlist.cpp ..\src\dview\dvtimeseriesctrl.cpp ..\src\dview\dvtimeseriesdataset.cpp ..\src\extgrid.cpp ..\src\jsonreader.cpp ..\src\jsonval.cpp ..\src\jsonwriter.cpp ..\src\lkscript.cpp ..\src\md5.cpp ..\src\metro.cpp ..\src\sched.cpp ..\src\numeric.cpp ..\src\ole\activex.cpp ..\src\ole\excelauto.cpp ..\src\ole\iehtmlwin.cpp ..\src\pdf\pdfannotation.cpp ..\src\pdf\pdfbarcode.cpp ..\src\pdf\pdfcffdecoder.cpp ..\src\pdf\pdfcffindex.cpp ..\src\pdf\pdfcolour.cpp ..\src\pdf\pdfdc.cpp ..\src\pdf\pdfdecode.cpp ..\src\pdf\pdfdocument.cpp ..\src\pdf\pdfencoding.cpp ..\src\pdf\pdfencrypt.cpp ..\src\pdf\pdffont.cpp ..\src\pdf\pdffontdata.cpp ..\src\pdf\pdffontdatacore.cpp ..\src\pdf\pdffontdataopentype.cpp ..\src\pdf\pdffontdatatruetype.cpp ..\src\pdf\pdffontdatatype0.cpp ..\src\pdf\pdffontdatatype1.cpp ..\src\pdf\pdffontdescription.cpp ..\src\pdf\pdffontdetails.cpp ..\src\pdf\pdffontextended.cpp ..\src\pdf\pdffontmanager.cpp ..\src\pdf\pdffontparser.cpp ..\src\pdf\pdffontparsertruetype.cpp ..\src\pdf\pdffontparsertype1.cpp ..\src\pdf\pdffontsubsetcff.cpp ..\src\pdf\pdffontsubsettruetype.cpp ..\src\pdf\pdffontvolt.cpp ..\src\pdf\pdfform.cpp ..\src\pdf\pdfgradient.cpp ..\src\pdf\pdfgraphics.cpp ..\src\pdf\pdfimage.cpp ..\src\pdf\pdfkernel.cpp ..\src\pdf\pdflayer.cpp ..\src\pdf\pdfobjects.cpp ..\src\pdf\pdfocg.cpp ..\src\pdf\pdfparser.cpp ..\src\pdf\pdfpattern.cpp ..\src\pdf\pdfprint.cpp ..\src\pdf\pdfrijndael.cpp ..\src\pdf\pdftemplate.cpp ..\src\pdf\pdfutility.cpp ..\src\pdf\pdfxml.cpp ..\src\plot\plaxis.cpp ..\src\plot\plbarplot.cpp ..\src\plot\plhistplot.cpp ..\src\plot\pllineplot.cpp ..\src\plot\plplotctrl.cpp ..\src\plot\plscatterplot.cpp ..\src\ribbonbook.cpp ..\src\utils.cpp
+         codeedit.cpp
+         dvautocolourassigner.cpp
+         dvcolourmap.cpp
+         dvdcctrl.cpp
+         dvdmapctrl.cpp
+     1>..\src\dview\dvautocolourassigner.cpp(15): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvautocolourassigner.cpp(26): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvautocolourassigner.cpp(73): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\codeedit.cpp(108): warning C4100: 'evt' : unreferenced formal parameter
+     1>..\src\dview\dvdcctrl.cpp(65): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvdcctrl.cpp(89): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvdcctrl.cpp(135): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvdcctrl.cpp(170): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvdcctrl.cpp(177): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvdcctrl.cpp(208): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvdcctrl.cpp(235): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvdcctrl.cpp(244): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvdcctrl.cpp(256): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvdcctrl.cpp(262): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvdcctrl.cpp(296): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvdcctrl.cpp(303): warning C4100: 'e' : unreferenced formal parameter
+         dvfiledataset.cpp
+         dvplotctrl.cpp
+         dvplotctrlsettings.cpp
+     1>..\src\dview\dvdmapctrl.cpp(106): warning C4100: 'rct' : unreferenced formal parameter
+     1>..\src\dview\dvdmapctrl.cpp(106): warning C4100: 'dc' : unreferenced formal parameter
+     1>..\src\dview\dvdmapctrl.cpp(448): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvdmapctrl.cpp(470): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvdmapctrl.cpp(758): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvdmapctrl.cpp(766): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvdmapctrl.cpp(785): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvdmapctrl.cpp(793): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvdmapctrl.cpp(801): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvdmapctrl.cpp(809): warning C4100: 'e' : unreferenced formal parameter
+         dvplothelper.cpp
+     1>..\src\dview\dvfiledataset.cpp(619): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvfiledataset.cpp(687): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvfiledataset.cpp(737): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvfiledataset.cpp(747): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvfiledataset.cpp(757): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvfiledataset.cpp(773): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvfiledataset.cpp(790): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvfiledataset.cpp(852): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvfiledataset.cpp(888): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvplotctrl.cpp(71): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvplotctrl.cpp(113): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvplotctrl.cpp(267): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvplotctrl.cpp(275): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvplotctrl.cpp(291): warning C4018: '>=' : signed/unsigned mismatch
+         dvpncdfctrl.cpp
+         dvprofilectrl.cpp
+         dvscatterplotctrl.cpp
+         dvselectionlist.cpp
+     1>..\src\dview\dvprofilectrl.cpp(124): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvprofilectrl.cpp(243): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(272): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvpncdfctrl.cpp(88): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvpncdfctrl.cpp(145): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvpncdfctrl.cpp(162): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvpncdfctrl.cpp(180): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvpncdfctrl.cpp(241): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(377): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(412): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvprofilectrl.cpp(518): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(580): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(585): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(589): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(616): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(619): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(638): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(671): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(700): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(733): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(739): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(748): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(760): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(765): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvpncdfctrl.cpp(333): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvpncdfctrl.cpp(330): warning C4189: 'dataMax' : local variable is initialized but not referenced
+     1>..\src\dview\dvpncdfctrl.cpp(329): warning C4189: 'dataMin' : local variable is initialized but not referenced
+     1>..\src\dview\dvpncdfctrl.cpp(363): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvpncdfctrl.cpp(378): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvpncdfctrl.cpp(390): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvpncdfctrl.cpp(388): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvpncdfctrl.cpp(414): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvpncdfctrl.cpp(428): warning C4100: 'e' : unreferenced formal parameter
+         dvtimeseriesctrl.cpp
+         dvtimeseriesdataset.cpp
+         extgrid.cpp
+     1>..\src\dview\dvselectionlist.cpp(132): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvselectionlist.cpp(144): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvselectionlist.cpp(153): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvselectionlist.cpp(165): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvselectionlist.cpp(179): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvselectionlist.cpp(205): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvselectionlist.cpp(216): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvselectionlist.cpp(299): warning C4100: 'evt' : unreferenced formal parameter
+     1>..\src\dview\dvselectionlist.cpp(304): warning C4100: 'evt' : unreferenced formal parameter
+     1>..\src\dview\dvselectionlist.cpp(309): warning C4100: 'evt' : unreferenced formal parameter
+     1>..\src\dview\dvselectionlist.cpp(389): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvselectionlist.cpp(415): warning C4100: 'evt' : unreferenced formal parameter
+     1>..\src\dview\dvselectionlist.cpp(432): warning C4100: 'evt' : unreferenced formal parameter
+     1>..\src\dview\dvselectionlist.cpp(451): warning C4389: '==' : signed/unsigned mismatch
+         jsonreader.cpp
+         jsonval.cpp
+         jsonwriter.cpp
+         lkscript.cpp
+         md5.cpp
+     1>..\src\dview\dvtimeseriesctrl.cpp(198): warning C4100: 'rct' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(198): warning C4100: 'dc' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(313): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(323): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(332): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(359): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvtimeseriesctrl.cpp(337): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(421): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(447): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(451): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(455): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(459): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(463): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(530): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvtimeseriesctrl.cpp(554): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvtimeseriesctrl.cpp(556): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvtimeseriesctrl.cpp(571): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvtimeseriesctrl.cpp(573): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvtimeseriesctrl.cpp(584): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvtimeseriesctrl.cpp(642): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvtimeseriesctrl.cpp(653): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvtimeseriesctrl.cpp(667): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvtimeseriesctrl.cpp(682): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvtimeseriesctrl.cpp(707): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvtimeseriesctrl.cpp(744): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvtimeseriesctrl.cpp(796): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvtimeseriesctrl.cpp(798): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvtimeseriesctrl.cpp(959): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvtimeseriesctrl.cpp(1077): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvtimeseriesctrl.cpp(1108): warning C4018: '<' : signed/unsigned mismatch
+         metro.cpp
+         sched.cpp
+         numeric.cpp
+     1>..\src\metro.cpp(407): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\metro.cpp(526): warning C4389: '==' : signed/unsigned mismatch
+     1>..\src\metro.cpp(527): warning C4389: '==' : signed/unsigned mismatch
+     1>..\src\metro.cpp(535): warning C4389: '==' : signed/unsigned mismatch
+     1>..\src\metro.cpp(548): warning C4389: '==' : signed/unsigned mismatch
+     1>..\src\metro.cpp(550): warning C4389: '==' : signed/unsigned mismatch
+     1>..\src\metro.cpp(625): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\metro.cpp(943): warning C4389: '==' : signed/unsigned mismatch
+         activex.cpp
+         excelauto.cpp
+         iehtmlwin.cpp
+         pdfannotation.cpp
+     1>..\src\ole\activex.cpp(868): warning C4100: 'd' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(868): warning C4100: 'l' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(868): warning C4100: 'i' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(868): warning C4100: 'o' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(868): warning C4100: 'r' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(873): warning C4100: 't' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(873): warning C4100: 'l' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(873): warning C4100: 'i' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(878): warning C4100: 'i' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(936): warning C4100: 'puArgErr' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(935): warning C4100: 'pExcepInfo' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(935): warning C4100: 'pVarResult' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(933): warning C4100: 'lcid' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(933): warning C4100: 'riid' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1007): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\ole\activex.cpp(1014): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\ole\activex.cpp(1031): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\ole\activex.cpp(1039): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\ole\activex.cpp(1644): warning C4100: 'event' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1675): warning C4100: 'event' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1721): warning C4189: 'lResult' : local variable is initialized but not referenced
+     1>..\src\ole\activex.cpp(1796): warning C4100: 'event' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1802): warning C4100: 'event' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1837): warning C4100: 'rgDispId' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1837): warning C4100: 'lcid' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1836): warning C4100: 'cNames' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1836): warning C4100: 'rgszNames' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1836): warning C4100: 'riid' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1843): warning C4100: 'ppTInfo' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1843): warning C4100: 'lcid' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1843): warning C4100: 'iTInfo' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1849): warning C4100: 'pcTInfo' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1858): warning C4100: 'puArgErr' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1857): warning C4100: 'pExcepInfo' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1856): warning C4100: 'pDispParams' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1855): warning C4100: 'lcid' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1855): warning C4100: 'riid' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1949): warning C4100: 'fEnterMode' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1973): warning C4100: 'pborderwidths' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1979): warning C4100: 'pszObjName' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1992): warning C4100: 'lpMenuWidths' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1992): warning C4100: 'hmenuShared' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1998): warning C4100: 'hwndActiveObject' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1998): warning C4100: 'holemenu' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(1998): warning C4100: 'hmenuShared' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2004): warning C4100: 'hmenuShared' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2010): warning C4100: 'pszStatusText' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2017): warning C4100: 'fEnable' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2023): warning C4100: 'wID' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2110): warning C4100: 'scrollExtent' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2116): warning C4100: 'fUndoable' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2153): warning C4100: 'dwFlags' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2162): warning C4100: 'fNoRedraw' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2207): warning C4100: 'dwWhichMoniker' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2207): warning C4100: 'dwAssign' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2246): warning C4100: 'fShow' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2261): warning C4100: 'ppmkOut' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2261): warning C4100: 'pchEaten' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2260): warning C4100: 'pszDisplayName' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2260): warning C4100: 'pbc' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2269): warning C4100: 'ppenum' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2269): warning C4100: 'grfFlags' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2275): warning C4100: 'fLock' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2285): warning C4100: 'riid' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2285): warning C4100: 'pbc' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2284): warning C4100: 'dwSpeedNeeded' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2298): warning C4100: 'riid' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2297): warning C4100: 'pbc' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2336): warning C4100: 'ppDisp' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2342): warning C4100: 'dwFlags' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2345): warning C4189: 'hr' : local variable is initialized but not referenced
+     1>..\src\ole\activex.cpp(2357): warning C4100: 'grfModifiers' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2357): warning C4100: 'pMsg' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2364): warning C4100: 'fGotFocus' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2379): warning C4100: 'pCmdTet' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2378): warning C4100: 'pguidCmdGroup' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2399): warning C4100: 'pVaOut' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2398): warning C4100: 'pVaIn' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2398): warning C4100: 'nCmdExecOpt' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2397): warning C4100: 'nCmdID' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2397): warning C4100: 'pguidCmdGroup' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2410): warning C4100: 'pgStgMed' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2410): warning C4100: 'pFormatEtc' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2415): warning C4100: 'lIndex' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2415): warning C4100: 'dwAspect' : unreferenced formal parameter
+     1>..\src\ole\activex.cpp(2421): warning C4100: 'pmk' : unreferenced formal parameter
+     1>c:\work\dview\src\ole\excelauto.cpp(146): warning C4706: assignment within conditional expression
+         pdfbarcode.cpp
+     1>..\src\ole\iehtmlwin.cpp(146): warning C4189: 'hret' : local variable is initialized but not referenced
+     1>..\src\ole\iehtmlwin.cpp(195): warning C4100: 'pcbWritten' : unreferenced formal parameter
+     1>..\src\ole\iehtmlwin.cpp(195): warning C4100: 'cb' : unreferenced formal parameter
+     1>..\src\ole\iehtmlwin.cpp(195): warning C4100: 'pv' : unreferenced formal parameter
+     1>..\src\ole\iehtmlwin.cpp(198): warning C4100: 'plibNewPosition' : unreferenced formal parameter
+     1>..\src\ole\iehtmlwin.cpp(198): warning C4100: 'dwOrigin' : unreferenced formal parameter
+     1>..\src\ole\iehtmlwin.cpp(198): warning C4100: 'dlibMove' : unreferenced formal parameter
+     1>..\src\ole\iehtmlwin.cpp(199): warning C4100: 'libNewSize' : unreferenced formal parameter
+     1>..\src\ole\iehtmlwin.cpp(200): warning C4100: 'pcbWritten' : unreferenced formal parameter
+     1>..\src\ole\iehtmlwin.cpp(200): warning C4100: 'pcbRead' : unreferenced formal parameter
+     1>..\src\ole\iehtmlwin.cpp(200): warning C4100: 'cb' : unreferenced formal parameter
+     1>..\src\ole\iehtmlwin.cpp(200): warning C4100: 'pstm' : unreferenced formal parameter
+     1>..\src\ole\iehtmlwin.cpp(201): warning C4100: 'grfCommitFlags' : unreferenced formal parameter
+     1>..\src\ole\iehtmlwin.cpp(203): warning C4100: 'dwLockType' : unreferenced formal parameter
+     1>..\src\ole\iehtmlwin.cpp(203): warning C4100: 'cb' : unreferenced formal parameter
+     1>..\src\ole\iehtmlwin.cpp(203): warning C4100: 'libOffset' : unreferenced formal parameter
+     1>..\src\ole\iehtmlwin.cpp(204): warning C4100: 'dwLockType' : unreferenced formal parameter
+     1>..\src\ole\iehtmlwin.cpp(204): warning C4100: 'cb' : unreferenced formal parameter
+     1>..\src\ole\iehtmlwin.cpp(204): warning C4100: 'libOffset' : unreferenced formal parameter
+     1>..\src\ole\iehtmlwin.cpp(205): warning C4100: 'grfStatFlag' : unreferenced formal parameter
+     1>..\src\ole\iehtmlwin.cpp(205): warning C4100: 'pstatstg' : unreferenced formal parameter
+     1>..\src\ole\iehtmlwin.cpp(206): warning C4100: 'ppstm' : unreferenced formal parameter
+     1>..\src\ole\iehtmlwin.cpp(315): warning C4189: 'hret' : local variable is initialized but not referenced
+         pdfcffdecoder.cpp
+         pdfcffindex.cpp
+         pdfcolour.cpp
+         pdfdc.cpp
+         pdfdecode.cpp
+         pdfdocument.cpp
+         pdfencoding.cpp
+     1>c:\work\dview\src\pdf\pdfdc29.inc(116): warning C4100: 'h' : unreferenced formal parameter (..\src\pdf\pdfdc.cpp)
+     1>c:\work\dview\src\pdf\pdfdc29.inc(116): warning C4100: 'w' : unreferenced formal parameter (..\src\pdf\pdfdc.cpp)
+         pdfencrypt.cpp
+         pdffont.cpp
+         pdffontdata.cpp
+         pdffontdatacore.cpp
+         pdffontdataopentype.cpp
+         pdffontdatatruetype.cpp
+         pdffontdatatype0.cpp
+         pdffontdatatype1.cpp
+         pdffontdescription.cpp
+         pdffontdetails.cpp
+         pdffontextended.cpp
+         pdffontmanager.cpp
+         pdffontparser.cpp
+         pdffontparsertruetype.cpp
+         pdffontparsertype1.cpp
+         pdffontsubsetcff.cpp
+         pdffontsubsettruetype.cpp
+         pdffontvolt.cpp
+         pdfform.cpp
+         pdfgradient.cpp
+         pdfgraphics.cpp
+         pdfimage.cpp
+         pdfkernel.cpp
+         pdflayer.cpp
+         pdfobjects.cpp
+         pdfocg.cpp
+         pdfparser.cpp
+         pdfpattern.cpp
+         pdfprint.cpp
+         pdfrijndael.cpp
+         pdftemplate.cpp
+         pdfutility.cpp
+         pdfxml.cpp
+         plaxis.cpp
+     1>..\src\plot\plaxis.cpp(640): warning C4100: 'phys_max' : unreferenced formal parameter
+     1>..\src\plot\plaxis.cpp(640): warning C4100: 'phys_min' : unreferenced formal parameter
+         plbarplot.cpp
+         plhistplot.cpp
+         pllineplot.cpp
+         plplotctrl.cpp
+         plscatterplot.cpp
+         ribbonbook.cpp
+         utils.cpp
+     1>..\src\ribbonbook.cpp(34): warning C4100: 'evt' : unreferenced formal parameter
+     1>..\src\ribbonbook.cpp(39): warning C4100: 'evt' : unreferenced formal parameter
+     1>..\src\ribbonbook.cpp(166): warning C4389: '!=' : signed/unsigned mismatch
+     1>..\src\ribbonbook.cpp(187): warning C4389: '==' : signed/unsigned mismatch
+     1>..\src\ribbonbook.cpp(210): warning C4100: 'evt' : unreferenced formal parameter
+     1>..\src\ribbonbook.cpp(290): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\ribbonbook.cpp(382): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\ribbonbook.cpp(391): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\ribbonbook.cpp(479): warning C4100: 'evt' : unreferenced formal parameter
+     1>..\src\plot\plplotctrl.cpp(1167): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\plot\plplotctrl.cpp(1172): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\plot\plplotctrl.cpp(1157): warning C4189: 'yaxis' : local variable is initialized but not referenced
+     1>..\src\plot\plplotctrl.cpp(2151): warning C4189: 'arrow_size' : local variable is initialized but not referenced
+     1>..\src\utils.cpp(594): warning C4996: 'wxGetTempFileName': was declared deprecated
+                 c:\wxWidgets-2.9.5-win32\include\wx/filefn.h(579) : see declaration of 'wxGetTempFileName'
+       Lib:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\Lib.exe /OUT:"C:\Work\DView\vc2012_wx3_unicode\..\wexvc12wx3.lib" /NOLOGO vc_mswu\wexlib\codeedit.obj
+         vc_mswu\wexlib\dvautocolourassigner.obj
+         vc_mswu\wexlib\dvcolourmap.obj
+         vc_mswu\wexlib\dvdcctrl.obj
+         vc_mswu\wexlib\dvdmapctrl.obj
+         vc_mswu\wexlib\dvfiledataset.obj
+         vc_mswu\wexlib\dvplotctrl.obj
+         vc_mswu\wexlib\dvplotctrlsettings.obj
+         vc_mswu\wexlib\dvplothelper.obj
+         vc_mswu\wexlib\dvpncdfctrl.obj
+         vc_mswu\wexlib\dvprofilectrl.obj
+         vc_mswu\wexlib\dvscatterplotctrl.obj
+         vc_mswu\wexlib\dvselectionlist.obj
+         vc_mswu\wexlib\dvtimeseriesctrl.obj
+         vc_mswu\wexlib\dvtimeseriesdataset.obj
+         vc_mswu\wexlib\extgrid.obj
+         vc_mswu\wexlib\jsonreader.obj
+         vc_mswu\wexlib\jsonval.obj
+         vc_mswu\wexlib\jsonwriter.obj
+         vc_mswu\wexlib\lkscript.obj
+         vc_mswu\wexlib\md5.obj
+         vc_mswu\wexlib\metro.obj
+         vc_mswu\wexlib\sched.obj
+         vc_mswu\wexlib\numeric.obj
+         vc_mswu\wexlib\activex.obj
+         vc_mswu\wexlib\excelauto.obj
+         vc_mswu\wexlib\iehtmlwin.obj
+         vc_mswu\wexlib\pdfannotation.obj
+         vc_mswu\wexlib\pdfbarcode.obj
+         vc_mswu\wexlib\pdfcffdecoder.obj
+         vc_mswu\wexlib\pdfcffindex.obj
+         vc_mswu\wexlib\pdfcolour.obj
+         vc_mswu\wexlib\pdfdc.obj
+         vc_mswu\wexlib\pdfdecode.obj
+         vc_mswu\wexlib\pdfdocument.obj
+         vc_mswu\wexlib\pdfencoding.obj
+         vc_mswu\wexlib\pdfencrypt.obj
+         vc_mswu\wexlib\pdffont.obj
+         vc_mswu\wexlib\pdffontdata.obj
+         vc_mswu\wexlib\pdffontdatacore.obj
+         vc_mswu\wexlib\pdffontdataopentype.obj
+         vc_mswu\wexlib\pdffontdatatruetype.obj
+         vc_mswu\wexlib\pdffontdatatype0.obj
+         vc_mswu\wexlib\pdffontdatatype1.obj
+         vc_mswu\wexlib\pdffontdescription.obj
+         vc_mswu\wexlib\pdffontdetails.obj
+         vc_mswu\wexlib\pdffontextended.obj
+         vc_mswu\wexlib\pdffontmanager.obj
+         vc_mswu\wexlib\pdffontparser.obj
+         vc_mswu\wexlib\pdffontparsertruetype.obj
+         vc_mswu\wexlib\pdffontparsertype1.obj
+         vc_mswu\wexlib\pdffontsubsetcff.obj
+         vc_mswu\wexlib\pdffontsubsettruetype.obj
+         vc_mswu\wexlib\pdffontvolt.obj
+         vc_mswu\wexlib\pdfform.obj
+         vc_mswu\wexlib\pdfgradient.obj
+         vc_mswu\wexlib\pdfgraphics.obj
+         vc_mswu\wexlib\pdfimage.obj
+         vc_mswu\wexlib\pdfkernel.obj
+         vc_mswu\wexlib\pdflayer.obj
+         vc_mswu\wexlib\pdfobjects.obj
+         vc_mswu\wexlib\pdfocg.obj
+         vc_mswu\wexlib\pdfparser.obj
+         vc_mswu\wexlib\pdfpattern.obj
+         vc_mswu\wexlib\pdfprint.obj
+         vc_mswu\wexlib\pdfrijndael.obj
+         vc_mswu\wexlib\pdftemplate.obj
+         vc_mswu\wexlib\pdfutility.obj
+         vc_mswu\wexlib\pdfxml.obj
+         vc_mswu\wexlib\plaxis.obj
+         vc_mswu\wexlib\plbarplot.obj
+         vc_mswu\wexlib\plhistplot.obj
+         vc_mswu\wexlib\pllineplot.obj
+         vc_mswu\wexlib\plplotctrl.obj
+         vc_mswu\wexlib\plscatterplot.obj
+         vc_mswu\wexlib\ribbonbook.obj
+         vc_mswu\wexlib\utils.obj
+         wexlib.vcxproj -> C:\Work\DView\vc2012_wx3_unicode\..\wexvc12wx3.lib
+     1>Done Building Project "C:\Work\DView\vc2012_wx3_unicode\wexlib.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:01:55.65

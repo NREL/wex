@@ -140,18 +140,17 @@ BEGIN_EVENT_TABLE (wxCodeEditCtrl, wxStyledTextCtrl)
 	
 END_EVENT_TABLE()
 
-
 #ifdef __WXMAC__
 #define DEFAULT_FONT_SIZE 13
 #define DEFAULT_FONT_FACE "Courier New"
 #else
-#ifdef __WXMSW___
-	#define DEFAULT_FONT_SIZE 10
-	#define DEFAULT_FONT_FACE "Consolas"
-#else
-	#define DEFAULT_FONT_SIZE 10
-	#define DEFAULT_FONT_FACE "Courier New"
-#endif
+	#ifdef __WXMSW__
+		#define DEFAULT_FONT_SIZE 10
+		#define DEFAULT_FONT_FACE "Consolas"
+	#else
+		#define DEFAULT_FONT_SIZE 10
+		#define DEFAULT_FONT_FACE "Courier New"
+	#endif
 #endif
 
 static char* CWordlist1 =
@@ -211,6 +210,43 @@ wxCodeEditCtrl::wxCodeEditCtrl( wxWindow *parent, int id,
 	m_ctEnd = ')';
 	
 	SetScrollWidthTracking( true );
+}
+
+bool wxCodeEditCtrl::ReadAscii( const wxString &file )
+{
+	FILE *fp = fopen(file.c_str(), "r");
+	if ( fp )
+	{
+		wxString str;
+		char buf[1024];
+		while(fgets( buf, 1023, fp ) != 0)
+			str += buf;
+
+		fclose(fp);
+		SetText(str);
+		ConvertEOLs( wxSTC_EOL_LF );
+		EmptyUndoBuffer();
+		SetSavePoint();
+		SetModified( false );
+		return true;
+	}
+	else return false;
+}
+
+
+bool wxCodeEditCtrl::WriteAscii( const wxString &file )
+{
+	FILE *fp = fopen( file.c_str(), "w" );
+	if ( fp )
+	{
+		ConvertEOLs( wxSTC_EOL_LF );
+		fputs( GetText().ToAscii().data(), fp );
+		SetSavePoint();
+		SetModified( false );
+		fclose( fp );
+		return true;
+	}
+	else return false;
 }
 
 void wxCodeEditCtrl::SetLanguage( const wxString &fileName )
@@ -827,13 +863,12 @@ void wxCodeEditCtrl::OnCharAdded( wxStyledTextEvent &evt )
 		{
 			wxString prevline = GetLine(curline - 1);
 		
-			static char buf[32];
+			wxString buf;
+			buf.Alloc( 32 );
 			size_t prevlinelen = prevline.Length();
 			size_t i;
 			for ( i=0;i<prevlinelen && i < 31 && (prevline[i] == '\t' || prevline[i] == ' '); i++)
-				buf[i] = prevline[i];
-
-			buf[i] = '\0';
+				buf += prevline[i];
 			
 			ReplaceSelection(buf);
 		}

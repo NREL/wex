@@ -977,7 +977,7 @@ wxPLPlotCtrl::~wxPLPlotCtrl()
 			delete m_sideWidgets[i];
 }
 
-void wxPLPlotCtrl::AddPlot( wxPLPlottable *p, AxisPos xap, AxisPos yap, PlotPos ppos )
+void wxPLPlotCtrl::AddPlot( wxPLPlottable *p, AxisPos xap, AxisPos yap, PlotPos ppos, bool update_axes )
 {
 	plot_data dd;
 	dd.plot = p;
@@ -995,6 +995,9 @@ void wxPLPlotCtrl::AddPlot( wxPLPlottable *p, AxisPos xap, AxisPos yap, PlotPos 
 
 	if ( p->IsShownInLegend() )		
 		m_legendInvalidated = true;
+
+	if ( update_axes )
+		UpdateAxes( false );
 }
 
 wxPLPlottable *wxPLPlotCtrl::RemovePlot( wxPLPlottable *p, PlotPos plotPosition )
@@ -1025,6 +1028,8 @@ void wxPLPlotCtrl::DeleteAllPlots()
 
 	m_plots.clear();	
 	m_legendInvalidated = true;
+
+	UpdateAxes( true );
 }
 
 size_t wxPLPlotCtrl::GetPlotCount()
@@ -2500,6 +2505,105 @@ void wxPLPlotCtrl::RescaleAxes()
 				}
             }
 			yAxis2Set[ppos] = true;
+        }
+    }
+}
+
+void wxPLPlotCtrl::UpdateAxes( bool recalc_all )
+{
+	int position = 0;
+
+    // if we're not recalculating axes using all iplots then set
+    // position to last one in list.
+    if ( !recalc_all )
+    {
+        position =  m_plots.size()-1;
+        if (position < 0) 
+			position = 0;
+    }
+
+    if ( recalc_all )
+    {
+		SetXAxis1( NULL );
+		SetXAxis2( NULL );
+		
+		for (int i=0; i<NPLOTPOS; i++)
+		{
+			SetYAxis1( NULL, (PlotPos)i );
+			SetYAxis2( NULL, (PlotPos)i );
+		}
+    }
+
+    for (int i = position; i < m_plots.size(); i++ )
+    {
+        wxPLPlottable *p = m_plots[i].plot;
+        AxisPos xap = m_plots[i].xap;
+		AxisPos yap = m_plots[i].yap;
+		PlotPos ppos = m_plots[i].ppos;
+
+        if( xap == X_BOTTOM )
+        {
+            if ( GetXAxis1() == NULL )
+            {
+                SetXAxis1( p->SuggestXAxis() );
+            }
+            else
+            {
+				if ( wxPLAxis *pnew = p->SuggestXAxis() )
+				{
+					GetXAxis1()->ExtendBound( pnew );
+					delete pnew;
+				}
+            }
+        }
+
+        if( xap == X_TOP )
+        {
+            if( GetXAxis2() == NULL )
+            {
+                SetXAxis2( p->SuggestXAxis() );                
+            }
+            else
+            {
+				if ( wxPLAxis *pnew = p->SuggestXAxis() )
+				{
+					GetXAxis2()->ExtendBound( pnew );
+					delete pnew;
+				}
+            }
+        }
+
+        if( yap == Y_LEFT )
+        {
+			if ( GetYAxis1( ppos ) == NULL )
+            {
+                SetYAxis1( p->SuggestYAxis(), ppos );
+            }
+            else
+            {
+				if ( wxPLAxis *pnew = p->SuggestYAxis() )
+				{
+					GetYAxis1( ppos )->ExtendBound( pnew );
+					delete pnew;
+				}
+            }
+        }
+
+        if ( yap == Y_RIGHT )
+        {
+            if ( GetYAxis2( ppos ) == NULL )
+            {
+                SetYAxis2(p->SuggestYAxis(), ppos);
+            }
+            else
+            {
+				if ( wxPLAxis *pnew = p->SuggestYAxis() )
+				{
+					GetYAxis2( ppos )->ExtendBound(pnew);
+					delete pnew;
+				}
+            }
+			GetYAxis2(ppos)->ShowTickText( true );
         }
     }
 }

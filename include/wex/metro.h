@@ -6,6 +6,8 @@
 #include <wx/gdicmn.h>
 #include <wx/font.h>
 #include <wx/window.h>
+#include <wx/panel.h>
+#include <wx/scrolwin.h>
 
 
 class wxMetroThemeProvider
@@ -71,6 +73,13 @@ public:
 			long style = 0);
 	
 	wxSize DoGetBestSize() const;
+	void SetLabel( const wxString &l ) { m_label = l; InvalidateBestSize();}
+	wxString GetLabel() const { return m_label; }
+	void SetBitmap( const wxBitmap &b ) { m_bitmap = b; InvalidateBestSize(); }
+	wxBitmap GetBitmap() const { return m_bitmap; }
+	void SetStyle( long sty ) { m_style = sty; InvalidateBestSize(); }
+	long GetStyle() const { return m_style; }
+
 private:
 	wxString m_label;
 	wxBitmap m_bitmap;
@@ -112,8 +121,15 @@ public:
 	void Remove( const wxString &label );
 	int Find( const wxString &label );
 	void Clear();
+	size_t Count();
+	wxString GetLabel( size_t idx );
+	wxArrayString GetLabels();
+	void SetLabel( size_t idx, const wxString &text );
 	void SetSelection( size_t idx );
 	size_t GetSelection();
+	wxString GetStringSelection();
+	void ReorderLeft( size_t idx );
+	void ReorderRight( size_t idx );
 	
 	wxSize DoGetBestSize() const;
 
@@ -121,6 +137,7 @@ protected:
 	struct item
 	{
 		item( const wxString &l ) : label(l), x_start(0), width(0), shown(true) { }
+		item( const item &x ) : label(x.label), x_start(x.x_start), width(x.width), shown(x.shown) { }
 		wxString label;
 		int x_start;
 		int width;
@@ -190,6 +207,50 @@ private:
 	void ComputeScrolledWindows();
 
 	DECLARE_EVENT_TABLE()
+};
+
+class wxMetroListBox : public wxScrolledWindow
+{
+public:
+	wxMetroListBox( wxWindow *parent, int id, 
+		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize );
+	virtual ~wxMetroListBox();
+
+	void Add( const wxString &label );
+	void Add( const wxArrayString &list );
+	void Delete( size_t idx );
+	void Clear();
+	int Find( const wxString &label );
+	int Count();
+	void Set( size_t idx, const wxString &label );
+	wxString Get( size_t idx );
+	int GetSelection();
+	wxString GetSelectionString();
+	void SetSelection( int idx );
+	bool SetSelectionString( const wxString &s );
+	wxString GetValue();
+
+	void Invalidate();
+private:
+	struct _item
+	{
+		wxString name;
+		wxRect geom;
+	};
+
+	std::vector<_item> m_items;
+	int m_hoverIdx;
+	int m_selectedIdx;
+
+	void OnPaint( wxPaintEvent &evt );
+	void OnErase( wxEraseEvent &evt );
+	void OnResize( wxSizeEvent &evt );
+	void OnLeftDown( wxMouseEvent &evt );
+	void OnMouseMove( wxMouseEvent &evt );
+	void OnLeave( wxMouseEvent &evt );
+	void OnDClick( wxMouseEvent &evt );
+
+	DECLARE_EVENT_TABLE();
 };
 
 #endif
