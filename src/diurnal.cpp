@@ -616,7 +616,10 @@ void wxDiurnalPeriodCtrl::OnLostFocus(wxFocusEvent &)
 void wxDiurnalPeriodCtrl::SetData( float *data, size_t nr, size_t nc )
 {
 	if ( nr == m_nrows && nc == m_ncols )
+	{
 		memcpy( m_data, data, sizeof(float)*nr*nc );
+		Refresh();
+	}
 }
 
 
