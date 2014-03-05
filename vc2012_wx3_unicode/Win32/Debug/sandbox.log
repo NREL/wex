@@ -1,6 +1,12 @@
-﻿Build started 3/5/2014 1:35:06 PM.
+﻿Build started 3/5/2014 2:13:02 PM.
      1>Project "C:\Work\DView\vc2012_wx3_unicode\sandbox.vcxproj" on node 3 (Build target(s)).
-     1>Link:
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /IC:\Work\LK /I"c:\wxWidgets-2.9.5-win32\lib\vc_lib\mswud" /I"c:\wxWidgets-2.9.5-win32\include" /IC:\Work\DView\vc2012_wx3_unicode\\..\include /Zi /nologo /W4 /WX- /MP /Od /Oy- /D WIN32 /D _DEBUG /D _CRT_SECURE_NO_DEPRECATE=1 /D _CRT_NON_CONFORMING_SWPRINTFS=1 /D _SCL_SECURE_NO_WARNINGS=1 /D __WXMSW__ /D _UNICODE /D _WINDOWS /D NOPCH /D _UNICODE /D UNICODE /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /GR /Fo"C:\Work\DView\vc2012_wx3_unicode\\Win32\Debug\\" /Fd"C:\Work\DView\vc2012_wx3_unicode\\sandboxd.pdb" /Gd /TP /analyze- /errorReport:prompt ..\tools\sandbox\sandbox.cpp
+         sandbox.cpp
+     1>..\tools\sandbox\sandbox.cpp(25): warning C4189: 'bitmap' : local variable is initialized but not referenced
+     1>..\tools\sandbox\sandbox.cpp(227): warning C4100: 'evt' : unreferenced formal parameter
+     1>..\tools\sandbox\sandbox.cpp(232): warning C4100: 'evt' : unreferenced formal parameter
+       Link:
          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Work\DView\vc2012_wx3_unicode\\sandboxd.exe" /INCREMENTAL /NOLOGO /LIBPATH:C:\Work\LK /LIBPATH:C:\Work\DView\vc2012_wx3_unicode\\.. /LIBPATH:"c:\wxWidgets-2.9.5-win32\lib\vc_lib" wxbase29ud_xml.lib wxbase29ud_net.lib wxmsw29ud_webview.lib wxmsw29ud_adv.lib wxmsw29ud_html.lib wxmsw29ud_aui.lib wxmsw29ud_stc.lib wxmsw29ud_core.lib wxbase29ud.lib wxscintillad.lib wxtiffd.lib wxjpegd.lib wxpngd.lib wxzlibd.lib wxregexud.lib wxexpatd.lib kernel32.lib user32.lib gdi32.lib comdlg32.lib winspool.lib winmm.lib shell32.lib comctl32.lib ole32.lib oleaut32.lib uuid.lib rpcrt4.lib advapi32.lib wsock32.lib wininet.lib wexvc12wx3d.lib lkvc12wx3d.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Work\DView\vc2012_wx3_unicode\\sandboxd.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Work\DView\vc2012_wx3_unicode\\sandboxd.lib" /MACHINE:X86 /SAFESEH C:\Work\DView\vc2012_wx3_unicode\\Win32\Debug\sandbox.res
          C:\Work\DView\vc2012_wx3_unicode\\Win32\Debug\sandbox.obj
          sandbox.vcxproj -> C:\Work\DView\vc2012_wx3_unicode\\sandboxd.exe
@@ -8,4 +14,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:03.99
+Time Elapsed 00:00:07.79

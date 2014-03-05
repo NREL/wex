@@ -1,8 +1,123 @@
-﻿Build started 3/5/2014 1:35:02 PM.
+﻿Build started 3/5/2014 2:12:38 PM.
      1>Project "C:\Work\DView\vc2012_wx3_unicode\wexlib.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /IC:\Work\DView\vc2012_wx3_unicode\\..\include /I"c:\wxWidgets-2.9.5-win32\lib\vc_lib\mswud" /IC:\Work\LK /I"c:\wxWidgets-2.9.5-win32\include" /I. /I"c:\wxWidgets-2.9.5-win32\samples" /Zi /nologo /W4 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CRT_SECURE_NO_DEPRECATE=1 /D _CRT_NON_CONFORMING_SWPRINTFS=1 /D _SCL_SECURE_NO_WARNINGS=1 /D __WXMSW__ /D _UNICODE /D _WINDOWS /D NOPCH /D _UNICODE /D UNICODE /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /GR /Fo"vc_mswud\wexlib\\" /Fd"vc_mswud\wex.pdb" /Gd /TP /analyze- /errorReport:prompt /MP ..\src\sched.cpp
-         sched.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /IC:\Work\DView\vc2012_wx3_unicode\\..\include /I"c:\wxWidgets-2.9.5-win32\lib\vc_lib\mswud" /IC:\Work\LK /I"c:\wxWidgets-2.9.5-win32\include" /I. /I"c:\wxWidgets-2.9.5-win32\samples" /Zi /nologo /W4 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CRT_SECURE_NO_DEPRECATE=1 /D _CRT_NON_CONFORMING_SWPRINTFS=1 /D _SCL_SECURE_NO_WARNINGS=1 /D __WXMSW__ /D _UNICODE /D _WINDOWS /D NOPCH /D _UNICODE /D UNICODE /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /GR /Fo"vc_mswud\wexlib\\" /Fd"vc_mswud\wex.pdb" /Gd /TP /analyze- /errorReport:prompt /MP ..\src\dview\dvcolourmap.cpp ..\src\dview\dvdcctrl.cpp ..\src\dview\dvdmapctrl.cpp ..\src\dview\dvfiledataset.cpp ..\src\dview\dvplotctrl.cpp ..\src\dview\dvpncdfctrl.cpp ..\src\dview\dvprofilectrl.cpp ..\src\dview\dvscatterplotctrl.cpp ..\src\dview\dvtimeseriesctrl.cpp ..\src\lkscript.cpp ..\src\plot\plaxis.cpp ..\src\plot\plbarplot.cpp ..\src\plot\plhistplot.cpp ..\src\plot\pllineplot.cpp ..\src\plot\plplotctrl.cpp ..\src\plot\plscatterplot.cpp
+         dvcolourmap.cpp
+         dvdcctrl.cpp
+         dvdmapctrl.cpp
+         dvfiledataset.cpp
+         dvplotctrl.cpp
+     1>..\src\dview\dvdcctrl.cpp(65): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvdcctrl.cpp(89): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvdcctrl.cpp(135): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvdcctrl.cpp(170): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvdcctrl.cpp(177): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvdcctrl.cpp(208): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvdcctrl.cpp(235): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvdcctrl.cpp(244): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvdcctrl.cpp(256): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvdcctrl.cpp(262): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvdcctrl.cpp(296): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvdcctrl.cpp(303): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvdmapctrl.cpp(106): warning C4100: 'rct' : unreferenced formal parameter
+     1>..\src\dview\dvdmapctrl.cpp(106): warning C4100: 'dc' : unreferenced formal parameter
+     1>..\src\dview\dvdmapctrl.cpp(448): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvdmapctrl.cpp(470): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvdmapctrl.cpp(758): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvdmapctrl.cpp(766): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvdmapctrl.cpp(785): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvdmapctrl.cpp(793): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvdmapctrl.cpp(801): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvdmapctrl.cpp(809): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvfiledataset.cpp(625): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvfiledataset.cpp(693): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvfiledataset.cpp(743): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvfiledataset.cpp(753): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvfiledataset.cpp(763): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvfiledataset.cpp(779): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvfiledataset.cpp(796): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvfiledataset.cpp(858): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvfiledataset.cpp(894): warning C4018: '<' : signed/unsigned mismatch
+         dvpncdfctrl.cpp
+         dvprofilectrl.cpp
+         dvscatterplotctrl.cpp
+     1>..\src\dview\dvplotctrl.cpp(75): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvplotctrl.cpp(123): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvplotctrl.cpp(303): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvplotctrl.cpp(311): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvplotctrl.cpp(329): warning C4018: '>=' : signed/unsigned mismatch
+         dvtimeseriesctrl.cpp
+     1>..\src\dview\dvpncdfctrl.cpp(91): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvpncdfctrl.cpp(148): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvpncdfctrl.cpp(165): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvpncdfctrl.cpp(183): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvpncdfctrl.cpp(244): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvpncdfctrl.cpp(343): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvpncdfctrl.cpp(339): warning C4189: 'dataMax' : local variable is initialized but not referenced
+     1>..\src\dview\dvpncdfctrl.cpp(338): warning C4189: 'dataMin' : local variable is initialized but not referenced
+     1>..\src\dview\dvpncdfctrl.cpp(373): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvpncdfctrl.cpp(388): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvpncdfctrl.cpp(400): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvpncdfctrl.cpp(398): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvpncdfctrl.cpp(424): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvpncdfctrl.cpp(438): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvpncdfctrl.cpp(446): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvpncdfctrl.cpp(449): warning C4189: 'index' : local variable is initialized but not referenced
+     1>..\src\dview\dvprofilectrl.cpp(124): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvprofilectrl.cpp(243): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(272): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(377): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(412): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvprofilectrl.cpp(518): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(580): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(585): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(589): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(616): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(619): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(638): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(671): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(700): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(733): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(739): warning C4018: '>=' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(748): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(760): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\dview\dvprofilectrl.cpp(765): warning C4018: '<' : signed/unsigned mismatch
+         lkscript.cpp
+         plaxis.cpp
+         plbarplot.cpp
+     1>..\src\plot\plaxis.cpp(676): warning C4100: 'phys_max' : unreferenced formal parameter
+     1>..\src\plot\plaxis.cpp(676): warning C4100: 'phys_min' : unreferenced formal parameter
+         plhistplot.cpp
+     1>..\src\dview\dvtimeseriesctrl.cpp(231): warning C4100: 'rct' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(231): warning C4100: 'dc' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(456): warning C4100: 'event' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(461): warning C4100: 'event' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(466): warning C4100: 'event' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(584): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(594): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(603): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(608): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(738): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(764): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(768): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(772): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(776): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(780): warning C4100: 'e' : unreferenced formal parameter
+     1>..\src\dview\dvtimeseriesctrl.cpp(1373): warning C4189: 'timestep' : local variable is initialized but not referenced
+         pllineplot.cpp
+     1>c:\work\dview\src\dview\dvtimeseriesctrl.cpp(966): warning C4701: potentially uninitialized local variable 'd2' used
+     1>c:\work\dview\src\dview\dvtimeseriesctrl.cpp(966): warning C4703: potentially uninitialized local pointer variable 'd2' used
+         plplotctrl.cpp
+     1>..\src\plot\plhistplot.cpp(223): warning C4018: '<' : signed/unsigned mismatch
+     1>..\src\plot\plhistplot.cpp(219): warning C4100: 'visible_only' : unreferenced formal parameter
+     1>..\src\plot\plhistplot.cpp(219): warning C4100: 'Xmax' : unreferenced formal parameter
+     1>..\src\plot\plhistplot.cpp(219): warning C4100: 'Xmin' : unreferenced formal parameter
+         plscatterplot.cpp
+     1>..\src\plot\plplotctrl.cpp(2210): warning C4189: 'arrow_size' : local variable is initialized but not referenced
+     1>..\src\plot\plplotctrl.cpp(2537): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\work\dview\src\plot\plplotctrl.cpp(1171): warning C4706: assignment within conditional expression
+     1>c:\work\dview\src\plot\plplotctrl.cpp(1178): warning C4706: assignment within conditional expression
+     1>c:\work\dview\src\plot\plplotctrl.cpp(1187): warning C4706: assignment within conditional expression
        Lib:
          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\Lib.exe /OUT:"C:\Work\DView\vc2012_wx3_unicode\..\wexvc12wx3d.lib" /NOLOGO vc_mswud\wexlib\codeedit.obj
          vc_mswud\wexlib\dvautocolourassigner.obj
@@ -89,4 +204,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:03.69
+Time Elapsed 00:00:23.71

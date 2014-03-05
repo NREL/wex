@@ -1,0 +1,11 @@
+﻿Build started 3/5/2014 2:03:59 PM.
+     1>Project "C:\Work\DView\vc2013_wx3\dview.vcxproj" on node 3 (Build target(s)).
+     1>Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Work\DView\vc2013_wx3\dviewd.exe" /INCREMENTAL /NOLOGO /LIBPATH:C:\Work\DView\vc2013_wx3\..\ /LIBPATH:"c:\wxWidgets-2.9.5-win32\lib\vc_lib" wexvc13wx3d.lib wxbase30ud_xml.lib wxmsw30ud_webview.lib wxmsw30ud_aui.lib wxmsw30ud_stc.lib wxmsw30ud_core.lib wxbase30ud.lib wxscintillad.lib wxtiffd.lib wxjpegd.lib wxpngd.lib wxzlibd.lib wxregexud.lib wxexpatd.lib kernel32.lib user32.lib gdi32.lib comdlg32.lib winspool.lib winmm.lib shell32.lib comctl32.lib ole32.lib oleaut32.lib uuid.lib rpcrt4.lib advapi32.lib wsock32.lib wininet.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Work\DView\vc2013_wx3\\dviewd.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Work\DView\vc2013_wx3\dviewd.lib" /MACHINE:X86 /SAFESEH C:\Work\DView\vc2013_wx3\\dview\Win32\Debug\dview.res
+         C:\Work\DView\vc2013_wx3\\dview\Win32\Debug\dview.obj
+     1>LINK : fatal error LNK1104: cannot open file 'wxbase30ud_xml.lib'
+     1>Done Building Project "C:\Work\DView\vc2013_wx3\dview.vcxproj" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:00.32

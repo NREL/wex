@@ -66,7 +66,7 @@ void wxPLAxis::SetWorldMax( double max )
 	m_max = max;
 }
 
-wxCoord wxPLAxis::WorldToPhysical( double coord, wxCoord phys_min, wxCoord phys_max, bool isHistXAxis )
+wxCoord wxPLAxis::WorldToPhysical( double coord, wxCoord phys_min, wxCoord phys_max )
 {
 	wxCoord pmin = phys_min;
 	wxCoord pmax = phys_max;
@@ -75,8 +75,7 @@ wxCoord wxPLAxis::WorldToPhysical( double coord, wxCoord phys_min, wxCoord phys_
 	if (range == 0)
 		return 1;
 
-	double prop = (double)((coord - m_min) / range);
-	if(isHistXAxis) { prop = (double)((coord - m_min)); }
+	double prop = (coord - m_min) / range;
 	// calculate the physical coordinate.
 	return (wxCoord)((double)pmin + prop * (double)(pmax - pmin));
 }
