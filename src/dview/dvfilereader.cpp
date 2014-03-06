@@ -1,6 +1,9 @@
+#include <stdio.h>
+#include <wx/string.h>
 
-#include "wex/dview/dvfiledataset.h"
-//#include "wex/dview/dview.h"
+#include "wex/dview/dvtimeseriesdataset.h"
+#include "wex/dview/dvfilereader.h"
+#include "wex/dview/dvplotctrl.h"
 
 #include <wx/wfstream.h>
 #include <wx/txtstrm.h>
@@ -427,17 +430,8 @@ static bool ReadWeatherFileLine(FILE *fp, int type,
 
 const int PROBABLE_SIZE = 8760;
 
-wxDVFileDataSet::wxDVFileDataSet()
-{
-}
 
-wxDVFileDataSet::~wxDVFileDataSet()
-{
-	
-}
-
-
-bool wxDVFileDataSet::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, int prealloc_data, int prealloc_lnchars)
+bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, int prealloc_data, int prealloc_lnchars)
 {
 	wxString fExtension = filename.Right(3);
 	if (fExtension.CmpNoCase("tm2") == 0 ||
@@ -457,7 +451,7 @@ bool wxDVFileDataSet::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, 
     int lnchars = prealloc_lnchars > 0 ? prealloc_lnchars : 1024;
 	lnchars *= 2;  //Give ourselves extra room
 
-	std::vector<wxDVFileDataSet*> dataSets;
+	std::vector<wxDVArrayDataSet*> dataSets;
 	std::vector<wxString> groupNames;
 	std::vector<double> timeCounters;
 	int columns = 0;
@@ -484,7 +478,7 @@ bool wxDVFileDataSet::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, 
 			&& tkz_tStep.HasMoreTokens()
 			&& tkz_units.HasMoreTokens())
 		{
-			wxDVFileDataSet *ds = new wxDVFileDataSet();
+			wxDVArrayDataSet *ds = new wxDVArrayDataSet();
 			wxString titleToken = tkz_titles.GetNextToken();
 			ds->SetSeriesTitle(titleToken.AfterLast('|'));
 			tkz_offsets.GetNextToken().ToDouble(&entry);
@@ -542,7 +536,7 @@ bool wxDVFileDataSet::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, 
 		bool firstRowContainsTitles = true;
 		bool secondRowContainsUnits = true;
 
-		wxDVFileDataSet *ds = new wxDVFileDataSet();
+		wxDVArrayDataSet *ds = new wxDVArrayDataSet();
 		dataSets.push_back(ds);
 		wxString title = tkz_names.GetNextToken();
 		timeCounters.push_back(0.5);
@@ -585,7 +579,7 @@ bool wxDVFileDataSet::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, 
 		while(columns < count_names)
 		{
 			timeCounters.push_back(0.5);
-			wxDVFileDataSet *ds = new wxDVFileDataSet();
+			wxDVArrayDataSet *ds = new wxDVArrayDataSet();
 			wxString titleToken = tkz_names.GetNextToken();
 			if (firstRowContainsTitles)
 				ds->SetSeriesTitle(titleToken.AfterLast('|'));
@@ -692,20 +686,21 @@ bool wxDVFileDataSet::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, 
 	plotWin->Freeze();
 	for (int i=0; i<dataSets.size(); i++)
 	{
+		bool update_ui = (i==dataSets.size()-1);
 		if (groupNames[i].size() > 1)
-			plotWin->AddDataSet(dataSets[i], groupNames[i]);
+			plotWin->AddDataSet(dataSets[i], groupNames[i], update_ui);
 		else
-			plotWin->AddDataSet(dataSets[i], wxFileNameFromPath( filename ) );
+			plotWin->AddDataSet(dataSets[i], wxFileNameFromPath( filename ) ,update_ui );
 	}
 	plotWin->Thaw();
 
 	wxLogStatus("Read %i lines of data points.\n", line);
-	wxLogDebug("wxDVFileDataSet::FastRead [ncol=%d nalloc = %d lnchars=%d] = %d msec\n", columns, prealloc_data, lnchars, (int)sw.Time());
+	wxLogDebug("wxDVFileReader::FastRead [ncol=%d nalloc = %d lnchars=%d] = %d msec\n", columns, prealloc_data, lnchars, (int)sw.Time());
     return true;
 
 }
 
-void wxDVFileDataSet::ReadDataFromCSV(wxDVPlotCtrl *plotWin, const wxString& filename, wxChar separator)
+void wxDVFileReader::ReadDataFromCSV(wxDVPlotCtrl *plotWin, const wxString& filename, wxChar separator)
 {
 	//Deprecated.  Use FastRead.  This method may work if for some reason fastread is broken.
 	wxFileInputStream infile(filename);
@@ -717,7 +712,7 @@ void wxDVFileDataSet::ReadDataFromCSV(wxDVPlotCtrl *plotWin, const wxString& fil
 
 	wxTextInputStream intext(infile);
 
-	std::vector<wxDVFileDataSet*> dataSets;
+	std::vector<wxDVArrayDataSet*> dataSets;
 	wxString currentLine = intext.ReadLine();
 	if (currentLine.Left(19) != wxT("wxDVFileHeaderVer 1"))
 	{
@@ -728,7 +723,7 @@ void wxDVFileDataSet::ReadDataFromCSV(wxDVPlotCtrl *plotWin, const wxString& fil
 	currentLine = intext.ReadLine(); // Set Titles From 1st Line
 	do
 	{
-		dataSets.push_back(new wxDVFileDataSet());
+		dataSets.push_back(new wxDVArrayDataSet());
 		wxString seriesTitle = currentLine.BeforeFirst(separator);
 		dataSets[dataSets.size()-1]->SetSeriesTitle(seriesTitle);
 		if (currentLine.size() == seriesTitle.size())
@@ -795,62 +790,62 @@ void wxDVFileDataSet::ReadDataFromCSV(wxDVPlotCtrl *plotWin, const wxString& fil
 	//Done reading data; add it to the plotCtrl.
 	for (int i=0; i<dataSets.size(); i++)
 	{
-		plotWin->AddDataSet(dataSets[i], wxFileNameFromPath( filename ));
+		plotWin->AddDataSet(dataSets[i], wxFileNameFromPath( filename ), (i==dataSets.size()-1) );
 	}
 }
 
-bool wxDVFileDataSet::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& filename)
+bool wxDVFileReader::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& filename)
 {
 	int wfType = GetWeatherFileType(filename);
 
 	// Set up data sets for all of the variables that are going to be read.
-	std::vector<wxDVFileDataSet*> dataSets;
-	wxDVFileDataSet *ds = new wxDVFileDataSet();
+	std::vector<wxDVArrayDataSet*> dataSets;
+	wxDVArrayDataSet *ds = new wxDVArrayDataSet();
 	ds->SetSeriesTitle("Global Horizontal");
 	ds->SetUnits("Wh/m2");
 	dataSets.push_back(ds);
 
-	ds = new wxDVFileDataSet();
+	ds = new wxDVArrayDataSet();
 	ds->SetSeriesTitle("Direct Normal");
 	ds->SetUnits("Wh/m2");
 	dataSets.push_back(ds);
 
-	ds = new wxDVFileDataSet();
+	ds = new wxDVArrayDataSet();
 	ds->SetSeriesTitle("Diffuse");
 	ds->SetUnits("Wh/m2");
 	dataSets.push_back(ds);
 
-	ds = new wxDVFileDataSet();
+	ds = new wxDVArrayDataSet();
 	ds->SetSeriesTitle("Wind");
 	ds->SetUnits("m/s");
 	dataSets.push_back(ds);
 
-	ds = new wxDVFileDataSet();
+	ds = new wxDVArrayDataSet();
 	ds->SetSeriesTitle("Dry Temp");
 	ds->SetUnits("'C");
 	dataSets.push_back(ds);
 
-	ds = new wxDVFileDataSet();
+	ds = new wxDVArrayDataSet();
 	ds->SetSeriesTitle("Wet Temp");
 	ds->SetUnits("'C");
 	dataSets.push_back(ds);
 
-	ds = new wxDVFileDataSet();
+	ds = new wxDVArrayDataSet();
 	ds->SetSeriesTitle("Relative Humidity");
 	ds->SetUnits("%");
 	dataSets.push_back(ds);
 
-	ds = new wxDVFileDataSet();
+	ds = new wxDVArrayDataSet();
 	ds->SetSeriesTitle("Pressure");
 	ds->SetUnits("mbar");
 	dataSets.push_back(ds);
 
-	ds = new wxDVFileDataSet();
+	ds = new wxDVArrayDataSet();
 	ds->SetSeriesTitle("WindDir");
 	ds->SetUnits("deg");
 	dataSets.push_back(ds);
 
-	ds = new wxDVFileDataSet();
+	ds = new wxDVArrayDataSet();
 	ds->SetSeriesTitle("Snow Depth");
 	ds->SetUnits("cm");
 	dataSets.push_back(ds);
@@ -893,12 +888,12 @@ bool wxDVFileDataSet::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& fil
 	//Done reading data; add it to the plotCtrl.
 	for (int i=0; i<dataSets.size(); i++)
 	{
-		plotWin->AddDataSet(dataSets[i], wxFileNameFromPath(filename));
+		plotWin->AddDataSet(dataSets[i], wxFileNameFromPath(filename), (i==dataSets.size()-1) );
 	}
 	return true;
 }
 
-void wxDVFileDataSet::Read8760WFLines(std::vector<wxDVFileDataSet*> &dataSets, FILE* infile, int wfType)
+void wxDVFileReader::Read8760WFLines(std::vector<wxDVArrayDataSet*> &dataSets, FILE* infile, int wfType)
 {
 	int year, month, day, hour;
 	double gh, dn, df, wind, drytemp, wettemp, relhum, pressure, winddir, snowdepth;
@@ -924,65 +919,3 @@ void wxDVFileDataSet::Read8760WFLines(std::vector<wxDVFileDataSet*> &dataSets, F
 		dataSets[9]->Append(wxRealPoint(currentHour, snowdepth));
 	}
 }
-
-/* Data Provider Methods */
-
-wxRealPoint wxDVFileDataSet::At(size_t i) const
-{
-	return mDataPoints[i];
-}
-
-size_t wxDVFileDataSet::Length() const
-{
-	return mDataPoints.size();
-}
-
-double wxDVFileDataSet::GetTimeStep() const
-{
-	return mTimeStep;
-}
-
-wxString wxDVFileDataSet::GetSeriesTitle() const
-{
-	return mSeriesTitle;
-}
-
-wxString wxDVFileDataSet::GetUnits() const 
-{
-	return mUnits;
-}
-
-/* To set data */
-void wxDVFileDataSet::Append(const wxRealPoint& p)
-{
-	mDataPoints.push_back(p);
-}
-
-void wxDVFileDataSet::Alloc(int size)
-{
-	mDataPoints.reserve(size);
-}
-
-void wxDVFileDataSet::SetSeriesTitle(const wxString& title)
-{
-	mSeriesTitle = title;
-}
-
-void wxDVFileDataSet::SetTimeStep(double timeStep)
-{
-	mTimeStep = timeStep;
-}
-
-void wxDVFileDataSet::SetUnits(const wxString& units)
-{
-	mUnits = units;
-}
-
-void wxDVFileDataSet::SetDataValue(size_t i, double newYValue)
-{
-	if(i < mDataPoints.size())
-	{
-		mDataPoints[i].y = newYValue;
-	}
-}
-

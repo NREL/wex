@@ -100,30 +100,44 @@ std::vector<wxRealPoint> wxDVTimeSeriesDataSet::GetDataVector()
 // ******** Array data set *********** //
 
 
-wxDVArrayDataSet::wxDVArrayDataSet( const wxString &var, const std::vector<double> &data )
-	: m_varLabel(var), m_pData(data)
+wxDVArrayDataSet::wxDVArrayDataSet()
+	: m_timestep(1), m_offset(0)
 {
-	m_timestep=1; //hours
-	m_offset=0;
+}
+
+wxDVArrayDataSet::wxDVArrayDataSet( const wxString &var, const std::vector<double> &data )
+	: m_varLabel(var), m_timestep(1), m_offset(0)
+{
+	Copy( data );	
+}
+
+wxDVArrayDataSet::wxDVArrayDataSet( const wxString &var, const std::vector<wxRealPoint> &data )
+	: m_varLabel(var), m_pData(data), m_timestep(1), m_offset(0)
+{
+}
+
+wxDVArrayDataSet::wxDVArrayDataSet( const wxString &var, const wxString &units, const double &timestep )
+	: m_varLabel(var), m_varUnits(units), m_timestep(timestep), m_offset(0)
+{
 }
 
 wxDVArrayDataSet::wxDVArrayDataSet( const wxString &var, const wxString &units, const double &timestep, const std::vector<double> &data )
-	: m_varLabel(var), m_varUnits(units), m_timestep(timestep), m_pData(data)
+	: m_varLabel(var), m_varUnits(units), m_timestep(timestep), m_offset(0)
 {
-	m_offset=0;
+	Copy( data );
 }
 
 wxDVArrayDataSet::wxDVArrayDataSet( const wxString &var, const wxString &units, const double &offset, const double &timestep, const std::vector<double> &data )
-	: m_varLabel(var), m_varUnits(units), m_offset(offset), 
-	m_timestep(timestep), m_pData(data)
+	: m_varLabel(var), m_varUnits(units), m_timestep(timestep), m_offset(offset)
 {
+	Copy( data );
 }
 
 
 wxRealPoint wxDVArrayDataSet::At(size_t i) const
 {
 	if ((i<m_pData.size())&&(i>=0))
-		return wxRealPoint(m_offset+i*m_timestep, m_pData[i] );
+		return wxRealPoint( m_pData[i].x, m_pData[i].y );
 	else
 		return wxRealPoint(m_offset+i*m_timestep, 0.0 );
 }
@@ -148,62 +162,68 @@ wxString wxDVArrayDataSet::GetUnits() const
 	return m_varUnits;
 }
 
-void wxDVArrayDataSet::SetDataValue(size_t i, double newYValue)
+void wxDVArrayDataSet::Clear()
 {
-	m_pData[i] = newYValue;
+	m_pData.clear();
 }
 
-
-// ******** Point array data set *********** //
-
-
-wxDVPointArrayDataSet::wxDVPointArrayDataSet( const wxString &var, const wxString &units, const double &timestep )
-	: mSeriesTitle(var), m_varUnits(units), m_timestep(timestep)
+void wxDVArrayDataSet::Copy( const std::vector<double> &data )
 {
-	
+	m_pData.clear();
+	if ( data.size() > 0 )
+	{
+		m_pData.resize( data.size() );
+		for( size_t i=0;i<data.size();i++ )
+			m_pData[i] = wxRealPoint( m_offset+i*m_timestep, data[i] );
+	}
 }
 
-wxDVPointArrayDataSet::~wxDVPointArrayDataSet()
+void wxDVArrayDataSet::Alloc( size_t n )
 {
-	mDataPoints.clear();
+	m_pData.reserve( n );
 }
 
-wxRealPoint wxDVPointArrayDataSet::At(size_t i) const
+void wxDVArrayDataSet::Append( const wxRealPoint &p )
 {
-	return mDataPoints[i];
+	m_pData.push_back( p );
 }
 
-size_t wxDVPointArrayDataSet::Length() const
+void wxDVArrayDataSet::Set( size_t i, double x, double y )
 {
-	return mDataPoints.size();
+	if ( i < m_pData.size() )
+		m_pData[i] = wxRealPoint( x, y );
 }
 
-double wxDVPointArrayDataSet::GetTimeStep() const
+void wxDVArrayDataSet::SetY( size_t i, double y )
 {
-	return m_timestep;
+	if ( i < m_pData.size() )
+		m_pData[i].y = y;
 }
 
-wxString wxDVPointArrayDataSet::GetSeriesTitle() const
+void wxDVArrayDataSet::SetSeriesTitle( const wxString &title )
 {
-	return mSeriesTitle;
+	m_varLabel = title;
 }
 
-wxString wxDVPointArrayDataSet::GetUnits() const 
+void wxDVArrayDataSet::SetUnits( const wxString &units )
 {
-	return m_varUnits;
+	m_varUnits = units;
 }
 
-void wxDVPointArrayDataSet::SetDataValue(size_t i, double newYValue)
+void wxDVArrayDataSet::SetTimeStep( double ts, bool recompute_x )
 {
-	mDataPoints[i].y = newYValue;
+	m_timestep = ts;
+	if ( recompute_x ) RecomputeXData();
 }
 
-void wxDVPointArrayDataSet::Append(const wxRealPoint& p)
+void wxDVArrayDataSet::SetOffset( double off, bool recompute_x )
 {
-	mDataPoints.push_back(p);
+	m_offset = off;
+	if ( recompute_x ) RecomputeXData();
 }
 
-void wxDVPointArrayDataSet::Alloc(int size)
+void wxDVArrayDataSet::RecomputeXData()
 {
-	mDataPoints.reserve(size);
+	for( size_t i=0;i<m_pData.size();i++ )
+		m_pData[i].x = m_offset+i*m_timestep;
 }

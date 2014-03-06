@@ -25,7 +25,7 @@
 #include <wx/msgdlg.h>
 
 #include "wex/dview/dvplotctrl.h"
-#include "wex/dview/dvfiledataset.h"
+#include "wex/dview/dvfilereader.h"
 
 #include "wex/plot/plplotctrl.h"
 #include "wex/plot/pllineplot.h"
@@ -61,10 +61,10 @@ public:
 		wxMenuBar *menubar = new wxMenuBar;
 		mRecentMenu = new wxMenu;
 		mFileMenu = new wxMenu;
-		mFileMenu->Append(wxID_OPEN, "Open Data File...\tCtrl-O");
+		mFileMenu->Append(wxID_OPEN, "Open...\tCtrl-O");
 		mFileMenu->Append(wxID_CLEAR, "Clear\tCtrl-W");
 		mFileMenu->AppendSeparator();
-		mFileMenu->Append(ID_RECENT_FILES, "Recent Files", mRecentMenu);
+		mFileMenu->Append(ID_RECENT_FILES, "Recent", mRecentMenu);
 	
 	#ifndef __WXMAC__
 		mFileMenu->AppendSeparator();
@@ -270,7 +270,7 @@ public:
 		wxBeginBusyCursor();
 		for(size_t i=0; i<filenames.GetCount(); i++)
 		{	
-			if(!wxDVFileDataSet::FastRead(mPlotCtrl, filenames[i]))
+			if(!wxDVFileReader::FastRead(mPlotCtrl, filenames[i]))
 			{
 				wxMessageBox( wxT("The selected file no longer exists, is not of the correct format, or you do not have permission to open it."), wxT("Error opening file."), wxICON_ERROR);
 				RemoveRecent(filenames[i]);
