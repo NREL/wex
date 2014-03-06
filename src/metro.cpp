@@ -1049,8 +1049,8 @@ wxMetroListBox::wxMetroListBox(wxWindow *parent, int id, const wxPoint &pos, con
 	: wxScrolledWindow(parent,id, pos, size, wxBORDER_NONE)
 {
 	SetBackgroundStyle(wxBG_STYLE_CUSTOM);
-	SetBackgroundColour( wxColour(243,243,243) );
-	SetFont( wxMetroTheme::Font( wxMT_LIGHT, 16 ) );	
+	SetBackgroundColour( *wxWHITE );
+	SetFont( wxMetroTheme::Font( wxMT_LIGHT, 15 ) );	
 	m_selectedIdx = -1;
 	m_hoverIdx = -1;
 	
@@ -1192,12 +1192,13 @@ void wxMetroListBox::OnPaint(wxPaintEvent &evt)
 	int height = dc.GetCharHeight();
 	for (int i=0;i<m_items.size();i++)	
 	{
-		wxColour bcol = (m_selectedIdx == i) ? wxColour(213,213,213) :
+		wxColour bcol = (m_selectedIdx == i) ? wxColour(50,50,50) :
 			( (m_hoverIdx == i) ? wxColour(231,231,231) : GetBackgroundColour() );
 		dc.SetPen( wxPen( bcol ) );
 		dc.SetBrush( wxBrush( bcol ) );
 		dc.DrawRectangle( m_items[i].geom );
-		dc.DrawText( m_items[i].name, 4, m_items[i].geom.y + m_items[i].geom.height/2 - height/2 );
+		dc.SetTextForeground( (m_selectedIdx==i) ? *wxWHITE : *wxBLACK );
+		dc.DrawText( m_items[i].name, 6, m_items[i].geom.y + m_items[i].geom.height/2 - height/2 );
 	}			
 }
 
