@@ -1283,3 +1283,167 @@ void wxMetroListBox::OnLeave(wxMouseEvent &evt)
 	Refresh();
 }
 
+BEGIN_EVENT_TABLE( wxMetroPopupMenu, wxPopupTransientWindow )
+	EVT_PAINT( wxMetroPopupMenu::OnPaint )
+	EVT_ERASE_BACKGROUND( wxMetroPopupMenu::OnErase )
+	EVT_MOTION( wxMetroPopupMenu::OnMotion )
+	EVT_LEAVE_WINDOW( wxMetroPopupMenu::OnLeave )
+END_EVENT_TABLE()
+
+#define POPUP_BORDER 2
+#define POPUP_SPACE 5
+
+wxMetroPopupMenu::wxMetroPopupMenu( wxWindow *parent )
+	: wxPopupTransientWindow( parent, wxBORDER_NONE )
+{
+	SetBackgroundStyle(wxBG_STYLE_CUSTOM);
+	m_hover = -1;
+	SetFont( wxMetroTheme::Font( wxMT_LIGHT, 14 ) );
+}
+
+void wxMetroPopupMenu::Append( int id, const wxString &label )
+{
+	item x;
+	x.id = id;
+	x.label = label;
+	x.ymin = x.ymax = 0;
+	m_items.push_back( x );
+	InvalidateBestSize();
+}
+
+void wxMetroPopupMenu::AppendSeparator()
+{
+	Append( -1, wxEmptyString );
+}
+
+wxSize wxMetroPopupMenu::DoGetBestSize() const
+{
+	wxClientDC dc( const_cast<wxMetroPopupMenu*>(this) );
+	dc.SetFont( GetFont() );
+	int ch = dc.GetCharHeight();
+	int w = 0;
+	int h = POPUP_BORDER;
+	for( size_t i=0;i<m_items.size();i++ )
+	{
+		if ( m_items[i].label.IsEmpty() )
+			h += POPUP_BORDER;
+		else
+		{
+			wxSize sz = dc.GetTextExtent( m_items[i].label );
+			if ( w < (sz.x + POPUP_SPACE + POPUP_SPACE ) )
+				w = sz.x + POPUP_SPACE + POPUP_SPACE;
+
+			h += POPUP_SPACE + ch;
+		}
+	}
+
+	return wxSize( w, h );
+}
+
+void wxMetroPopupMenu::Popup( wxWindow *parent_focus, const wxPoint &rpos )
+{
+	wxSize sz = GetBestSize();
+	SetClientSize( sz );
+	wxPoint mpos = wxGetMousePosition();
+	wxPoint p =  ( rpos == wxDefaultPosition ) ? mpos : rpos;
+	wxSize ssz = wxGetDisplaySize();
+	if ( (p.x+sz.x) > ssz.x )
+		p.x += ( ssz.x - (p.x+sz.x) );
+
+	SetPosition( p );
+	wxPopupTransientWindow::Popup( parent_focus );
+}
+
+void wxMetroPopupMenu::Dismiss()
+{
+//	Destroy();
+}
+
+void wxMetroPopupMenu::OnPaint( wxPaintEvent & )
+{
+	wxAutoBufferedPaintDC dc( this );
+	dc.SetFont( GetFont() );
+	int ch = dc.GetCharHeight();
+	wxSize sz = GetClientSize();
+
+	wxColour acc = wxMetroTheme::Colour( wxMT_FOREGROUND );
+
+	dc.SetBrush( *wxWHITE_BRUSH );
+	dc.SetPen( wxPen( acc, POPUP_BORDER ) );
+	dc.DrawRectangle( wxRect(0,0,sz.x,sz.y) );
+
+	int uh = ch + POPUP_SPACE;
+
+	size_t yy = POPUP_BORDER;
+	for ( size_t i=0;i<m_items.size();i++ )
+	{
+		m_items[i].ymin = yy;
+
+		if ( !m_items[i].label.IsEmpty() )
+		{
+			if ( m_hover == (int)i )
+			{
+				dc.SetTextForeground( *wxWHITE );
+				dc.SetBrush( wxBrush( acc ) );
+				dc.DrawRectangle( 0, yy, sz.x, ch + POPUP_SPACE );
+			}
+			else
+				dc.SetTextForeground( acc );
+
+			dc.DrawText( m_items[i].label, POPUP_SPACE, yy + uh/2 - ch/2 );			
+			yy += uh;
+		}
+		else
+		{
+			dc.DrawLine( 0, yy, sz.x, yy );
+			yy += POPUP_BORDER;
+		}
+
+		m_items[i].ymax = yy;
+	}
+
+}
+
+
+void wxMetroPopupMenu::OnErase( wxEraseEvent & )
+{
+	/* nothing to do */
+}
+
+void wxMetroPopupMenu::OnMotion( wxMouseEvent &evt )
+{
+	int hh = Current( evt.GetPosition() );
+	if ( hh != m_hover )
+	{
+		m_hover = hh;
+		Refresh();
+	}
+}
+
+void wxMetroPopupMenu::OnLeave( wxMouseEvent &evt )
+{
+	OnMotion( evt );
+}
+
+bool wxMetroPopupMenu::ProcessLeftDown( wxMouseEvent &evt )
+{
+	int sel = Current( evt.GetPosition() );
+	if ( sel >= 0 )
+	{
+		wxMenuEvent ee( wxEVT_MENU );
+		ee.SetId( m_items[sel].id );
+		ProcessEvent( ee );
+	}
+
+	return true;
+}
+
+int wxMetroPopupMenu::Current( const wxPoint &mouse )
+{
+	for( size_t i=0;i<m_items.size();i++ )
+		if ( mouse.y >= m_items[i].ymin
+			&& mouse.y < m_items[i].ymax )
+			return (int) i;
+
+	return -1;
+}
