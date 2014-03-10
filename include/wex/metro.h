@@ -132,6 +132,8 @@ public:
 	void ReorderLeft( size_t idx );
 	void ReorderRight( size_t idx );
 	
+	wxPoint GetPopupMenuPosition( int index );
+	
 	wxSize DoGetBestSize() const;
 
 protected:
@@ -184,10 +186,12 @@ public:
 	void DeletePage( int index );
 	int GetPageIndex(wxWindow *win);
 	wxWindow *GetPage( int index );
-
+	
 	int GetSelection();
 	void SetSelection(int id);
 	void SetText(int id, const wxString &text);
+	
+	wxPoint GetPopupMenuPosition( int index );
 
 private:
 	wxMetroTabList *m_list;	
@@ -255,15 +259,15 @@ private:
 };
 
 
-class wxMetroPopupMenu : public wxPopupTransientWindow
+class wxMetroPopupMenuWindow : public wxPopupTransientWindow
 {
 public:
-	wxMetroPopupMenu( wxWindow *parent );
+	wxMetroPopupMenuWindow( wxWindow *parent );
 
 	void Append( int id, const wxString &label );
 	void AppendSeparator();
 
-	virtual void Popup( wxWindow *parent_focus, const wxPoint &pos = wxDefaultPosition );
+	virtual void Popup( const wxPoint &pos = wxDefaultPosition );
 	
 	wxSize DoGetBestSize() const;
 protected:
@@ -282,12 +286,29 @@ protected:
 	void OnErase( wxEraseEvent & );
 	void OnMotion( wxMouseEvent & );
 	void OnLeave( wxMouseEvent & );
-	void OnLeft( wxMouseEvent & );
 
 	int Current( const wxPoint &mouse );
 
 	DECLARE_EVENT_TABLE();
 
+};
+
+class wxMetroPopupMenu
+{
+public:
+	wxMetroPopupMenu();
+
+	void Append( int id, const wxString &label );
+	void AppendSeparator();
+
+	void Popup( wxWindow *parent, const wxPoint &pos = wxDefaultPosition );
+
+private:
+	struct item {
+		int id;
+		wxString label;
+	};
+	std::vector<item> m_items;
 };
 
 

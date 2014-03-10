@@ -201,7 +201,7 @@ class NumericTest : public wxFrame
 	wxNumericCtrl *m_num;
 	wxExtTextCtrl *m_txt;
 	wxTextCtrl *m_log;
-	wxMetroButton *m_button;
+	wxButton *m_button;
 public:
 	NumericTest() : wxFrame( NULL, wxID_ANY, "Numeric Test", wxDefaultPosition, wxSize(500,400) )
 	{
@@ -213,7 +213,7 @@ public:
 
 		m_log = new wxTextCtrl( panel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY );
 
-		m_button = new wxMetroButton( panel, ID_MENU_TEST, "Test popup" );
+		m_button = new wxButton( panel, ID_MENU_TEST, "Test popup" );
 
 		wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL );
 		sizer->Add( m_num, 0, wxALL|wxEXPAND, 10 );
@@ -252,16 +252,16 @@ public:
 	void OnMenuTest( wxCommandEvent &evt )
 	{
 		m_log->AppendText( "menu popup initiated\n" );
-		wxMetroPopupMenu *menu = new wxMetroPopupMenu( this );
+		wxMetroPopupMenu menu;
 
 		int id = ID_MENU_FIRST;
-		menu->Append( id++, "First item" );
-		menu->Append( id++, "Second item" );
-		menu->Append( id++, "Third item" );
-		menu->Append( id++, "Fourth item" );
-		menu->AppendSeparator();
-		menu->Append( id++, "Exit" );
-		menu->Popup( this );
+		menu.Append( id++, "First item\tF2" );
+		menu.Append( id++, "Second item\tCtrl-O" );
+		menu.Append( id++, "Third item" );
+		menu.Append( id++, "Fourth item" );
+		menu.AppendSeparator();
+		menu.Append( id++, "Exit" );
+		menu.Popup( this );
 	}
 
 	DECLARE_EVENT_TABLE();
