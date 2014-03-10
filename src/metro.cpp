@@ -1298,7 +1298,7 @@ void wxMetroListBox::OnLeave(wxMouseEvent &evt)
 #define POPUP_BORDER 1
 #define POPUP_SPACE 5
 
-class wxMetroPopupRenderer : public wxWindow
+class wxMetroPopupMenuWindow : public wxPopupWindow
 {
 	struct item {
 		int id;
@@ -1308,11 +1308,11 @@ class wxMetroPopupRenderer : public wxWindow
 	int m_hover;
 	std::vector<item> m_items;
 public:
-	wxMetroPopupRenderer( wxWindow *parent )
-		: wxWindow( parent, wxID_ANY )
+	wxMetroPopupMenuWindow( wxWindow *parent )
+		: wxPopupWindow( parent, wxBORDER_NONE|wxWANTS_CHARS )
 	{
-		SetBackgroundStyle(wxBG_STYLE_CUSTOM);
 		m_hover = -1;
+		SetBackgroundStyle(wxBG_STYLE_CUSTOM);
 		SetFont( wxMetroTheme::Font( wxMT_NORMAL, 13 ) );
 	}
 	
@@ -1335,9 +1335,9 @@ public:
 		Append( -1, wxEmptyString );
 	}
 
-	wxSize DoGetBestSize() const
+	virtual wxSize DoGetBestSize() const
 	{
-		wxClientDC dc( const_cast<wxMetroPopupRenderer*>(this) );
+		wxClientDC dc( const_cast<wxMetroPopupMenuWindow*>(this) );
 		dc.SetFont( GetFont() );
 		int ch = dc.GetCharHeight();
 		int wl = 0, wr = 0;
@@ -1444,21 +1444,7 @@ public:
 	{
 		/* nothing to do */
 	}
-
-	void OnMotion( wxMouseEvent &evt )
-	{
-		int hh = Current( evt.GetPosition() );
-		if ( hh != m_hover )
-		{
-			m_hover = hh;
-			Refresh();
-		}
-	}
-
-	void OnLeave( wxMouseEvent &evt )
-	{
-		OnMotion( evt );
-	}
+	
 
 	int Current( const wxPoint &mouse )
 	{
@@ -1473,70 +1459,109 @@ public:
 		return -1;
 	}
 
-	void OnLeft( wxMouseEvent &evt )
+	void OnMouse( wxMouseEvent &evt )
 	{
-		int sel = Current( evt.GetPosition() );
-		if ( sel >= 0 )
-		{
-			wxCommandEvent ee( wxEVT_MENU );
-			ee.SetId( m_items[sel].id );
-			AddPendingEvent( ee );
+		wxEventType et = evt.GetEventType();
+		bool inside = HitTest( evt.GetPosition() ) == wxHT_WINDOW_INSIDE;
 
-			if ( wxPopupTransientWindow *ptw = dynamic_cast<wxPopupTransientWindow*>( GetParent() ) )
-				ptw->Dismiss();
+		if ( ( et == wxEVT_MOTION && inside )
+			|| et == wxEVT_LEAVE_WINDOW )
+		{
+			
+			int hh = Current( evt.GetPosition() );
+			if ( hh != m_hover )
+			{
+				m_hover = hh;
+				Refresh();
+			}
+
+			return;
 		}
 
+		if ( evt.GetEventType() == wxEVT_LEFT_UP && inside )
+		{
+			int sel = Current( evt.GetPosition() );
+			if ( sel >= 0 )
+			{
+				wxCommandEvent ee( wxEVT_MENU );
+				ee.SetId( m_items[sel].id );
+				AddPendingEvent( ee );
+				Dismiss();
+				return;
+			}
+		}
+		
+
+		if ( !inside && (et == wxEVT_LEFT_DCLICK
+			|| et == wxEVT_LEFT_DOWN
+			|| et == wxEVT_RIGHT_DCLICK
+			|| et == wxEVT_RIGHT_DOWN) )
+		{		
+			wxLogStatus("mouse event -> dismiss %d", (int) evt.GetEventType() );
+			Dismiss();
+		
+		}
+		else
+			wxLogStatus("mouse event, but not dismissed");
+
 	}
-
-
-	DECLARE_EVENT_TABLE();
-};
-
-BEGIN_EVENT_TABLE( wxMetroPopupRenderer, wxWindow )
-	EVT_PAINT( wxMetroPopupRenderer::OnPaint )
-	EVT_ERASE_BACKGROUND( wxMetroPopupRenderer::OnErase )
-	EVT_MOTION( wxMetroPopupRenderer::OnMotion )
-	EVT_LEFT_UP( wxMetroPopupRenderer::OnLeft )
-	EVT_LEAVE_WINDOW( wxMetroPopupRenderer::OnLeave )
-END_EVENT_TABLE()
-
-class wxMetroPopupMenuWindow : wxPopupTransientWindow
-{
-	wxMetroPopupRenderer *m_menu;
-
-public:
-
-	wxMetroPopupMenuWindow( wxWindow *parent )
-		: wxPopupTransientWindow( parent, wxBORDER_NONE )
-	{
-		m_menu = new wxMetroPopupRenderer( this );
-		wxBoxSizer *box = new wxBoxSizer( wxVERTICAL );
-		box->Add( m_menu, 1, wxALL|wxEXPAND, 0 );
-		SetSizerAndFit( box );
-		m_menu->SetFocus();
-	}
+	
 
 	void Popup( const wxPoint &rpos )
 	{
 		SetClientSize( GetBestSize() );
 		Position( rpos == wxDefaultPosition ? wxGetMousePosition() : rpos, wxSize(0,0) );
+
+		Show();
 		SetFocus();
-		wxPopupTransientWindow::Popup( GetParent() );
+		if ( !HasCapture() )
+			CaptureMouse();
 	}
 
-	bool ProcessLeftDown( wxMouseEvent &evt )
-	{
-		return wxPopupTransientWindow::ProcessLeftDown(evt);
-	}
+	virtual bool Destroy()
+	{	
+		wxCHECK_MSG( !wxPendingDelete.Member(this), false,
+					 wxS("Shouldn't destroy the popup twice.") );
 
+		wxPendingDelete.Append(this);
+		return true;
+	}
+	
 	void Dismiss()
 	{
-		wxPopupTransientWindow::Dismiss();
-		this->Destroy();
+		if ( HasCapture() )
+			ReleaseMouse();
+
+		Hide();
+		Destroy();
 	}
 
-	wxMetroPopupRenderer &Menu() { return *m_menu; }
+	void OnLoseFocus( wxFocusEvent & )
+	{
+		Dismiss();
+	}
+
+	void OnCaptureLost( wxMouseCaptureLostEvent & )
+	{
+		Dismiss();
+	}
+
+	void OnChar( wxKeyEvent & )
+	{
+		Dismiss();
+	}
+
+	DECLARE_EVENT_TABLE();
 };
+
+BEGIN_EVENT_TABLE( wxMetroPopupMenuWindow, wxPopupWindow )
+	EVT_PAINT( wxMetroPopupMenuWindow::OnPaint )
+	EVT_ERASE_BACKGROUND( wxMetroPopupMenuWindow::OnErase )
+	EVT_MOUSE_EVENTS( wxMetroPopupMenuWindow::OnMouse )
+	EVT_KILL_FOCUS( wxMetroPopupMenuWindow::OnLoseFocus )
+	EVT_MOUSE_CAPTURE_LOST( wxMetroPopupMenuWindow::OnCaptureLost )
+	EVT_CHAR( wxMetroPopupMenuWindow::OnChar )
+END_EVENT_TABLE()
 
 wxMetroPopupMenu::wxMetroPopupMenu() { /* nothing to do */ } 
 
@@ -1558,6 +1583,6 @@ void wxMetroPopupMenu::Popup( wxWindow *parent, const wxPoint &pos )
 	// menu window will Destroy() itself after it is dismissed
 	wxMetroPopupMenuWindow *menu = new wxMetroPopupMenuWindow( parent );
 	for( size_t i=0;i<m_items.size();i++ )
-		menu->Menu().Append( m_items[i].id, m_items[i].label );
+		menu->Append( m_items[i].id, m_items[i].label );
 	menu->Popup( pos );
 }
