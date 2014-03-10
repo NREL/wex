@@ -259,40 +259,6 @@ private:
 };
 
 
-class wxMetroPopupMenuWindow : public wxPopupTransientWindow
-{
-public:
-	wxMetroPopupMenuWindow( wxWindow *parent );
-
-	void Append( int id, const wxString &label );
-	void AppendSeparator();
-
-	virtual void Popup( const wxPoint &pos = wxDefaultPosition );
-	
-	wxSize DoGetBestSize() const;
-protected:
-	virtual bool ProcessLeftDown( wxMouseEvent & );
-	virtual void Dismiss();
-
-	struct item {
-		int id;
-		wxString label;
-		int ymin, ymax;
-	};
-	int m_hover;
-	std::vector<item> m_items;
-
-	void OnPaint( wxPaintEvent & );
-	void OnErase( wxEraseEvent & );
-	void OnMotion( wxMouseEvent & );
-	void OnLeave( wxMouseEvent & );
-
-	int Current( const wxPoint &mouse );
-
-	DECLARE_EVENT_TABLE();
-
-};
-
 class wxMetroPopupMenu
 {
 public:
