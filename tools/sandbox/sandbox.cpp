@@ -286,11 +286,16 @@ public:
 			return false;
 
 		m_locale.Init();
+	
+		wxFrame *frame = new NumericTest();
+		frame->Show();
+		wxLogWindow *log = new wxLogWindow( frame , "Log");
+		wxLog::SetActiveTarget(log);
+		log->Show();
 
 		wxInitAllImageHandlers();
 		//TestPLPlot( 0 );
 
-		(new NumericTest())->Show();
 
 		/*
 		wxFrame *frame = new wxFrame(NULL, wxID_ANY, "Test LKEdit", wxDefaultPosition, wxSize(600,400) );

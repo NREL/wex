@@ -6,6 +6,7 @@
 #include <wx/menu.h>
 #include <wx/sizer.h>
 #include <wx/event.h>
+#include <wx/log.h>
 
 #include <algorithm>
 #include "wex/metro.h"
@@ -1373,15 +1374,9 @@ wxSize wxMetroPopupMenuWindow::DoGetBestSize() const
 
 void wxMetroPopupMenuWindow::Popup( const wxPoint &rpos )
 {
-	wxSize sz = GetBestSize();
-	SetClientSize( sz );
-	wxPoint mpos = wxGetMousePosition();
-	wxPoint p =  ( rpos == wxDefaultPosition ) ? mpos : rpos;
-	wxSize ssz = wxGetDisplaySize();
-	if ( (p.x+sz.x) > ssz.x )
-		p.x += ( ssz.x - (p.x+sz.x) );
-
-	SetPosition( p );
+	SetClientSize( GetBestSize() );
+	Position( rpos == wxDefaultPosition ? wxGetMousePosition() : rpos, wxSize(0,0) );
+	SetFocus();
 	wxPopupTransientWindow::Popup( GetParent() );
 }
 
@@ -1396,7 +1391,7 @@ bool wxMetroPopupMenuWindow::ProcessLeftDown( wxMouseEvent &evt )
 		Dismiss();
 	}
 
-	return false;
+	return wxPopupTransientWindow::ProcessLeftDown(evt);
 }
 
 void wxMetroPopupMenuWindow::Dismiss()
@@ -1490,7 +1485,8 @@ void wxMetroPopupMenuWindow::OnLeave( wxMouseEvent &evt )
 
 int wxMetroPopupMenuWindow::Current( const wxPoint &mouse )
 {
-	if ( !IsMouseInWindow() ) return -1;
+	wxLogStatus("metro popup: current = %d %d", mouse.x, mouse.y );
+	if ( mouse.x < 0 || mouse.x > GetClientSize().x ) return -1;
 
 	for( size_t i=0;i<m_items.size();i++ )
 		if ( mouse.y >= m_items[i].ymin

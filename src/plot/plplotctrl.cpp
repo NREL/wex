@@ -1151,7 +1151,7 @@ void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visi
 	wxPLHistogramPlot* histPlot;
 	std::vector<bool> includeXForPlot( m_plots.size(), false );
 	std::vector<wxString> Headers;
-	std::vector <std::vector<wxRealPoint>> data;
+	std::vector< std::vector<wxRealPoint> > data;
 	size_t maxLength = 0;
 	bool keepGoing; //Used to stop early if all columns are no longer visible.
 

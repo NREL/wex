@@ -432,8 +432,8 @@ int wxDVTimeSeriesSettingsDialog::GetLineStyle() { return mLineStyleCombo->GetSe
 void wxDVTimeSeriesSettingsDialog::SetSync( bool b ) { mSyncCheck->SetValue( b ); }
 bool wxDVTimeSeriesSettingsDialog::GetSync() { return mSyncCheck->GetValue(); }
 
-void wxDVTimeSeriesSettingsDialog::SetStatType( StatType statType ) { mStatTypeCheck->SetValue( statType == StatType::SUM ? true : false ); }
-StatType wxDVTimeSeriesSettingsDialog::GetStatType() { return mStatTypeCheck->GetValue() ? StatType::SUM : StatType::AVERAGE; }
+void wxDVTimeSeriesSettingsDialog::SetStatType( StatType statType ) { mStatTypeCheck->SetValue( statType == SUM ? true : false ); }
+StatType wxDVTimeSeriesSettingsDialog::GetStatType() { return mStatTypeCheck->GetValue() ? SUM : AVERAGE; }
 
 void wxDVTimeSeriesSettingsDialog::SetAutoscale( bool b ) 
 { 
@@ -463,7 +463,7 @@ void wxDVTimeSeriesSettingsDialog::OnClickBottomHandler(wxCommandEvent& event)
 
 void wxDVTimeSeriesSettingsDialog::OnClickStatHandler(wxCommandEvent& event)
 {
-	SetStatType( mStatTypeCheck->IsChecked() ? StatType::SUM : StatType::AVERAGE );
+	SetStatType( mStatTypeCheck->IsChecked() ? SUM : AVERAGE );
 }
 
 
