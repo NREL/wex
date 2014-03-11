@@ -1307,13 +1307,14 @@ class wxMetroPopupMenuWindow : public wxPopupWindow
 	};
 	int m_hover;
 	std::vector<item> m_items;
+	long m_theme; 
 public:
-	wxMetroPopupMenuWindow( wxWindow *parent )
-		: wxPopupWindow( parent, wxBORDER_NONE|wxWANTS_CHARS )
+	wxMetroPopupMenuWindow( wxWindow *parent, long theme = 0)
+		: wxPopupWindow( parent, wxBORDER_NONE|wxWANTS_CHARS ),
+		m_theme( theme )
 	{
 		m_hover = -1;
 		SetBackgroundStyle(wxBG_STYLE_CUSTOM);
-		SetFont( wxMetroTheme::Font( wxMT_NORMAL, 13 ) );
 	}
 	
 
@@ -1373,7 +1374,7 @@ public:
 		wl += 4*POPUP_SPACE;
 		if ( wr > 0 ) wr += 3*POPUP_SPACE;
 
-		return wxSize( wl + wr, h );
+		return wxSize( wl + wr, h+POPUP_BORDER );
 	}
 	
 
@@ -1385,13 +1386,18 @@ public:
 		int ch = dc.GetCharHeight();
 		wxSize sz = GetClientSize();
 
-		wxColour acc = wxMetroTheme::Colour( wxMT_FOREGROUND );
+		wxColour acc = m_theme&wxMT_LIGHTTHEME ? *wxWHITE : wxMetroTheme::Colour( wxMT_HOVER );
+		wxColour text = m_theme&wxMT_LIGHTTHEME ? wxMetroTheme::Colour(wxMT_HOVER) : *wxWHITE;
+		wxColour acchi = m_theme&wxMT_LIGHTTHEME ? text : *wxWHITE;
+		wxColour texthi = m_theme&wxMT_LIGHTTHEME ? *wxWHITE : acc;
 
-		dc.SetBrush(  wxBrush( *wxWHITE ) );
-		dc.SetPen( wxPen( acc, 1 ) );
+		dc.SetBrush(  wxBrush(acc) );
+		dc.SetPen( wxPen( wxMetroTheme::Colour( wxMT_HOVER ), 1 ) );
 		dc.DrawRectangle( wxRect(0,0,sz.x,sz.y) );
 
 		int uh = ch + POPUP_SPACE;
+
+		dc.SetPen( wxPen( text, 1) );
 
 		size_t yy = POPUP_BORDER;
 		for ( size_t i=0;i<m_items.size();i++ )
@@ -1402,12 +1408,12 @@ public:
 			{
 				if ( m_hover == (int)i )
 				{
-					dc.SetTextForeground( *wxWHITE );
-					dc.SetBrush( wxBrush( acc ) );
+					dc.SetTextForeground( texthi );
+					dc.SetBrush( wxBrush( acchi ) );
 					dc.DrawRectangle( 0, yy, sz.x, ch + POPUP_SPACE );
 				}
 				else
-					dc.SetTextForeground( acc );
+					dc.SetTextForeground( text );
 
 				int texty = yy + uh/2 - ch/2;
 
@@ -1448,7 +1454,6 @@ public:
 
 	int Current( const wxPoint &mouse )
 	{
-		wxLogStatus("metro popup: current = %d %d", mouse.x, mouse.y );
 		if ( mouse.x < 0 || mouse.x > GetClientSize().x ) return -1;
 
 		for( size_t i=0;i<m_items.size();i++ )
@@ -1496,14 +1501,7 @@ public:
 			|| et == wxEVT_LEFT_DOWN
 			|| et == wxEVT_RIGHT_DCLICK
 			|| et == wxEVT_RIGHT_DOWN) )
-		{		
-			wxLogStatus("mouse event -> dismiss %d", (int) evt.GetEventType() );
 			Dismiss();
-		
-		}
-		else
-			wxLogStatus("mouse event, but not dismissed");
-
 	}
 	
 
@@ -1563,7 +1561,15 @@ BEGIN_EVENT_TABLE( wxMetroPopupMenuWindow, wxPopupWindow )
 	EVT_CHAR( wxMetroPopupMenuWindow::OnChar )
 END_EVENT_TABLE()
 
-wxMetroPopupMenu::wxMetroPopupMenu() { /* nothing to do */ } 
+wxMetroPopupMenu::wxMetroPopupMenu( long theme ) : m_theme(theme)
+{
+	m_font = wxMetroTheme::Font( wxMT_NORMAL, 13 );
+} 
+
+void wxMetroPopupMenu::SetFont( const wxFont &f )
+{
+	m_font = f;
+}
 
 void wxMetroPopupMenu::Append( int id, const wxString &label )
 {
@@ -1581,7 +1587,8 @@ void wxMetroPopupMenu::AppendSeparator()
 void wxMetroPopupMenu::Popup( wxWindow *parent, const wxPoint &pos )
 {
 	// menu window will Destroy() itself after it is dismissed
-	wxMetroPopupMenuWindow *menu = new wxMetroPopupMenuWindow( parent );
+	wxMetroPopupMenuWindow *menu = new wxMetroPopupMenuWindow( parent, m_theme );
+	menu->SetFont( m_font );
 	for( size_t i=0;i<m_items.size();i++ )
 		menu->Append( m_items[i].id, m_items[i].label );
 	menu->Popup( pos );

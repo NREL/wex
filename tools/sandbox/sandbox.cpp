@@ -202,8 +202,9 @@ class NumericTest : public wxFrame
 	wxExtTextCtrl *m_txt;
 	wxTextCtrl *m_log;
 	wxButton *m_button;
+	wxMetroNotebook *m_nb;
 public:
-	NumericTest() : wxFrame( NULL, wxID_ANY, "Numeric Test", wxDefaultPosition, wxSize(500,400) )
+	NumericTest() : wxFrame( NULL, wxID_ANY, "Numeric Test", wxDefaultPosition, wxSize(700,700) )
 	{
 		wxPanel *panel = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 
@@ -225,6 +226,14 @@ public:
 		wxBoxSizer *main = new wxBoxSizer( wxVERTICAL );
 		main->Add( sizer, 0, wxALL|wxEXPAND, 10 );
 		main->Add( m_log, 1, wxALL|wxEXPAND, 10 );
+
+		m_nb = new wxMetroNotebook( panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxMT_MENUBUTTONS|wxMT_LIGHTTHEME );
+		m_nb->AddPage( new wxPanel( m_nb ), "Page 1" );
+		m_nb->AddPage( new wxPanel( m_nb ), "Page 2" );
+		m_nb->AddPage( new wxPanel( m_nb ), "Page 3" );
+		m_nb->AddPage( new wxPanel( m_nb ), "Page 4" );
+
+		main->Add( m_nb, 1, wxALL|wxEXPAND, 0 );
 
 		panel->SetSizer( main );
 	}
@@ -253,6 +262,7 @@ public:
 	{
 		m_log->AppendText( "menu popup initiated\n" );
 		wxMetroPopupMenu menu;
+	//	menu.SetFont( wxMetroTheme::Font( wxMT_LIGHT, 20 ) );
 
 		int id = ID_MENU_FIRST;
 		menu.Append( id++, "First item\tF2" );
@@ -284,7 +294,9 @@ public:
 	{
 		if ( !wxApp::OnInit() )
 			return false;
-
+		
+		wxInitAllImageHandlers();
+		
 		m_locale.Init();
 	
 		wxFrame *frame = new NumericTest();
@@ -293,7 +305,6 @@ public:
 		wxLog::SetActiveTarget(log);
 		log->Show();
 
-		wxInitAllImageHandlers();
 		//TestPLPlot( 0 );
 
 

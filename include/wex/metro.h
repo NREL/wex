@@ -262,19 +262,21 @@ private:
 class wxMetroPopupMenu
 {
 public:
-	wxMetroPopupMenu();
-
+	wxMetroPopupMenu( long theme = 0  /* can be wxMT_LIGHTTHEME */ );
+	void SetFont( const wxFont &f );
 	void Append( int id, const wxString &label );
 	void AppendSeparator();
 
 	void Popup( wxWindow *parent, const wxPoint &pos = wxDefaultPosition );
 
 private:
+	long m_theme;
 	struct item {
 		int id;
 		wxString label;
 	};
 	std::vector<item> m_items;
+	wxFont m_font;
 };
 
 
