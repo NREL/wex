@@ -17,7 +17,7 @@ public:
 	virtual ~wxMetroThemeProvider();
 	virtual wxFont Font( int style, int size );
 	virtual wxColour Colour( int id );
-	virtual wxBitmap Bitmap( int id );
+	virtual wxBitmap Bitmap( int id, bool light );
 };
 
 
@@ -54,7 +54,7 @@ public:
 
 	static wxFont Font( int style = wxMT_NORMAL, int size = -1 );
 	static wxColour Colour( int id );
-	static wxBitmap Bitmap( int id );
+	static wxBitmap Bitmap( int id, bool light = true );
 };
 
 
@@ -117,8 +117,8 @@ public:
 		const wxSize &size = wxDefaultSize,
 		long style = 0 );
 
-	void Append( const wxString &label );
-	void Insert( const wxString &label, size_t pos );
+	void Append( const wxString &label, bool button = false );
+	void Insert( const wxString &label, size_t pos, bool button = false );
 	void Remove( const wxString &label );
 	int Find( const wxString &label );
 	void Clear();
@@ -139,12 +139,13 @@ public:
 protected:
 	struct item
 	{
-		item( const wxString &l ) : label(l), x_start(0), width(0), shown(true) { }
-		item( const item &x ) : label(x.label), x_start(x.x_start), width(x.width), shown(x.shown) { }
+		item( const wxString &l, bool bb) : label(l), x_start(0), width(0), shown(true), button(bb) { }
+		item( const item &x ) : label(x.label), x_start(x.x_start), width(x.width), shown(x.shown), button(x.button) { }
 		wxString label;
 		int x_start;
 		int width;
 		bool shown;
+		bool button;
 	};
 
 	std::vector<item> m_items;
@@ -179,8 +180,8 @@ public:
 	wxMetroNotebook(wxWindow *parent, int id=-1, 
 		const wxPoint &pos=wxDefaultPosition, const wxSize &sz=wxDefaultSize, long style = 0 );
 
-	void AddPage(wxWindow *win, const wxString &text, bool active=false);
-	void AddScrolledPage(wxWindow *win, const wxString &text, bool active=false);
+	void AddPage(wxWindow *win, const wxString &text, bool active=false, bool button=false);
+	void AddScrolledPage(wxWindow *win, const wxString &text, bool active=false, bool button=false);
 	int GetPageCount();
 	wxWindow *RemovePage( int index );
 	void DeletePage( int index );
@@ -201,6 +202,7 @@ private:
 	{
 		wxString text;
 		wxWindow *scroll_win;
+		bool button;
 	};
 
 	std::vector<page_info> m_pageList;

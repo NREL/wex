@@ -227,10 +227,10 @@ public:
 		main->Add( sizer, 0, wxALL|wxEXPAND, 10 );
 		main->Add( m_log, 1, wxALL|wxEXPAND, 10 );
 
-		m_nb = new wxMetroNotebook( panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxMT_MENUBUTTONS|wxMT_LIGHTTHEME );
-		m_nb->AddPage( new wxPanel( m_nb ), "Page 1" );
+		m_nb = new wxMetroNotebook( panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxMT_LIGHTTHEME );
+		m_nb->AddPage( new wxPanel( m_nb ), "Page 1", false, true );
 		m_nb->AddPage( new wxPanel( m_nb ), "Page 2" );
-		m_nb->AddPage( new wxPanel( m_nb ), "Page 3" );
+		m_nb->AddPage( new wxPanel( m_nb ), "Page 3", false, true );
 		m_nb->AddPage( new wxPanel( m_nb ), "Page 4" );
 
 		main->Add( m_nb, 1, wxALL|wxEXPAND, 0 );
