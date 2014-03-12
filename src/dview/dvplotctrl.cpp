@@ -4,7 +4,6 @@
 #include "wex/plot/plhistplot.h"
 
 #include "wex/dview/dvplotctrl.h"
-#include "wex/dview/dvfiledataset.h"
 #include "wex/dview/dvselectionlist.h"
 #include "wex/dview/dvcolourmap.h"
 
@@ -49,9 +48,9 @@ wxDVPlotCtrl::wxDVPlotCtrl(wxWindow* parent, wxWindowID id,
 	m_plotNotebook = new wxMetroNotebook(this, ID_NOTEBOOK, wxDefaultPosition, wxDefaultSize, wxMT_LIGHTTHEME);
 	topSizer->Add(m_plotNotebook, 1, wxEXPAND, 0);
 
-	m_timeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, HOURLY_TIME_SERIES, StatType::AVERAGE);
-	m_dailyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, DAILY_TIME_SERIES, StatType::AVERAGE);
-	m_monthlyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, MONTHLY_TIME_SERIES, StatType::AVERAGE);
+	m_timeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, HOURLY_TIME_SERIES, AVERAGE);
+	m_dailyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, DAILY_TIME_SERIES, AVERAGE);
+	m_monthlyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, MONTHLY_TIME_SERIES, AVERAGE);
 	m_dMap = new wxDVDMapCtrl(m_plotNotebook, wxID_ANY);
 	m_profilePlots = new wxDVProfileCtrl(m_plotNotebook, wxID_ANY);
 	m_pnCdf = new wxDVPnCdfCtrl(m_plotNotebook, wxID_ANY);
@@ -63,11 +62,11 @@ wxDVPlotCtrl::wxDVPlotCtrl(wxWindow* parent, wxWindowID id,
 	m_plotNotebook->AddPage(m_timeSeries, _("Hourly"), /*wxBITMAP_PNG_FROM_DATA( time ), */true);
 	m_plotNotebook->AddPage(m_dailyTimeSeries, _("Daily"), /*wxBITMAP_PNG_FROM_DATA( time ), */false);
 	m_plotNotebook->AddPage(m_monthlyTimeSeries, _("Monthly"), /*wxBITMAP_PNG_FROM_DATA( time ), */false);
+	m_plotNotebook->AddPage(m_profilePlots, _("Profiles"), /*wxBITMAP_PNG_FROM_DATA( calendar ), */false);
 	m_plotNotebook->AddPage(m_dMap, _("Heat Map"), /*wxBITMAP_PNG_FROM_DATA( dmap ), */false);
-	m_plotNotebook->AddPage(m_profilePlots, _("Monthly Profile"), /*wxBITMAP_PNG_FROM_DATA( calendar ), */false);
 	m_plotNotebook->AddPage(m_pnCdf, _("PDF / CDF"), /*wxBITMAP_PNG_FROM_DATA( barchart ), */false);
+	m_plotNotebook->AddPage(m_scatterPlot, _("Scatter"), /*wxBITMAP_PNG_FROM_DATA( scatter ), */false);
 	m_plotNotebook->AddPage(m_durationCurve, _("Duration Curve"), /*wxBITMAP_PNG_FROM_DATA( curve ), */false);
-	m_plotNotebook->AddPage(m_scatterPlot, _("Scatter Plot"), /*wxBITMAP_PNG_FROM_DATA( scatter ), */false);
 }
 
 wxDVPlotCtrl::~wxDVPlotCtrl()

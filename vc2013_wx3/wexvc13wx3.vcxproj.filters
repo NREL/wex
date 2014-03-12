@@ -63,9 +63,6 @@
     <ClInclude Include="..\include\wex\dview\dvdmapctrl.h">
       <Filter>dview\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\wex\dview\dvfiledataset.h">
-      <Filter>dview\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\wex\dview\dvplotctrl.h">
       <Filter>dview\Headers</Filter>
     </ClInclude>
@@ -345,6 +342,9 @@
     <ClInclude Include="..\include\wex\exttree.h">
       <Filter>wex\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\wex\dview\dvfilereader.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
@@ -357,9 +357,6 @@
       <Filter>dview\Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\src\dview\dvdmapctrl.cpp">
-      <Filter>dview\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\dview\dvfiledataset.cpp">
       <Filter>dview\Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\src\dview\dvplotctrl.cpp">
@@ -592,6 +589,9 @@
     </ClCompile>
     <ClCompile Include="..\src\exttree.cpp">
       <Filter>wex\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dview\dvfilereader.cpp">
+      <Filter>dview\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

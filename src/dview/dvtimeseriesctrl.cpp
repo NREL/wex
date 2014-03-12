@@ -327,13 +327,11 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 					factor = m_data->GetTimeStep();
 				}
 
-				if(divide)
+
+				if ( wxDVArrayDataSet *arrdata = dynamic_cast<wxDVArrayDataSet*>( m_data ) )
 				{
-					m_data->SetDataValue(i, m_data->At(i).y / factor);
-				}
-				else
-				{
-					m_data->SetDataValue(i, m_data->At(i).y * factor);
+					if( divide ) arrdata->SetY( i, m_data->At(i).y / factor );
+					else arrdata->SetY( i, m_data->At(i).y * factor );
 				}
 			}
 		}
@@ -434,8 +432,8 @@ int wxDVTimeSeriesSettingsDialog::GetLineStyle() { return mLineStyleCombo->GetSe
 void wxDVTimeSeriesSettingsDialog::SetSync( bool b ) { mSyncCheck->SetValue( b ); }
 bool wxDVTimeSeriesSettingsDialog::GetSync() { return mSyncCheck->GetValue(); }
 
-void wxDVTimeSeriesSettingsDialog::SetStatType( StatType statType ) { mStatTypeCheck->SetValue( statType == StatType::SUM ? true : false ); }
-StatType wxDVTimeSeriesSettingsDialog::GetStatType() { return mStatTypeCheck->GetValue() ? StatType::SUM : StatType::AVERAGE; }
+void wxDVTimeSeriesSettingsDialog::SetStatType( StatType statType ) { mStatTypeCheck->SetValue( statType == SUM ? true : false ); }
+StatType wxDVTimeSeriesSettingsDialog::GetStatType() { return mStatTypeCheck->GetValue() ? SUM : AVERAGE; }
 
 void wxDVTimeSeriesSettingsDialog::SetAutoscale( bool b ) 
 { 
@@ -465,7 +463,7 @@ void wxDVTimeSeriesSettingsDialog::OnClickBottomHandler(wxCommandEvent& event)
 
 void wxDVTimeSeriesSettingsDialog::OnClickStatHandler(wxCommandEvent& event)
 {
-	SetStatType( mStatTypeCheck->IsChecked() ? StatType::SUM : StatType::AVERAGE );
+	SetStatType( mStatTypeCheck->IsChecked() ? SUM : AVERAGE );
 }
 
 
@@ -642,12 +640,19 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 		if(m_statType != dlg.GetStatType())
 		{
 			m_statType = dlg.GetStatType();
+			wxString nonmodifiables;
 
 			for(size_t i = 0; i < m_plots.size(); i++)
 			{
 				m_plots[i]->SetStyle( (wxDVTimeSeriesPlot::Style) m_lineStyle );
 				m_plots[i]->UpdateSummaryData(m_statType == AVERAGE ? true : false);
+
+				if ( 0 == dynamic_cast<wxDVArrayDataSet*>( m_plots[i]->GetDataSet() ) )
+					nonmodifiables += m_plots[i]->GetDataSet()->GetSeriesTitle() + "\n";
 			}
+
+			if ( nonmodifiables.size() > 0 )
+				wxMessageBox("The following plots could not be configured for the modified statistic type:\n\n" + nonmodifiables );
 		}
 		else
 		{
@@ -838,7 +843,7 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 	double counter = 0.0;
 	double MinHrs = d->GetMinHours();
 	double MaxHrs = d->GetMaxHours();
-	wxDVPointArrayDataSet *d2;
+	wxDVArrayDataSet *d2 = 0;
 
 	//Create daily data set (avg value of data by day) from m_data
 	if(m_seriesType == DAILY_TIME_SERIES)
@@ -846,7 +851,7 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 		double nextDay = 0.0;
 		double currentDay = 0.0;
 
-		d2 = new wxDVPointArrayDataSet(d->GetSeriesTitle(), d->GetUnits(), 24.0 / d->GetTimeStep());
+		d2 = new wxDVArrayDataSet(d->GetSeriesTitle(), d->GetUnits(), 24.0 / d->GetTimeStep());
 
 		while (nextDay < MinHrs)
 		{
@@ -890,7 +895,7 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 		double currentMonth = 0.0;
 		double year = 0.0;
 
-		d2 = new wxDVPointArrayDataSet(d->GetSeriesTitle(), d->GetUnits(), 744.0 / d->GetTimeStep());
+		d2 = new wxDVArrayDataSet(d->GetSeriesTitle(), d->GetUnits(), 744.0 / d->GetTimeStep());
 
 		while(MinHrs > 8760.0)
 		{

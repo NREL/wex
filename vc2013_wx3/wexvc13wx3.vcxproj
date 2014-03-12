@@ -25,7 +25,7 @@
     <ClInclude Include="..\include\wex\dview\dvcolourmap.h" />
     <ClInclude Include="..\include\wex\dview\dvdcctrl.h" />
     <ClInclude Include="..\include\wex\dview\dvdmapctrl.h" />
-    <ClInclude Include="..\include\wex\dview\dvfiledataset.h" />
+    <ClInclude Include="..\include\wex\dview\dvfilereader.h" />
     <ClInclude Include="..\include\wex\dview\dvplotctrl.h" />
     <ClInclude Include="..\include\wex\dview\dvplotctrlsettings.h" />
     <ClInclude Include="..\include\wex\dview\dvplothelper.h" />
@@ -126,7 +126,7 @@
     <ClCompile Include="..\src\dview\dvcolourmap.cpp" />
     <ClCompile Include="..\src\dview\dvdcctrl.cpp" />
     <ClCompile Include="..\src\dview\dvdmapctrl.cpp" />
-    <ClCompile Include="..\src\dview\dvfiledataset.cpp" />
+    <ClCompile Include="..\src\dview\dvfilereader.cpp" />
     <ClCompile Include="..\src\dview\dvplotctrl.cpp" />
     <ClCompile Include="..\src\dview\dvplotctrlsettings.cpp" />
     <ClCompile Include="..\src\dview\dvplothelper.cpp" />

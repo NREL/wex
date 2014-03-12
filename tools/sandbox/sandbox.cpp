@@ -193,15 +193,18 @@ void TestDView( wxWindow *parent )
 
 #include <wex/numeric.h>
 #include <wex/exttext.h>
-enum { ID_NUMERIC = wxID_HIGHEST+121, ID_EXTTEXT, ID_CLEAR };
+enum { ID_NUMERIC = wxID_HIGHEST+121, ID_EXTTEXT, ID_CLEAR, ID_MENU_TEST,
+ID_MENU_FIRST, ID_MENU_LAST=ID_MENU_FIRST+40};
 class NumericTest : public wxFrame
 {
 	int m_counter;
 	wxNumericCtrl *m_num;
 	wxExtTextCtrl *m_txt;
 	wxTextCtrl *m_log;
+	wxButton *m_button;
+	wxMetroNotebook *m_nb;
 public:
-	NumericTest() : wxFrame( NULL, wxID_ANY, "Numeric Test", wxDefaultPosition, wxSize(500,400) )
+	NumericTest() : wxFrame( NULL, wxID_ANY, "Numeric Test", wxDefaultPosition, wxSize(700,700) )
 	{
 		wxPanel *panel = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 
@@ -211,15 +214,26 @@ public:
 
 		m_log = new wxTextCtrl( panel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY );
 
+		m_button = new wxButton( panel, ID_MENU_TEST, "Test popup" );
+
 		wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL );
 		sizer->Add( m_num, 0, wxALL|wxEXPAND, 10 );
 		sizer->Add( m_txt, 0, wxALL|wxEXPAND, 10 );
 		sizer->AddStretchSpacer();
 		sizer->Add( new wxButton( panel, ID_CLEAR, "Clear" ), 0, wxALL|wxEXPAND, 10 );
+		sizer->Add( m_button );
 
 		wxBoxSizer *main = new wxBoxSizer( wxVERTICAL );
 		main->Add( sizer, 0, wxALL|wxEXPAND, 10 );
 		main->Add( m_log, 1, wxALL|wxEXPAND, 10 );
+
+		m_nb = new wxMetroNotebook( panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxMT_LIGHTTHEME );
+		m_nb->AddPage( new wxPanel( m_nb ), "Page 1", false, true );
+		m_nb->AddPage( new wxPanel( m_nb ), "Page 2" );
+		m_nb->AddPage( new wxPanel( m_nb ), "Page 3", false, true );
+		m_nb->AddPage( new wxPanel( m_nb ), "Page 4" );
+
+		main->Add( m_nb, 1, wxALL|wxEXPAND, 0 );
 
 		panel->SetSizer( main );
 	}
@@ -239,6 +253,27 @@ public:
 		m_log->Clear();
 	}
 
+	void OnMenu( wxCommandEvent &evt )
+	{
+		m_log->AppendText( wxString::Format("popup menu item clicked: %d\n", evt.GetId() ) );
+	}
+
+	void OnMenuTest( wxCommandEvent &evt )
+	{
+		m_log->AppendText( "menu popup initiated\n" );
+		wxMetroPopupMenu menu;
+	//	menu.SetFont( wxMetroTheme::Font( wxMT_LIGHT, 20 ) );
+
+		int id = ID_MENU_FIRST;
+		menu.Append( id++, "First item\tF2" );
+		menu.Append( id++, "Second item\tCtrl-O" );
+		menu.Append( id++, "Third item" );
+		menu.Append( id++, "Fourth item" );
+		menu.AppendSeparator();
+		menu.Append( id++, "Exit" );
+		menu.Popup( this );
+	}
+
 	DECLARE_EVENT_TABLE();
 };
 
@@ -246,6 +281,8 @@ BEGIN_EVENT_TABLE( NumericTest, wxFrame )
 	EVT_NUMERIC( ID_NUMERIC, NumericTest::OnNumeric )
 	EVT_TEXT_ENTER( ID_EXTTEXT, NumericTest::OnExtText )
 	EVT_BUTTON( ID_CLEAR, NumericTest::OnClear )
+	EVT_BUTTON( ID_MENU_TEST, NumericTest::OnMenuTest )
+	EVT_MENU_RANGE( ID_MENU_FIRST, ID_MENU_LAST, NumericTest::OnMenu )
 END_EVENT_TABLE()
 
 
@@ -257,13 +294,19 @@ public:
 	{
 		if ( !wxApp::OnInit() )
 			return false;
-
-		m_locale.Init();
-
+		
 		wxInitAllImageHandlers();
+		
+		m_locale.Init();
+	
+		wxFrame *frame = new NumericTest();
+		frame->Show();
+		wxLogWindow *log = new wxLogWindow( frame , "Log");
+		wxLog::SetActiveTarget(log);
+		log->Show();
+
 		//TestPLPlot( 0 );
 
-		//(new NumericTest())->Show();
 
 		/*
 		wxFrame *frame = new wxFrame(NULL, wxID_ANY, "Test LKEdit", wxDefaultPosition, wxSize(600,400) );
@@ -339,7 +382,7 @@ public:
 		frm->Show();*/
 
 		
-		TestPLPlot( 0 );
+	//	TestPLPlot( 0 );
 		
 	/*
 		wxChar sep = ',';

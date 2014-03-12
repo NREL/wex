@@ -6,6 +6,7 @@
 #include <wx/menu.h>
 #include <wx/sizer.h>
 #include <wx/event.h>
+#include <wx/log.h>
 
 #include <algorithm>
 #include "wex/metro.h"
@@ -14,6 +15,11 @@
 #include "wex/icons/down_arrow_13.cpng"
 #include "wex/icons/left_arrow_13.cpng"
 #include "wex/icons/right_arrow_13.cpng"
+
+#include "wex/icons/up_arrow_gray_13.cpng"
+#include "wex/icons/down_arrow_gray_13.cpng"
+#include "wex/icons/left_arrow_gray_13.cpng"
+#include "wex/icons/right_arrow_gray_13.cpng"
 
 static wxMetroThemeProvider g_basicTheme;
 static wxMetroThemeProvider *g_otherTheme = 0;
@@ -41,9 +47,9 @@ wxColour wxMetroTheme::Colour( int id )
 	return GetTheme().Colour( id );
 }
 
-wxBitmap wxMetroTheme::Bitmap( int id )
+wxBitmap wxMetroTheme::Bitmap( int id, bool light )
 {
-	return GetTheme().Bitmap( id );
+	return GetTheme().Bitmap( id, light );
 }
 
 
@@ -88,7 +94,7 @@ wxColour wxMetroThemeProvider::Colour( int id )
 	}
 }
 
-wxBitmap wxMetroThemeProvider::Bitmap( int id )
+wxBitmap wxMetroThemeProvider::Bitmap( int id, bool light )
 {
 static wxBitmap left_arrow;
 	if ( left_arrow.IsNull() ) left_arrow = wxBITMAP_PNG_FROM_DATA( left_arrow_13 );
@@ -101,13 +107,25 @@ static wxBitmap right_arrow;
 	
 static wxBitmap up_arrow;
 	if ( up_arrow.IsNull() ) up_arrow = wxBITMAP_PNG_FROM_DATA( up_arrow_13 );
+	
+static wxBitmap left_arrow_dark;
+	if ( left_arrow_dark.IsNull() ) left_arrow_dark = wxBITMAP_PNG_FROM_DATA( left_arrow_gray_13 );
+	
+static wxBitmap down_arrow_dark;
+	if ( down_arrow_dark.IsNull() ) down_arrow_dark = wxBITMAP_PNG_FROM_DATA( down_arrow_gray_13 );
+	
+static wxBitmap right_arrow_dark;
+	if ( right_arrow_dark.IsNull() ) right_arrow_dark = wxBITMAP_PNG_FROM_DATA( right_arrow_gray_13 );
+	
+static wxBitmap up_arrow_dark;
+	if ( up_arrow_dark.IsNull() ) up_arrow_dark = wxBITMAP_PNG_FROM_DATA( up_arrow_gray_13 );
 
 	switch ( id )
 	{
-	case wxMT_LEFTARROW: return left_arrow;
-	case wxMT_RIGHTARROW: return right_arrow;
-	case wxMT_UPARROW: return up_arrow;
-	case wxMT_DOWNARROW: return down_arrow;
+	case wxMT_LEFTARROW: return light ? left_arrow : left_arrow_dark;
+	case wxMT_RIGHTARROW: return light ? right_arrow : right_arrow_dark;
+	case wxMT_UPARROW: return light ? up_arrow : up_arrow_dark;
+	case wxMT_DOWNARROW: return light ? down_arrow : down_arrow_dark;
 	default: return wxNullBitmap;
 	}
 }
@@ -371,14 +389,16 @@ wxMetroTabList::wxMetroTabList( wxWindow *parent, int id,
 	SetFont( wxMetroTheme::Font( wxMT_LIGHT, 16 ) );
 }
 
-void wxMetroTabList::Append( const wxString &label )
+void wxMetroTabList::Append( const wxString &label, bool button )
 {
-	m_items.push_back( item(label) );
+	if ( m_style & wxMT_MENUBUTTONS ) button = true;
+	m_items.push_back( item(label, button) );
 }
 
-void wxMetroTabList::Insert( const wxString &label, size_t pos )
+void wxMetroTabList::Insert( const wxString &label, size_t pos, bool button )
 {
-	m_items.insert( m_items.begin()+pos, item(label) );
+	if ( m_style & wxMT_MENUBUTTONS ) button = true;
+	m_items.insert( m_items.begin()+pos, item(label, button) );
 }
 
 void wxMetroTabList::Remove( const wxString &label )
@@ -426,6 +446,12 @@ void wxMetroTabList::ReorderRight( size_t idx )
 		m_hoverIdx = -1;
 		Refresh();
 	}
+}
+
+wxPoint wxMetroTabList::GetPopupMenuPosition( int index )
+{
+	if ( index >= 0 && index < m_items.size() )	return ClientToScreen( wxPoint( m_items[index].x_start, GetClientSize().y ) );
+	else return wxDefaultPosition;
 }
 
 wxString wxMetroTabList::GetLabel( size_t idx )
@@ -488,15 +514,14 @@ wxSize wxMetroTabList::DoGetBestSize() const
 
 	int width = 0;
 
-	int button_width = 0;
-	if ( m_style & wxMT_MENUBUTTONS )
-		button_width = wxMetroTheme::Bitmap( wxMT_DOWNARROW ).GetWidth() + TB_SPACE + TB_SPACE;
+	int button_width = wxMetroTheme::Bitmap( wxMT_DOWNARROW ).GetWidth() + TB_SPACE + TB_SPACE;
 
 	for ( size_t i=0;i<m_items.size(); i++ )
 	{
 		int tw, th;
 		dc.GetTextExtent( m_items[i].label, &tw, &th );
 		width += tw + TB_SPACE + TB_XPADDING;
+		if ( m_items[i].button ) width += button_width;
 	}
 
 	int height = dc.GetCharHeight() + TB_YPADDING;
@@ -525,15 +550,9 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 
 	m_dotdotWidth = 0;
 	
-	wxBitmap button_icon( wxNullBitmap );
-	int button_width = 0;
-	int button_height = 0;
-	if ( m_style & wxMT_MENUBUTTONS )
-	{
-		button_icon = wxMetroTheme::Bitmap( wxMT_DOWNARROW );
-		button_width = button_icon.GetWidth() + TB_SPACE + TB_SPACE;
-		button_height = button_icon.GetHeight();
-	}
+	wxBitmap button_icon( wxMetroTheme::Bitmap( wxMT_DOWNARROW, !light ) );
+	int button_width = button_icon.GetWidth() + TB_SPACE + TB_SPACE;
+	int button_height = button_icon.GetHeight();
 	
 	dc.SetFont( GetFont() );
 	int CharHeight = dc.GetCharHeight();
@@ -542,7 +561,8 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 		int txtw, txth;
 		dc.GetTextExtent( m_items[i].label, &txtw, &txth );
 		m_items[i].x_start = x;
-		m_items[i].width = txtw+TB_XPADDING+TB_XPADDING + button_width;
+		m_items[i].width = txtw+TB_XPADDING+TB_XPADDING;
+		if ( m_items[i].button ) m_items[i].width += button_width;
 		x += m_items[i].width + TB_SPACE;
 
 		if ( i > 0 && x > cwidth - 25 ) // 25 approximates width of '...'	
@@ -597,17 +617,18 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 			dc.SetPen( wxPen(col, 1) );
 			dc.SetBrush( wxBrush(col) );
 			dc.DrawRectangle( m_items[i].x_start, 0, m_items[i].width, cheight );
-
-			if ( button_width > 0
+			
+			if ( m_items[i].button
 				&& m_hoverIdx == i
 				&&  m_buttonHover  )
 			{
-				dc.SetPen( wxPen( wxMetroTheme::Colour( wxMT_DIMHOVER ), 1 ) );
-				dc.SetBrush( wxBrush( wxMetroTheme::Colour( wxMT_DIMHOVER ) ) );
+				dc.SetPen( wxPen( wxMetroTheme::Colour( light ? wxMT_HIGHLIGHT : wxMT_DIMHOVER ), 1 ) );
+				dc.SetBrush( wxBrush( wxMetroTheme::Colour( light ? wxMT_HIGHLIGHT : wxMT_DIMHOVER ) ) );
 				dc.DrawRectangle( m_items[i].x_start + m_items[i].width - button_width - TB_XPADDING + TB_SPACE,
 					0, button_width + TB_XPADDING - TB_SPACE, cheight );
 			}
 		}
+
 
 		wxColour text( *wxWHITE );
 		if ( light )
@@ -622,7 +643,7 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 		dc.SetTextForeground( text );			
 		dc.DrawText( m_items[i].label, m_items[i].x_start + TB_XPADDING, cheight/2-CharHeight/2-1 );
 
-		if ( button_width > 0 )
+		if ( m_items[i].button )
 		{	
 			dc.DrawBitmap( button_icon, 
 				m_items[i].x_start + m_items[i].width - TB_SPACE - button_width, 
@@ -669,8 +690,7 @@ void wxMetroTabList::OnLeftDown(wxMouseEvent &evt)
 			&& mouse_x >= m_items[i].x_start 
 			&& mouse_x < m_items[i].x_start + m_items[i].width)
 		{
-			if ( m_style & wxMT_MENUBUTTONS 
-				&& IsOverButton( mouse_x, i ) )
+			if ( m_items[i].button && IsOverButton( mouse_x, i ) )
 			{
 				SwitchPage( i ); // first switch pages if we're going to fire the context menu up
 
@@ -720,7 +740,7 @@ void wxMetroTabList::OnMouseMove(wxMouseEvent &evt)
 			&& mouse_x >= m_items[i].x_start 
 			&& mouse_x < m_items[i].x_start + m_items[i].width)
 		{
-			if ( m_style & wxMT_MENUBUTTONS && IsOverButton( mouse_x, i ) )
+			if ( m_items[i].button && IsOverButton( mouse_x, i ) )
 				m_buttonHover = true;
 
 			if (m_hoverIdx != (int)i)
@@ -736,13 +756,13 @@ void wxMetroTabList::OnMouseMove(wxMouseEvent &evt)
 
 bool wxMetroTabList::IsOverButton( int mouse_x, size_t i )
 {
-	if ( m_style & wxMT_MENUBUTTONS )
+	if ( m_items[i].button )
 	{
 		int button_width = wxMetroTheme::Bitmap( wxMT_DOWNARROW ).GetWidth() + TB_SPACE + TB_SPACE;
 		if ( mouse_x > m_items[i].x_start + m_items[i].width - button_width - TB_XPADDING + TB_SPACE )
 			return true;
 	}
-
+	
 	return false;
 }
 
@@ -798,13 +818,13 @@ enum { ID_TABLIST = wxID_HIGHEST+124 };
 
 BEGIN_EVENT_TABLE(wxMetroNotebook, wxPanel)
 	EVT_SIZE( wxMetroNotebook::OnSize )
-	EVT_LISTBOX( ID_TABLIST, wxMetroNotebook::OnTabList )
+	EVT_LISTBOX( wxID_ANY, wxMetroNotebook::OnTabList )
 END_EVENT_TABLE()
 
 wxMetroNotebook::wxMetroNotebook(wxWindow *parent, int id, const wxPoint &pos, const wxSize &sz, long style)
 	: wxPanel(parent, id, pos, sz)
 {
-	m_list = new wxMetroTabList(this, ID_TABLIST, wxDefaultPosition, wxDefaultSize, style );
+	m_list = new wxMetroTabList(this, id, wxDefaultPosition, wxDefaultSize, style );
 	m_flipper = new wxSimplebook( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE );
 
 	wxBoxSizer *sizer = new wxBoxSizer( wxVERTICAL );
@@ -817,7 +837,7 @@ wxMetroNotebook::wxMetroNotebook(wxWindow *parent, int id, const wxPoint &pos, c
 	
 }
 
-void wxMetroNotebook::AddPage(wxWindow *win, const wxString &text, bool active)
+void wxMetroNotebook::AddPage(wxWindow *win, const wxString &text, bool active, bool button)
 {
 	win->Reparent( m_flipper );
 	m_flipper->AddPage(win, text);
@@ -825,6 +845,7 @@ void wxMetroNotebook::AddPage(wxWindow *win, const wxString &text, bool active)
 	page_info x;
 	x.text = text;
 	x.scroll_win = 0;
+	x.button = button;
 
 	m_pageList.push_back( x );
 
@@ -900,7 +921,7 @@ wxWindow *wxMetroNotebook::GetPage( int index )
 	return m_flipper->GetPage( index );
 }
 
-void wxMetroNotebook::AddScrolledPage(wxWindow *win, const wxString &text, bool active)
+void wxMetroNotebook::AddScrolledPage(wxWindow *win, const wxString &text, bool active, bool button)
 {
 	wxScrolledWindow *scrollwin = new wxScrolledWindow( m_flipper );
 	win->Reparent( scrollwin );
@@ -918,6 +939,7 @@ void wxMetroNotebook::AddScrolledPage(wxWindow *win, const wxString &text, bool 
 	page_info x;
 	x.text = text;
 	x.scroll_win = win;
+	x.button = button;
 
 	m_pageList.push_back( x );
 	UpdateTabList();
@@ -943,6 +965,11 @@ void wxMetroNotebook::SetText(int id, const wxString &text)
 		m_pageList[id].text = text;
 		UpdateTabList();
 	}
+}
+
+wxPoint wxMetroNotebook::GetPopupMenuPosition( int index )
+{
+	return m_list->GetPopupMenuPosition(index);
 }
 
 void wxMetroNotebook::SetSelection(int id)
@@ -997,14 +1024,15 @@ void wxMetroNotebook::UpdateTabList()
 	size_t sel = m_list->GetSelection();
 	m_list->Clear();
 	for (size_t i=0;i<m_pageList.size();i++)
-		m_list->Append( m_pageList[i].text );
+		m_list->Append( m_pageList[i].text, m_pageList[i].button );
 
 	m_list->SetSelection( sel );
 }
 
 void wxMetroNotebook::OnTabList( wxCommandEvent &evt )
 {
-	SwitchPage( evt.GetInt() );
+	if( evt.GetEventObject() == m_list )
+		SwitchPage( evt.GetInt() );
 }
 
 void wxMetroNotebook::SwitchPage( size_t i )
@@ -1049,8 +1077,8 @@ wxMetroListBox::wxMetroListBox(wxWindow *parent, int id, const wxPoint &pos, con
 	: wxScrolledWindow(parent,id, pos, size, wxBORDER_NONE)
 {
 	SetBackgroundStyle(wxBG_STYLE_CUSTOM);
-	SetBackgroundColour( wxColour(243,243,243) );
-	SetFont( wxMetroTheme::Font( wxMT_LIGHT, 16 ) );	
+	SetBackgroundColour( *wxWHITE );
+	SetFont( wxMetroTheme::Font( wxMT_LIGHT, 15 ) );	
 	m_selectedIdx = -1;
 	m_hoverIdx = -1;
 	
@@ -1192,12 +1220,13 @@ void wxMetroListBox::OnPaint(wxPaintEvent &evt)
 	int height = dc.GetCharHeight();
 	for (int i=0;i<m_items.size();i++)	
 	{
-		wxColour bcol = (m_selectedIdx == i) ? wxColour(213,213,213) :
+		wxColour bcol = (m_selectedIdx == i) ? wxColour(50,50,50) :
 			( (m_hoverIdx == i) ? wxColour(231,231,231) : GetBackgroundColour() );
 		dc.SetPen( wxPen( bcol ) );
 		dc.SetBrush( wxBrush( bcol ) );
 		dc.DrawRectangle( m_items[i].geom );
-		dc.DrawText( m_items[i].name, 4, m_items[i].geom.y + m_items[i].geom.height/2 - height/2 );
+		dc.SetTextForeground( (m_selectedIdx==i) ? *wxWHITE : *wxBLACK );
+		dc.DrawText( m_items[i].name, 6, m_items[i].geom.y + m_items[i].geom.height/2 - height/2 );
 	}			
 }
 
@@ -1282,3 +1311,304 @@ void wxMetroListBox::OnLeave(wxMouseEvent &evt)
 	Refresh();
 }
 
+#define POPUP_BORDER 1
+#define POPUP_SPACE 5
+
+class wxMetroPopupMenuWindow : public wxPopupWindow
+{
+	struct item {
+		int id;
+		wxString label;
+		int ymin, ymax;
+	};
+	int m_hover;
+	std::vector<item> m_items;
+	long m_theme; 
+public:
+	wxMetroPopupMenuWindow( wxWindow *parent, long theme = 0)
+		: wxPopupWindow( parent, wxBORDER_NONE|wxWANTS_CHARS ),
+		m_theme( theme )
+	{
+		m_hover = -1;
+		SetBackgroundStyle(wxBG_STYLE_CUSTOM);
+	}
+	
+
+	void Append( int id, const wxString &label )
+	{
+		item x;
+		x.id = id;
+		x.label = label;
+	#ifdef __WXOSX__
+		x.label.Replace( wxT("\tCtrl-"), wxT("\t\x2318") );
+	#endif
+		x.ymin = x.ymax = 0;
+		m_items.push_back( x );
+		InvalidateBestSize();
+	}
+
+	void AppendSeparator()
+	{
+		Append( -1, wxEmptyString );
+	}
+
+	virtual wxSize DoGetBestSize() const
+	{
+		wxClientDC dc( const_cast<wxMetroPopupMenuWindow*>(this) );
+		dc.SetFont( GetFont() );
+		int ch = dc.GetCharHeight();
+		int wl = 0, wr = 0;
+		int h = POPUP_BORDER;
+		for( size_t i=0;i<m_items.size();i++ )
+		{
+			if ( m_items[i].label.IsEmpty() )
+				h += POPUP_BORDER;
+			else
+			{
+				int tpos = m_items[i].label.Find( '\t' );
+				if ( tpos != wxNOT_FOUND )
+				{
+					wxString l = m_items[i].label.Left(tpos);
+					wxString r = m_items[i].label.Mid(tpos+1);
+
+					wxSize szl = dc.GetTextExtent( l );
+					if ( wl < szl.x ) wl = szl.x;
+
+					wxSize szr = dc.GetTextExtent( r );
+					if ( wr < szr.x ) wr = szr.x;
+				}
+				else
+				{
+					wxSize sz = dc.GetTextExtent( m_items[i].label );
+					if ( wl < sz.x ) wl = sz.x;
+				}
+
+				h += POPUP_SPACE + ch;
+			}
+		}
+	
+		wl += 4*POPUP_SPACE;
+		if ( wr > 0 ) wr += 3*POPUP_SPACE;
+
+		return wxSize( wl + wr, h+POPUP_BORDER );
+	}
+	
+
+
+	void OnPaint( wxPaintEvent & )
+	{
+		wxAutoBufferedPaintDC dc( this );
+		dc.SetFont( GetFont() );
+		int ch = dc.GetCharHeight();
+		wxSize sz = GetClientSize();
+
+		wxColour acc = m_theme&wxMT_LIGHTTHEME ? *wxWHITE : wxMetroTheme::Colour( wxMT_HOVER );
+		wxColour text = m_theme&wxMT_LIGHTTHEME ? wxMetroTheme::Colour(wxMT_HOVER) : *wxWHITE;
+		wxColour acchi = m_theme&wxMT_LIGHTTHEME ? text : *wxWHITE;
+		wxColour texthi = m_theme&wxMT_LIGHTTHEME ? *wxWHITE : acc;
+
+		dc.SetBrush(  wxBrush(acc) );
+		dc.SetPen( wxPen( wxMetroTheme::Colour( wxMT_HOVER ), 1 ) );
+		dc.DrawRectangle( wxRect(0,0,sz.x,sz.y) );
+
+		int uh = ch + POPUP_SPACE;
+
+		dc.SetPen( wxPen( text, 1) );
+
+		size_t yy = POPUP_BORDER;
+		for ( size_t i=0;i<m_items.size();i++ )
+		{
+			m_items[i].ymin = yy;
+
+			if ( !m_items[i].label.IsEmpty() )
+			{
+				if ( m_hover == (int)i )
+				{
+					dc.SetTextForeground( texthi );
+					dc.SetBrush( wxBrush( acchi ) );
+					dc.DrawRectangle( 0, yy, sz.x, ch + POPUP_SPACE );
+				}
+				else
+					dc.SetTextForeground( text );
+
+				int texty = yy + uh/2 - ch/2;
+
+				int tpos = m_items[i].label.Find( '\t' );
+				if ( tpos != wxNOT_FOUND )
+				{
+					wxString l = m_items[i].label.Left(tpos);
+					wxString r = m_items[i].label.Mid(tpos+1);
+
+					dc.DrawText( l, POPUP_BORDER+POPUP_SPACE, texty );
+					dc.SetTextForeground( *wxLIGHT_GREY );
+					dc.DrawText( r, sz.x - POPUP_BORDER - POPUP_SPACE - dc.GetTextExtent(r).x, texty );
+				}
+				else
+				{
+					dc.DrawText( m_items[i].label, POPUP_BORDER+POPUP_SPACE, texty );			
+				}
+
+				yy += uh;
+			}
+			else
+			{
+				dc.DrawLine( 0, yy, sz.x, yy );
+				yy += POPUP_BORDER;
+			}
+
+			m_items[i].ymax = yy;
+		}
+
+	}
+
+
+	void OnErase( wxEraseEvent & )
+	{
+		/* nothing to do */
+	}
+	
+
+	int Current( const wxPoint &mouse )
+	{
+		if ( mouse.x < 0 || mouse.x > GetClientSize().x ) return -1;
+
+		for( size_t i=0;i<m_items.size();i++ )
+			if ( mouse.y >= m_items[i].ymin
+				&& mouse.y < m_items[i].ymax )
+				return (int) i;
+
+		return -1;
+	}
+
+	void OnMouse( wxMouseEvent &evt )
+	{
+		wxEventType et = evt.GetEventType();
+		bool inside = HitTest( evt.GetPosition() ) == wxHT_WINDOW_INSIDE;
+
+		if ( ( et == wxEVT_MOTION && inside )
+			|| et == wxEVT_LEAVE_WINDOW )
+		{
+			
+			int hh = Current( evt.GetPosition() );
+			if ( hh != m_hover )
+			{
+				m_hover = hh;
+				Refresh();
+			}
+
+			return;
+		}
+
+		if ( evt.GetEventType() == wxEVT_LEFT_UP && inside )
+		{
+			int sel = Current( evt.GetPosition() );
+			if ( sel >= 0 )
+			{
+				wxCommandEvent ee( wxEVT_MENU );
+				ee.SetId( m_items[sel].id );
+				AddPendingEvent( ee );
+				Dismiss();
+				return;
+			}
+		}
+		
+
+		if ( !inside && (et == wxEVT_LEFT_DCLICK
+			|| et == wxEVT_LEFT_DOWN
+			|| et == wxEVT_RIGHT_DCLICK
+			|| et == wxEVT_RIGHT_DOWN) )
+			Dismiss();
+	}
+	
+
+	void Popup( const wxPoint &rpos, int origin )
+	{
+		wxSize size = GetBestSize();
+		SetClientSize( size );
+		wxPoint pos( rpos == wxDefaultPosition ? wxGetMousePosition() : rpos );
+		if ( origin & wxRIGHT ) pos.x -= size.x;
+		if ( origin & wxBOTTOM ) pos.y -= size.y;
+		Position( pos, wxSize(0,0) );
+		Show();
+		SetFocus();
+		if ( !HasCapture() )
+			CaptureMouse();
+	}
+
+	virtual bool Destroy()
+	{	
+		wxCHECK_MSG( !wxPendingDelete.Member(this), false,
+					 wxS("Shouldn't destroy the popup twice.") );
+
+		wxPendingDelete.Append(this);
+		return true;
+	}
+	
+	void Dismiss()
+	{
+		if ( HasCapture() )
+			ReleaseMouse();
+
+		Hide();
+		Destroy();
+	}
+
+	void OnLoseFocus( wxFocusEvent & )
+	{
+		Dismiss();
+	}
+
+	void OnCaptureLost( wxMouseCaptureLostEvent & )
+	{
+		Dismiss();
+	}
+
+	void OnChar( wxKeyEvent & )
+	{
+		Dismiss();
+	}
+
+	DECLARE_EVENT_TABLE();
+};
+
+BEGIN_EVENT_TABLE( wxMetroPopupMenuWindow, wxPopupWindow )
+	EVT_PAINT( wxMetroPopupMenuWindow::OnPaint )
+	EVT_ERASE_BACKGROUND( wxMetroPopupMenuWindow::OnErase )
+	EVT_MOUSE_EVENTS( wxMetroPopupMenuWindow::OnMouse )
+	EVT_KILL_FOCUS( wxMetroPopupMenuWindow::OnLoseFocus )
+	EVT_MOUSE_CAPTURE_LOST( wxMetroPopupMenuWindow::OnCaptureLost )
+	EVT_CHAR( wxMetroPopupMenuWindow::OnChar )
+END_EVENT_TABLE()
+
+wxMetroPopupMenu::wxMetroPopupMenu( long theme ) : m_theme(theme)
+{
+	m_font = wxMetroTheme::Font( wxMT_NORMAL, 13 );
+} 
+
+void wxMetroPopupMenu::SetFont( const wxFont &f )
+{
+	m_font = f;
+}
+
+void wxMetroPopupMenu::Append( int id, const wxString &label )
+{
+	item x;
+	x.id = id;
+	x.label = label;
+	m_items.push_back( x );
+}
+
+void wxMetroPopupMenu::AppendSeparator()
+{
+	Append( -1, wxEmptyString );
+}
+
+void wxMetroPopupMenu::Popup( wxWindow *parent, const wxPoint &pos, int origin )
+{
+	// menu window will Destroy() itself after it is dismissed
+	wxMetroPopupMenuWindow *menu = new wxMetroPopupMenuWindow( parent, m_theme );
+	menu->SetFont( m_font );
+	for( size_t i=0;i<m_items.size();i++ )
+		menu->Append( m_items[i].id, m_items[i].label );
+	menu->Popup( pos, origin );
+}

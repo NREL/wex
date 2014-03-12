@@ -54,7 +54,10 @@ public:
 class wxDVArrayDataSet : public wxDVTimeSeriesDataSet
 {
 public:
+	wxDVArrayDataSet();
 	wxDVArrayDataSet( const wxString &var, const std::vector<double> &data );
+	wxDVArrayDataSet( const wxString &var, const std::vector<wxRealPoint> &data );
+	wxDVArrayDataSet( const wxString &var, const wxString &units, const double &timestep );
 	wxDVArrayDataSet( const wxString &var, const wxString &units, const double &timestep, const std::vector<double> &data );
 	wxDVArrayDataSet( const wxString &var, const wxString &units, const double &offset, const double &timestep, const std::vector<double> &data );
 	
@@ -63,37 +66,29 @@ public:
 	virtual double GetTimeStep() const;
 	virtual wxString GetSeriesTitle() const;
 	virtual wxString GetUnits() const;
-	virtual void SetDataValue(size_t i, double newYValue);
+
+	void Copy( const std::vector<double> &data );
+	void Clear();
+	void Alloc( size_t n );
+	void Append( const wxRealPoint &p );
+	void Set( size_t i, double x, double y );
+	void SetY( size_t i, double y );
 	
+	void SetSeriesTitle( const wxString &title );
+	void SetUnits( const wxString &units );
+	void SetTimeStep( double ts, bool recompute_x = true );
+	void SetOffset( double off, bool recompute_x = true );
+	
+
+protected:
+	void RecomputeXData();
 private:
 	wxString m_varLabel;
 	wxString m_varUnits;
 	double m_timestep; // timestep in hours - fractional hours okay
 	double m_offset; // offset in hours from Jan1 00:00 - fractional hours okay
-	std::vector<double> m_pData;
+	std::vector<wxRealPoint> m_pData;
 	
-};
-
-class wxDVPointArrayDataSet : public wxDVTimeSeriesDataSet
-{
-public:
-	wxDVPointArrayDataSet( const wxString &var, const wxString &units, const double &timestep );
-	~wxDVPointArrayDataSet();
-	
-	virtual wxRealPoint At(size_t i) const;
-	virtual size_t Length() const;
-	virtual double GetTimeStep() const;
-	virtual wxString GetSeriesTitle() const;
-	virtual wxString GetUnits() const;
-	virtual void SetDataValue(size_t i, double newYValue);
-	void Alloc(int size);
-	void Append(const wxRealPoint& p);
-	
-private:
-	wxString mSeriesTitle;
-	wxString m_varUnits;
-	double m_timestep; // timestep in hours - fractional hours okay
-	std::vector<wxRealPoint> mDataPoints;
 };
 
 #endif

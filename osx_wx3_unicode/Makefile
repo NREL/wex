@@ -34,7 +34,7 @@ OBJECTS = \
 	dvcolourmap.o \
 	dvdcctrl.o \
 	dvdmapctrl.o \
-	dvfiledataset.o \
+	dvfilereader.o \
 	dvplotctrl.o \
 	dvplotctrlsettings.o \
 	dvplothelper.o \
