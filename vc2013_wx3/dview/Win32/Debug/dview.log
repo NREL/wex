@@ -1,4 +1,4 @@
-﻿Build started 3/5/2014 3:55:19 PM.
+﻿Build started 3/12/2014 5:49:48 PM.
      1>Project "C:\Work\DView\vc2013_wx3\dview.vcxproj" on node 3 (Rebuild target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /IC:\Work\DView\vc2013_wx3\..\include /I"c:\wxWidgets-3.0.0\lib\vc_lib\mswud" /I"c:\wxWidgets-3.0.0\include" /I. /I"c:\wxWidgets-3.0.0\samples" /Zi /nologo /W4 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CRT_SECURE_NO_DEPRECATE=1 /D _CRT_NON_CONFORMING_SWPRINTFS=1 /D _SCL_SECURE_NO_WARNINGS=1 /D __WXMSW__ /D _UNICODE /D _WINDOWS /D NOPCH /D _UNICODE /D UNICODE /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /GR /Fo"C:\Work\DView\vc2013_wx3\\dview\Win32\Debug\\" /Fd"C:\Work\DView\vc2013_wx3\\dviewd.pdb" /Gd /TP /analyze- /errorReport:prompt /MP ..\tools\dview\dview.cpp
@@ -18,4 +18,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:07.53
+Time Elapsed 00:00:06.58

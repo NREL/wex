@@ -1,11 +1,12 @@
-﻿Build started 3/5/2014 3:55:19 PM.
+﻿Build started 3/12/2014 5:49:48 PM.
      1>Project "C:\Work\DView\vc2013_wx3\sandbox.vcxproj" on node 2 (Rebuild target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /IC:\Work\LK /I"c:\wxWidgets-3.0.0\lib\vc_lib\mswud" /I"c:\wxWidgets-3.0.0\include" /IC:\Work\DView\vc2013_wx3\\..\include /Zi /nologo /W4 /WX- /MP /Od /Oy- /D WIN32 /D _DEBUG /D _CRT_SECURE_NO_DEPRECATE=1 /D _CRT_NON_CONFORMING_SWPRINTFS=1 /D _SCL_SECURE_NO_WARNINGS=1 /D __WXMSW__ /D _UNICODE /D _WINDOWS /D NOPCH /D _UNICODE /D UNICODE /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /GR /Fo"C:\Work\DView\vc2013_wx3\\sandbox\Win32\Debug\\" /Fd"C:\Work\DView\vc2013_wx3\\sandboxd.pdb" /Gd /TP /analyze- /errorReport:prompt ..\tools\sandbox\sandbox.cpp
          sandbox.cpp
      1>..\tools\sandbox\sandbox.cpp(25): warning C4189: 'bitmap' : local variable is initialized but not referenced
-     1>..\tools\sandbox\sandbox.cpp(227): warning C4100: 'evt' : unreferenced formal parameter
-     1>..\tools\sandbox\sandbox.cpp(232): warning C4100: 'evt' : unreferenced formal parameter
+     1>..\tools\sandbox\sandbox.cpp(241): warning C4100: 'evt' : unreferenced formal parameter
+     1>..\tools\sandbox\sandbox.cpp(246): warning C4100: 'evt' : unreferenced formal parameter
+     1>..\tools\sandbox\sandbox.cpp(261): warning C4100: 'evt' : unreferenced formal parameter
        ResourceCompile:
          C:\Program Files (x86)\Windows Kits\8.1\bin\x86\rc.exe /D LK_USE_WXWIDGETS /D _DEBUG /D _CRT_SECURE_NO_DEPRECATE=1 /D _CRT_NON_CONFORMING_SWPRINTFS=1 /D _SCL_SECURE_NO_WARNINGS=1 /D __WXMSW__ /D _UNICODE /D _WINDOWS /D NOPCH /D _UNICODE /D UNICODE /l"0x0409" /I"c:\wxWidgets-3.0.0\lib\vc_lib\mswud" /I"c:\wxWidgets-3.0.0\include" /nologo /fo"C:\Work\DView\vc2013_wx3\\sandbox\Win32\Debug\sandbox.res" sandbox.rc 
        Link:
@@ -16,4 +17,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:08.10
+Time Elapsed 00:00:06.73

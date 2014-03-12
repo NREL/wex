@@ -36,7 +36,6 @@ public:
 	virtual double GetTimeStep() const = 0;
 	virtual wxString GetSeriesTitle() const = 0;
 	virtual wxString GetUnits() const = 0;
-	virtual void SetDataValue(size_t i, double newYValue) = 0;
 	
 	/*Helper Functions*/
 	wxRealPoint operator[] (size_t i) const;
