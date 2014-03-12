@@ -1521,11 +1521,14 @@ public:
 	}
 	
 
-	void Popup( const wxPoint &rpos )
+	void Popup( const wxPoint &rpos, int origin )
 	{
-		SetClientSize( GetBestSize() );
-		Position( rpos == wxDefaultPosition ? wxGetMousePosition() : rpos, wxSize(0,0) );
-
+		wxSize size = GetBestSize();
+		SetClientSize( size );
+		wxPoint pos( rpos == wxDefaultPosition ? wxGetMousePosition() : rpos );
+		if ( origin & wxRIGHT ) pos.x -= size.x;
+		if ( origin & wxBOTTOM ) pos.y -= size.y;
+		Position( pos, wxSize(0,0) );
 		Show();
 		SetFocus();
 		if ( !HasCapture() )
@@ -1600,12 +1603,12 @@ void wxMetroPopupMenu::AppendSeparator()
 	Append( -1, wxEmptyString );
 }
 
-void wxMetroPopupMenu::Popup( wxWindow *parent, const wxPoint &pos )
+void wxMetroPopupMenu::Popup( wxWindow *parent, const wxPoint &pos, int origin )
 {
 	// menu window will Destroy() itself after it is dismissed
 	wxMetroPopupMenuWindow *menu = new wxMetroPopupMenuWindow( parent, m_theme );
 	menu->SetFont( m_font );
 	for( size_t i=0;i<m_items.size();i++ )
 		menu->Append( m_items[i].id, m_items[i].label );
-	menu->Popup( pos );
+	menu->Popup( pos, origin );
 }

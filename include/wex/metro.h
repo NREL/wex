@@ -269,7 +269,7 @@ public:
 	void Append( int id, const wxString &label );
 	void AppendSeparator();
 
-	void Popup( wxWindow *parent, const wxPoint &pos = wxDefaultPosition );
+	void Popup( wxWindow *parent, const wxPoint &pos = wxDefaultPosition, int origin = wxTOP|wxLEFT );
 
 private:
 	long m_theme;
