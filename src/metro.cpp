@@ -1033,6 +1033,8 @@ void wxMetroNotebook::OnTabList( wxCommandEvent &evt )
 {
 	if( evt.GetEventObject() == m_list )
 		SwitchPage( evt.GetInt() );
+	else
+		evt.Skip();
 }
 
 void wxMetroNotebook::SwitchPage( size_t i )
