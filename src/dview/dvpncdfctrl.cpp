@@ -12,7 +12,9 @@
 enum { wxID_DATA_SELECTOR_CHOICE = wxID_HIGHEST + 1, 
 	wxID_BIN_COMBO, 
 	wxID_NORMALIZE_CHOICE, 
-	wxID_Y_MAX_TB  };
+	wxID_Y_MAX_TB,
+	wxID_PLOT_TYPE
+};
 
 
 BEGIN_EVENT_TABLE(wxDVPnCdfCtrl, wxPanel)
@@ -22,7 +24,8 @@ BEGIN_EVENT_TABLE(wxDVPnCdfCtrl, wxPanel)
 	EVT_COMBOBOX(wxID_BIN_COMBO, wxDVPnCdfCtrl::OnBinComboSelection)
 	EVT_TEXT_ENTER(wxID_BIN_COMBO, wxDVPnCdfCtrl::OnBinTextEnter)
 	EVT_CHECKBOX(wxID_ANY, wxDVPnCdfCtrl::OnShowZerosClick)
-END_EVENT_TABLE()
+	EVT_COMBOBOX(wxID_PLOT_TYPE, wxDVPnCdfCtrl::OnPlotTypeSelection)
+	END_EVENT_TABLE()
 
 wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos, 
 	const wxSize& size, long style, const wxString& name)
@@ -46,12 +49,20 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos
 	m_dataSelector = new wxChoice(this, wxID_DATA_SELECTOR_CHOICE, wxDefaultPosition, wxDefaultSize, 0, NULL, wxCB_SORT);
 
 	m_hideZeros = new wxCheckBox(this, wxID_ANY, "Exclude Zero Values", wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
-	
+
+	m_PlotTypeDisplayed = new wxComboBox(this, wxID_PLOT_TYPE);
+	m_PlotTypeDisplayed->Append(wxT("PDF and CDF"));
+	m_PlotTypeDisplayed->Append(wxT("PDF Only"));
+	m_PlotTypeDisplayed->Append(wxT("CDF Only"));
+	m_PlotTypeDisplayed->SetSelection(0);
+
 	wxBoxSizer *optionsSizer = new wxBoxSizer(wxHORIZONTAL);
 	optionsSizer->Add(m_dataSelector, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxALIGN_CENTER, 2);
 	optionsSizer->Add(new wxStaticText(this, wxID_ANY, wxT("  Y Max:")), 0, wxALIGN_CENTER|wxALL|wxALIGN_CENTER_VERTICAL, 2);
 	optionsSizer->Add(m_maxTextBox, 0, wxALL|wxALIGN_CENTER_VERTICAL, 2);
 	optionsSizer->Add(m_hideZeros, 0, wxALL|wxALIGN_CENTER_VERTICAL, 2);
+	optionsSizer->Add(new wxStaticText(this, wxID_ANY, wxT("  Show:")), 0, wxALIGN_CENTER | wxALL | wxALIGN_CENTER_VERTICAL, 2);
+	optionsSizer->Add(m_PlotTypeDisplayed, 0, wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL | wxALL, 2);
 	optionsSizer->AddStretchSpacer();
 	
 	m_normalizeChoice = new wxChoice(this, wxID_NORMALIZE_CHOICE);
@@ -457,6 +468,29 @@ void wxDVPnCdfCtrl::OnShowZerosClick(wxCommandEvent& e)
 
 	m_plotSurface->GetYAxis1()->SetWorldMax( m_pdfPlot->GetNiceYMax() );
 	m_maxTextBox->SetValue(wxString::Format("%lg", m_pdfPlot->GetNiceYMax()));
+	InvalidatePlot();
+}
+
+void wxDVPnCdfCtrl::OnPlotTypeSelection(wxCommandEvent& e)
+{
+	int type = m_PlotTypeDisplayed->GetSelection();
+
+	if (type == 1)
+	{
+		m_plotSurface->RemovePlot(m_cdfPlot);
+		if (!m_plotSurface->ContainsPlot(m_pdfPlot)) { m_plotSurface->AddPlot(m_pdfPlot); }
+	}
+	else if (type == 2)
+	{
+		m_plotSurface->RemovePlot(m_pdfPlot);
+		if (!m_plotSurface->ContainsPlot(m_cdfPlot)) { m_plotSurface->AddPlot(m_cdfPlot); }
+	}
+	else
+	{
+		if (!m_plotSurface->ContainsPlot(m_pdfPlot)) { m_plotSurface->AddPlot(m_pdfPlot); }
+		if (!m_plotSurface->ContainsPlot(m_cdfPlot)) { m_plotSurface->AddPlot(m_cdfPlot, wxPLPlotCtrl::X_BOTTOM, wxPLPlotCtrl::Y_RIGHT); }
+	}
+
 	InvalidatePlot();
 }
 

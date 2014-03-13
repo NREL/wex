@@ -1019,6 +1019,21 @@ wxPLPlottable *wxPLPlotCtrl::RemovePlot( wxPLPlottable *p, PlotPos plotPosition 
 	return 0;
 }
 
+bool wxPLPlotCtrl::ContainsPlot(wxPLPlottable *p, PlotPos plotPosition)
+{
+	for (std::vector<plot_data>::iterator it = m_plots.begin();
+		it != m_plots.end();
+		++it)
+	{
+		if (it->plot == p && (it->ppos == plotPosition || plotPosition == NPLOTPOS))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void wxPLPlotCtrl::DeleteAllPlots()
 {
 	for ( std::vector<plot_data>::iterator it = m_plots.begin();
