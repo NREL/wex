@@ -47,7 +47,7 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 		{
 			m_colour = *wxRED;
 			m_seriesType = seriesType;
-			m_style = seriesType == HOURLY_TIME_SERIES ? NORMAL : STEPPED;
+			m_style = (seriesType == RAW_DATA_TIME_SERIES || seriesType == HOURLY_TIME_SERIES) ? NORMAL : STEPPED;
 			m_ownsDataset = OwnsDataset;
 		}
 
@@ -507,7 +507,7 @@ wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, TimeSeri
 	m_topAutoScale = true;
 	m_bottomAutoScale = true;
 	m_syncToHeatMap = false;
-	m_lineStyle = (seriesType == HOURLY_TIME_SERIES ? wxDVTimeSeriesPlot::NORMAL : wxDVTimeSeriesPlot::STEPPED); // line, stepped, points
+	m_lineStyle = ((seriesType == RAW_DATA_TIME_SERIES || seriesType == HOURLY_TIME_SERIES) ? wxDVTimeSeriesPlot::NORMAL : wxDVTimeSeriesPlot::STEPPED); // line, stepped, points
 	m_seriesType = seriesType;
 	m_statType = statType;
 
@@ -841,17 +841,61 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 	double sum = 0.0;
 	double avg = 0.0;
 	double counter = 0.0;
+	double timestep = d->GetTimeStep();
 	double MinHrs = d->GetMinHours();
 	double MaxHrs = d->GetMaxHours();
 	wxDVArrayDataSet *d2 = 0;
 
-	//Create daily data set (avg value of data by day) from m_data
-	if(m_seriesType == DAILY_TIME_SERIES)
+	//Create hourly data set (avg value of data by day) from m_data if timestep < 1
+	if (m_seriesType == HOURLY_TIME_SERIES && timestep < 1.0)
 	{
+		double nextHour = 0.0;
+		double currentHour = 0.0;
+
+		d2 = new wxDVArrayDataSet(d->GetSeriesTitle(), d->GetUnits(), 1.0 / timestep);
+
+		while (nextHour < MinHrs)
+		{
+			nextHour += 1.0;
+		}
+
+		currentHour = nextHour - 1.0;
+
+		for (size_t i = 0; i < d->Length(); i++)
+		{
+			if (d->At(i).x >= nextHour)
+			{
+				if (i != 0 && counter != 0)
+				{
+					avg = sum / counter;
+					d2->Append(wxRealPoint((double)currentHour + (double)(nextHour - currentHour) / 2.0, (m_statType == AVERAGE ? avg : sum)));
+					currentHour = nextHour;
+					nextHour += 1;
+				}
+
+				counter = 0.0;
+				sum = 0.0;
+			}
+
+			counter += 1.0;
+			sum += d->At(i).y;
+		}
+
+		avg = sum / counter;
+
+		//Prevent appending the final point if it represents 12/31 24:00, which the system interprets as 1/1 0:00 and creates a point for January of the next year
+		if (MaxHrs > 0.0 && fmod(MaxHrs, 8760.0) != 0)
+		{
+			d2->Append(wxRealPoint((double)currentHour + (double)(nextHour - currentHour) / 2.0, (m_statType == AVERAGE ? avg : sum)));
+		}
+	}
+	else if (m_seriesType == DAILY_TIME_SERIES && timestep < 24.0)
+	{
+		//Create daily data set (avg value of data by day) from m_data if timestep < 24
 		double nextDay = 0.0;
 		double currentDay = 0.0;
 
-		d2 = new wxDVArrayDataSet(d->GetSeriesTitle(), d->GetUnits(), 24.0 / d->GetTimeStep());
+		d2 = new wxDVArrayDataSet(d->GetSeriesTitle(), d->GetUnits(), 24.0 / timestep);
 
 		while (nextDay < MinHrs)
 		{
@@ -869,7 +913,7 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 					avg = sum / counter;
 					d2->Append(wxRealPoint((double) currentDay + (double)(nextDay - currentDay) / 2.0, (m_statType == AVERAGE ? avg : sum))); 
 					currentDay = nextDay;
-					nextDay += 24;
+					nextDay += 24.0;
 				}
 
 				counter = 0.0;
@@ -888,14 +932,14 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 			d2->Append(wxRealPoint((double) currentDay + (double)(nextDay - currentDay) / 2.0, (m_statType == AVERAGE ? avg : sum))); 
 		}
 	}
-	else if (m_seriesType == MONTHLY_TIME_SERIES)
+	else if (m_seriesType == MONTHLY_TIME_SERIES && timestep < 672.0)	//672 hours = 28 days = shortest possible month
 	{
 		//Create monthly data set (avg value of data by month) from m_data
 		double nextMonth = 0.0;
 		double currentMonth = 0.0;
 		double year = 0.0;
 
-		d2 = new wxDVArrayDataSet(d->GetSeriesTitle(), d->GetUnits(), 744.0 / d->GetTimeStep());
+		d2 = new wxDVArrayDataSet(d->GetSeriesTitle(), d->GetUnits(), 744.0 / timestep);
 
 		while(MinHrs > 8760.0)
 		{
@@ -962,7 +1006,7 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 		}
 	}
 				
-	if(m_seriesType == HOURLY_TIME_SERIES)
+	if(m_seriesType == RAW_DATA_TIME_SERIES)
 	{
 		p = new wxDVTimeSeriesPlot(d, m_seriesType);
 	}

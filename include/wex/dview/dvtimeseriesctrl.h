@@ -27,7 +27,7 @@ class wxDVTimeSeriesPlot;
 class wxScrollBar;
 
 enum StatType { AVERAGE = 0, SUM };
-enum TimeSeriesType { HOURLY_TIME_SERIES = 0, DAILY_TIME_SERIES, MONTHLY_TIME_SERIES};
+enum TimeSeriesType { RAW_DATA_TIME_SERIES = 0, HOURLY_TIME_SERIES, DAILY_TIME_SERIES, MONTHLY_TIME_SERIES };
 
 class wxDVTimeSeriesSettingsDialog : public wxDialog
 {

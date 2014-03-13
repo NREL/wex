@@ -48,7 +48,8 @@ wxDVPlotCtrl::wxDVPlotCtrl(wxWindow* parent, wxWindowID id,
 	m_plotNotebook = new wxMetroNotebook(this, ID_NOTEBOOK, wxDefaultPosition, wxDefaultSize, wxMT_LIGHTTHEME);
 	topSizer->Add(m_plotNotebook, 1, wxEXPAND, 0);
 
-	m_timeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, HOURLY_TIME_SERIES, AVERAGE);
+	m_timeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, RAW_DATA_TIME_SERIES, AVERAGE);
+	m_hourlyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, HOURLY_TIME_SERIES, AVERAGE);
 	m_dailyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, DAILY_TIME_SERIES, AVERAGE);
 	m_monthlyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, MONTHLY_TIME_SERIES, AVERAGE);
 	m_dMap = new wxDVDMapCtrl(m_plotNotebook, wxID_ANY);
@@ -59,14 +60,7 @@ wxDVPlotCtrl::wxDVPlotCtrl(wxWindow* parent, wxWindowID id,
 
 //	m_plotNotebook->SetTextOnRight( true );
 
-	m_plotNotebook->AddPage(m_timeSeries, _("Hourly"), /*wxBITMAP_PNG_FROM_DATA( time ), */true);
-	m_plotNotebook->AddPage(m_dailyTimeSeries, _("Daily"), /*wxBITMAP_PNG_FROM_DATA( time ), */false);
-	m_plotNotebook->AddPage(m_monthlyTimeSeries, _("Monthly"), /*wxBITMAP_PNG_FROM_DATA( time ), */false);
-	m_plotNotebook->AddPage(m_profilePlots, _("Profiles"), /*wxBITMAP_PNG_FROM_DATA( calendar ), */false);
-	m_plotNotebook->AddPage(m_dMap, _("Heat Map"), /*wxBITMAP_PNG_FROM_DATA( dmap ), */false);
-	m_plotNotebook->AddPage(m_scatterPlot, _("Scatter"), /*wxBITMAP_PNG_FROM_DATA( scatter ), */false);
-	m_plotNotebook->AddPage(m_pnCdf, _("PDF / CDF"), /*wxBITMAP_PNG_FROM_DATA( barchart ), */false);
-	m_plotNotebook->AddPage(m_durationCurve, _("Duration Curve"), /*wxBITMAP_PNG_FROM_DATA( curve ), */false);
+	DisplayTabs();
 }
 
 wxDVPlotCtrl::~wxDVPlotCtrl()
@@ -75,6 +69,42 @@ wxDVPlotCtrl::~wxDVPlotCtrl()
 		delete m_dataSets[i];
 }
 
+double wxDVPlotCtrl::GetMinTimeStep()
+{
+	double MinTimeStep = 1000000000.0;	//Rediculously high time step - no real data file would ever use a time step this big.
+	double TimeStep;
+
+	for (int i = 0; i < m_dataSets.size(); i++)
+	{
+		TimeStep = m_dataSets[i]->GetTimeStep();
+		if (TimeStep < MinTimeStep) { MinTimeStep = TimeStep; }
+	}
+
+	return MinTimeStep;
+}
+
+void wxDVPlotCtrl::DisplayTabs()
+{
+	double MinTimeStep = GetMinTimeStep();
+	int PageCount = m_plotNotebook->GetPageCount();
+
+	//We have to remove all pages and then add back the ones we want since wxMetroNotebook does not have a way to insert a page at a specified index
+	//However, since the time series tab is always first and always displayed we don't remove it since there is a bug in the wxMetroNotebook the errors on removing the last item from the pagelist.
+	for (int i = PageCount - 1; i > 0; i--)
+	{
+		m_plotNotebook->RemovePage(i);
+	}
+
+	if (m_plotNotebook->GetPageCount() == 0) { m_plotNotebook->AddPage(m_timeSeries, _("Time Series"), /*wxBITMAP_PNG_FROM_DATA( time ), */true); } //Only add this if it doesn't already exist
+	if (MinTimeStep < 1.0) { m_plotNotebook->AddPage(m_hourlyTimeSeries, _("Hourly"), /*wxBITMAP_PNG_FROM_DATA( time ), */false); }
+	if (MinTimeStep < 24.0) { m_plotNotebook->AddPage(m_dailyTimeSeries, _("Daily"), /*wxBITMAP_PNG_FROM_DATA( time ), */false); }
+	if (MinTimeStep < 672.0) { m_plotNotebook->AddPage(m_monthlyTimeSeries, _("Monthly"), /*wxBITMAP_PNG_FROM_DATA( time ), */false); }
+	m_plotNotebook->AddPage(m_profilePlots, _("Profiles"), /*wxBITMAP_PNG_FROM_DATA( calendar ), */false);
+	m_plotNotebook->AddPage(m_dMap, _("Heat Map"), /*wxBITMAP_PNG_FROM_DATA( dmap ), */false);
+	m_plotNotebook->AddPage(m_scatterPlot, _("Scatter"), /*wxBITMAP_PNG_FROM_DATA( scatter ), */false);
+	m_plotNotebook->AddPage(m_pnCdf, _("PDF / CDF"), /*wxBITMAP_PNG_FROM_DATA( barchart ), */false);
+	m_plotNotebook->AddPage(m_durationCurve, _("Duration Curve"), /*wxBITMAP_PNG_FROM_DATA( curve ), */false);
+}
 
 //This function is used to add a data set to Dview.  
 //It adds that data set to all of the tabs.
@@ -85,6 +115,7 @@ void wxDVPlotCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, b
 	m_dataSets.push_back(d);
 
 	m_timeSeries->AddDataSet(d, group, update_ui);
+	m_hourlyTimeSeries->AddDataSet(d, group, update_ui);
 	m_dailyTimeSeries->AddDataSet(d, group, update_ui);
 	m_monthlyTimeSeries->AddDataSet(d, group, update_ui);
 	m_dMap->AddDataSet(d, group, update_ui);
@@ -97,6 +128,7 @@ void wxDVPlotCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, b
 void wxDVPlotCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 {
 	m_timeSeries->RemoveDataSet(d);
+	m_hourlyTimeSeries->RemoveDataSet(d);
 	m_dailyTimeSeries->RemoveDataSet(d);
 	m_monthlyTimeSeries->RemoveDataSet(d);
 	m_dMap->RemoveDataSet(d);
@@ -111,6 +143,7 @@ void wxDVPlotCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 void wxDVPlotCtrl::RemoveAllDataSets()
 {
 	m_timeSeries->RemoveAllDataSets();
+	m_hourlyTimeSeries->RemoveAllDataSets();
 	m_dailyTimeSeries->RemoveAllDataSets();
 	m_monthlyTimeSeries->RemoveAllDataSets();
 	m_dMap->RemoveAllDataSets();
@@ -139,6 +172,13 @@ wxDVPlotCtrlSettings wxDVPlotCtrl::GetPerspective()
 	
 	settings.SetProperty(wxT("tsTopSelectedNames"), m_timeSeries->GetDataSelectionList()->GetSelectedNamesInCol(0));
 	settings.SetProperty(wxT("tsBottomSelectedNames"), m_timeSeries->GetDataSelectionList()->GetSelectedNamesInCol(1));
+
+	//***HourlyTimeSeries Properties***
+	settings.SetProperty(wxT("tsAxisMin"), m_hourlyTimeSeries->GetViewMin());
+	settings.SetProperty(wxT("tsAxisMax"), m_hourlyTimeSeries->GetViewMax());
+
+	settings.SetProperty(wxT("tsTopSelectedNames"), m_hourlyTimeSeries->GetDataSelectionList()->GetSelectedNamesInCol(0));
+	settings.SetProperty(wxT("tsBottomSelectedNames"), m_hourlyTimeSeries->GetDataSelectionList()->GetSelectedNamesInCol(1));
 
 	//***DailyTimeSeries Properties***
 	settings.SetProperty(wxT("tsAxisMin"), m_dailyTimeSeries->GetViewMin());
@@ -212,6 +252,10 @@ void wxDVPlotCtrl::SetPerspective(wxDVPlotCtrlSettings& settings)
 	m_timeSeries->SetTopSelectedNames(settings.GetProperty(wxT("tsTopSelectedNames")));
 	m_timeSeries->SetBottomSelectedNames(settings.GetProperty(wxT("tsBottomSelectedNames")));
 
+	//***HourlyTimeSeries Properties***
+	m_hourlyTimeSeries->SetTopSelectedNames(settings.GetProperty(wxT("tsTopSelectedNames")));
+	m_hourlyTimeSeries->SetBottomSelectedNames(settings.GetProperty(wxT("tsBottomSelectedNames")));
+
 	//***DailyTimeSeries Properties***
 	m_dailyTimeSeries->SetTopSelectedNames(settings.GetProperty(wxT("tsTopSelectedNames")));
 	m_dailyTimeSeries->SetBottomSelectedNames(settings.GetProperty(wxT("tsBottomSelectedNames")));
@@ -226,6 +270,8 @@ void wxDVPlotCtrl::SetPerspective(wxDVPlotCtrlSettings& settings)
 	settings.GetProperty(wxT("tsAxisMax")).ToDouble(&max);
 	m_timeSeries->SetViewMin(min);
 	m_timeSeries->SetViewMax(max);
+	m_hourlyTimeSeries->SetViewMin(min);
+	m_hourlyTimeSeries->SetViewMax(max);
 	m_dailyTimeSeries->SetViewMin(min);
 	m_dailyTimeSeries->SetViewMax(max);
 	m_monthlyTimeSeries->SetViewMin(min);
@@ -311,6 +357,7 @@ void wxDVPlotCtrl::SelectDataIndex(int index, bool allTabs)
 		return;
 
 	m_timeSeries->SelectDataSetAtIndex(index);
+	m_hourlyTimeSeries->SelectDataSetAtIndex(index);
 	m_dailyTimeSeries->SelectDataSetAtIndex(index);
 	m_monthlyTimeSeries->SelectDataSetAtIndex(index);
 	m_dMap->SelectDataSetAtIndex(index);
@@ -331,6 +378,9 @@ void wxDVPlotCtrl::SelectDataIndexOnTab(int index, int tab)
 	{
 	case TAB_TS:
 		m_timeSeries->SelectDataSetAtIndex(index);
+		break;
+	case TAB_HTS:
+		m_hourlyTimeSeries->SelectDataSetAtIndex(index);
 		break;
 	case TAB_DTS:
 		m_dailyTimeSeries->SelectDataSetAtIndex(index);
@@ -398,6 +448,11 @@ void wxDVPlotCtrl::SelectDataOnBlankTabs()
 		&& m_timeSeries->GetDataSelectionList()->GetSelectedNamesInCol(0).size() == 0 
 		&& m_timeSeries->GetDataSelectionList()->GetSelectedNamesInCol(1).size() == 0 )
 		m_timeSeries->SelectDataSetAtIndex(0);
+
+	if (m_hourlyTimeSeries != 0
+		&& m_hourlyTimeSeries->GetDataSelectionList()->GetSelectedNamesInCol(0).size() == 0
+		&& m_hourlyTimeSeries->GetDataSelectionList()->GetSelectedNamesInCol(1).size() == 0)
+		m_hourlyTimeSeries->SelectDataSetAtIndex(0);
 
 	if ( m_dailyTimeSeries != 0
 		&& m_dailyTimeSeries->GetDataSelectionList()->GetSelectedNamesInCol(0).size() == 0 

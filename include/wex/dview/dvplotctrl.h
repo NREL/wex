@@ -40,13 +40,16 @@ public:
 	wxDVPlotCtrlSettings GetPerspective();
 	void SetPerspective( wxDVPlotCtrlSettings& settings);
 
-	enum { TAB_TS = 0, TAB_DTS, TAB_MTS, TAB_DMAP, TAB_PROFILE, TAB_PDF, TAB_DC, TAB_SCATTER };
+	enum { TAB_TS = 0, TAB_HTS, TAB_DTS, TAB_MTS, TAB_DMAP, TAB_PROFILE, TAB_PDF, TAB_DC, TAB_SCATTER };
 
 	void SelectTabIndex(int index);
 	void SelectDataIndex(int index, bool allTabs = false);
 	void SelectDataIndexOnTab(int index, int tab);
 
 	void SelectDataOnBlankTabs();
+
+	void DisplayTabs();
+	double GetMinTimeStep();
 
 	//Event Handlers
 	void OnPageChanging( wxNotebookEvent& e );
@@ -56,6 +59,7 @@ private:
 
 	wxMetroNotebook *m_plotNotebook;
 	wxDVTimeSeriesCtrl *m_timeSeries;
+	wxDVTimeSeriesCtrl *m_hourlyTimeSeries;
 	wxDVTimeSeriesCtrl *m_dailyTimeSeries;
 	wxDVTimeSeriesCtrl *m_monthlyTimeSeries;
 	wxDVDMapCtrl *m_dMap;
