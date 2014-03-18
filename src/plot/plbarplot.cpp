@@ -116,7 +116,9 @@ int wxPLBarPlot::CalcDispBarWidth( const wxPLDeviceMapping &map )
 				bars_in_view++;
 		}
 
-		return (int)( ((double)rct.GetWidth()) / ((double)( bars_in_view + 3 )) );
+		if ( m_group.size() > 0 ) bars_in_view *= m_group.size();
+
+		return (int)( ((double)rct.GetWidth()) / ((double)( bars_in_view + 4 )) );
 	}
 	else return m_thickness;
 }

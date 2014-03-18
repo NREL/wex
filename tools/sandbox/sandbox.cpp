@@ -64,6 +64,10 @@ void TestPLPlot( wxWindow *parent )
 	//plot->SetBackgroundColour( *wxWHITE );
 	plot->SetTitle( wxT("Demo Plot: using \\theta(x)=sin(x)^2, x_0=1\n\\zeta(x)=3\\dot sin^2(x)") );
 
+	wxFont font( *wxNORMAL_FONT );
+	font.SetPointSize( 16 );
+	plot->SetFont( font );
+
 		
 	wxPLLabelAxis *mx = new wxPLLabelAxis( -1, 12, "Months of the year (\\Chi\\Psi)" );
 	mx->ShowLabel( false );
@@ -305,7 +309,7 @@ public:
 		wxLog::SetActiveTarget(log);
 		log->Show();
 
-		//TestPLPlot( 0 );
+		TestPLPlot( 0 );
 
 
 		/*

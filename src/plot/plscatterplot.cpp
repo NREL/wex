@@ -1,6 +1,7 @@
+#include <algorithm>
+
 #include <wx/dc.h>
 #include "wex/plot/plscatterplot.h"
-
 
 wxPLScatterPlot::wxPLScatterPlot()
 {
@@ -63,7 +64,10 @@ void wxPLScatterPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 
 void wxPLScatterPlot::DrawInLegend( wxDC &dc, const wxRect &rct)
 {
-	dc.SetPen( *wxBLACK_PEN );
+	dc.SetPen( wxPen( m_colour, 1 ) );
 	dc.SetBrush( wxBrush( m_colour ) );
-	dc.DrawRectangle( rct );
+	wxCoord rad = std::min( rct.width, rct.height );
+	rad = rad/2 - 2;
+	if ( rad < 2 ) rad = 2;
+	dc.DrawCircle( rct.x+rct.width/2, rct.y+rct.height/2, rad );
 }

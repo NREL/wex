@@ -953,3 +953,29 @@ wxString wxFormatTime( double time, bool use_12_hr )
 	wxTimeToMDHM( time, &mo, &dy, &hr, &min );
 	return wxFormatMDHM( mo, dy, hr, min, use_12_hr );
 }
+
+
+void wxSortByLabels(wxArrayString &names, wxArrayString &labels)
+{
+	// sort the selections by labels
+	wxString buf;
+	int count = (int)labels.Count();
+	for (int i=0;i<count-1;i++)
+	{
+		int smallest = i;
+
+		for (int j=i+1;j<count;j++)
+			if ( labels[j] < labels[smallest] )
+				smallest = j;
+
+		// swap
+		buf = labels[i];
+		labels[i] = labels[smallest];
+		labels[smallest] = buf;
+
+		buf = names[i];
+		names[i] = names[smallest];
+		names[smallest] = buf;
+
+	}
+}

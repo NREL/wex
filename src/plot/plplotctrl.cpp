@@ -1608,7 +1608,7 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 			if ( height > 0 ) 
 				legend_bottom = true;
 
-			box.height -= height;
+			box.height -= height + text_space;
 		}
 
 		if ( m_legendPos == RIGHT )
@@ -2136,7 +2136,7 @@ void wxPLPlotCtrl::OnPaint( wxPaintEvent & )
 
 void wxPLPlotCtrl::Invalidate()
 {
-	if ( m_titleLayout != 0 && m_scaleTextSize )
+	if ( m_titleLayout != 0 )
 	{
 		delete m_titleLayout;
 		m_titleLayout = 0;
