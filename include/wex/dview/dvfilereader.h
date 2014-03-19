@@ -22,7 +22,7 @@ class wxDVFileReader
 public:
 	static void ReadDataFromCSV( wxDVPlotCtrl* plotWin, const wxString& filename, wxChar separator = ',' );
 	static bool FastRead( wxDVPlotCtrl* plotWin, const wxString& filename, int prealloc_data = 8760, int prealloc_lnchars = 1024 );
-	static void Read8760WFLines( std::vector<wxDVArrayDataSet*> &dataSets, FILE* infile, int wfType );
+	static bool Read8760WFLines( std::vector<wxDVArrayDataSet*> &dataSets, FILE* infile, int wfType );
 	static bool ReadWeatherFile( wxDVPlotCtrl* plotWin, const wxString& filename );
 };
 

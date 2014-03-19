@@ -272,7 +272,7 @@ public:
 		{	
 			if(!wxDVFileReader::FastRead(mPlotCtrl, filenames[i]))
 			{
-				wxMessageBox( wxT("The selected file no longer exists, is not of the correct format, or you do not have permission to open it."), wxT("Error opening file."), wxICON_ERROR);
+				wxMessageBox( wxT("The selected file is not of the correct format, is corrupt, no longer exists, or you do not have permission to open it."), wxT("Error opening file."), wxICON_ERROR);
 				RemoveRecent(filenames[i]);
 			}
 			else
