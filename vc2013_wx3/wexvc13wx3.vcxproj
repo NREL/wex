@@ -118,6 +118,7 @@
     <ClInclude Include="..\include\wex\uiform.h" />
     <ClInclude Include="..\include\wex\utils.h" />
     <ClInclude Include="..\src\pdf\wxmemdbg.h" />
+    <ClInclude Include="..\include\wex\dview\dvstatisticsctrl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\codeedit.cpp" />
@@ -202,6 +203,7 @@
     <ClCompile Include="..\src\plot\plscatterplot.cpp" />
     <ClCompile Include="..\src\uiform.cpp" />
     <ClCompile Include="..\src\utils.cpp" />
+    <ClCompile Include="..\src\dview\dvstatisticsctrl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\pdf\pdfcjkfontdata.inc" />

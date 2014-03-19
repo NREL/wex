@@ -90,4 +90,53 @@ private:
 	
 };
 
+struct StatisticsPoint
+{
+	double x;
+	double Sum;
+	double Min;
+	double Max;
+	double Mean;
+	double AvgDailyMin;
+	double AvgDailyMax;
+	double StDev;
+};
+
+class wxDVStatisticsDataSet
+{
+public:
+	wxDVStatisticsDataSet();
+	wxDVStatisticsDataSet(const wxString &var, const wxString &units, const double &timestep);
+
+	StatisticsPoint At(size_t i) const;
+	size_t Length() const;
+	double GetTimeStep() const;
+	wxString GetSeriesTitle() const;
+	wxString GetUnits() const;
+
+	void Clear();
+	void Alloc(size_t n);
+	void Append(const StatisticsPoint &p);
+
+	void SetSeriesTitle(const wxString &title);
+	void SetUnits(const wxString &units);
+	void SetTimeStep(double ts, bool recompute_x = true);
+	void SetOffset(double off, bool recompute_x = true);
+
+	double GetMinHours();
+	double GetMaxHours();
+	void GetMinAndMaxInRange(double* min, double* max, size_t startIndex, size_t endIndex);
+	void GetMinAndMaxInRange(double* min, double* max, double startHour, double endHour);
+	void GetDataMinAndMax(double* min, double* max);
+
+protected:
+	void RecomputeXData();
+private:
+	wxString m_varLabel;
+	wxString m_varUnits;
+	double m_timestep; // timestep in hours - fractional hours okay
+	double m_offset; // offset in hours from Jan1 00:00 - fractional hours okay
+	std::vector<StatisticsPoint> m_sData;
+
+};
 #endif

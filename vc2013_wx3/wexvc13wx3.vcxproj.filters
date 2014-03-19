@@ -345,6 +345,9 @@
     <ClInclude Include="..\include\wex\dview\dvfilereader.h">
       <Filter>dview\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\wex\dview\dvstatisticsctrl.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
@@ -591,6 +594,9 @@
       <Filter>wex\Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\src\dview\dvfilereader.cpp">
+      <Filter>dview\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dview\dvstatisticsctrl.cpp">
       <Filter>dview\Sources</Filter>
     </ClCompile>
   </ItemGroup>
