@@ -51,6 +51,36 @@ public:
 #include "demo_bitmap.cpng"
 
 #include "wex/uiform.h"
+#include "wex/snaplay.h"
+
+void TestSnapLayout( wxWindow *parent )
+{
+	wxFrame *frame = new wxFrame( parent, wxID_ANY, wxT("wxSnapLayout in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(850,500) );
+#ifdef __WXMSW__
+	frame->SetIcon( wxICON( appicon ) );
+#endif
+
+	wxSnapLayout *lay = new wxSnapLayout(frame, wxID_ANY);
+
+	
+	wxPLPlotCtrl *plot = new wxPLPlotCtrl( lay, wxID_ANY, wxDefaultPosition, wxDefaultSize );
+	//plot->SetBackgroundColour( *wxWHITE );
+	plot->SetTitle( wxT("Demo Plot: using \\theta(x)=sin(x)^2, x_0=1\n\\zeta(x)=3\\dot sin^2(x)") );
+	plot->SetClientSize( 400, 300 );
+	wxFont font( *wxNORMAL_FONT );
+	font.SetPointSize( 16 );
+	plot->SetFont( font );
+	
+	lay->Add( plot, 400, 300 );
+	lay->Add( new wxButton( lay, wxID_ANY, "EKJRLKEJWKR WJLKER WKEJRLKWJELR WE" ) );
+	lay->Add( new wxButton( lay, wxID_ANY, "WE" ) );
+	lay->Add( new wxCheckListBox( lay, wxID_ANY ) );
+	lay->Add( new wxButton( lay, wxID_ANY, "%IN@)#*^^^^^$@#$_________________!!" ) );
+	lay->Add( new wxCheckListBox( lay, wxID_ANY ) );
+
+	frame->Show();
+
+}
 
 
 void TestPLPlot( wxWindow *parent )
@@ -303,13 +333,17 @@ public:
 		
 		m_locale.Init();
 	
-		wxFrame *frame = new NumericTest();
-		frame->Show();
-		wxLogWindow *log = new wxLogWindow( frame , "Log");
+		wxLogWindow *log = new wxLogWindow( 0 , "Log");
 		wxLog::SetActiveTarget(log);
 		log->Show();
 
-		TestPLPlot( 0 );
+		//wxFrame *frame = new NumericTest();
+		//frame->Show();
+		
+
+		//TestPLPlot( 0 );
+
+		TestSnapLayout( 0 );
 
 
 		/*

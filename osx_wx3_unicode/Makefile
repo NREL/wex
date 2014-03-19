@@ -13,6 +13,7 @@ LIBNAME = wexosxwx3
 TARGET = ../$(LIBNAME).a
 	
 OBJECTS = \
+	snaplay.o \
 	csv.o \
 	exttree.o \
 	label.o \
