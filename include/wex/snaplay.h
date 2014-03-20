@@ -5,6 +5,8 @@
 
 #include <wx/scrolwin.h>
 
+class wxFrame;
+
 class wxSnapLayout : public wxScrolledWindow
 {
 public:
@@ -21,7 +23,7 @@ public:
 	void Highlight( wxWindow * );
 
 private:
-
+	
 	struct layout_box {
 		wxWindow *win;
 		wxSize req;
@@ -36,7 +38,12 @@ private:
 
 	int m_space;
 	std::vector<layout_box*> m_list;
-
+	
+	struct drop_target {
+		int index;
+		wxRect target;
+	};
+	std::vector<drop_target> m_targets;
 
 	void OnLeftDown( wxMouseEvent & );
 	void OnLeftUp( wxMouseEvent & );
@@ -45,6 +52,21 @@ private:
 	void OnSize( wxSizeEvent & );
 	void OnPaint( wxPaintEvent & );
 	void OnErase( wxEraseEvent & );
+
+	enum { NW, NE, SW, SE };
+	layout_box *CheckActive( const wxPoint &p, int *handle );
+
+	int m_handle;
+	layout_box *m_active;
+	drop_target *m_curtarget;
+
+	void ShowTransparency( wxRect r );
+	void HideTransparency();
+	wxFrame *m_transp;
+	wxRect m_sizerect;
+
+	wxPoint m_orig;
+
 
 	DECLARE_EVENT_TABLE();
 };
