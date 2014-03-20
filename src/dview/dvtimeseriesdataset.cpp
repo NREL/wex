@@ -281,6 +281,11 @@ double wxDVStatisticsDataSet::GetTimeStep() const
 	return m_timestep;
 }
 
+double wxDVStatisticsDataSet::GetOffset() const
+{
+	return m_offset;
+}
+
 wxString wxDVStatisticsDataSet::GetSeriesTitle() const
 {
 	return m_varLabel;
@@ -381,4 +386,14 @@ void wxDVStatisticsDataSet::GetMinAndMaxInRange(double* min, double* max, double
 void wxDVStatisticsDataSet::GetDataMinAndMax(double* min, double* max)
 {
 	GetMinAndMaxInRange(min, max, size_t(0), Length());
+}
+
+double wxDVStatisticsDataSet::GetMinHours()
+{
+	return At(0).x;
+}
+
+double wxDVStatisticsDataSet::GetMaxHours()
+{
+	return At(Length() - 1).x;
 }

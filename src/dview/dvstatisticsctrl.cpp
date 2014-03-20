@@ -23,171 +23,215 @@
 #include "wex/icons/preferences.cpng"
 
 #include "wex/dview/dvselectionlist.h"
-#include "wex/dview/dvtimeseriesdataset.h"
 #include "wex/dview/dvstatisticsctrl.h"
+#include "wex/plot/plplotctrl.h"
 
 static const wxString NO_UNITS("ThereAreNoUnitsForThisAxis.");
 
-class wxDVStatisticsPlot : public wxPLPlottable
+wxDVStatisticsPlot::wxDVStatisticsPlot(wxDVStatisticsDataSet *ds, bool OwnsDataset)
+	: m_data(ds)
 {
-private:
-	wxDVStatisticsDataSet *m_data;
-	wxColour m_colour;
-	bool m_ownsDataset;
+	m_colour = *wxRED;
+	m_ownsDataset = OwnsDataset;
+}
 
-public:
-	wxDVStatisticsPlot(wxDVStatisticsDataSet *ds, bool OwnsDataset = false)
-		: m_data(ds)
+wxDVStatisticsPlot::~wxDVStatisticsPlot()
+{
+	if (m_ownsDataset)
 	{
-		m_colour = *wxRED;
-		m_ownsDataset = OwnsDataset;
+		delete m_data;
+	}
+}
+
+void wxDVStatisticsPlot::SetColour(const wxColour &col) { m_colour = col; }
+
+wxString wxDVStatisticsPlot::GetXDataLabel() const
+{
+	return _("Hours since 00:00 Jan 1");
+}
+
+wxString wxDVStatisticsPlot::GetYDataLabel() const
+{
+	wxString label = m_data->GetSeriesTitle();
+	if (!m_data->GetUnits().IsEmpty())
+		label += " (" + m_data->GetUnits() + ")";
+	return label;
+}
+
+wxRealPoint wxDVStatisticsPlot::At(size_t i) const
+{
+	return (i < m_data->Length())
+		? wxRealPoint(m_data->At(i).x, m_data->At(i).Mean)
+		: wxRealPoint(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
+}
+
+StatisticsPoint wxDVStatisticsPlot::At(size_t i, double m_offset, double m_timestep) const
+{
+	StatisticsPoint p = StatisticsPoint();
+
+	if ((i < m_data->Length()) && (i >= 0))
+	{
+		p.x = m_data->At(i).x;
+		p.Sum = m_data->At(i).Sum;
+		p.Min = m_data->At(i).Min;
+		p.Max = m_data->At(i).Max;
+		p.Mean = m_data->At(i).Mean;
+		p.StDev = m_data->At(i).StDev;
+		p.AvgDailyMin = m_data->At(i).AvgDailyMin;
+		p.AvgDailyMax = m_data->At(i).AvgDailyMax;
+	}
+	else
+	{
+		p.x = m_offset + (i * m_timestep);
+		p.Sum = 0.0;
+		p.Min = 0.0;
+		p.Max = 0.0;
+		p.Mean = 0.0;
+		p.StDev = 0.0;
+		p.AvgDailyMin = 0.0;
+		p.AvgDailyMax = 0.0;
 	}
 
-	~wxDVStatisticsPlot()
+	return p;
+}
+
+size_t wxDVStatisticsPlot::Len() const
+{
+	return m_data->Length();
+}
+
+void wxDVStatisticsPlot::Draw(wxDC &dc, const wxPLDeviceMapping &map)
+{
+	if (!m_data || m_data->Length() < 2) return;
+
+	size_t len;
+	std::vector< wxPoint > points;
+	wxRealPoint rpt;
+	wxRealPoint rpt2;
+	double tempY;
+	wxRealPoint wmin = map.GetWorldMinimum();
+	wxRealPoint wmax = map.GetWorldMaximum();
+
+	dc.SetPen(wxPen(m_colour, 2, wxPENSTYLE_SOLID));
+
+	//TODO:  UPDATE BELOW CODE TO DO BOX PLOT INSTEAD OF LINE GRAPH
+	//len = m_data->Length();
+	//if (m_data->At(0).x < wmin.x) { len++; }
+	//if (m_data->At(m_data->Length() - 1).x > wmax.x) { len++; }
+
+	//points.reserve(len);
+
+	//for (size_t i = 0; i < m_data->Length(); i++)
+	//{
+	//	rpt = m_data->At(i);
+	//	if (rpt.x < wmin.x || rpt.x > wmax.x) continue;
+	//	points.push_back(map.ToDevice(m_data->At(i)));
+	//}
+
+	//if (points.size() == 0) return;
+
+	//dc.DrawLines(points.size(), &points[0]);
+}
+
+void wxDVStatisticsPlot::DrawInLegend(wxDC &dc, const wxRect &rct)
+{
+	// nothing to do here
+}
+
+double wxDVStatisticsPlot::GetPeriodLowerBoundary(double hourNumber)
+{
+	hourNumber = fmod(hourNumber, 8760);
+
+	if (hourNumber >= 0.0 && hourNumber < 744.0) { hourNumber = 0.0; }
+	else if (hourNumber >= 744.0 && hourNumber < 1416.0) { hourNumber = 744.0; }
+	else if (hourNumber >= 1416.0 && hourNumber < 2160.0) { hourNumber = 1416.0; }
+	else if (hourNumber >= 2160.0 && hourNumber < 2880.0) { hourNumber = 2160.0; }
+	else if (hourNumber >= 2880.0 && hourNumber < 3624.0) { hourNumber = 2880.0; }
+	else if (hourNumber >= 3624.0 && hourNumber < 4344.0) { hourNumber = 3624.0; }
+	else if (hourNumber >= 4344.0 && hourNumber < 5088.0) { hourNumber = 4344.0; }
+	else if (hourNumber >= 5088.0 && hourNumber < 5832.0) { hourNumber = 5088.0; }
+	else if (hourNumber >= 5832.0 && hourNumber < 6552.0) { hourNumber = 5832.0; }
+	else if (hourNumber >= 6552.0 && hourNumber < 7296.0) { hourNumber = 6552.0; }
+	else if (hourNumber >= 7296.0 && hourNumber < 8016.0) { hourNumber = 7296.0; }
+	else if (hourNumber >= 8016.0 && hourNumber < 8760.0) { hourNumber = 8016.0; }
+
+	return hourNumber;
+}
+
+double wxDVStatisticsPlot::GetPeriodUpperBoundary(double hourNumber)
+{
+	hourNumber = fmod(hourNumber, 8760);
+
+	if (hourNumber >= 0.0 && hourNumber < 744.0) { hourNumber = 744.0; }
+	else if (hourNumber >= 744.0 && hourNumber < 1416.0) { hourNumber = 1416.0; }
+	else if (hourNumber >= 1416.0 && hourNumber < 2160.0) { hourNumber = 2160.0; }
+	else if (hourNumber >= 2160.0 && hourNumber < 2880.0) { hourNumber = 2880.0; }
+	else if (hourNumber >= 2880.0 && hourNumber < 3624.0) { hourNumber = 3624.0; }
+	else if (hourNumber >= 3624.0 && hourNumber < 4344.0) { hourNumber = 4344.0; }
+	else if (hourNumber >= 4344.0 && hourNumber < 5088.0) { hourNumber = 5088.0; }
+	else if (hourNumber >= 5088.0 && hourNumber < 5832.0) { hourNumber = 5832.0; }
+	else if (hourNumber >= 5832.0 && hourNumber < 6552.0) { hourNumber = 6552.0; }
+	else if (hourNumber >= 6552.0 && hourNumber < 7296.0) { hourNumber = 7296.0; }
+	else if (hourNumber >= 7296.0 && hourNumber < 8016.0) { hourNumber = 8016.0; }
+	else if (hourNumber >= 8016.0 && hourNumber < 8760.0) { hourNumber = 8760.0; }
+
+	return hourNumber;
+}
+
+std::vector<wxString> wxDVStatisticsPlot::GetExportableDatasetHeaders(wxUniChar sep, StatisticsType type) const
+{
+	std::vector<wxString> tt;
+	wxString xLabel = GetXDataLabel();
+	wxString yLabel = GetYDataLabel();
+
+	if (xLabel.size() == 0) { xLabel = "Month"; }
+
+	//Remove sep chars that we don't want
+	while (xLabel.Find(sep) != wxNOT_FOUND)
 	{
-		if (m_ownsDataset)
-		{
-			delete m_data;
-		}
+		xLabel = xLabel.BeforeFirst(sep) + xLabel.AfterFirst(sep);
 	}
 
-	void SetColour(const wxColour &col) { m_colour = col; }
-
-	virtual wxString GetXDataLabel() const
+	while (yLabel.Find(sep) != wxNOT_FOUND)
 	{
-		return _("Hours since 00:00 Jan 1");
+		yLabel = yLabel.BeforeFirst(sep) + yLabel.AfterFirst(sep);
 	}
 
-	virtual wxString GetYDataLabel() const
+	tt.push_back(xLabel);
+	if (type == MEAN) { tt.push_back("Mean " + yLabel); }
+	if (type == MIN) { tt.push_back("Min. " + yLabel); }
+	if (type == MAX) { tt.push_back("Max. " + yLabel); }
+	if (type == SUMMATION) { tt.push_back("Sum " + yLabel); }
+	if (type == STDEV) { tt.push_back("St. Dev. " + yLabel); }
+	if (type == AVGDAILYMIN) { tt.push_back("Avg. Daily Min. " + yLabel); }
+	if (type == AVGDAILYMAX) { tt.push_back("Avg. Daily Max. " + yLabel); }
+
+	return tt;
+}
+
+std::vector<wxRealPoint> wxDVStatisticsPlot::GetExportableDataset(StatisticsType type) const
+{
+	std::vector<wxRealPoint> data;
+	wxRealPoint pt;
+	StatisticsPoint sp;
+
+	for (size_t i = 0; i < Len(); i++)
 	{
-		wxString label = m_data->GetSeriesTitle();
-		if (!m_data->GetUnits().IsEmpty())
-			label += " (" + m_data->GetUnits() + ")";
-		return label;
+		sp = At(i, m_data->GetOffset(), m_data->GetTimeStep());
+
+		if (type == MEAN) { pt = wxRealPoint(sp.x, sp.Mean); }
+		if (type == MIN) { pt = wxRealPoint(sp.x, sp.Min); }
+		if (type == MAX) { pt = wxRealPoint(sp.x, sp.Max); }
+		if (type == SUMMATION) { pt = wxRealPoint(sp.x, sp.Sum); }
+		if (type == STDEV) { pt = wxRealPoint(sp.x, sp.StDev); }
+		if (type == AVGDAILYMIN) { pt = wxRealPoint(sp.x, sp.AvgDailyMin); }
+		if (type == AVGDAILYMAX) { pt = wxRealPoint(sp.x, sp.AvgDailyMax); }
+
+		data.push_back(pt);
 	}
 
-	virtual wxRealPoint At(size_t i) const
-	{
-		return (i < m_data->Length())
-			? wxRealPoint(m_data->At(i).x, m_data->At(i).Mean)
-			: wxRealPoint(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
-	}
-
-	StatisticsPoint At(size_t i, double m_offset = 0.0, double m_timestep = 1.0) const
-	{
-		StatisticsPoint p = StatisticsPoint();
-
-		if ((i < m_data->Length()) && (i >= 0))
-		{
-			p.x = m_data->At(i).x;
-			p.Sum = m_data->At(i).Sum;
-			p.Min = m_data->At(i).Min;
-			p.Max = m_data->At(i).Max;
-			p.Mean = m_data->At(i).Mean;
-			p.StDev = m_data->At(i).StDev;
-			p.AvgDailyMin = m_data->At(i).AvgDailyMin;
-			p.AvgDailyMax = m_data->At(i).AvgDailyMax;
-		}
-		else
-		{
-			p.x = m_offset + (i * m_timestep);
-			p.Sum = 0.0;
-			p.Min = 0.0;
-			p.Max = 0.0;
-			p.Mean = 0.0;
-			p.StDev = 0.0;
-			p.AvgDailyMin = 0.0;
-			p.AvgDailyMax = 0.0;
-		}
-
-		return p;
-	}
-
-	virtual size_t Len() const
-	{
-		return m_data->Length();
-	}
-
-	virtual void Draw(wxDC &dc, const wxPLDeviceMapping &map)
-	{
-		if (!m_data || m_data->Length() < 2) return;
-
-		size_t len;
-		std::vector< wxPoint > points;
-		wxRealPoint rpt;
-		wxRealPoint rpt2;
-		double tempY;
-		wxRealPoint wmin = map.GetWorldMinimum();
-		wxRealPoint wmax = map.GetWorldMaximum();
-
-		dc.SetPen(wxPen(m_colour, 2, wxPENSTYLE_SOLID));
-
-		//TODO:  UPDATE BELOW CODE TO DO BOX PLOT INSTEAD OF LINE GRAPH
-		//len = m_data->Length();
-		//if (m_data->At(0).x < wmin.x) { len++; }
-		//if (m_data->At(m_data->Length() - 1).x > wmax.x) { len++; }
-
-		//points.reserve(len);
-
-		//for (size_t i = 0; i < m_data->Length(); i++)
-		//{
-		//	rpt = m_data->At(i);
-		//	if (rpt.x < wmin.x || rpt.x > wmax.x) continue;
-		//	points.push_back(map.ToDevice(m_data->At(i)));
-		//}
-
-		//if (points.size() == 0) return;
-
-		//dc.DrawLines(points.size(), &points[0]);
-	}
-
-	virtual void DrawInLegend(wxDC &dc, const wxRect &rct)
-	{
-		// nothing to do here
-	}
-
-	double GetPeriodLowerBoundary(double hourNumber)
-	{
-		hourNumber = fmod(hourNumber, 8760);
-
-		if (hourNumber >= 0.0 && hourNumber < 744.0) { hourNumber = 0.0; }
-		else if (hourNumber >= 744.0 && hourNumber < 1416.0) { hourNumber = 744.0; }
-		else if (hourNumber >= 1416.0 && hourNumber < 2160.0) { hourNumber = 1416.0; }
-		else if (hourNumber >= 2160.0 && hourNumber < 2880.0) { hourNumber = 2160.0; }
-		else if (hourNumber >= 2880.0 && hourNumber < 3624.0) { hourNumber = 2880.0; }
-		else if (hourNumber >= 3624.0 && hourNumber < 4344.0) { hourNumber = 3624.0; }
-		else if (hourNumber >= 4344.0 && hourNumber < 5088.0) { hourNumber = 4344.0; }
-		else if (hourNumber >= 5088.0 && hourNumber < 5832.0) { hourNumber = 5088.0; }
-		else if (hourNumber >= 5832.0 && hourNumber < 6552.0) { hourNumber = 5832.0; }
-		else if (hourNumber >= 6552.0 && hourNumber < 7296.0) { hourNumber = 6552.0; }
-		else if (hourNumber >= 7296.0 && hourNumber < 8016.0) { hourNumber = 7296.0; }
-		else if (hourNumber >= 8016.0 && hourNumber < 8760.0) { hourNumber = 8016.0; }
-
-		return hourNumber;
-	}
-
-	double GetPeriodUpperBoundary(double hourNumber)
-	{
-		hourNumber = fmod(hourNumber, 8760);
-
-		if (hourNumber >= 0.0 && hourNumber < 744.0) { hourNumber = 744.0; }
-		else if (hourNumber >= 744.0 && hourNumber < 1416.0) { hourNumber = 1416.0; }
-		else if (hourNumber >= 1416.0 && hourNumber < 2160.0) { hourNumber = 2160.0; }
-		else if (hourNumber >= 2160.0 && hourNumber < 2880.0) { hourNumber = 2880.0; }
-		else if (hourNumber >= 2880.0 && hourNumber < 3624.0) { hourNumber = 3624.0; }
-		else if (hourNumber >= 3624.0 && hourNumber < 4344.0) { hourNumber = 4344.0; }
-		else if (hourNumber >= 4344.0 && hourNumber < 5088.0) { hourNumber = 5088.0; }
-		else if (hourNumber >= 5088.0 && hourNumber < 5832.0) { hourNumber = 5832.0; }
-		else if (hourNumber >= 5832.0 && hourNumber < 6552.0) { hourNumber = 6552.0; }
-		else if (hourNumber >= 6552.0 && hourNumber < 7296.0) { hourNumber = 7296.0; }
-		else if (hourNumber >= 7296.0 && hourNumber < 8016.0) { hourNumber = 8016.0; }
-		else if (hourNumber >= 8016.0 && hourNumber < 8760.0) { hourNumber = 8760.0; }
-
-		return hourNumber;
-	}
-
-	wxDVStatisticsDataSet *GetDataSet() const { return m_data; }
-};
+	return data;
+}
 
 enum{
 	ID_DATA_CHANNEL_SELECTOR = wxID_HIGHEST + 1,
@@ -201,7 +245,7 @@ EVT_DVSELECTIONLIST(ID_DATA_CHANNEL_SELECTOR, wxDVStatisticsCtrl::OnDataChannelS
 END_EVENT_TABLE()
 
 
-enum BoxGraphAxisPosition
+enum StatGraphAxisPosition
 {
 	TOP_LEFT_AXIS = 0,
 	TOP_RIGHT_AXIS,
@@ -261,9 +305,9 @@ void wxDVStatisticsCtrl::OnDataChannelSelection(wxCommandEvent& e)
 	m_dataSelector->GetLastEventInfo(&row, &col, &isChecked);
 
 	if (isChecked)
-		AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos(col), row);
+		AddGraphAfterChannelSelection(row);
 	else
-		RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos(col), row);
+		RemoveGraphAfterChannelSelection(row);
 }
 
 void wxDVStatisticsCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, bool refresh_ui, double xOffset)
@@ -501,14 +545,19 @@ void wxDVStatisticsCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 	}
 }
 
-bool wxDVStatisticsCtrl::RemoveDataSet(wxDVStatisticsDataSet *d)
+bool wxDVStatisticsCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 {
 	wxDVStatisticsPlot *plotToRemove = NULL;
+	wxDVStatisticsDataSet *ds;
 	int removedIndex = 0;
 	//Find the plottable:
 	for (size_t i = 0; i<m_plots.size(); i++)
 	{
-		if (m_plots[i]->GetDataSet() == d)
+		ds = m_plots[i]->GetDataSet();
+
+		//TODO:  Is there a better way to identify the statistics dataset that corresponds with the passed time series dataset?
+		if (ds->GetSeriesTitle() == d->GetSeriesTitle() && ds->GetTimeStep() == d->GetTimeStep() && ds->GetUnits() == d->GetUnits()
+			&& ds->GetMinHours() == d->GetMinHours() && ds->GetMaxHours() == d->GetMaxHours())
 		{
 			removedIndex = i;
 			plotToRemove = m_plots[i];
@@ -546,8 +595,7 @@ bool wxDVStatisticsCtrl::RemoveDataSet(wxDVStatisticsDataSet *d)
 
 void wxDVStatisticsCtrl::RemoveAllDataSets()
 {
-	ClearAllChannelSelections(wxPLPlotCtrl::PLOT_BOTTOM);
-	ClearAllChannelSelections(wxPLPlotCtrl::PLOT_TOP);
+	ClearAllChannelSelections();
 
 	m_dataSelector->RemoveAll();
 
@@ -806,7 +854,7 @@ void wxDVStatisticsCtrl::AutoscaleYAxis(wxPLAxis *axisToScale, const std::vector
 	}
 }
 
-void wxDVStatisticsCtrl::AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPos, int index)
+void wxDVStatisticsCtrl::AddGraphAfterChannelSelection(int index)
 {
 	if (index < 0 || index >= (int)m_plots.size()) return;
 
@@ -821,28 +869,26 @@ void wxDVStatisticsCtrl::AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPo
 
 	wxString y1Units = NO_UNITS, y2Units = NO_UNITS;
 
-	if (m_plotSurface->GetYAxis1(pPos))
-		y1Units = m_plotSurface->GetYAxis1(pPos)->GetLabel();
+	if (m_plotSurface->GetYAxis1())
+		y1Units = m_plotSurface->GetYAxis1()->GetLabel();
 
-	if (m_plotSurface->GetYAxis2(pPos))
-		y2Units = m_plotSurface->GetYAxis2(pPos)->GetLabel();
+	if (m_plotSurface->GetYAxis2())
+		y2Units = m_plotSurface->GetYAxis2()->GetLabel();
 
-	if (m_plotSurface->GetYAxis1(pPos) && y1Units == units)
+	if (m_plotSurface->GetYAxis1() && y1Units == units)
 		yap = wxPLPlotCtrl::Y_LEFT;
-	else if (m_plotSurface->GetYAxis2(pPos) && y2Units == units)
+	else if (m_plotSurface->GetYAxis2() && y2Units == units)
 		yap = wxPLPlotCtrl::Y_RIGHT;
-	else if (m_plotSurface->GetYAxis1(pPos) == 0)
+	else if (m_plotSurface->GetYAxis1() == 0)
 		yap = wxPLPlotCtrl::Y_LEFT;
 	else
 		yap = wxPLPlotCtrl::Y_RIGHT;
 
-	m_plotSurface->AddPlot(m_plots[index], wxPLPlotCtrl::X_BOTTOM, yap, pPos, false);
-	m_plotSurface->GetAxis(yap, pPos)->SetLabel(units);
+	m_plotSurface->AddPlot(m_plots[index], wxPLPlotCtrl::X_BOTTOM, yap, wxPLPlotCtrl::PLOT_TOP, false);
+	m_plotSurface->GetAxis(yap)->SetLabel(units);
 
 	//Calculate index from 0-3.  0,1 are top graph L,R axis.  2,3 are L,R axis on bottom graph.
 	int graphIndex = TOP_LEFT_AXIS;
-	if (pPos == wxPLPlotCtrl::PLOT_BOTTOM)
-		graphIndex += 2;
 	if (yap == wxPLPlotCtrl::Y_RIGHT)
 		graphIndex += 1;
 
@@ -851,10 +897,10 @@ void wxDVStatisticsCtrl::AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPo
 	switch (yap)
 	{
 	case wxPLPlotCtrl::Y_LEFT:
-		AutoscaleYAxis(m_plotSurface->GetYAxis1(pPos), *m_selectedChannelIndices[graphIndex], true);
+		AutoscaleYAxis(m_plotSurface->GetYAxis1(), *m_selectedChannelIndices[graphIndex], true);
 		break;
 	case wxPLPlotCtrl::Y_RIGHT:
-		AutoscaleYAxis(m_plotSurface->GetYAxis2(pPos), *m_selectedChannelIndices[graphIndex], true);
+		AutoscaleYAxis(m_plotSurface->GetYAxis2(), *m_selectedChannelIndices[graphIndex], true);
 		break;
 	}
 
@@ -862,13 +908,11 @@ void wxDVStatisticsCtrl::AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPo
 	Invalidate();
 }
 
-void wxDVStatisticsCtrl::RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPos, int index)
+void wxDVStatisticsCtrl::RemoveGraphAfterChannelSelection(int index)
 {
 	//Find our GraphAxisPosition, and remove from selected indices list.
 	//Have to do it this way because of ambiguous use of int in an array storing ints.
 	int graphIndex = 0;
-	if (pPos == wxPLPlotCtrl::PLOT_BOTTOM)
-		graphIndex += 2;
 	for (int i = graphIndex; i < graphIndex + 2; i++)
 	{
 		std::vector<int>::iterator it = std::find(m_selectedChannelIndices[i]->begin(), m_selectedChannelIndices[i]->end(), index);
@@ -884,14 +928,14 @@ void wxDVStatisticsCtrl::RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos 
 	if (m_selectedChannelIndices[graphIndex]->size() > 0)
 		keepAxis = true;
 
-	m_plotSurface->RemovePlot(m_plots[index], pPos);
+	m_plotSurface->RemovePlot(m_plots[index]);
 
 	//See if axis is still in use or not, and to some cleanup.
 	wxPLLinearAxis *axisThatWasUsed;
 	if (graphIndex % 2 == 0)
-		axisThatWasUsed = dynamic_cast<wxPLLinearAxis*>(m_plotSurface->GetYAxis1(pPos));
+		axisThatWasUsed = dynamic_cast<wxPLLinearAxis*>(m_plotSurface->GetYAxis1());
 	else
-		axisThatWasUsed = dynamic_cast<wxPLLinearAxis*>(m_plotSurface->GetYAxis2(pPos));
+		axisThatWasUsed = dynamic_cast<wxPLLinearAxis*>(m_plotSurface->GetYAxis2());
 
 
 	if (!keepAxis)
@@ -909,14 +953,14 @@ void wxDVStatisticsCtrl::RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos 
 
 		if (m_selectedChannelIndices[otherAxisIndex]->size() == 0)
 		{
-			m_plotSurface->SetYAxis1(NULL, pPos);
-			m_plotSurface->SetYAxis2(NULL, pPos);
+			m_plotSurface->SetYAxis1(NULL);
+			m_plotSurface->SetYAxis2(NULL);
 		}
 		else
 		{
 			//If we only have one Y axis, we must use the left y axis.
 			//Code in wpplotsurface2D uses this assumption.
-			if (axisThatWasUsed == m_plotSurface->GetYAxis1(pPos))
+			if (axisThatWasUsed == m_plotSurface->GetYAxis1())
 			{
 				std::vector<int> *temp = m_selectedChannelIndices[graphIndex];
 				m_selectedChannelIndices[graphIndex] = m_selectedChannelIndices[otherAxisIndex];
@@ -927,13 +971,13 @@ void wxDVStatisticsCtrl::RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos 
 				{
 					m_plotSurface->RemovePlot(m_plots[(*m_selectedChannelIndices[graphIndex])[i]]);
 					m_plotSurface->AddPlot(m_plots[(*m_selectedChannelIndices[graphIndex])[i]],
-						wxPLPlotCtrl::X_BOTTOM, wxPLPlotCtrl::Y_LEFT, pPos);
+						wxPLPlotCtrl::X_BOTTOM, wxPLPlotCtrl::Y_LEFT);
 				}
 
-				m_plotSurface->GetYAxis1(pPos)->SetLabel(m_plots[(*m_selectedChannelIndices[graphIndex])[0]]->GetDataSet()->GetUnits());
-				AutoscaleYAxis(m_plotSurface->GetYAxis1(pPos), *m_selectedChannelIndices[graphIndex], true);
+				m_plotSurface->GetYAxis1()->SetLabel(m_plots[(*m_selectedChannelIndices[graphIndex])[0]]->GetDataSet()->GetUnits());
+				AutoscaleYAxis(m_plotSurface->GetYAxis1(), *m_selectedChannelIndices[graphIndex], true);
 			}
-			m_plotSurface->SetYAxis2(NULL, pPos);
+			m_plotSurface->SetYAxis2(NULL);
 		}
 	}
 	else
@@ -945,13 +989,12 @@ void wxDVStatisticsCtrl::RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos 
 	Invalidate();
 }
 
-void wxDVStatisticsCtrl::ClearAllChannelSelections(wxPLPlotCtrl::PlotPos pPos)
+void wxDVStatisticsCtrl::ClearAllChannelSelections()
 {
-	m_dataSelector->ClearColumn(int(pPos));
+	m_dataSelector->ClearColumn(1);
 
 	int graphIndex = 0;
-	if (pPos == wxPLPlotCtrl::PLOT_BOTTOM)
-		graphIndex += 2;
+
 	for (int i = graphIndex; i<graphIndex + 2; i++)
 	{
 		for (size_t j = 0; j<m_selectedChannelIndices[i]->size(); j++)
@@ -961,27 +1004,22 @@ void wxDVStatisticsCtrl::ClearAllChannelSelections(wxPLPlotCtrl::PlotPos pPos)
 		m_selectedChannelIndices[i]->clear();
 	}
 
-	m_plotSurface->SetYAxis1(NULL, pPos);
-	m_plotSurface->SetYAxis2(NULL, pPos);
+	m_plotSurface->SetYAxis1(NULL);
+	m_plotSurface->SetYAxis2(NULL);
 
-	RefreshDisabledCheckBoxes(pPos);
+	RefreshDisabledCheckBoxes();
 	Invalidate();
 }
 
 void wxDVStatisticsCtrl::RefreshDisabledCheckBoxes()
 {
-	RefreshDisabledCheckBoxes(wxPLPlotCtrl::PLOT_TOP);
-}
-
-void wxDVStatisticsCtrl::RefreshDisabledCheckBoxes(wxPLPlotCtrl::PlotPos pPos)
-{
 	wxString axis1Label = NO_UNITS;
 	wxString axis2Label = NO_UNITS;
 
-	if (m_plotSurface->GetYAxis1(pPos))
-		axis1Label = m_plotSurface->GetYAxis1(pPos)->GetLabel();
-	if (m_plotSurface->GetYAxis2(pPos))
-		axis2Label = m_plotSurface->GetYAxis2(pPos)->GetLabel();
+	if (m_plotSurface->GetYAxis1())
+		axis1Label = m_plotSurface->GetYAxis1()->GetLabel();
+	if (m_plotSurface->GetYAxis2())
+		axis2Label = m_plotSurface->GetYAxis2()->GetLabel();
 
 	if (axis1Label != NO_UNITS
 		&& axis2Label != NO_UNITS
@@ -989,7 +1027,7 @@ void wxDVStatisticsCtrl::RefreshDisabledCheckBoxes(wxPLPlotCtrl::PlotPos pPos)
 	{
 		for (int i = 0; i<m_dataSelector->Length(); i++)
 		{
-			m_dataSelector->Enable(i, pPos, axis1Label == m_plots[i]->GetDataSet()->GetUnits()
+			m_dataSelector->Enable(i, wxPLPlotCtrl::PLOT_TOP, axis1Label == m_plots[i]->GetDataSet()->GetUnits()
 				|| axis2Label == m_plots[i]->GetDataSet()->GetUnits());
 		}
 	}
@@ -997,7 +1035,7 @@ void wxDVStatisticsCtrl::RefreshDisabledCheckBoxes(wxPLPlotCtrl::PlotPos pPos)
 	{
 		for (int i = 0; i<m_dataSelector->Length(); i++)
 		{
-			m_dataSelector->Enable(i, pPos, true);
+			m_dataSelector->Enable(i, wxPLPlotCtrl::PLOT_TOP, true);
 		}
 	}
 }
@@ -1014,7 +1052,7 @@ void wxDVStatisticsCtrl::SetSelectedNames(const wxString& names)
 
 void wxDVStatisticsCtrl::SetSelectedNamesForColIndex(const wxString& names, int col)
 {
-	ClearAllChannelSelections(wxPLPlotCtrl::PlotPos(col));
+	ClearAllChannelSelections();
 
 	wxStringTokenizer tkz(names, ";");
 
@@ -1024,13 +1062,13 @@ void wxDVStatisticsCtrl::SetSelectedNamesForColIndex(const wxString& names, int 
 
 		int row = m_dataSelector->SelectRowWithNameInCol(token, col);
 		if (row != -1)
-			AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos(col), row);
+			AddGraphAfterChannelSelection(row);
 	}
 }
 
 void wxDVStatisticsCtrl::SelectDataSetAtIndex(int index)
 {
 	m_dataSelector->SelectRowInCol(index, 0);
-	AddGraphAfterChannelSelection(wxPLPlotCtrl::PLOT_TOP, index);
+	AddGraphAfterChannelSelection(index);
 }
 

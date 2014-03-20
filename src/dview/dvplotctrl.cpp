@@ -54,6 +54,7 @@ wxDVPlotCtrl::wxDVPlotCtrl(wxWindow* parent, wxWindowID id,
 	m_monthlyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, MONTHLY_TIME_SERIES, AVERAGE);
 	m_dMap = new wxDVDMapCtrl(m_plotNotebook, wxID_ANY);
 	m_profilePlots = new wxDVProfileCtrl(m_plotNotebook, wxID_ANY);
+	m_statisticsPlot = new wxDVStatisticsCtrl(m_plotNotebook, wxID_ANY);
 	m_pnCdf = new wxDVPnCdfCtrl(m_plotNotebook, wxID_ANY);
 	m_durationCurve = new wxDVDCCtrl(m_plotNotebook, wxID_ANY);
 	m_scatterPlot = new wxDVScatterPlotCtrl(m_plotNotebook, wxID_ANY);
@@ -100,6 +101,7 @@ void wxDVPlotCtrl::DisplayTabs()
 	if (MinTimeStep < 24.0) { m_plotNotebook->AddPage(m_dailyTimeSeries, _("Daily"), /*wxBITMAP_PNG_FROM_DATA( time ), */false); }
 	if (MinTimeStep < 672.0) { m_plotNotebook->AddPage(m_monthlyTimeSeries, _("Monthly"), /*wxBITMAP_PNG_FROM_DATA( time ), */false); }
 	m_plotNotebook->AddPage(m_profilePlots, _("Profiles"), /*wxBITMAP_PNG_FROM_DATA( calendar ), */false);
+	m_plotNotebook->AddPage(m_statisticsPlot, _("Statistics"), /*wxBITMAP_PNG_FROM_DATA( dmap ), */false);
 	m_plotNotebook->AddPage(m_dMap, _("Heat Map"), /*wxBITMAP_PNG_FROM_DATA( dmap ), */false);
 	m_plotNotebook->AddPage(m_scatterPlot, _("Scatter"), /*wxBITMAP_PNG_FROM_DATA( scatter ), */false);
 	m_plotNotebook->AddPage(m_pnCdf, _("PDF / CDF"), /*wxBITMAP_PNG_FROM_DATA( barchart ), */false);
@@ -120,7 +122,8 @@ void wxDVPlotCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, b
 	m_monthlyTimeSeries->AddDataSet(d, group, update_ui);
 	m_dMap->AddDataSet(d, group, update_ui);
 	m_profilePlots->AddDataSet(d, group, update_ui);
-	m_pnCdf->AddDataSet(d, group, update_ui); 
+	m_statisticsPlot->AddDataSet(d, group, update_ui);
+	m_pnCdf->AddDataSet(d, group, update_ui);
 	m_durationCurve->AddDataSet(d, group, update_ui);
 	m_scatterPlot->AddDataSet(d, group, update_ui);
 }
@@ -133,6 +136,7 @@ void wxDVPlotCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 	m_monthlyTimeSeries->RemoveDataSet(d);
 	m_dMap->RemoveDataSet(d);
 	m_profilePlots->RemoveDataSet(d);
+	m_statisticsPlot->RemoveDataSet(d);
 	m_pnCdf->RemoveDataSet(d);
 	m_durationCurve->RemoveDataSet(d);
 	m_scatterPlot->RemoveDataSet(d);
@@ -148,6 +152,7 @@ void wxDVPlotCtrl::RemoveAllDataSets()
 	m_monthlyTimeSeries->RemoveAllDataSets();
 	m_dMap->RemoveAllDataSets();
 	m_profilePlots->RemoveAllDataSets();
+	m_statisticsPlot->RemoveAllDataSets();
 	m_pnCdf->RemoveAllDataSets();
 	m_durationCurve->RemoveAllDataSets();
 	m_scatterPlot->RemoveAllDataSets();
@@ -221,6 +226,11 @@ wxDVPlotCtrlSettings wxDVPlotCtrl::GetPerspective()
 	settings.SetProperty(wxT("profileAnnualSelected"), m_profilePlots->IsMonthIndexSelected(12));
 
 	settings.SetProperty(wxT("profileSelectedNames"), m_profilePlots->GetDataSelectionList()->GetSelectedNamesInCol(0));
+
+	//***Statistics Tab Properties***
+	settings.SetProperty(wxT("tsAxisMin"), m_statisticsPlot->GetViewMin());
+	settings.SetProperty(wxT("tsAxisMax"), m_statisticsPlot->GetViewMax());
+	settings.SetProperty(wxT("tsSelectedNames"), m_statisticsPlot->GetDataSelectionList()->GetSelectedNamesInCol(0));
 
 	//***PDF CDF Tab Properties***
 	settings.SetProperty(wxT("pnCdfCurrentName"), m_pnCdf->GetCurrentDataName());
@@ -313,6 +323,9 @@ void wxDVPlotCtrl::SetPerspective(wxDVPlotCtrlSettings& settings)
 
 	m_profilePlots->SetSelectedNames(settings.GetProperty(wxT("profileSelectedNames")));
 
+	//***MonthlyTimeSeries Properties***
+	m_statisticsPlot->SetSelectedNames(settings.GetProperty(wxT("tsSelectedNames")));
+
 
 	//***PDF CDF Tab Properties***
 	long normalize;
@@ -362,6 +375,7 @@ void wxDVPlotCtrl::SelectDataIndex(int index, bool allTabs)
 	m_monthlyTimeSeries->SelectDataSetAtIndex(index);
 	m_dMap->SelectDataSetAtIndex(index);
 	m_profilePlots->SelectDataSetAtIndex(index);
+	m_statisticsPlot->SelectDataSetAtIndex(index);
 	if (allTabs)
 	{
 		m_pnCdf->SelectDataSetAtIndex(index);
@@ -393,6 +407,9 @@ void wxDVPlotCtrl::SelectDataIndexOnTab(int index, int tab)
 		break;
 	case TAB_PROFILE:
 		m_profilePlots->SelectDataSetAtIndex(index);
+		break;
+	case TAB_STATS:
+		m_statisticsPlot->SelectDataSetAtIndex(index);
 		break;
 	case TAB_PDF:
 		m_pnCdf->SelectDataSetAtIndex(index);
@@ -469,6 +486,9 @@ void wxDVPlotCtrl::SelectDataOnBlankTabs()
 
 	if (m_profilePlots->GetDataSelectionList()->GetSelectedNamesInCol(0).size() == 0)
 		m_profilePlots->SelectDataSetAtIndex(0);
+
+	if (m_statisticsPlot != 0 && m_statisticsPlot->GetDataSelectionList()->GetSelectedNamesInCol(0).size() == 0)
+		m_statisticsPlot->SelectDataSetAtIndex(0);
 
 	if ( m_dataSets[0]->Length() <= 8760)
 	{

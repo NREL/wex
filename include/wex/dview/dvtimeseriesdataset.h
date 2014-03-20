@@ -111,6 +111,7 @@ public:
 	StatisticsPoint At(size_t i) const;
 	size_t Length() const;
 	double GetTimeStep() const;
+	double GetOffset() const;
 	wxString GetSeriesTitle() const;
 	wxString GetUnits() const;
 

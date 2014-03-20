@@ -18,6 +18,7 @@
 #include "wex/dview/dvdcctrl.h"
 #include "wex/dview/dvscatterplotctrl.h"
 #include "wex/dview/dvplotctrlsettings.h"
+#include "wex/dview/dvstatisticsctrl.h"
 
 class wxMetroNotebook;
 
@@ -40,7 +41,7 @@ public:
 	wxDVPlotCtrlSettings GetPerspective();
 	void SetPerspective( wxDVPlotCtrlSettings& settings);
 
-	enum { TAB_TS = 0, TAB_HTS, TAB_DTS, TAB_MTS, TAB_DMAP, TAB_PROFILE, TAB_PDF, TAB_DC, TAB_SCATTER };
+	enum { TAB_TS = 0, TAB_HTS, TAB_DTS, TAB_MTS, TAB_DMAP, TAB_PROFILE, TAB_STATS, TAB_PDF, TAB_DC, TAB_SCATTER };
 
 	void SelectTabIndex(int index);
 	void SelectDataIndex(int index, bool allTabs = false);
@@ -64,10 +65,10 @@ private:
 	wxDVTimeSeriesCtrl *m_monthlyTimeSeries;
 	wxDVDMapCtrl *m_dMap;
 	wxDVProfileCtrl *m_profilePlots;
+	wxDVStatisticsCtrl *m_statisticsPlot;
 	wxDVPnCdfCtrl *m_pnCdf;
 	wxDVDCCtrl *m_durationCurve;
 	wxDVScatterPlotCtrl *m_scatterPlot;
-
 
 DECLARE_EVENT_TABLE()
 };
