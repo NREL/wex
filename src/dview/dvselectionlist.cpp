@@ -137,12 +137,12 @@ int wxDVSelectionListCtrl::SelectRowWithNameInCol(const wxString& name, int col)
 	return -1;
 }
 
-void wxDVSelectionListCtrl::SelectRowInCol(int row, int col)
+void wxDVSelectionListCtrl::SelectRowInCol(int row, int col, bool value)
 {
 	if ( col < 0 || col >= NMAXCOLS || col >= m_numCols ) return;
 	if ( row < 0 || row >= m_itemList.size() ) return;
 
-	m_itemList[row]->value[ col ] = true;
+	m_itemList[row]->value[ col ] = value;
 	
 	HandleRadio(row,col);	
 	HandleLineColour(row);
@@ -234,6 +234,7 @@ void wxDVSelectionListCtrl::ExpandAll()
 {
 	m_collapsedGroups.clear();
 	Invalidate();
+	Refresh();
 }
 
 void wxDVSelectionListCtrl::ExpandSelections()
@@ -251,6 +252,7 @@ void wxDVSelectionListCtrl::ExpandSelections()
 	}
 
 	Invalidate();
+	Refresh();
 }
 
 void wxDVSelectionListCtrl::CollapseAll()
@@ -260,6 +262,7 @@ void wxDVSelectionListCtrl::CollapseAll()
 		m_collapsedGroups.Add( m_groups[i].label );
 
 	Invalidate();
+	Refresh();
 }
 
 void wxDVSelectionListCtrl::SetUngroupedLabel( const wxString &l )
@@ -493,6 +496,7 @@ void wxDVSelectionListCtrl::OnLeftDown(wxMouseEvent &evt)
 				m_collapsedGroups.Add( m_groups[g].label );
 
 			Invalidate();
+			Refresh();
 			return;
 		}
 

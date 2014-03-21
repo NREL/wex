@@ -42,7 +42,7 @@ public:
 
 	void ClearColumn(int col);
 	int SelectRowWithNameInCol(const wxString& name, int col = 0); //Returns row.
-	void SelectRowInCol(int row, int col = 0);
+	void SelectRowInCol(int row, int col = 0, bool value = true );
 	void Enable(int row, int col, bool enable);
 	bool IsRowSelected(int row, int start_col = 0);
 	bool IsSelected(int row, int col);
