@@ -37,6 +37,7 @@ public:
 #include "wex/plot/plscatterplot.h"
 
 #include "wex/dview/dvplotctrl.h"
+#include "wex/dview/dvselectionlist.h"
 
 #include "wex/codeedit.h"
 #include "wex/lkscript.h"
@@ -52,6 +53,26 @@ public:
 
 #include "wex/uiform.h"
 #include "wex/snaplay.h"
+
+void TestDVSelectionCtrl()
+{
+	wxFrame *frame = new wxFrame( 0, wxID_ANY, wxT("wxDVSelectionCtrl in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(250,510) );
+	wxDVSelectionListCtrl *sel = new wxDVSelectionListCtrl( frame, wxID_ANY, 
+		2, wxDefaultPosition, wxDefaultSize, wxDVSEL_RADIO_FIRST_COL );
+	sel->SetBackgroundColour( *wxWHITE );
+	//sel->SetFont( *wxSWISS_FONT );
+
+	for( int gg=1;gg<=3;gg++)
+		for( size_t i=0;i<5;i++ )
+			sel->Append( wxString::Format("Item %d", (int)i+1) , wxString::Format("Group %d", gg ) );
+
+	sel->Append("Ungrouped A" );
+	sel->Append("Ungrouped B" );
+	sel->Append("Ungrouped C" );
+
+	frame->Show();
+
+}
 
 void TestSnapLayout( wxWindow *parent )
 {
@@ -343,7 +364,9 @@ public:
 
 		//TestPLPlot( 0 );
 
-		TestSnapLayout( 0 );
+		//TestSnapLayout( 0 );
+
+		TestDVSelectionCtrl();
 
 
 		/*

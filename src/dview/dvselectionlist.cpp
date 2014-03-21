@@ -2,6 +2,13 @@
 
 #include "wex/dview/dvselectionlist.h"
 
+#include "wex/icons/cirplus_12.cpng"
+#include "wex/icons/cirminus_12.cpng"
+
+enum { ID_popup_first = wxID_HIGHEST+941,
+	ID_EXPAND_ALL, ID_EXPAND_SELECTIONS, ID_COLLAPSE_ALL,
+	ID_popup_last };
+
 
 DEFINE_EVENT_TYPE(wxEVT_DVSELECTIONLIST)
 	
@@ -10,22 +17,26 @@ BEGIN_EVENT_TABLE( wxDVSelectionListCtrl, wxScrolledWindow )
 	EVT_ERASE_BACKGROUND(  wxDVSelectionListCtrl::OnErase     )
 	EVT_PAINT(             wxDVSelectionListCtrl::OnPaint     )
 	EVT_LEFT_DOWN(         wxDVSelectionListCtrl::OnLeftDown  )
+	EVT_RIGHT_DOWN(        wxDVSelectionListCtrl::OnRightDown )
 	EVT_MOTION(            wxDVSelectionListCtrl::OnMouseMove )
 	EVT_LEAVE_WINDOW(      wxDVSelectionListCtrl::OnLeave     )
+	EVT_MENU_RANGE( ID_popup_first, ID_popup_last, wxDVSelectionListCtrl::OnPopupMenu )
 END_EVENT_TABLE()
 
 wxDVSelectionListCtrl::wxDVSelectionListCtrl( wxWindow* parent, wxWindowID id, 
-	int num_cols, bool radio_first_col,
-	const wxPoint& pos, const wxSize& size )
-	: wxScrolledWindow( parent, id, pos, size, wxCLIP_CHILDREN )
+	int num_cols,
+	const wxPoint& pos, const wxSize& size,
+	unsigned long style )
+	: wxScrolledWindow( parent, id, pos, size, wxCLIP_CHILDREN|wxBORDER_NONE ),
+		m_style( style ),
+		m_ungroupedLabel( "Others" )
 {
 	SetBackgroundStyle(::wxBG_STYLE_CUSTOM );
-	
+		
 	if (num_cols < 1) num_cols = 1;
 	if (num_cols >= NMAXCOLS) num_cols = NMAXCOLS-1;
 
 	m_numCols = num_cols;
-	m_radioFirstCol = radio_first_col;
 
 	m_lastEventRow = 0;
 	m_lastEventCol = 0;
@@ -47,7 +58,7 @@ void wxDVSelectionListCtrl::FreeRowItems()
 		delete *it;
 
 	m_itemList.clear();
-	m_orderedItems.clear();
+	m_groups.clear();
 }
 
 int wxDVSelectionListCtrl::Append(const wxString& name, const wxString& group)
@@ -84,6 +95,7 @@ void wxDVSelectionListCtrl::RemoveAll()
 {
 	DeAssignAll();
 	FreeRowItems();
+	Organize();
 	Invalidate();
 }
 
@@ -218,56 +230,97 @@ int wxDVSelectionListCtrl::GetNumSelected( int col )
 	return count;
 }
 
-void wxDVSelectionListCtrl::Organize()
+void wxDVSelectionListCtrl::ExpandAll()
 {
-	m_orderedItems.clear();
-	if (m_itemList.size() < 1) return;
+	m_collapsedGroups.clear();
+	Invalidate();
+}
 
-	m_orderedItems.reserve( m_itemList.size() );
-
-	wxArrayString groups;
-	for (size_t i=0;i<m_itemList.size();i++)
-		if ( !m_itemList[i]->group.IsEmpty() 
-			&& groups.Index( m_itemList[i]->group ) == wxNOT_FOUND)
-			groups.Add( m_itemList[i]->group );
-
-	for (size_t i=0;i<groups.Count();i++)
+void wxDVSelectionListCtrl::ExpandSelections()
+{
+	m_collapsedGroups.clear();
+	for( size_t g=0;g<m_groups.size();g++ )
 	{
-		for (size_t k=0;k<m_itemList.size();k++)
-			if ( m_itemList[k]->group == groups[i] )
-				m_orderedItems.push_back( m_itemList[k] );
+		bool has_sel = false;
+		for( size_t i=0;i<m_groups[g].items.size();i++ )
+			if ( IsRowSelected( m_groups[g].items[i]->row_index ) )
+				has_sel = true;
+
+		if ( !has_sel )
+			m_collapsedGroups.Add( m_groups[g].label );
 	}
 
+	Invalidate();
+}
+
+void wxDVSelectionListCtrl::CollapseAll()
+{
+	m_collapsedGroups.clear();
+	for( size_t i=0;i<m_groups.size();i++ )
+		m_collapsedGroups.Add( m_groups[i].label );
+
+	Invalidate();
+}
+
+void wxDVSelectionListCtrl::SetUngroupedLabel( const wxString &l )
+{
+	m_ungroupedLabel = l;
+	Refresh();
+}
+
+void wxDVSelectionListCtrl::Organize()
+{
+	m_groups.clear();
+	if (m_itemList.size() == 0) return;
+
+	for (size_t i=0;i<m_itemList.size();i++)
+		if ( !m_itemList[i]->group.IsEmpty() 
+			&& FindGroup( m_itemList[i]->group ) < 0 )
+			m_groups.push_back( group( m_itemList[i]->group ) );
+		
+	for (size_t i=0;i<m_groups.size();i++)
+	{
+		for (size_t k=0;k<m_itemList.size();k++)
+			if ( m_itemList[k]->group == m_groups[i].label )
+				m_groups[i].items.push_back( m_itemList[k] );
+	}
+
+	group ungrouped( m_ungroupedLabel );
+	ungrouped.others = true;
 	for (size_t i=0;i<m_itemList.size();i++)
 		if ( m_itemList[i]->group.IsEmpty() )
-			m_orderedItems.push_back( m_itemList[i] );
+			ungrouped.items.push_back( m_itemList[i] );
+
+	m_groups.push_back( ungrouped );
 }
 
 void wxDVSelectionListCtrl::RecalculateBestSize()
 {
 	wxClientDC dc(this);
-	dc.SetFont( *wxNORMAL_FONT );
+	dc.SetFont( GetFont() );
 
 	// calculate desired geometry here
 	int width = 0;
 	int height = m_itemHeight;
 	wxString last_group;
-	for (size_t i=0;i<m_orderedItems.size();i++)
+	for (size_t g=0;g<m_groups.size();g++)
 	{
-		height += m_itemHeight; // each one is 15 units high
-		if (last_group != m_orderedItems[i]->group)
-		{
-			wxSize sz = dc.GetTextExtent( m_orderedItems[i]->group );
-			if (sz.GetWidth() > width)
-				width = sz.GetWidth();
-
-			height += m_itemHeight; // additional height for group label
-			last_group = m_orderedItems[i]->group;
-		}
-
-		wxSize sz = dc.GetTextExtent( m_orderedItems[i]->label );
+		height += m_groupHeight;
+				
+		wxSize sz = dc.GetTextExtent( m_groups[g].label );
 		if (sz.GetWidth() > width)
 			width = sz.GetWidth();
+
+		if ( m_collapsedGroups.Index( m_groups[g].label ) == wxNOT_FOUND )
+		{
+			for( size_t i=0;i<m_groups[g].items.size();i++ )
+			{
+				height += m_itemHeight; // reserve height for each item in the group
+				wxSize sz = dc.GetTextExtent( m_groups[g].items[i]->label );
+				if (sz.GetWidth() > width)
+					width = sz.GetWidth();
+			}
+		}
 	}
 	
 	width += 4*m_xOffset + m_numCols*(m_boxSize+3);
@@ -307,11 +360,19 @@ void wxDVSelectionListCtrl::OnErase(wxEraseEvent &evt)
 
 void wxDVSelectionListCtrl::OnPaint(wxPaintEvent &evt)
 {
+static wxBitmap s_cirMinus, s_cirPlus;
+	if ( !s_cirMinus.IsOk() || !s_cirPlus.IsOk() )
+	{
+		s_cirMinus = wxBITMAP_PNG_FROM_DATA( cirminus_12 );
+		s_cirPlus = wxBITMAP_PNG_FROM_DATA( cirplus_12 );
+	}
+
 	wxAutoBufferedPaintDC dc(this);
 	DoPrepareDC(dc);
 
 	int cwidth = 0, cheight = 0;
 	GetClientSize( &cwidth, &cheight );
+
 	
 	// paint the background.
 	wxColour bg = GetBackgroundColour();
@@ -322,73 +383,97 @@ void wxDVSelectionListCtrl::OnPaint(wxPaintEvent &evt)
 		&windowRect.x, &windowRect.y);
 	dc.DrawRectangle(windowRect);
 
-	wxFont font_normal = *wxNORMAL_FONT;
-	wxFont font_bold = *wxNORMAL_FONT;
+	wxFont font_normal( GetFont() );
+	wxFont font_bold( font_normal );
 	font_bold.SetWeight( wxFONTWEIGHT_BOLD );
-
-	//font_normal.SetPointSize( font_normal.GetPointSize() - 1 );
-	//font_bold.SetPointSize( font_bold.GetPointSize() - 1 );
 	
-	int y = m_yOffset;
-	wxString last_group;
-	for (size_t i=0;i<m_orderedItems.size();i++)
+
+	int y = 0;
+	for( size_t g=0;g<m_groups.size();g++ )
 	{
-		if ( last_group != m_orderedItems[i]->group )
+		if ( m_groups[g].items.size() == 0 )
+			continue;
+
+		if ( !m_groups[g].others || m_groups.size() > 1 )
 		{
+			m_groups[g].geom = wxRect( 0, y, windowRect.width, m_groupHeight );
 			dc.SetFont( font_bold );
-			dc.DrawText( m_orderedItems[i]->group, m_xOffset/3, 
-				y + m_itemHeight/2-dc.GetCharHeight()/2-1 );
-			y += m_itemHeight;
-			last_group = m_orderedItems[i]->group;
-		}
+			dc.SetPen( wxPen(bg,1) );
+			dc.SetBrush( wxBrush( wxColour(50,50,50), wxSOLID ) );
+			dc.DrawRectangle( m_groups[g].geom );
+			dc.SetTextForeground( *wxWHITE );
+			wxBitmap &bit = (m_collapsedGroups.Index( m_groups[g].label ) >= 0 ) ? s_cirPlus : s_cirMinus;
+			dc.DrawBitmap( bit, 3, y+m_groupHeight/2-bit.GetHeight()/2 );		
+			dc.DrawText( m_groups[g].label, 3 + bit.GetWidth() + 3, 
+				y + m_groupHeight/2-dc.GetCharHeight()/2-1 );
+			y += m_groupHeight;
+		}			
 
-		int x = m_xOffset;
-		int yoff = (m_itemHeight-m_boxSize)/2;
-		int radius = m_boxSize / 2;
+		if ( m_collapsedGroups.Index( m_groups[g].label ) >= 0 )
+			continue;
 		
-		if ( IsRowSelected(m_orderedItems[i]->row_index, m_radioFirstCol ? 1 : 0) )
+		std::vector<row_item*> &items = m_groups[g].items;
+		for (size_t i=0;i<items.size();i++)
 		{
-			dc.SetBrush( wxBrush( m_orderedItems[i]->color, wxSOLID ) );
-			dc.DrawRectangle( m_xOffset-4, 
-				y+1, 
-				m_numCols*m_boxSize + (m_numCols-1)*yoff+8, 
-				m_itemHeight-2 );
-		}
+			int x = m_xOffset;
+			int yoff = (m_itemHeight-m_boxSize)/2;
+			int radius = m_boxSize / 2;
+		
+		
+			if ( !(m_style&wxDVSEL_NO_COLOURS)
+				&& IsRowSelected(items[i]->row_index, 
+						(m_style&wxDVSEL_RADIO_FIRST_COL) ? 1 : 0) )
+			{
+				dc.SetPen( wxPen(bg,1) );
+				dc.SetBrush( wxBrush( items[i]->color, wxSOLID ) );
+				dc.DrawRectangle( m_xOffset-4, 
+					y, 
+					m_numCols*m_boxSize + (m_numCols-1)*yoff+8, 
+					m_itemHeight );
+			}
 
-		for ( size_t c=0; c<(size_t)m_numCols; c++ )
-		{
-			wxColour color =  m_orderedItems[i]->enable[ c ] ? *wxBLACK : *wxLIGHT_GREY;
-			m_orderedItems[i]->geom[c] = wxRect( x, y+yoff, m_boxSize, m_boxSize ); // save geometry to speed up mouse clicks
+			for ( size_t c=0; c<(size_t)m_numCols; c++ )
+			{
+				wxColour color =  items[i]->enable[ c ] ? *wxBLACK : *wxLIGHT_GREY;
+				items[i]->geom[c] = wxRect( x, y+yoff, m_boxSize, m_boxSize ); // save geometry to speed up mouse clicks
 			
-			dc.SetBrush( wxBrush( color, wxSOLID ) );
-			if(m_radioFirstCol && c == 0)
-			{
-				dc.DrawCircle(x + radius, y + radius + yoff, radius);
-			}
-			else
-			{
-				dc.DrawRectangle( x, y+yoff, m_boxSize, m_boxSize );
-			}
+				dc.SetBrush( *wxWHITE_BRUSH );
+				dc.SetPen( wxPen( color, 1 ) );
+
+				if( (m_style&wxDVSEL_RADIO_FIRST_COL) && c == 0 ) 
+					dc.DrawCircle(x + radius, y + radius + yoff, radius);
+				else 
+					dc.DrawRectangle( x, y+yoff, m_boxSize, m_boxSize );
 			
-			dc.SetBrush( wxBrush( *wxWHITE, m_orderedItems[i]->value[ c ] ? wxTRANSPARENT : wxSOLID ) );
-			if(m_radioFirstCol && c == 0)
-			{
-				dc.DrawCircle(x + radius, y + radius + yoff, radius - 2);
-			}
-			else
-			{
-				dc.DrawRectangle( x+2, y+yoff+2, m_boxSize-4, m_boxSize-4 );
+				if ( items[i]->value[ c ] )
+				{
+					dc.SetBrush( *wxBLACK_BRUSH );
+					dc.SetPen( *wxBLACK_PEN );
+					if( (m_style&wxDVSEL_RADIO_FIRST_COL) && c == 0)
+						dc.DrawCircle(x + radius, y + radius + yoff, radius - 2);
+					else
+						dc.DrawRectangle( x+2, y+yoff+2, m_boxSize-4, m_boxSize-4 );
+				}
+
+				x += m_boxSize + yoff;
 			}
 
-			x += m_boxSize + yoff;
+			dc.SetFont( font_normal );
+			dc.SetTextForeground( *wxBLACK );
+			dc.DrawText( items[i]->label, x+2, y + m_itemHeight/2-dc.GetCharHeight()/2-1 );
+
+			y += m_itemHeight;
 		}
-
-		dc.SetFont( font_normal );
-		dc.SetTextForeground( *wxBLACK );
-		dc.DrawText( m_orderedItems[i]->label, x+2, y + m_itemHeight/2-dc.GetCharHeight()/2-1 );
-
-		y += m_itemHeight;
 	}
+}
+
+int wxDVSelectionListCtrl::FindGroup( const wxString &label )
+{
+	for( size_t g=0;g<m_groups.size();g++ )
+		if ( m_groups[g].label == label )
+			return (int) g;
+
+	return -1;
 }
 
 void wxDVSelectionListCtrl::OnLeftDown(wxMouseEvent &evt)
@@ -398,31 +483,73 @@ void wxDVSelectionListCtrl::OnLeftDown(wxMouseEvent &evt)
 	int mx = vsx+evt.GetX();
 	int my = vsy+evt.GetY();
 
-	for (size_t i=0;i<m_orderedItems.size();i++)
+	for( size_t g=0;g<m_groups.size();g++ )
 	{
-		for (size_t c=0;c<m_numCols;c++)
+		if ( m_groups[g].geom.Contains( mx, my ) )
 		{
-			if ( m_orderedItems[i]->geom[c].Contains( mx, my ) )
+			if ( m_collapsedGroups.Index( m_groups[g].label ) >= 0 )
+				m_collapsedGroups.Remove( m_groups[g].label );
+			else
+				m_collapsedGroups.Add( m_groups[g].label );
+
+			Invalidate();
+			return;
+		}
+
+		if ( m_collapsedGroups.Index( m_groups[g].label ) >= 0 )
+			continue;
+		
+		std::vector<row_item*> &items = m_groups[g].items;
+		for (size_t i=0;i<items.size();i++)
+		{
+			for (size_t c=0;c<m_numCols;c++)
 			{
-				if ( ! m_orderedItems[i]->enable[c] ) return;
+				if ( items[i]->geom[c].Contains( mx, my ) )
+				{
+					if ( ! items[i]->enable[c] ) return;
 
-				m_orderedItems[i]->value[c] = !m_orderedItems[i]->value[c];
+					items[i]->value[c] = !items[i]->value[c];
 								
-				m_lastEventRow = m_orderedItems[i]->row_index;
-				m_lastEventCol = c;
-				m_lastEventValue = m_orderedItems[i]->value[c];
+					m_lastEventRow = items[i]->row_index;
+					m_lastEventCol = c;
+					m_lastEventValue = items[i]->value[c];
 
-				HandleRadio( m_orderedItems[i]->row_index, c );
-				HandleLineColour( m_orderedItems[i]->row_index );
-				Refresh();
+					HandleRadio( items[i]->row_index, c );
+					HandleLineColour( items[i]->row_index );
+					Refresh();
 				
-				wxCommandEvent evt(wxEVT_DVSELECTIONLIST, GetId());
-				evt.SetEventObject(this);
-				GetEventHandler()->ProcessEvent(evt);
+					wxCommandEvent evt(wxEVT_DVSELECTIONLIST, GetId());
+					evt.SetEventObject(this);
+					GetEventHandler()->ProcessEvent(evt);
 				
-				return;
+					return;
+				}
 			}
 		}
+	}
+}
+
+void wxDVSelectionListCtrl::OnRightDown( wxMouseEvent &evt )
+{
+	if ( m_groups.size() > 1 )
+	{
+		wxMenu menu;
+		menu.Append( ID_EXPAND_ALL, "Expand all" );
+		menu.Append( ID_EXPAND_SELECTIONS, "Expand selections" );
+		menu.AppendSeparator();
+		menu.Append( ID_COLLAPSE_ALL, "Collapse all" );
+		PopupMenu( &menu );
+	}
+}
+
+void wxDVSelectionListCtrl::OnPopupMenu( wxCommandEvent &evt )
+{
+	switch( evt.GetId() )
+	{
+	case ID_EXPAND_ALL: ExpandAll(); break;
+	case ID_EXPAND_SELECTIONS: ExpandSelections(); break;
+	case ID_COLLAPSE_ALL: CollapseAll(); break;
+		break;
 	}
 }
 
@@ -458,7 +585,7 @@ void wxDVSelectionListCtrl::OnLeave(wxMouseEvent &evt)
 
 void wxDVSelectionListCtrl::HandleRadio( int r, int c )
 {
-	if ( c == 0 && m_radioFirstCol )
+	if ( c == 0 && (m_style&wxDVSEL_RADIO_FIRST_COL) )
 	{
 		for (size_t k=0;k<m_itemList.size();k++)
 		{

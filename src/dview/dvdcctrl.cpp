@@ -28,7 +28,7 @@ wxDVDCCtrl::wxDVDCCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos,
 	m_plotSurface->ShowLegend( false );
 	topSizer->Add(m_plotSurface, 1, wxEXPAND|wxALL, 10);
 
-	m_dataSelector = new wxDVSelectionListCtrl(this, wxID_DC_DATA_SELECTOR, 1, false);
+	m_dataSelector = new wxDVSelectionListCtrl(this, wxID_DC_DATA_SELECTOR, 1);
 	topSizer->Add(m_dataSelector, 0, wxEXPAND, 0);
 }
 

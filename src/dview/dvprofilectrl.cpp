@@ -227,7 +227,7 @@ wxDVProfileCtrl::wxDVProfileCtrl(wxWindow* parent, wxWindowID id, const wxPoint&
 	left_sizer->Add( monthSelector, 0, wxEXPAND, 0 );	
 	left_sizer->Add(graphsAndAxisLabel, 1, wxEXPAND, 0);
 
-	m_dataSelector = new wxDVSelectionListCtrl(this, ID_DATA_SELECTOR, 1, false); 
+	m_dataSelector = new wxDVSelectionListCtrl(this, ID_DATA_SELECTOR, 1); 
 
 	wxBoxSizer *main_sizer = new wxBoxSizer( wxHORIZONTAL );
 	main_sizer->Add( left_sizer, 1, wxALL|wxEXPAND, 0 );
