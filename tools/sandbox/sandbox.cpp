@@ -364,9 +364,9 @@ public:
 
 		//TestPLPlot( 0 );
 
-		//TestSnapLayout( 0 );
+		TestSnapLayout( 0 );
 
-		TestDVSelectionCtrl();
+		//TestDVSelectionCtrl();
 
 
 		/*

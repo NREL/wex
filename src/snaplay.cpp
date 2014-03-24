@@ -1,5 +1,6 @@
 #include <wx/dcbuffer.h>
 #include <wx/frame.h>
+#include <wx/log.h>
 
 #include <wex/snaplay.h>
 #include <wex/metro.h>
@@ -13,17 +14,19 @@ BEGIN_EVENT_TABLE( wxSnapLayout, wxScrolledWindow )
 	EVT_LEFT_UP( wxSnapLayout::OnLeftUp )
 	EVT_MOTION( wxSnapLayout::OnMotion )
 	EVT_MOUSE_CAPTURE_LOST( wxSnapLayout::OnCaptureLost )
+	EVT_LEAVE_WINDOW( wxSnapLayout::OnLeaveWindow )
 END_EVENT_TABLE()
 
 wxSnapLayout::wxSnapLayout( wxWindow *parent, int id, const wxPoint &pos, const wxSize &size )
 	: wxScrolledWindow( parent, id, pos, size, wxHSCROLL|wxVSCROLL|wxCLIP_CHILDREN )
 {
 	SetBackgroundStyle( wxBG_STYLE_PAINT );
-	m_space = 20;
 	m_active = 0;
 	m_handle = -1;
 	m_curtarget = 0;
 	m_transp = 0;
+	m_sizeHover = -1;
+	m_moveHover = -1;
 }
 
 wxSnapLayout::~wxSnapLayout()
@@ -44,8 +47,6 @@ void wxSnapLayout::Add( wxWindow *win, int width, int height )
 	l->req.x = width;
 	l->req.y = height;
 	l->rect = wxRect( 0, 0, 500, 300 );
-	l->row = -1;
-	l->col = -1;
 	l->highlight = false;
 	m_list.push_back( l );
 
@@ -108,10 +109,159 @@ void wxSnapLayout::ScrollTo( wxWindow *w )
 		Scroll( m_list[i]->rect.x, m_list[i]->rect.y );
 }
 
-#define LAYOUT(r,c) layout[m_list.size()*r+c]
+bool wxSnapLayout::CanPlace( size_t idx, int width, int height, int xplace, int yplace, int client_width )
+{
+	wxRect proposed( xplace, yplace, width-1, height-1 );
+	for( size_t i=0;i<idx;i++ )
+		if ( m_list[i]->active.Intersects( proposed ) )
+			return false;
+
+	
+	return ( proposed.x >= 0 && proposed.x + proposed.width < client_width );
+}
+
+void wxSnapLayout::Place( size_t icur, int cwidth )
+{	
+	layout_box &l = *m_list[icur];
+	wxSize sz( l.req.x <= 0 || l.req.y <= 0 ? l.win->GetBestSize() : l.req );
+	l.active.width = sz.x + m_space + m_space;
+	l.active.height = sz.y + m_space + m_space;
+	
+	int xx = 0, yy = 0;
+	if ( icur > 0 )
+	{
+		wxPoint best(0,99999);
+		bool placed = false;
+		for( size_t i=0;i<icur;i++ )
+		{
+			// can place below or to the right of the i'th widget?
+			wxPoint try1( m_list[i]->active.x + m_list[i]->active.width, m_list[i]->active.y );
+			if( CanPlace( icur, l.active.width, l.active.height, try1.x, try1.y, cwidth ) )
+			{
+				if ( !placed || try1.y < best.y )
+				{
+					best = try1;
+					placed = true;
+				}
+			}
+
+			wxPoint try2( m_list[i]->active.x, m_list[i]->active.y+m_list[i]->active.height );
+			if( CanPlace( icur, l.active.width, l.active.height, try2.x, try2.y, cwidth ) )
+			{
+				if ( !placed || try2.y < best.y )
+				{
+					best = try2;
+					placed = true;
+				}
+			}
+
+			wxPoint try3( m_list[i]->active.x+m_list[i]->active.width-l.active.width, m_list[i]->active.y+m_list[i]->active.height );
+			if ( CanPlace( icur, l.active.width, l.active.height, try3.x, try3.y, cwidth ) )
+			{
+				if ( !placed || try3.y < best.y )
+				{
+					best = try3;
+					placed = true;
+				}
+			}
+		}
+
+
+		// if we still haven't found a place, start a new row
+		// at the current y maximum
+		if ( !placed )
+		{
+			xx = 0;
+			yy = 0;
+			for( size_t i=0;i<icur;i++ )
+				if ( m_list[i]->active.y+m_list[i]->active.height > yy )
+					yy = m_list[i]->active.y+m_list[i]->active.height;
+
+		}
+		else
+		{
+			xx = best.x;
+			yy = best.y;
+		}
+		
+	}
+
+	l.active.x = xx;
+	l.active.y = yy;
+}
+
+void wxSnapLayout::AutoLayout2()
+{
+	// clear all the drop targets
+	m_targets.clear();
+
+	// get current scroll position, window size
+	int vsx, vsy;
+	GetViewStart( &vsx, &vsy );
+	vsx *= m_scrollRate;
+	vsy *= m_scrollRate;
+	wxSize client( GetClientSize() );
+
+	// place all the widgets
+	for( size_t i=0;i<m_list.size();i++ )
+		Place( i, client.x );
+
+	// setup widget rects and move all of them into place
+	for( size_t i=0;i<m_list.size();i++ )
+	{
+		layout_box &l = *m_list[i];
+
+		l.rect.x = l.active.x + m_space;
+		l.rect.y = l.active.y + m_space;
+		l.rect.width = l.active.width - m_space - m_space;
+		l.rect.height = l.active.height - m_space - m_space;
+
+		l.move_box = wxRect( l.rect.x, l.active.y, l.rect.width, m_space-1 );
+		l.size_nw = wxRect( l.active.x+1, l.active.y+1, m_space-2, m_space-2 );
+		l.size_sw = wxRect( l.active.x+1, l.active.y+l.active.height-m_space+1, m_space-2, m_space-2 );
+		l.size_ne = wxRect( l.active.x+l.active.width-m_space+1, l.active.y+1, m_space-2, m_space-2 );
+		l.size_se = wxRect( l.active.x+l.active.width-m_space+1, l.active.y+l.active.height-m_space+1, m_space-2, m_space-2 );
+
+		l.win->SetSize( l.rect.x-vsx,
+			l.rect.y-vsy,
+			l.rect.width,
+			l.rect.height );
+				
+		drop_target dt;
+		dt.index = i;
+		dt.target.x = l.active.x - m_space;
+		dt.target.y = l.active.y;
+		dt.target.width = m_space+m_space;
+		dt.target.height = l.active.height;
+		m_targets.push_back( dt );
+
+	}
+
+
+	size_t last = m_list.size()-1;
+	drop_target dt;
+	dt.index = m_list.size();
+	dt.target.x = m_list[last]->active.x+m_list[last]->active.width-m_space;
+	dt.target.y = m_list[last]->active.y;
+	dt.target.width = m_space+m_space;
+	dt.target.height = m_list[last]->active.height;
+	m_targets.push_back( dt );
+
+	// find the max extents and setup the scrollbars
+	size_t ymax = 0;
+	for( size_t i=0;i<m_list.size();i++ )
+		if ( m_list[i]->active.y + m_list[i]->active.height > ymax )
+			ymax = m_list[i]->active.y + m_list[i]->active.height;
+		
+	SetScrollbars( 1, 1, client.x, ymax, vsx/m_scrollRate, vsy/m_scrollRate );
+	SetScrollRate( m_scrollRate, m_scrollRate );
+}
 
 void wxSnapLayout::AutoLayout()
 {
+	AutoLayout2();
+	return;
+
 	m_targets.clear();
 
 	if ( m_list.size() == 0 ) return;
@@ -179,8 +329,6 @@ void wxSnapLayout::AutoLayout()
 		
 		l.win->Move( CalcScrolledPosition( wxPoint( l.rect.x, l.rect.y ) ) );
 		l.win->SetClientSize( l.rect.width, l.rect.height );
-		l.row = irow;
-		l.col = icol;
 
 		drop_target dt;
 		dt.index = idx;
@@ -209,18 +357,13 @@ wxSnapLayout::layout_box *wxSnapLayout::CheckActive( const wxPoint &p, int *hand
 	*handle = -1;
 	for( size_t i=0;i<m_list.size();i++ )
 	{
-		if ( m_list[i]->active.Contains( p ) )
+		layout_box &l = *m_list[i];
+		if ( l.active.Contains( p ) )
 		{
-			wxRect &r = m_list[i]->active;
-			if ( p.x < r.x+m_space && p.y < r.y+m_space )
-				*handle = NW;
-			else if ( p.x < r.x+m_space && p.y > r.y+r.height-m_space )
-				*handle = SW;
-			else if ( p.x > r.x+r.width-m_space && p.y < r.y+m_space )
-				*handle = NE;
-			else if ( p.x > r.x+r.width-m_space && p.y > r.y+r.height-m_space )
-				*handle = SE;
-
+			if ( l.size_ne.Contains( p ) ) *handle = NE;
+			else if ( l.size_nw.Contains( p ) ) *handle = NW;
+			else if ( l.size_se.Contains( p ) ) *handle = SE;
+			else if ( l.size_sw.Contains( p ) ) *handle = SW;
 			return m_list[i];
 		}
 	}
@@ -230,33 +373,42 @@ wxSnapLayout::layout_box *wxSnapLayout::CheckActive( const wxPoint &p, int *hand
 
 void wxSnapLayout::OnLeftDown( wxMouseEvent &evt )
 {
-	wxPoint p = CalcScrolledPosition( evt.GetPosition() );		
-	m_active = CheckActive( p, &m_handle );
+	int vsx, vsy;
+	GetViewStart(&vsx,&vsy);
+	int mx = m_scrollRate*vsx+evt.GetX();
+	int my = m_scrollRate*vsy+evt.GetY();
+
+	m_active = CheckActive( wxPoint(mx,my), &m_handle );
 	Refresh();
 	
 	if ( m_active )
 	{
 		switch( m_handle )
 		{
-		case SE:
-		case NW:
-			SetCursor( wxCURSOR_SIZENWSE ); break;
-		case SW:
-		case NE:
-			SetCursor( wxCURSOR_SIZENESW ); break;
-		default:
-			SetCursor( wxCURSOR_SIZING );
+		case SE: case NW: SetCursor( wxCURSOR_SIZENWSE ); break;
+		case SW: case NE: SetCursor( wxCURSOR_SIZENESW ); break;
+		default: SetCursor( wxCURSOR_SIZING );
 		}
 	}
 	else SetCursor( wxCURSOR_DEFAULT );
 
-	m_orig = ClientToScreen( evt.GetPosition() );
+	m_orig = ClientToScreen( wxPoint(mx,my) );
 
 	if( m_active && m_handle >= 0 )
 		ShowTransparency( m_active->rect );
 
 	if ( m_active != 0 && !HasCapture() )
 		CaptureMouse();
+}
+
+void wxSnapLayout::OnLeaveWindow( wxMouseEvent &evt )
+{
+	if ( m_sizeHover >= 0 || m_moveHover >= 0 )
+	{
+		m_sizeHover = -1;
+		m_moveHover = -1;
+		Refresh();
+	}
 }
 
 void wxSnapLayout::OnLeftUp( wxMouseEvent &evt )
@@ -274,11 +426,19 @@ void wxSnapLayout::OnLeftUp( wxMouseEvent &evt )
 	}
 	else if ( m_active != 0 && m_handle < 0 && m_curtarget != 0 )
 	{
-		std::vector<layout_box*>::iterator it = std::find( m_list.begin(), m_list.end(), m_active );
-		if ( it != m_list.end() )
+		int imoving = Find( m_active->win );
+		int itarget = m_curtarget->index;
+
+		if ( itarget != imoving
+			&& itarget != imoving + 1 )
 		{
-			m_list.erase( it );
-			m_list.insert( m_list.begin() + m_curtarget->index, m_active );
+			if ( itarget >= m_list.size() ) itarget = m_list.size()-1;
+
+			// swap
+			layout_box *save = m_list[itarget];
+			m_list[itarget] = m_list[imoving];
+			m_list[imoving] = save;
+			
 			AutoLayout();
 		}
 	}
@@ -294,15 +454,20 @@ void wxSnapLayout::OnLeftUp( wxMouseEvent &evt )
 
 void wxSnapLayout::OnMotion( wxMouseEvent &evt )
 {
-	wxPoint p = CalcScrolledPosition( evt.GetPosition() );
-	wxPoint diff = ClientToScreen( evt.GetPosition() ) - m_orig;
+	int vsx, vsy;
+	GetViewStart(&vsx,&vsy);
+	int mx = m_scrollRate*vsx+evt.GetX();
+	int my = m_scrollRate*vsy+evt.GetY();
+	wxPoint mpos(mx,my);
+
+	wxPoint diff = ClientToScreen( mpos ) - m_orig;
 	
 	if ( m_active && m_handle < 0 )
 	{
 		drop_target *last = m_curtarget;
 		m_curtarget = 0;
 		for( size_t i=0;i<m_targets.size();i++ )
-			if ( m_targets[i].target.Contains( p ) )
+			if ( m_targets[i].target.Contains( mpos ) )
 				m_curtarget = &m_targets[i];
 
 		wxRect r( m_active->rect );
@@ -349,6 +514,48 @@ void wxSnapLayout::OnMotion( wxMouseEvent &evt )
 
 		ShowTransparency( r );
 	}
+
+	if ( !m_active )
+	{
+		int oldmovehov = m_moveHover;
+		int oldsizehov = m_sizeHover;
+		m_moveHover = -1;
+		m_sizeHover = -1;
+		wxCursor curs(wxCURSOR_DEFAULT);
+		for( size_t i=0;i<m_list.size();i++ )
+		{
+			if ( m_list[i]->size_ne.Contains( mpos ) 
+				|| m_list[i]->size_sw.Contains( mpos ) )
+			{
+				curs = wxCURSOR_SIZENESW;
+				m_sizeHover = i;
+				break;
+			}
+
+			if ( m_list[i]->size_nw.Contains( mpos ) 
+				|| m_list[i]->size_se.Contains( mpos ) )
+			{
+				curs = wxCURSOR_SIZENWSE;
+				m_sizeHover = i;
+				break;
+			}
+
+			if ( m_list[i]->move_box.Contains( mpos ) )
+			{
+				curs = wxCURSOR_SIZING;
+				m_moveHover = i;
+				break;
+			}
+
+		}
+
+		if ( oldsizehov != m_sizeHover 
+			|| oldmovehov != m_moveHover )
+		{
+			SetCursor( curs );
+			Refresh();
+		}
+	}
 }
 
 void wxSnapLayout::OnCaptureLost( wxMouseCaptureLostEvent & )
@@ -378,20 +585,20 @@ void wxSnapLayout::OnPaint( wxPaintEvent & )
 	dc.Clear();
 	
 	/*
+	
 	dc.SetBrush( *wxTRANSPARENT_BRUSH );
 	dc.SetPen( *wxBLUE_PEN );
 
 	for( size_t i=0;i<m_list.size();i++)
 	{
 		dc.DrawRectangle( m_list[i]->active );
-		dc.DrawText( wxString::Format( "(%d) row %d col %d size: %d %d", i, 
-			m_list[i]->row, m_list[i]->col,
+		dc.DrawText( wxString::Format( "(%d) [ %d x %d ]", (int)i, 
 			m_list[i]->rect.width, m_list[i]->rect.height ), 
 			m_list[i]->active.x+1, m_list[i]->active.y+1);
 	}
+	
 	*/
 
-	
 	dc.SetPen( *wxTRANSPARENT_PEN );
 
 	dc.SetBrush( wxMetroTheme::Colour( wxMT_SELECT ) );
@@ -410,11 +617,33 @@ void wxSnapLayout::OnPaint( wxPaintEvent & )
 		dc.SetBrush( wxBrush( wxMetroTheme::Colour( wxMT_DIMHOVER ) ) );
 		dc.DrawRectangle( m_curtarget->target );
 	}
+
+	if ( m_sizeHover >= 0 )
+	{
+		dc.SetBrush( *wxLIGHT_GREY_BRUSH );
+		dc.DrawRectangle( m_list[m_sizeHover]->size_ne );
+		dc.DrawRectangle( m_list[m_sizeHover]->size_nw );
+		dc.DrawRectangle( m_list[m_sizeHover]->size_se );
+		dc.DrawRectangle( m_list[m_sizeHover]->size_sw );
+	}
+
+	if ( m_moveHover >= 0 )
+	{
+		dc.SetBrush( *wxLIGHT_GREY_BRUSH );
+		dc.DrawRectangle( m_list[m_moveHover]->move_box );
+	}
 }
 
 void wxSnapLayout::ShowTransparency( wxRect r )
 {
+	int vsx, vsy;
+	GetViewStart(&vsx,&vsy);
+	vsx *= m_scrollRate;
+	vsy *= m_scrollRate;
+
 	wxPoint pos = ClientToScreen( wxPoint(r.x, r.y) );
+	pos.x -= vsx;
+	pos.y -= vsy;
 	wxSize size(r.width, r.height);
 
 	if ( m_transp == 0 )

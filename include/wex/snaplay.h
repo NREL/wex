@@ -29,14 +29,12 @@ private:
 		wxSize req;
 		wxRect rect;
 		wxRect active;
-		int row;
-		int col;
+		wxRect size_nw, size_se, size_ne, size_sw, move_box;
 		bool highlight;
 	};
 
 	int Find( wxWindow *w );
 
-	int m_space;
 	std::vector<layout_box*> m_list;
 	
 	struct drop_target {
@@ -50,11 +48,18 @@ private:
 	void OnMotion( wxMouseEvent & );
 	void OnCaptureLost( wxMouseCaptureLostEvent & );
 	void OnSize( wxSizeEvent & );
+	void OnLeaveWindow( wxMouseEvent & );
 	void OnPaint( wxPaintEvent & );
 	void OnErase( wxEraseEvent & );
 
 	enum { NW, NE, SW, SE };
 	layout_box *CheckActive( const wxPoint &p, int *handle );
+
+	struct wydata { int y; layout_box *lb; };
+	std::vector<wydata> GetSortedYPositions( size_t imax );
+	void AutoLayout2();
+	bool CanPlace( size_t idx, int width, int height, int xplace, int yplace, int client_width );
+	void Place( size_t i, int cwidth );
 
 	int m_handle;
 	layout_box *m_active;
@@ -64,6 +69,12 @@ private:
 	void HideTransparency();
 	wxFrame *m_transp;
 	wxRect m_sizerect;
+
+	int m_sizeHover;
+	int m_moveHover;
+	
+	static const int m_space = 15;
+	static const int m_scrollRate = 1;
 
 	wxPoint m_orig;
 
