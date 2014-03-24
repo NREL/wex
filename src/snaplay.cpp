@@ -216,7 +216,11 @@ void wxSnapLayout::AutoLayout2()
 		l.rect.width = l.active.width - m_space - m_space;
 		l.rect.height = l.active.height - m_space - m_space;
 
-		l.move_box = wxRect( l.rect.x, l.active.y, l.rect.width, m_space-1 );
+		l.move_box[0] = wxRect( l.rect.x, l.active.y, l.rect.width, m_space-1 );
+		l.move_box[1] = wxRect( l.active.x, l.rect.y, m_space-1, l.rect.height );
+		l.move_box[2] = wxRect( l.active.x+l.active.width-m_space+1, l.rect.y, m_space-1, l.rect.height );
+		l.move_box[3] = wxRect( l.rect.x, l.active.y+l.active.height-m_space+1, l.rect.width, m_space-1 );
+
 		l.size_nw = wxRect( l.active.x+1, l.active.y+1, m_space-2, m_space-2 );
 		l.size_sw = wxRect( l.active.x+1, l.active.y+l.active.height-m_space+1, m_space-2, m_space-2 );
 		l.size_ne = wxRect( l.active.x+l.active.width-m_space+1, l.active.y+1, m_space-2, m_space-2 );
@@ -238,14 +242,17 @@ void wxSnapLayout::AutoLayout2()
 	}
 
 
-	size_t last = m_list.size()-1;
-	drop_target dt;
-	dt.index = m_list.size();
-	dt.target.x = m_list[last]->active.x+m_list[last]->active.width-m_space;
-	dt.target.y = m_list[last]->active.y;
-	dt.target.width = m_space+m_space;
-	dt.target.height = m_list[last]->active.height;
-	m_targets.push_back( dt );
+	if ( m_list.size() > 0 )
+	{
+		size_t last = m_list.size()-1;
+		drop_target dt;
+		dt.index = m_list.size();
+		dt.target.x = m_list[last]->active.x+m_list[last]->active.width-m_space;
+		dt.target.y = m_list[last]->active.y;
+		dt.target.width = m_space+m_space;
+		dt.target.height = m_list[last]->active.height;
+		m_targets.push_back( dt );
+	}
 
 	// find the max extents and setup the scrollbars
 	size_t ymax = 0;
@@ -426,20 +433,21 @@ void wxSnapLayout::OnLeftUp( wxMouseEvent &evt )
 	}
 	else if ( m_active != 0 && m_handle < 0 && m_curtarget != 0 )
 	{
+		std::vector<layout_box*>::iterator itmoving = std::find( m_list.begin(), m_list.end(), m_active );
 		int imoving = Find( m_active->win );
 		int itarget = m_curtarget->index;
-
 		if ( itarget != imoving
-			&& itarget != imoving + 1 )
+			&& itarget != imoving + 1 
+			&& itmoving != m_list.end() )
 		{
-			if ( itarget >= m_list.size() ) itarget = m_list.size()-1;
+			if ( itarget > imoving ) itarget--;
 
-			// swap
-			layout_box *save = m_list[itarget];
-			m_list[itarget] = m_list[imoving];
-			m_list[imoving] = save;
-			
+			m_list.erase( itmoving );
+			if ( itarget < 0 ) itarget = 0;
+			m_list.insert( m_list.begin()+itarget, m_active );
+
 			AutoLayout();
+			
 		}
 	}
 
@@ -540,12 +548,18 @@ void wxSnapLayout::OnMotion( wxMouseEvent &evt )
 				break;
 			}
 
-			if ( m_list[i]->move_box.Contains( mpos ) )
+			for (size_t k=0;k<4;k++ )
 			{
-				curs = wxCURSOR_SIZING;
-				m_moveHover = i;
-				break;
+				if ( m_list[i]->move_box[k].Contains( mpos ) )
+				{
+					curs = wxCURSOR_SIZING;
+					m_moveHover = i;
+					break;
+				}
 			}
+
+			if( m_moveHover >= 0 )
+				break;
 
 		}
 
@@ -583,9 +597,9 @@ void wxSnapLayout::OnPaint( wxPaintEvent & )
 
 	dc.SetBackground( *wxWHITE_BRUSH );
 	dc.Clear();
-	
+
 	/*
-	
+		
 	dc.SetBrush( *wxTRANSPARENT_BRUSH );
 	dc.SetPen( *wxBLUE_PEN );
 
@@ -598,7 +612,7 @@ void wxSnapLayout::OnPaint( wxPaintEvent & )
 	}
 	
 	*/
-
+	
 	dc.SetPen( *wxTRANSPARENT_PEN );
 
 	dc.SetBrush( wxMetroTheme::Colour( wxMT_SELECT ) );
@@ -618,9 +632,10 @@ void wxSnapLayout::OnPaint( wxPaintEvent & )
 		dc.DrawRectangle( m_curtarget->target );
 	}
 
+	dc.SetBrush( wxBrush( wxColour(230,230,230), wxSOLID ) );
+
 	if ( m_sizeHover >= 0 )
 	{
-		dc.SetBrush( *wxLIGHT_GREY_BRUSH );
 		dc.DrawRectangle( m_list[m_sizeHover]->size_ne );
 		dc.DrawRectangle( m_list[m_sizeHover]->size_nw );
 		dc.DrawRectangle( m_list[m_sizeHover]->size_se );
@@ -629,8 +644,8 @@ void wxSnapLayout::OnPaint( wxPaintEvent & )
 
 	if ( m_moveHover >= 0 )
 	{
-		dc.SetBrush( *wxLIGHT_GREY_BRUSH );
-		dc.DrawRectangle( m_list[m_moveHover]->move_box );
+		for( size_t i=0;i<4;i++ )
+			dc.DrawRectangle( m_list[m_moveHover]->move_box[i] );
 	}
 }
 

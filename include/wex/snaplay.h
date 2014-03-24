@@ -29,7 +29,7 @@ private:
 		wxSize req;
 		wxRect rect;
 		wxRect active;
-		wxRect size_nw, size_se, size_ne, size_sw, move_box;
+		wxRect size_nw, size_se, size_ne, size_sw, move_box[4];
 		bool highlight;
 	};
 
