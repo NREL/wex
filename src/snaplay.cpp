@@ -92,6 +92,25 @@ int wxSnapLayout::Find( wxWindow *w )
 	return -1;
 }
 
+size_t wxSnapLayout::Count()
+{
+	return m_list.size();
+}
+
+wxWindow *wxSnapLayout::Get( size_t i )
+{
+	if ( i < m_list.size() ) return m_list[i]->win;
+	else return 0;
+}
+
+std::vector<wxWindow*> wxSnapLayout::Windows()
+{
+	std::vector<wxWindow*> wl;
+	for( size_t i=0;i<m_list.size();i++ )
+		wl.push_back( m_list[i]->win );
+	return wl;
+}
+
 void wxSnapLayout::DeleteAll()
 {
 	for( size_t i=0;i<m_list.size();i++ )

@@ -16,6 +16,10 @@ public:
 	
 	void Add( wxWindow *win, int width = -1, int height = -1 );
 	void Delete( wxWindow * );
+	size_t Count();
+	wxWindow *Get( size_t i );
+	std::vector<wxWindow*> Windows();
+	int Find( wxWindow *w );
 	void DeleteAll();	
 	void ScrollTo( wxWindow * );	
 	void AutoLayout();
@@ -32,8 +36,6 @@ private:
 		wxRect size_nw, size_se, size_ne, size_sw, move_box[4];
 		bool highlight;
 	};
-
-	int Find( wxWindow *w );
 
 	std::vector<layout_box*> m_list;
 	
