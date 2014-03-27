@@ -1,5 +1,5 @@
 /*
-* wxDVStatisticsCtrl.cpp
+* wxDVBoxPlotCtrl.cpp
 *
 * This class Is a wxPanel that contains a box plot with its axes, as well as
 * a list of channels (different data sets) that can be viewed.
@@ -23,19 +23,19 @@
 #include "wex/icons/preferences.cpng"
 
 #include "wex/dview/dvselectionlist.h"
-#include "wex/dview/dvstatisticsctrl.h"
+#include "wex/dview/dvboxplotctrl.h"
 #include "wex/plot/plplotctrl.h"
 
 static const wxString NO_UNITS("ThereAreNoUnitsForThisAxis.");
 
-wxDVStatisticsPlot::wxDVStatisticsPlot(wxDVStatisticsDataSet *ds, bool OwnsDataset)
+wxDVBoxPlot::wxDVBoxPlot(wxDVStatisticsDataSet *ds, bool OwnsDataset)
 	: m_data(ds)
 {
 	m_colour = *wxRED;
 	m_ownsDataset = OwnsDataset;
 }
 
-wxDVStatisticsPlot::~wxDVStatisticsPlot()
+wxDVBoxPlot::~wxDVBoxPlot()
 {
 	if (m_ownsDataset)
 	{
@@ -43,14 +43,14 @@ wxDVStatisticsPlot::~wxDVStatisticsPlot()
 	}
 }
 
-void wxDVStatisticsPlot::SetColour(const wxColour &col) { m_colour = col; }
+void wxDVBoxPlot::SetColour(const wxColour &col) { m_colour = col; }
 
-wxString wxDVStatisticsPlot::GetXDataLabel() const
+wxString wxDVBoxPlot::GetXDataLabel() const
 {
 	return _("Hours since 00:00 Jan 1");
 }
 
-wxString wxDVStatisticsPlot::GetYDataLabel() const
+wxString wxDVBoxPlot::GetYDataLabel() const
 {
 	wxString label = m_data->GetSeriesTitle();
 	if (!m_data->GetUnits().IsEmpty())
@@ -58,14 +58,14 @@ wxString wxDVStatisticsPlot::GetYDataLabel() const
 	return label;
 }
 
-wxRealPoint wxDVStatisticsPlot::At(size_t i) const
+wxRealPoint wxDVBoxPlot::At(size_t i) const
 {
 	return (i < m_data->Length())
 		? wxRealPoint(m_data->At(i).x, m_data->At(i).Mean)
 		: wxRealPoint(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
 }
 
-StatisticsPoint wxDVStatisticsPlot::At(size_t i, double m_offset, double m_timestep) const
+StatisticsPoint wxDVBoxPlot::At(size_t i, double m_offset, double m_timestep) const
 {
 	StatisticsPoint p = StatisticsPoint();
 
@@ -95,12 +95,12 @@ StatisticsPoint wxDVStatisticsPlot::At(size_t i, double m_offset, double m_times
 	return p;
 }
 
-size_t wxDVStatisticsPlot::Len() const
+size_t wxDVBoxPlot::Len() const
 {
 	return m_data->Length();
 }
 
-void wxDVStatisticsPlot::Draw(wxDC &dc, const wxPLDeviceMapping &map)
+void wxDVBoxPlot::Draw(wxDC &dc, const wxPLDeviceMapping &map)
 {
 	if (!m_data || m_data->Length() < 2) return;
 
@@ -133,12 +133,12 @@ void wxDVStatisticsPlot::Draw(wxDC &dc, const wxPLDeviceMapping &map)
 	//dc.DrawLines(points.size(), &points[0]);
 }
 
-void wxDVStatisticsPlot::DrawInLegend(wxDC &dc, const wxRect &rct)
+void wxDVBoxPlot::DrawInLegend(wxDC &dc, const wxRect &rct)
 {
 	// nothing to do here
 }
 
-double wxDVStatisticsPlot::GetPeriodLowerBoundary(double hourNumber)
+double wxDVBoxPlot::GetPeriodLowerBoundary(double hourNumber)
 {
 	hourNumber = fmod(hourNumber, 8760);
 
@@ -158,7 +158,7 @@ double wxDVStatisticsPlot::GetPeriodLowerBoundary(double hourNumber)
 	return hourNumber;
 }
 
-double wxDVStatisticsPlot::GetPeriodUpperBoundary(double hourNumber)
+double wxDVBoxPlot::GetPeriodUpperBoundary(double hourNumber)
 {
 	hourNumber = fmod(hourNumber, 8760);
 
@@ -178,7 +178,7 @@ double wxDVStatisticsPlot::GetPeriodUpperBoundary(double hourNumber)
 	return hourNumber;
 }
 
-std::vector<wxString> wxDVStatisticsPlot::GetExportableDatasetHeaders(wxUniChar sep, StatisticsType type) const
+std::vector<wxString> wxDVBoxPlot::GetExportableDatasetHeaders(wxUniChar sep, StatisticsType type) const
 {
 	std::vector<wxString> tt;
 	wxString xLabel = GetXDataLabel();
@@ -209,7 +209,7 @@ std::vector<wxString> wxDVStatisticsPlot::GetExportableDatasetHeaders(wxUniChar 
 	return tt;
 }
 
-std::vector<wxRealPoint> wxDVStatisticsPlot::GetExportableDataset(StatisticsType type) const
+std::vector<wxRealPoint> wxDVBoxPlot::GetExportableDataset(StatisticsType type) const
 {
 	std::vector<wxRealPoint> data;
 	wxRealPoint pt;
@@ -238,9 +238,9 @@ enum{
 	ID_PLOT_SURFACE
 };
 
-BEGIN_EVENT_TABLE(wxDVStatisticsCtrl, wxPanel)
+BEGIN_EVENT_TABLE(wxDVBoxPlotCtrl, wxPanel)
 
-EVT_DVSELECTIONLIST(ID_DATA_CHANNEL_SELECTOR, wxDVStatisticsCtrl::OnDataChannelSelection)
+EVT_DVSELECTIONLIST(ID_DATA_CHANNEL_SELECTOR, wxDVBoxPlotCtrl::OnDataChannelSelection)
 
 END_EVENT_TABLE()
 
@@ -253,7 +253,7 @@ enum StatGraphAxisPosition
 };
 
 /*Constructors and Destructors*/
-wxDVStatisticsCtrl::wxDVStatisticsCtrl(wxWindow *parent, wxWindowID id)
+wxDVBoxPlotCtrl::wxDVBoxPlotCtrl(wxWindow *parent, wxWindowID id)
 : wxPanel(parent, id)
 {
 	m_autoScale = true;
@@ -267,7 +267,7 @@ wxDVStatisticsCtrl::wxDVStatisticsCtrl(wxWindow *parent, wxWindowID id)
 	m_plotSurface->SetXAxis1(m_xAxis);
 
 	//Contains boxes to turn lines on or off.
-	m_dataSelector = new wxDVSelectionListCtrl(this, ID_DATA_CHANNEL_SELECTOR, 2, false);
+	m_dataSelector = new wxDVSelectionListCtrl(this, ID_DATA_CHANNEL_SELECTOR, 2);
 
 	wxBoxSizer *graph_sizer = new wxBoxSizer(wxHORIZONTAL);
 	graph_sizer->Add(m_plotSurface, 1, wxEXPAND | wxALL, 4);
@@ -281,7 +281,7 @@ wxDVStatisticsCtrl::wxDVStatisticsCtrl(wxWindow *parent, wxWindowID id)
 		m_selectedChannelIndices.push_back(new std::vector<int>());
 }
 
-wxDVStatisticsCtrl::~wxDVStatisticsCtrl(void)
+wxDVBoxPlotCtrl::~wxDVBoxPlotCtrl(void)
 {
 	RemoveAllDataSets();
 
@@ -289,7 +289,7 @@ wxDVStatisticsCtrl::~wxDVStatisticsCtrl(void)
 		delete m_selectedChannelIndices[i];
 }
 
-void wxDVStatisticsCtrl::Invalidate()
+void wxDVBoxPlotCtrl::Invalidate()
 {
 	m_plotSurface->Invalidate();
 	m_plotSurface->Refresh();
@@ -297,7 +297,7 @@ void wxDVStatisticsCtrl::Invalidate()
 
 /*** EVENT HANDLERS ***/
 
-void wxDVStatisticsCtrl::OnDataChannelSelection(wxCommandEvent& e)
+void wxDVBoxPlotCtrl::OnDataChannelSelection(wxCommandEvent& e)
 {
 	int row, col;
 	bool isChecked;
@@ -310,230 +310,13 @@ void wxDVStatisticsCtrl::OnDataChannelSelection(wxCommandEvent& e)
 		RemoveGraphAfterChannelSelection(row);
 }
 
-void wxDVStatisticsCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, bool refresh_ui, double xOffset)
+void wxDVBoxPlotCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, bool refresh_ui)
 {
-	double timestep = d->GetTimeStep();
-	double MinHrs = d->GetMinHours();
-	double MaxHrs = d->GetMaxHours();
 	wxDVStatisticsDataSet *s;
-	wxDVStatisticsPlot *p;
+	wxDVBoxPlot *p;
 
-	//Create monthly statistics from m_data
-	double nextDay = 0.0;
-	double nextMonth = 0.0;
-	double currentMonth = 0.0;
-	double year = 0.0;
-	double counter = 0.0;
-	double sum = 0.0;
-	double avg = 0.0;
-	double min = 0.0;
-	double max = 0.0;
-	double StDev = 0.0;
-	double AvgDailyMin = 0.0;
-	double AvgDailyMax = 0.0;
-	int DayNumber = 0;
-	int FirstOrdinalOfMonth = 0;
-	double DayCounter = 0.0;
-	StatisticsPoint sp;
-	wxRealPoint DayStats[31];
-	double StDevCounter = 0.0;
-
-	s = new wxDVStatisticsDataSet(d->GetSeriesTitle(), d->GetUnits(), 744.0 / timestep);
-
-	while (MinHrs > 8760.0)
-	{
-		year += 8760.0;
-		MinHrs -= 8760.0;
-	}
-
-	while (nextDay < MinHrs)
-	{
-		nextDay += 24.0;
-	}
-
-	if (MinHrs >= 0.0 && MinHrs < 744.0) { currentMonth = year; nextMonth = year + 744.0; }
-	else if (MinHrs >= 744.0 && MinHrs < 1416.0) { currentMonth = year + 744.0; nextMonth = year + 1416.0; }
-	else if (MinHrs >= 1416.0 && MinHrs < 2160.0) { currentMonth = year + 1416.0; nextMonth = year + 2160.0; }
-	else if (MinHrs >= 2160.0 && MinHrs < 2880.0) { currentMonth = year + 2160.0; nextMonth = year + 2880.0; }
-	else if (MinHrs >= 2880.0 && MinHrs < 3624.0) { currentMonth = year + 2880.0; nextMonth = year + 3624.0; }
-	else if (MinHrs >= 3624.0 && MinHrs < 4344.0) { currentMonth = year + 3624.0; nextMonth = year + 4344.0; }
-	else if (MinHrs >= 4344.0 && MinHrs < 5088.0) { currentMonth = year + 4344.0; nextMonth = year + 5088.0; }
-	else if (MinHrs >= 5088.0 && MinHrs < 5832.0) { currentMonth = year + 5088.0; nextMonth = year + 5832.0; }
-	else if (MinHrs >= 5832.0 && MinHrs < 6552.0) { currentMonth = year + 5832.0; nextMonth = year + 6552.0; }
-	else if (MinHrs >= 6552.0 && MinHrs < 7296.0) { currentMonth = year + 6552.0; nextMonth = year + 7296.0; }
-	else if (MinHrs >= 7296.0 && MinHrs < 8016.0) { currentMonth = year + 7296.0; nextMonth = year + 8016.0; }
-	else if (MinHrs >= 8016.0 && MinHrs < 8760.0) { currentMonth = year + 8016.0; nextMonth = year + 8760.0; }
-
-	//TODO:  calculate StDev
-	for (size_t i = 0; i < d->Length(); i++)
-	{
-		if (d->At(i).x >= nextDay)
-		{
-			if (i != 0)
-			{
-				DayStats[DayNumber] = wxRealPoint(AvgDailyMin, AvgDailyMax);
-				DayNumber++;
-				AvgDailyMin = 0.0;
-				AvgDailyMax = 0.0;
-				nextDay += 24.0;
-			}
-		}
-
-		if (d->At(i).x >= nextMonth)
-		{
-			if (i != 0 && counter != 0)
-			{
-				avg = sum / counter;
-
-				//Calculate standard deviation for the month's data
-				StDev = 0.0;
-				StDevCounter = 0.0;
-				for (size_t j = FirstOrdinalOfMonth; j < i; j++)
-				{
-					StDev += (d->At(j).y - avg) * (d->At(j).y - avg);
-					StDevCounter += 1.0;
-				}
-				if (StDevCounter > 0.0)
-				{
-					StDev = StDev / StDevCounter;
-					StDev = sqrt(StDev);
-				}
-
-				//Summarize the daily Min and Max values into average daily min and max values for the month.
-				for (size_t j = 0; j < 31; j++)
-				{
-					if (DayStats[j].y > 0)	//Not every month will have 31 days and endpoints may be missing some days in the month, as denoted by a 0 maximum value
-					{
-						AvgDailyMin += DayStats[j].x;
-						AvgDailyMax += DayStats[j].y;
-						DayCounter += 1.0;
-					}
-				}
-				if (DayCounter > 0.0)
-				{
-					AvgDailyMax = AvgDailyMax / DayCounter;
-					AvgDailyMin = AvgDailyMin / DayCounter;
-				}
-
-				sp = StatisticsPoint();
-				if (xOffset < 672.0 && xOffset > 0.0)	//xOffset is within number of hours in the shortest month
-				{
-					sp.x = currentMonth + xOffset;
-				}
-				else
-				{
-					sp.x = currentMonth + ((nextMonth - currentMonth) / 2.0);	//Make x the middle of the month
-				}
-				sp.Max = max;
-				sp.Min = min;
-				sp.Sum = sum;
-				sp.Mean = avg;
-				sp.StDev = StDev;
-				sp.AvgDailyMax = AvgDailyMax;
-				sp.AvgDailyMin = AvgDailyMin;
-
-				s->Append(sp);
-
-				currentMonth = nextMonth;
-				if (nextMonth == 744.0 + year) { nextMonth = 1416.0 + year; }
-				else if (nextMonth == 1416.0 + year) { nextMonth = 2160.0 + year; }
-				else if (nextMonth == 2160.0 + year) { nextMonth = 2880.0 + year; }
-				else if (nextMonth == 2880.0 + year) { nextMonth = 3624.0 + year; }
-				else if (nextMonth == 3624.0 + year) { nextMonth = 4344.0 + year; }
-				else if (nextMonth == 4344.0 + year) { nextMonth = 5088.0 + year; }
-				else if (nextMonth == 5088.0 + year) { nextMonth = 5832.0 + year; }
-				else if (nextMonth == 5832.0 + year) { nextMonth = 6552.0 + year; }
-				else if (nextMonth == 6552.0 + year) { nextMonth = 7296.0 + year; }
-				else if (nextMonth == 7296.0 + year) { nextMonth = 8016.0 + year; }
-				else if (nextMonth == 8016.0 + year) { nextMonth = 8760.0 + year; }
-				else if (nextMonth == 8760.0 + year)
-				{
-					year += 8760.0;
-					nextMonth = 744.0 + year;
-				}
-			}
-
-			counter = 0.0;
-			sum = 0.0;
-			avg = 0.0;
-			min = 0.0;
-			max = 0.0;
-			StDev = 0.0;
-			AvgDailyMin = 0.0;
-			AvgDailyMax = 0.0;
-			DayNumber = 0;
-			DayCounter = 0.0;
-			FirstOrdinalOfMonth = i;
-		}
-
-		counter += 1.0;
-		sum += d->At(i).y;
-		if (min > d->At(i).y) { min = d->At(i).y; }
-		if (max < d->At(i).y) { max = d->At(i).y; }
-		if (AvgDailyMin > d->At(i).y) { AvgDailyMin = d->At(i).y; }
-		if (AvgDailyMax < d->At(i).y) { AvgDailyMax = d->At(i).y; }
-	}
-
-	//Prevent appending the final point if it represents 12/31 24:00, which the system interprets as 1/1 0:00 and creates a point for January of the next year
-	if (MaxHrs > 0.0 && fmod(MaxHrs, 8760.0) != 0)
-	{
-		DayStats[DayNumber] = wxRealPoint(AvgDailyMin, AvgDailyMax);
-		AvgDailyMin = 0.0;
-		AvgDailyMax = 0.0;
-
-		avg = sum / counter;
-
-		//Calculate standard deviation for the month's data
-		StDev = 0.0;
-		StDevCounter = 0.0;
-		for (size_t j = FirstOrdinalOfMonth; j < d->Length(); j++)
-		{
-			StDev += (d->At(j).y - avg) * (d->At(j).y - avg);
-			StDevCounter += 1.0;
-		}
-		if (StDevCounter > 0.0)
-		{
-			StDev = StDev / StDevCounter;
-			StDev = sqrt(StDev);
-		}
-
-		//Summarize the daily Min and Max values into average daily min and max values for the month.
-		for (size_t j = 0; j < 31; j++)
-		{
-			if (DayStats[j].y > 0)	//Not every month will have 31 days and endpoints may be missing some days in the month, as denoted by a 0 maximum value
-			{
-				AvgDailyMin += DayStats[j].x;
-				AvgDailyMax += DayStats[j].y;
-				DayCounter += 1.0;
-			}
-		}
-		if (DayCounter > 0.0)
-		{
-			AvgDailyMax = AvgDailyMax / DayCounter;
-			AvgDailyMin = AvgDailyMin / DayCounter;
-		}
-
-		sp = StatisticsPoint();
-		if (xOffset < 672.0 && xOffset > 0.0)	//xOffset is within number of hours in the shortest month
-		{
-			sp.x = currentMonth + xOffset;
-		}
-		else
-		{
-			sp.x = currentMonth + ((nextMonth - currentMonth) / 2.0);	//Make x the middle of the month
-		}
-		sp.Max = max;
-		sp.Min = min;
-		sp.Sum = sum;
-		sp.Mean = avg;
-		sp.StDev = StDev;
-		sp.AvgDailyMax = AvgDailyMax;
-		sp.AvgDailyMin = AvgDailyMin;
-
-		s->Append(sp);
-	}
-
-	p = new wxDVStatisticsPlot(s, true);
+	s = new wxDVStatisticsDataSet(d);
+	p = new wxDVBoxPlot(s, true);
 
 	m_plots.push_back(p); //Add to data sets list.
 	m_dataSelector->Append(d->GetTitleWithUnits(), group);
@@ -545,19 +328,18 @@ void wxDVStatisticsCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 	}
 }
 
-bool wxDVStatisticsCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
+bool wxDVBoxPlotCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 {
-	wxDVStatisticsPlot *plotToRemove = NULL;
+	wxDVBoxPlot *plotToRemove = NULL;
 	wxDVStatisticsDataSet *ds;
 	int removedIndex = 0;
+
 	//Find the plottable:
 	for (size_t i = 0; i<m_plots.size(); i++)
 	{
 		ds = m_plots[i]->GetDataSet();
 
-		//TODO:  Is there a better way to identify the statistics dataset that corresponds with the passed time series dataset?
-		if (ds->GetSeriesTitle() == d->GetSeriesTitle() && ds->GetTimeStep() == d->GetTimeStep() && ds->GetUnits() == d->GetUnits()
-			&& ds->GetMinHours() == d->GetMinHours() && ds->GetMaxHours() == d->GetMaxHours())
+		if (ds->IsSourceDataset(d))
 		{
 			removedIndex = i;
 			plotToRemove = m_plots[i];
@@ -593,7 +375,7 @@ bool wxDVStatisticsCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 	return true;
 }
 
-void wxDVStatisticsCtrl::RemoveAllDataSets()
+void wxDVBoxPlotCtrl::RemoveAllDataSets()
 {
 	ClearAllChannelSelections();
 
@@ -608,24 +390,24 @@ void wxDVStatisticsCtrl::RemoveAllDataSets()
 
 /*** VIEW METHODS ***/
 
-double wxDVStatisticsCtrl::GetViewMin()
+double wxDVBoxPlotCtrl::GetViewMin()
 {
 	return m_xAxis->GetWorldMin();
 }
 
-double wxDVStatisticsCtrl::GetViewMax()
+double wxDVBoxPlotCtrl::GetViewMax()
 {
 	return m_xAxis->GetWorldMax();
 }
 
-void wxDVStatisticsCtrl::SetViewMin(double min)
+void wxDVBoxPlotCtrl::SetViewMin(double min)
 {
 	m_xAxis->SetWorldMin(min);
 	AutoscaleYAxis();
 	Invalidate();
 }
 
-void wxDVStatisticsCtrl::SetViewMax(double max)
+void wxDVBoxPlotCtrl::SetViewMax(double max)
 {
 	m_xAxis->SetWorldMax(max);
 	AutoscaleYAxis();
@@ -633,7 +415,7 @@ void wxDVStatisticsCtrl::SetViewMax(double max)
 }
 
 //This setter also sets endpoints to days.
-void wxDVStatisticsCtrl::SetViewRange(double min, double max)
+void wxDVBoxPlotCtrl::SetViewRange(double min, double max)
 {
 	wxDVPlotHelper::SetRangeEndpointsToDays(&min, &max);
 	m_xAxis->SetWorld(min, max);
@@ -641,7 +423,7 @@ void wxDVStatisticsCtrl::SetViewRange(double min, double max)
 	Invalidate();
 }
 
-void wxDVStatisticsCtrl::GetVisibleDataMinAndMax(double* min, double* max, const std::vector<int>& selectedChannelIndices)
+void wxDVBoxPlotCtrl::GetVisibleDataMinAndMax(double* min, double* max, const std::vector<int>& selectedChannelIndices)
 {
 	*min = 0;
 	*max = 0;
@@ -675,7 +457,7 @@ void wxDVStatisticsCtrl::GetVisibleDataMinAndMax(double* min, double* max, const
 	}
 }
 
-double wxDVStatisticsCtrl::GetMinPossibleTimeForVisibleChannels()
+double wxDVBoxPlotCtrl::GetMinPossibleTimeForVisibleChannels()
 {
 	double min = 8760;
 	for (size_t i = 0; i<m_plots.size(); i++)
@@ -690,7 +472,7 @@ double wxDVStatisticsCtrl::GetMinPossibleTimeForVisibleChannels()
 	return min;
 }
 
-double wxDVStatisticsCtrl::GetMaxPossibleTimeForVisibleChannels()
+double wxDVBoxPlotCtrl::GetMaxPossibleTimeForVisibleChannels()
 {
 	double max = 0;
 	for (size_t i = 0; i<m_plots.size(); i++)
@@ -705,14 +487,14 @@ double wxDVStatisticsCtrl::GetMaxPossibleTimeForVisibleChannels()
 	return max;
 }
 
-void wxDVStatisticsCtrl::MakeXBoundsNice(double* xMin, double* xMax)
+void wxDVBoxPlotCtrl::MakeXBoundsNice(double* xMin, double* xMax)
 {
 	KeepNewBoundsWithinLimits(xMin, xMax);
 	KeepNewBoundsWithinLowerLimit(xMin, xMax);
 	wxDVPlotHelper::SetRangeEndpointsToDays(xMin, xMax);
 }
 
-void wxDVStatisticsCtrl::KeepNewBoundsWithinLimits(double* newMin, double* newMax)
+void wxDVBoxPlotCtrl::KeepNewBoundsWithinLimits(double* newMin, double* newMax)
 {
 	//Make sure we don't zoom out past the data range.
 	//This can only happen zooming out.
@@ -745,7 +527,7 @@ void wxDVStatisticsCtrl::KeepNewBoundsWithinLimits(double* newMin, double* newMa
 
 }
 
-void wxDVStatisticsCtrl::KeepNewBoundsWithinLowerLimit(double* newMin, double* newMax)
+void wxDVBoxPlotCtrl::KeepNewBoundsWithinLowerLimit(double* newMin, double* newMax)
 {
 	//Don't zoom in too far.  
 	double lowerLim = 12;
@@ -793,7 +575,7 @@ void wxDVStatisticsCtrl::KeepNewBoundsWithinLowerLimit(double* newMin, double* n
 
 /*** GRAPH RELATED METHODS ***/
 
-void wxDVStatisticsCtrl::AutoscaleYAxis(bool forceUpdate)
+void wxDVBoxPlotCtrl::AutoscaleYAxis(bool forceUpdate)
 {
 	//It is probably best to avoid this function and use the more specific version where possible.
 	if (m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP))
@@ -804,7 +586,7 @@ void wxDVStatisticsCtrl::AutoscaleYAxis(bool forceUpdate)
 		forceUpdate);
 }
 
-void wxDVStatisticsCtrl::AutoscaleYAxis(wxPLAxis *axisToScale, const std::vector<int>& selectedChannelIndices, bool forceUpdate)
+void wxDVBoxPlotCtrl::AutoscaleYAxis(wxPLAxis *axisToScale, const std::vector<int>& selectedChannelIndices, bool forceUpdate)
 {
 	//If autoscaling is off don't scale y1 axis
 	// But do scale y2 axis (since we don't allow manual scaling there for UI simplicity).
@@ -854,7 +636,7 @@ void wxDVStatisticsCtrl::AutoscaleYAxis(wxPLAxis *axisToScale, const std::vector
 	}
 }
 
-void wxDVStatisticsCtrl::AddGraphAfterChannelSelection(int index)
+void wxDVBoxPlotCtrl::AddGraphAfterChannelSelection(int index)
 {
 	if (index < 0 || index >= (int)m_plots.size()) return;
 
@@ -908,7 +690,7 @@ void wxDVStatisticsCtrl::AddGraphAfterChannelSelection(int index)
 	Invalidate();
 }
 
-void wxDVStatisticsCtrl::RemoveGraphAfterChannelSelection(int index)
+void wxDVBoxPlotCtrl::RemoveGraphAfterChannelSelection(int index)
 {
 	//Find our GraphAxisPosition, and remove from selected indices list.
 	//Have to do it this way because of ambiguous use of int in an array storing ints.
@@ -989,7 +771,7 @@ void wxDVStatisticsCtrl::RemoveGraphAfterChannelSelection(int index)
 	Invalidate();
 }
 
-void wxDVStatisticsCtrl::ClearAllChannelSelections()
+void wxDVBoxPlotCtrl::ClearAllChannelSelections()
 {
 	m_dataSelector->ClearColumn(1);
 
@@ -1011,7 +793,7 @@ void wxDVStatisticsCtrl::ClearAllChannelSelections()
 	Invalidate();
 }
 
-void wxDVStatisticsCtrl::RefreshDisabledCheckBoxes()
+void wxDVBoxPlotCtrl::RefreshDisabledCheckBoxes()
 {
 	wxString axis1Label = NO_UNITS;
 	wxString axis2Label = NO_UNITS;
@@ -1040,17 +822,17 @@ void wxDVStatisticsCtrl::RefreshDisabledCheckBoxes()
 	}
 }
 
-wxDVSelectionListCtrl* wxDVStatisticsCtrl::GetDataSelectionList()
+wxDVSelectionListCtrl* wxDVBoxPlotCtrl::GetDataSelectionList()
 {
 	return m_dataSelector;
 }
 
-void wxDVStatisticsCtrl::SetSelectedNames(const wxString& names)
+void wxDVBoxPlotCtrl::SetSelectedNames(const wxString& names)
 {
 	SetSelectedNamesForColIndex(names, 0);
 }
 
-void wxDVStatisticsCtrl::SetSelectedNamesForColIndex(const wxString& names, int col)
+void wxDVBoxPlotCtrl::SetSelectedNamesForColIndex(const wxString& names, int col)
 {
 	ClearAllChannelSelections();
 
@@ -1066,7 +848,7 @@ void wxDVStatisticsCtrl::SetSelectedNamesForColIndex(const wxString& names, int 
 	}
 }
 
-void wxDVStatisticsCtrl::SelectDataSetAtIndex(int index)
+void wxDVBoxPlotCtrl::SelectDataSetAtIndex(int index)
 {
 	m_dataSelector->SelectRowInCol(index, 0);
 	AddGraphAfterChannelSelection(index);

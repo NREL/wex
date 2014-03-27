@@ -18,7 +18,7 @@
 #include "wex/dview/dvdcctrl.h"
 #include "wex/dview/dvscatterplotctrl.h"
 #include "wex/dview/dvplotctrlsettings.h"
-#include "wex/dview/dvstatisticsctrl.h"
+#include "wex/dview/dvboxplotctrl.h"
 
 class wxMetroNotebook;
 
@@ -65,7 +65,7 @@ private:
 	wxDVTimeSeriesCtrl *m_monthlyTimeSeries;
 	wxDVDMapCtrl *m_dMap;
 	wxDVProfileCtrl *m_profilePlots;
-	wxDVStatisticsCtrl *m_statisticsPlot;
+	wxDVBoxPlotCtrl *m_boxPlot;
 	wxDVPnCdfCtrl *m_pnCdf;
 	wxDVDCCtrl *m_durationCurve;
 	wxDVScatterPlotCtrl *m_scatterPlot;

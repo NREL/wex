@@ -47,7 +47,6 @@ public:
 	virtual void Draw( wxDC &dc, const wxPLDeviceMapping &map ) = 0;
 	virtual void DrawInLegend( wxDC &dc, const wxRect &rct ) = 0;
 
-
 	// properties
 
 	virtual wxString GetLabel() const { return m_label; }

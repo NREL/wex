@@ -63,7 +63,8 @@ wxDVScatterPlotCtrl::wxDVScatterPlotCtrl(wxWindow* parent, wxWindowID id, const 
 	m_plotSurface->ShowTitle( false );
 	m_plotSurface->ShowLegend( false );
 
-	m_dataSelectionList = new wxDVSelectionListCtrl(this, wxID_SCATTER_DATA_SELECTOR,2,true);
+	m_dataSelectionList = new wxDVSelectionListCtrl(this, wxID_SCATTER_DATA_SELECTOR,2,
+		wxDefaultPosition,wxDefaultSize,wxDVSEL_RADIO_FIRST_COL);
 
 	wxBoxSizer *topSizer = new wxBoxSizer(wxHORIZONTAL);
 	topSizer->Add(m_plotSurface, 1, wxEXPAND|wxALL, 10);

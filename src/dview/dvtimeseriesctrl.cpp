@@ -540,7 +540,7 @@ wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, TimeSeri
 	scrollerAndZoomSizer->Add( pref_btn, 0, wxALL|wxEXPAND, 1);
 	
 	//Contains boxes to turn lines on or off.
-	m_dataSelector = new wxDVSelectionListCtrl(this, ID_DATA_CHANNEL_SELECTOR, 2, false);
+	m_dataSelector = new wxDVSelectionListCtrl(this, ID_DATA_CHANNEL_SELECTOR, 2);
 		
 	wxBoxSizer *graph_sizer = new wxBoxSizer(wxHORIZONTAL);	
 	graph_sizer->Add( m_plotSurface, 1, wxEXPAND|wxALL, 4);

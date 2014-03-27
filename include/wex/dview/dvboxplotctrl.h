@@ -2,7 +2,7 @@
 #define __DVBoxPlotCtrl_h
 
 /*
-* wxDVStatisticsCtrl.h
+* wxDVBoxPlotCtrl.h
 *
 * This is a wxPanel that contains DView box plot functionality, as well as
 * a list of channels (different data sets) that can be viewed.
@@ -24,14 +24,12 @@ class wxDVSelectionListCtrl;
 class wxGridSizer;
 class wxCheckBox;
 
-enum StatisticsType { MEAN = 0, MIN, MAX, SUMMATION, STDEV, AVGDAILYMIN, AVGDAILYMAX };
-
-class wxDVStatisticsPlot : public wxPLPlottable
+class wxDVBoxPlot : public wxPLPlottable
 {
 public:
-	wxDVStatisticsPlot(wxDVStatisticsDataSet *ds, bool OwnsDataset = false);
+	wxDVBoxPlot(wxDVStatisticsDataSet *ds, bool OwnsDataset = false);
 
-	~wxDVStatisticsPlot();
+	~wxDVBoxPlot();
 
 	void SetColour(const wxColour &col);
 	virtual wxString GetXDataLabel() const;
@@ -47,7 +45,7 @@ public:
 	wxDVStatisticsDataSet *GetDataSet() const { return m_data; }
 
 	std::vector<wxString> GetExportableDatasetHeaders(wxUniChar sep, StatisticsType type) const;
-	std::vector<wxRealPoint> wxDVStatisticsPlot::GetExportableDataset(StatisticsType type) const;
+	std::vector<wxRealPoint> wxDVBoxPlot::GetExportableDataset(StatisticsType type) const;
 
 private:
 	wxDVStatisticsDataSet *m_data;
@@ -55,14 +53,14 @@ private:
 	bool m_ownsDataset;
 };
 
-class wxDVStatisticsCtrl : public wxPanel
+class wxDVBoxPlotCtrl : public wxPanel
 {
 public:
-	wxDVStatisticsCtrl(wxWindow *parent, wxWindowID id);
-	virtual ~wxDVStatisticsCtrl();
+	wxDVBoxPlotCtrl(wxWindow *parent, wxWindowID id);
+	virtual ~wxDVBoxPlotCtrl();
 
-	//When a data set is added, wxDVStatisticsCtrl creates a plottable with a pointer to that data.  Does not take ownership.
-	void AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, bool refresh_ui, double xOffset = 0.0);
+	//When a data set is added, wxDVBoxPlotCtrl creates a plottable with a pointer to that data.  Does not take ownership.
+	void AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, bool refresh_ui);
 	bool RemoveDataSet(wxDVTimeSeriesDataSet *d); //Releases ownership, does not delete. //true if found & removed.
 	void RemoveAllDataSets(); //Clears all data sets from graphs and memory.
 
@@ -99,7 +97,7 @@ protected:
 		const std::vector<int>& selectedChannelIndices, bool forceUpdate = false);
 
 private:
-	std::vector<wxDVStatisticsPlot*> m_plots;
+	std::vector<wxDVBoxPlot*> m_plots;
 
 	//This array contains the visible graphs associated with each axis position on each graph.
 	std::vector<std::vector<int>*> m_selectedChannelIndices;

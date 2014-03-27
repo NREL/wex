@@ -115,10 +115,11 @@
     <ClInclude Include="..\include\wex\plot\plplotctrl.h" />
     <ClInclude Include="..\include\wex\plot\plscatterplot.h" />
     <ClInclude Include="..\include\wex\ribbonbook.h" />
+    <ClInclude Include="..\include\wex\snaplay.h" />
     <ClInclude Include="..\include\wex\uiform.h" />
     <ClInclude Include="..\include\wex\utils.h" />
     <ClInclude Include="..\src\pdf\wxmemdbg.h" />
-    <ClInclude Include="..\include\wex\dview\dvstatisticsctrl.h" />
+    <ClInclude Include="..\include\wex\dview\dvboxplotctrl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\codeedit.cpp" />
@@ -201,9 +202,10 @@
     <ClCompile Include="..\src\plot\pllineplot.cpp" />
     <ClCompile Include="..\src\plot\plplotctrl.cpp" />
     <ClCompile Include="..\src\plot\plscatterplot.cpp" />
+    <ClCompile Include="..\src\snaplay.cpp" />
     <ClCompile Include="..\src\uiform.cpp" />
     <ClCompile Include="..\src\utils.cpp" />
-    <ClCompile Include="..\src\dview\dvstatisticsctrl.cpp" />
+    <ClCompile Include="..\src\dview\dvboxplotctrl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\pdf\pdfcjkfontdata.inc" />

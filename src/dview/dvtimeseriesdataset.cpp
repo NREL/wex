@@ -152,6 +152,11 @@ double wxDVArrayDataSet::GetTimeStep() const
 	return m_timestep;
 }
 
+double wxDVArrayDataSet::GetOffset() const
+{
+	return m_offset;
+}
+
 wxString wxDVArrayDataSet::GetSeriesTitle() const
 {
 	return m_varLabel;
@@ -231,14 +236,225 @@ void wxDVArrayDataSet::RecomputeXData()
 
 // ******** Statistics data set *********** //
 
-wxDVStatisticsDataSet::wxDVStatisticsDataSet()
-: m_timestep(1), m_offset(0)
+wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 {
-}
+	baseDataset = d;
 
-wxDVStatisticsDataSet::wxDVStatisticsDataSet(const wxString &var, const wxString &units, const double &timestep)
-: m_varLabel(var), m_varUnits(units), m_timestep(timestep), m_offset(0)
-{
+	double MinHrs = d->GetMinHours();
+	double MaxHrs = d->GetMaxHours();
+	double Offset = d->GetOffset();
+
+	//Create monthly statistics from m_data
+	double nextDay = 0.0;
+	double nextMonth = 0.0;
+	double currentMonth = 0.0;
+	double year = 0.0;
+	double counter = 0.0;
+	double sum = 0.0;
+	double avg = 0.0;
+	double min = 0.0;
+	double max = 0.0;
+	double StDev = 0.0;
+	double AvgDailyMin = 0.0;
+	double AvgDailyMax = 0.0;
+	int DayNumber = 0;
+	int FirstOrdinalOfMonth = 0;
+	double DayCounter = 0.0;
+	StatisticsPoint sp;
+	wxRealPoint DayStats[31];
+	double StDevCounter = 0.0;
+
+	while (MinHrs > 8760.0)
+	{
+		year += 8760.0;
+		MinHrs -= 8760.0;
+	}
+
+	while (nextDay < MinHrs)
+	{
+		nextDay += 24.0;
+	}
+
+	if (MinHrs >= 0.0 && MinHrs < 744.0) { currentMonth = year; nextMonth = year + 744.0; }
+	else if (MinHrs >= 744.0 && MinHrs < 1416.0) { currentMonth = year + 744.0; nextMonth = year + 1416.0; }
+	else if (MinHrs >= 1416.0 && MinHrs < 2160.0) { currentMonth = year + 1416.0; nextMonth = year + 2160.0; }
+	else if (MinHrs >= 2160.0 && MinHrs < 2880.0) { currentMonth = year + 2160.0; nextMonth = year + 2880.0; }
+	else if (MinHrs >= 2880.0 && MinHrs < 3624.0) { currentMonth = year + 2880.0; nextMonth = year + 3624.0; }
+	else if (MinHrs >= 3624.0 && MinHrs < 4344.0) { currentMonth = year + 3624.0; nextMonth = year + 4344.0; }
+	else if (MinHrs >= 4344.0 && MinHrs < 5088.0) { currentMonth = year + 4344.0; nextMonth = year + 5088.0; }
+	else if (MinHrs >= 5088.0 && MinHrs < 5832.0) { currentMonth = year + 5088.0; nextMonth = year + 5832.0; }
+	else if (MinHrs >= 5832.0 && MinHrs < 6552.0) { currentMonth = year + 5832.0; nextMonth = year + 6552.0; }
+	else if (MinHrs >= 6552.0 && MinHrs < 7296.0) { currentMonth = year + 6552.0; nextMonth = year + 7296.0; }
+	else if (MinHrs >= 7296.0 && MinHrs < 8016.0) { currentMonth = year + 7296.0; nextMonth = year + 8016.0; }
+	else if (MinHrs >= 8016.0 && MinHrs < 8760.0) { currentMonth = year + 8016.0; nextMonth = year + 8760.0; }
+
+	for (size_t i = 0; i < d->Length(); i++)
+	{
+		if (d->At(i).x >= nextDay)
+		{
+			if (i != 0)
+			{
+				DayStats[DayNumber] = wxRealPoint(AvgDailyMin, AvgDailyMax);
+				DayNumber++;
+				AvgDailyMin = 0.0;
+				AvgDailyMax = 0.0;
+				nextDay += 24.0;
+			}
+		}
+
+		if (d->At(i).x >= nextMonth)
+		{
+			if (i != 0 && counter != 0)
+			{
+				avg = sum / counter;
+
+				//Calculate standard deviation for the month's data
+				StDev = 0.0;
+				StDevCounter = 0.0;
+				for (size_t j = FirstOrdinalOfMonth; j < i; j++)
+				{
+					StDev += (d->At(j).y - avg) * (d->At(j).y - avg);
+					StDevCounter += 1.0;
+				}
+				if (StDevCounter > 0.0)
+				{
+					StDev = StDev / StDevCounter;
+					StDev = sqrt(StDev);
+				}
+
+				//Summarize the daily Min and Max values into average daily min and max values for the month.
+				for (size_t j = 0; j < 31; j++)
+				{
+					if (DayStats[j].y > 0)	//Not every month will have 31 days and endpoints may be missing some days in the month, as denoted by a 0 maximum value
+					{
+						AvgDailyMin += DayStats[j].x;
+						AvgDailyMax += DayStats[j].y;
+						DayCounter += 1.0;
+					}
+				}
+				if (DayCounter > 0.0)
+				{
+					AvgDailyMax = AvgDailyMax / DayCounter;
+					AvgDailyMin = AvgDailyMin / DayCounter;
+				}
+
+				sp = StatisticsPoint();
+				if (Offset < 672.0 && Offset > 0.0)	//xOffset is within number of hours in the shortest month
+				{
+					sp.x = currentMonth + Offset;
+				}
+				else
+				{
+					sp.x = currentMonth + ((nextMonth - currentMonth) / 2.0);	//Make x the middle of the month
+				}
+				sp.Max = max;
+				sp.Min = min;
+				sp.Sum = sum;
+				sp.Mean = avg;
+				sp.StDev = StDev;
+				sp.AvgDailyMax = AvgDailyMax;
+				sp.AvgDailyMin = AvgDailyMin;
+
+				Append(sp);
+
+				currentMonth = nextMonth;
+				if (nextMonth == 744.0 + year) { nextMonth = 1416.0 + year; }
+				else if (nextMonth == 1416.0 + year) { nextMonth = 2160.0 + year; }
+				else if (nextMonth == 2160.0 + year) { nextMonth = 2880.0 + year; }
+				else if (nextMonth == 2880.0 + year) { nextMonth = 3624.0 + year; }
+				else if (nextMonth == 3624.0 + year) { nextMonth = 4344.0 + year; }
+				else if (nextMonth == 4344.0 + year) { nextMonth = 5088.0 + year; }
+				else if (nextMonth == 5088.0 + year) { nextMonth = 5832.0 + year; }
+				else if (nextMonth == 5832.0 + year) { nextMonth = 6552.0 + year; }
+				else if (nextMonth == 6552.0 + year) { nextMonth = 7296.0 + year; }
+				else if (nextMonth == 7296.0 + year) { nextMonth = 8016.0 + year; }
+				else if (nextMonth == 8016.0 + year) { nextMonth = 8760.0 + year; }
+				else if (nextMonth == 8760.0 + year)
+				{
+					year += 8760.0;
+					nextMonth = 744.0 + year;
+				}
+			}
+
+			counter = 0.0;
+			sum = 0.0;
+			avg = 0.0;
+			min = 0.0;
+			max = 0.0;
+			StDev = 0.0;
+			AvgDailyMin = 0.0;
+			AvgDailyMax = 0.0;
+			DayNumber = 0;
+			DayCounter = 0.0;
+			FirstOrdinalOfMonth = i;
+		}
+
+		counter += 1.0;
+		sum += d->At(i).y;
+		if (min > d->At(i).y) { min = d->At(i).y; }
+		if (max < d->At(i).y) { max = d->At(i).y; }
+		if (AvgDailyMin > d->At(i).y) { AvgDailyMin = d->At(i).y; }
+		if (AvgDailyMax < d->At(i).y) { AvgDailyMax = d->At(i).y; }
+	}
+
+	//Prevent appending the final point if it represents 12/31 24:00, which the system interprets as 1/1 0:00 and creates a point for January of the next year
+	if (MaxHrs > 0.0 && fmod(MaxHrs, 8760.0) != 0)
+	{
+		DayStats[DayNumber] = wxRealPoint(AvgDailyMin, AvgDailyMax);
+		AvgDailyMin = 0.0;
+		AvgDailyMax = 0.0;
+
+		avg = sum / counter;
+
+		//Calculate standard deviation for the month's data
+		StDev = 0.0;
+		StDevCounter = 0.0;
+		for (size_t j = FirstOrdinalOfMonth; j < d->Length(); j++)
+		{
+			StDev += (d->At(j).y - avg) * (d->At(j).y - avg);
+			StDevCounter += 1.0;
+		}
+		if (StDevCounter > 0.0)
+		{
+			StDev = StDev / StDevCounter;
+			StDev = sqrt(StDev);
+		}
+
+		//Summarize the daily Min and Max values into average daily min and max values for the month.
+		for (size_t j = 0; j < 31; j++)
+		{
+			if (DayStats[j].y > 0)	//Not every month will have 31 days and endpoints may be missing some days in the month, as denoted by a 0 maximum value
+			{
+				AvgDailyMin += DayStats[j].x;
+				AvgDailyMax += DayStats[j].y;
+				DayCounter += 1.0;
+			}
+		}
+		if (DayCounter > 0.0)
+		{
+			AvgDailyMax = AvgDailyMax / DayCounter;
+			AvgDailyMin = AvgDailyMin / DayCounter;
+		}
+
+		sp = StatisticsPoint();
+		if (Offset < 672.0 && Offset > 0.0)	//xOffset is within number of hours in the shortest month
+		{
+			sp.x = currentMonth + Offset;
+		}
+		else
+		{
+			sp.x = currentMonth + ((nextMonth - currentMonth) / 2.0);	//Make x the middle of the month
+		}
+		sp.Max = max;
+		sp.Min = min;
+		sp.Sum = sum;
+		sp.Mean = avg;
+		sp.StDev = StDev;
+		sp.AvgDailyMax = AvgDailyMax;
+		sp.AvgDailyMin = AvgDailyMin;
+
+		Append(sp);
+	}
 }
 
 StatisticsPoint wxDVStatisticsDataSet::At(size_t i) const
@@ -258,7 +474,7 @@ StatisticsPoint wxDVStatisticsDataSet::At(size_t i) const
 	}
 	else
 	{
-		p.x = m_offset + (i * m_timestep);
+		p.x = baseDataset->GetOffset() + (i * baseDataset->GetTimeStep());
 		p.Sum = 0.0;
 		p.Min = 0.0;
 		p.Max = 0.0;
@@ -276,24 +492,9 @@ size_t wxDVStatisticsDataSet::Length() const
 	return m_sData.size();
 }
 
-double wxDVStatisticsDataSet::GetTimeStep() const
+bool wxDVStatisticsDataSet::IsSourceDataset(wxDVTimeSeriesDataSet *d)
 {
-	return m_timestep;
-}
-
-double wxDVStatisticsDataSet::GetOffset() const
-{
-	return m_offset;
-}
-
-wxString wxDVStatisticsDataSet::GetSeriesTitle() const
-{
-	return m_varLabel;
-}
-
-wxString wxDVStatisticsDataSet::GetUnits() const
-{
-	return m_varUnits;
+	return d == baseDataset;
 }
 
 void wxDVStatisticsDataSet::Clear()
@@ -311,89 +512,42 @@ void wxDVStatisticsDataSet::Append(const StatisticsPoint &p)
 	m_sData.push_back(p);
 }
 
-void wxDVStatisticsDataSet::SetSeriesTitle(const wxString &title)
+wxString wxDVStatisticsDataSet::GetSeriesTitle() const
 {
-	m_varLabel = title;
+	return baseDataset->GetSeriesTitle();
 }
 
-void wxDVStatisticsDataSet::SetUnits(const wxString &units)
+wxString wxDVStatisticsDataSet::GetUnits() const
 {
-	m_varUnits = units;
+	return baseDataset->GetUnits();
 }
 
-void wxDVStatisticsDataSet::SetTimeStep(double ts, bool recompute_x)
+double wxDVStatisticsDataSet::GetTimeStep() const
 {
-	m_timestep = ts;
-	if (recompute_x) RecomputeXData();
+	return baseDataset->GetTimeStep();
 }
 
-void wxDVStatisticsDataSet::SetOffset(double off, bool recompute_x)
+double wxDVStatisticsDataSet::GetOffset() const
 {
-	m_offset = off;
-	if (recompute_x) RecomputeXData();
-}
-
-void wxDVStatisticsDataSet::RecomputeXData()
-{
-	for (size_t i = 0; i < m_sData.size(); i++)
-		m_sData[i].x = m_offset + i*m_timestep;
-}
-
-void wxDVStatisticsDataSet::GetMinAndMaxInRange(double* min, double* max,
-	size_t startIndex, size_t endIndex)
-{
-	if (endIndex > Length())
-		endIndex = Length();
-	if (startIndex < 0)
-		startIndex = 0;
-
-	double myMin = At(startIndex).Min;
-	double myMax = At(startIndex).Max;
-
-	for (size_t i = startIndex + 1; i<endIndex; i++)
-	{
-		if (At(i).Min < myMin)
-			myMin = At(i).Min;
-		if (At(i).Max > myMax)
-			myMax = At(i).Max;
-	}
-
-	if (min)
-		*min = myMin;
-	if (max)
-		*max = myMax;
-}
-
-void wxDVStatisticsDataSet::GetMinAndMaxInRange(double* min, double* max, double startHour, double endHour)
-{
-	if (startHour < At(0).x)
-		startHour = At(0).x;
-	if (endHour < At(0).x)
-		endHour = At(0).x;
-	size_t startIndex = size_t((startHour - At(0).x) / GetTimeStep());
-	size_t endIndex = size_t((endHour - At(0).x) / GetTimeStep() + 2);
-
-	if (startIndex < 0)
-		startIndex = 0;
-	if (startIndex > Length())
-		return;
-	if (endIndex > Length())
-		endIndex = Length();
-
-	GetMinAndMaxInRange(min, max, startIndex, endIndex);
-}
-
-void wxDVStatisticsDataSet::GetDataMinAndMax(double* min, double* max)
-{
-	GetMinAndMaxInRange(min, max, size_t(0), Length());
+	return baseDataset->GetOffset();
 }
 
 double wxDVStatisticsDataSet::GetMinHours()
 {
-	return At(0).x;
+	return baseDataset->At(0).x;
 }
 
 double wxDVStatisticsDataSet::GetMaxHours()
 {
-	return At(Length() - 1).x;
+	return baseDataset->At(Length() - 1).x;
+}
+
+void wxDVStatisticsDataSet::GetDataMinAndMax(double* min, double* max)
+{
+	baseDataset->GetMinAndMaxInRange(min, max, size_t(0), baseDataset->Length());
+}
+
+void wxDVStatisticsDataSet::GetMinAndMaxInRange(double* min, double* max, double startHour, double endHour)
+{
+	baseDataset->GetMinAndMaxInRange(min, max, startHour, endHour);
 }

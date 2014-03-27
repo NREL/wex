@@ -37,6 +37,7 @@ public:
 #include "wex/plot/plscatterplot.h"
 
 #include "wex/dview/dvplotctrl.h"
+#include "wex/dview/dvselectionlist.h"
 
 #include "wex/codeedit.h"
 #include "wex/lkscript.h"
@@ -51,6 +52,56 @@ public:
 #include "demo_bitmap.cpng"
 
 #include "wex/uiform.h"
+#include "wex/snaplay.h"
+
+void TestDVSelectionCtrl()
+{
+	wxFrame *frame = new wxFrame( 0, wxID_ANY, wxT("wxDVSelectionCtrl in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(250,510) );
+	wxDVSelectionListCtrl *sel = new wxDVSelectionListCtrl( frame, wxID_ANY, 
+		2, wxDefaultPosition, wxDefaultSize, wxDVSEL_RADIO_FIRST_COL );
+	sel->SetBackgroundColour( *wxWHITE );
+	//sel->SetFont( *wxSWISS_FONT );
+
+	for( int gg=1;gg<=3;gg++)
+		for( size_t i=0;i<5;i++ )
+			sel->Append( wxString::Format("Item %d", (int)i+1) , wxString::Format("Group %d", gg ) );
+
+	sel->Append("Ungrouped A" );
+	sel->Append("Ungrouped B" );
+	sel->Append("Ungrouped C" );
+
+	frame->Show();
+
+}
+
+void TestSnapLayout( wxWindow *parent )
+{
+	wxFrame *frame = new wxFrame( parent, wxID_ANY, wxT("wxSnapLayout in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(850,500) );
+#ifdef __WXMSW__
+	frame->SetIcon( wxICON( appicon ) );
+#endif
+
+	wxSnapLayout *lay = new wxSnapLayout(frame, wxID_ANY);
+
+	
+	wxPLPlotCtrl *plot = new wxPLPlotCtrl( lay, wxID_ANY, wxDefaultPosition, wxDefaultSize );
+	//plot->SetBackgroundColour( *wxWHITE );
+	plot->SetTitle( wxT("Demo Plot: using \\theta(x)=sin(x)^2, x_0=1\n\\zeta(x)=3\\dot sin^2(x)") );
+	plot->SetClientSize( 400, 300 );
+	wxFont font( *wxNORMAL_FONT );
+	font.SetPointSize( 16 );
+	plot->SetFont( font );
+	
+	lay->Add( plot, 400, 300 );
+	lay->Add( new wxButton( lay, wxID_ANY, "EKJRLKEJWKR WJLKER WKEJRLKWJELR WE" ) );
+	lay->Add( new wxButton( lay, wxID_ANY, "WE" ) );
+	lay->Add( new wxCheckListBox( lay, wxID_ANY ) );
+	lay->Add( new wxButton( lay, wxID_ANY, "%IN@)#*^^^^^$@#$_________________!!" ) );
+	lay->Add( new wxCheckListBox( lay, wxID_ANY ) );
+
+	frame->Show();
+
+}
 
 
 void TestPLPlot( wxWindow *parent )
@@ -63,6 +114,10 @@ void TestPLPlot( wxWindow *parent )
 	wxPLPlotCtrl *plot = new wxPLPlotCtrl( frame, wxID_ANY, wxDefaultPosition, wxDefaultSize );
 	//plot->SetBackgroundColour( *wxWHITE );
 	plot->SetTitle( wxT("Demo Plot: using \\theta(x)=sin(x)^2, x_0=1\n\\zeta(x)=3\\dot sin^2(x)") );
+
+	wxFont font( *wxNORMAL_FONT );
+	font.SetPointSize( 16 );
+	plot->SetFont( font );
 
 		
 	wxPLLabelAxis *mx = new wxPLLabelAxis( -1, 12, "Months of the year (\\Chi\\Psi)" );
@@ -299,13 +354,19 @@ public:
 		
 		m_locale.Init();
 	
-		wxFrame *frame = new NumericTest();
-		frame->Show();
-		wxLogWindow *log = new wxLogWindow( frame , "Log");
+		wxLogWindow *log = new wxLogWindow( 0 , "Log");
 		wxLog::SetActiveTarget(log);
 		log->Show();
 
+		//wxFrame *frame = new NumericTest();
+		//frame->Show();
+		
+
 		//TestPLPlot( 0 );
+
+		TestSnapLayout( 0 );
+
+		//TestDVSelectionCtrl();
 
 
 		/*

@@ -34,9 +34,10 @@ public:
 	virtual wxRealPoint At(size_t i) const = 0;
 	virtual size_t Length() const = 0;
 	virtual double GetTimeStep() const = 0;
+	virtual double GetOffset() const = 0;
 	virtual wxString GetSeriesTitle() const = 0;
 	virtual wxString GetUnits() const = 0;
-	
+
 	/*Helper Functions*/
 	wxRealPoint operator[] (size_t i) const;
 
@@ -63,6 +64,7 @@ public:
 	virtual wxRealPoint At(size_t i) const;
 	virtual size_t Length() const;
 	virtual double GetTimeStep() const;
+	virtual double GetOffset() const;
 	virtual wxString GetSeriesTitle() const;
 	virtual wxString GetUnits() const;
 
@@ -90,6 +92,8 @@ private:
 	
 };
 
+enum StatisticsType { MEAN = 0, MIN, MAX, SUMMATION, STDEV, AVGDAILYMIN, AVGDAILYMAX };
+
 struct StatisticsPoint
 {
 	double x;
@@ -105,39 +109,29 @@ struct StatisticsPoint
 class wxDVStatisticsDataSet
 {
 public:
-	wxDVStatisticsDataSet();
-	wxDVStatisticsDataSet(const wxString &var, const wxString &units, const double &timestep);
+	wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d);
 
 	StatisticsPoint At(size_t i) const;
 	size_t Length() const;
+	void Clear();
+	void Alloc(size_t n);
+	void Append(const StatisticsPoint &p);
+	bool IsSourceDataset(wxDVTimeSeriesDataSet *d);
+
+	//We need the methods below because we can't return a reference to baseDataset itself because of its pure virtual methods
 	double GetTimeStep() const;
 	double GetOffset() const;
 	wxString GetSeriesTitle() const;
 	wxString GetUnits() const;
 
-	void Clear();
-	void Alloc(size_t n);
-	void Append(const StatisticsPoint &p);
-
-	void SetSeriesTitle(const wxString &title);
-	void SetUnits(const wxString &units);
-	void SetTimeStep(double ts, bool recompute_x = true);
-	void SetOffset(double off, bool recompute_x = true);
-
 	double GetMinHours();
 	double GetMaxHours();
-	void GetMinAndMaxInRange(double* min, double* max, size_t startIndex, size_t endIndex);
-	void GetMinAndMaxInRange(double* min, double* max, double startHour, double endHour);
 	void GetDataMinAndMax(double* min, double* max);
+	void GetMinAndMaxInRange(double* min, double* max, double startHour, double endHour);
 
-protected:
-	void RecomputeXData();
 private:
-	wxString m_varLabel;
-	wxString m_varUnits;
-	double m_timestep; // timestep in hours - fractional hours okay
-	double m_offset; // offset in hours from Jan1 00:00 - fractional hours okay
 	std::vector<StatisticsPoint> m_sData;
+	wxDVTimeSeriesDataSet *baseDataset;
 
 };
 #endif

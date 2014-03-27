@@ -67,5 +67,9 @@ double wxMDHMToTime( int mo, int dy, int hr, int min = 0);
 wxString wxFormatMDHM( int mo, int dy, int hr, int min = 0, bool use_12_hr = true );
 wxString wxFormatTime( double time, bool use_12_hr = true );
 
+
+// sort (n^2) names and labels together
+void wxSortByLabels(wxArrayString &names, wxArrayString &labels);
+
 #endif
 

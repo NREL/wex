@@ -54,7 +54,7 @@ wxDVPlotCtrl::wxDVPlotCtrl(wxWindow* parent, wxWindowID id,
 	m_monthlyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, MONTHLY_TIME_SERIES, AVERAGE);
 	m_dMap = new wxDVDMapCtrl(m_plotNotebook, wxID_ANY);
 	m_profilePlots = new wxDVProfileCtrl(m_plotNotebook, wxID_ANY);
-	m_statisticsPlot = new wxDVStatisticsCtrl(m_plotNotebook, wxID_ANY);
+	m_boxPlot = new wxDVBoxPlotCtrl(m_plotNotebook, wxID_ANY);
 	m_pnCdf = new wxDVPnCdfCtrl(m_plotNotebook, wxID_ANY);
 	m_durationCurve = new wxDVDCCtrl(m_plotNotebook, wxID_ANY);
 	m_scatterPlot = new wxDVScatterPlotCtrl(m_plotNotebook, wxID_ANY);
@@ -90,18 +90,21 @@ void wxDVPlotCtrl::DisplayTabs()
 	int PageCount = m_plotNotebook->GetPageCount();
 
 	//We have to remove all pages and then add back the ones we want since wxMetroNotebook does not have a way to insert a page at a specified index
-	//However, since the time series tab is always first and always displayed we don't remove it since there is a bug in the wxMetroNotebook the errors on removing the last item from the pagelist.
+	//However, since the time series tab is always first and always displayed we don't remove it since there is a bug in the wxMetroNotebook that errors on removing the last item from the pagelist.
 	for (int i = PageCount - 1; i > 0; i--)
 	{
 		m_plotNotebook->RemovePage(i);
 	}
+
+	//TODO:  get rid of blank rectangle at upper left of tab bar when we first open the application
 
 	if (m_plotNotebook->GetPageCount() == 0) { m_plotNotebook->AddPage(m_timeSeries, _("Time Series"), /*wxBITMAP_PNG_FROM_DATA( time ), */true); } //Only add this if it doesn't already exist
 	if (MinTimeStep < 1.0) { m_plotNotebook->AddPage(m_hourlyTimeSeries, _("Hourly"), /*wxBITMAP_PNG_FROM_DATA( time ), */false); }
 	if (MinTimeStep < 24.0) { m_plotNotebook->AddPage(m_dailyTimeSeries, _("Daily"), /*wxBITMAP_PNG_FROM_DATA( time ), */false); }
 	if (MinTimeStep < 672.0) { m_plotNotebook->AddPage(m_monthlyTimeSeries, _("Monthly"), /*wxBITMAP_PNG_FROM_DATA( time ), */false); }
 	m_plotNotebook->AddPage(m_profilePlots, _("Profiles"), /*wxBITMAP_PNG_FROM_DATA( calendar ), */false);
-	m_plotNotebook->AddPage(m_statisticsPlot, _("Statistics"), /*wxBITMAP_PNG_FROM_DATA( dmap ), */false);
+	//TODO:  uncomment line below once we finish implementing box plot.  If we don't implement it reasonable soon then comment out other lines that reference it.
+	//m_plotNotebook->AddPage(m_boxPlot, _("Box Plot"), /*wxBITMAP_PNG_FROM_DATA( dmap ), */false);
 	m_plotNotebook->AddPage(m_dMap, _("Heat Map"), /*wxBITMAP_PNG_FROM_DATA( dmap ), */false);
 	m_plotNotebook->AddPage(m_scatterPlot, _("Scatter"), /*wxBITMAP_PNG_FROM_DATA( scatter ), */false);
 	m_plotNotebook->AddPage(m_pnCdf, _("PDF / CDF"), /*wxBITMAP_PNG_FROM_DATA( barchart ), */false);
@@ -122,7 +125,7 @@ void wxDVPlotCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, b
 	m_monthlyTimeSeries->AddDataSet(d, group, update_ui);
 	m_dMap->AddDataSet(d, group, update_ui);
 	m_profilePlots->AddDataSet(d, group, update_ui);
-	m_statisticsPlot->AddDataSet(d, group, update_ui);
+	m_boxPlot->AddDataSet(d, group, update_ui);
 	m_pnCdf->AddDataSet(d, group, update_ui);
 	m_durationCurve->AddDataSet(d, group, update_ui);
 	m_scatterPlot->AddDataSet(d, group, update_ui);
@@ -136,7 +139,7 @@ void wxDVPlotCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 	m_monthlyTimeSeries->RemoveDataSet(d);
 	m_dMap->RemoveDataSet(d);
 	m_profilePlots->RemoveDataSet(d);
-	m_statisticsPlot->RemoveDataSet(d);
+	m_boxPlot->RemoveDataSet(d);
 	m_pnCdf->RemoveDataSet(d);
 	m_durationCurve->RemoveDataSet(d);
 	m_scatterPlot->RemoveDataSet(d);
@@ -152,7 +155,7 @@ void wxDVPlotCtrl::RemoveAllDataSets()
 	m_monthlyTimeSeries->RemoveAllDataSets();
 	m_dMap->RemoveAllDataSets();
 	m_profilePlots->RemoveAllDataSets();
-	m_statisticsPlot->RemoveAllDataSets();
+	m_boxPlot->RemoveAllDataSets();
 	m_pnCdf->RemoveAllDataSets();
 	m_durationCurve->RemoveAllDataSets();
 	m_scatterPlot->RemoveAllDataSets();
@@ -228,9 +231,9 @@ wxDVPlotCtrlSettings wxDVPlotCtrl::GetPerspective()
 	settings.SetProperty(wxT("profileSelectedNames"), m_profilePlots->GetDataSelectionList()->GetSelectedNamesInCol(0));
 
 	//***Statistics Tab Properties***
-	settings.SetProperty(wxT("tsAxisMin"), m_statisticsPlot->GetViewMin());
-	settings.SetProperty(wxT("tsAxisMax"), m_statisticsPlot->GetViewMax());
-	settings.SetProperty(wxT("tsSelectedNames"), m_statisticsPlot->GetDataSelectionList()->GetSelectedNamesInCol(0));
+	settings.SetProperty(wxT("tsAxisMin"), m_boxPlot->GetViewMin());
+	settings.SetProperty(wxT("tsAxisMax"), m_boxPlot->GetViewMax());
+	settings.SetProperty(wxT("tsSelectedNames"), m_boxPlot->GetDataSelectionList()->GetSelectedNamesInCol(0));
 
 	//***PDF CDF Tab Properties***
 	settings.SetProperty(wxT("pnCdfCurrentName"), m_pnCdf->GetCurrentDataName());
@@ -324,7 +327,7 @@ void wxDVPlotCtrl::SetPerspective(wxDVPlotCtrlSettings& settings)
 	m_profilePlots->SetSelectedNames(settings.GetProperty(wxT("profileSelectedNames")));
 
 	//***MonthlyTimeSeries Properties***
-	m_statisticsPlot->SetSelectedNames(settings.GetProperty(wxT("tsSelectedNames")));
+	m_boxPlot->SetSelectedNames(settings.GetProperty(wxT("tsSelectedNames")));
 
 
 	//***PDF CDF Tab Properties***
@@ -375,7 +378,7 @@ void wxDVPlotCtrl::SelectDataIndex(int index, bool allTabs)
 	m_monthlyTimeSeries->SelectDataSetAtIndex(index);
 	m_dMap->SelectDataSetAtIndex(index);
 	m_profilePlots->SelectDataSetAtIndex(index);
-	m_statisticsPlot->SelectDataSetAtIndex(index);
+	m_boxPlot->SelectDataSetAtIndex(index);
 	if (allTabs)
 	{
 		m_pnCdf->SelectDataSetAtIndex(index);
@@ -409,7 +412,7 @@ void wxDVPlotCtrl::SelectDataIndexOnTab(int index, int tab)
 		m_profilePlots->SelectDataSetAtIndex(index);
 		break;
 	case TAB_STATS:
-		m_statisticsPlot->SelectDataSetAtIndex(index);
+		m_boxPlot->SelectDataSetAtIndex(index);
 		break;
 	case TAB_PDF:
 		m_pnCdf->SelectDataSetAtIndex(index);
@@ -487,8 +490,8 @@ void wxDVPlotCtrl::SelectDataOnBlankTabs()
 	if (m_profilePlots->GetDataSelectionList()->GetSelectedNamesInCol(0).size() == 0)
 		m_profilePlots->SelectDataSetAtIndex(0);
 
-	if (m_statisticsPlot != 0 && m_statisticsPlot->GetDataSelectionList()->GetSelectedNamesInCol(0).size() == 0)
-		m_statisticsPlot->SelectDataSetAtIndex(0);
+	if (m_boxPlot != 0 && m_boxPlot->GetDataSelectionList()->GetSelectedNamesInCol(0).size() == 0)
+		m_boxPlot->SelectDataSetAtIndex(0);
 
 	if ( m_dataSets[0]->Length() <= 8760)
 	{

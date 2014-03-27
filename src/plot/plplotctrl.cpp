@@ -16,10 +16,11 @@
 #include <wx/txtstrm.h>
 #include <wx/sstream.h>
 #include <wx/dcsvg.h>
+#include <wx/tipwin.h>
 
 #include "wex/plot/plhistplot.h"
 #include "wex/plot/plplotctrl.h"
-#include "wex/dview/dvstatisticsctrl.h"
+#include "wex/dview/dvboxplotctrl.h"
 #include "wex/pdf/pdfdc.h"
 
 #ifdef __WXMSW__
@@ -1165,7 +1166,7 @@ void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visi
 	double worldMin;
 	double worldMax;
 	wxPLHistogramPlot* histPlot;
-	wxDVStatisticsPlot* statPlot;
+	wxDVBoxPlot* statPlot;
 	std::vector<bool> includeXForPlot(m_plots.size(), false);
 	std::vector<wxString> Headers;
 	std::vector< std::vector<wxRealPoint> > data;
@@ -1206,7 +1207,7 @@ void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visi
 		{
 			//Do nothing
 		}
-		else if (statPlot = dynamic_cast<wxDVStatisticsPlot*>(m_plots[i].plot))
+		else if (statPlot = dynamic_cast<wxDVBoxPlot*>(m_plots[i].plot))
 		{
 			//Do nothing
 		}
@@ -1220,7 +1221,7 @@ void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visi
 			}
 		}
 
-		if (statPlot = dynamic_cast<wxDVStatisticsPlot*>(m_plots[i].plot))
+		if (statPlot = dynamic_cast<wxDVBoxPlot*>(m_plots[i].plot))
 		{
 			Headers.clear();
 			Headers.push_back(statPlot->GetExportableDatasetHeaders(sep, MEAN)[0]);
@@ -1277,7 +1278,7 @@ void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visi
 
 		for (size_t PlotNum = 0; PlotNum < m_plots.size(); PlotNum++)
 		{
-			if (statPlot = dynamic_cast<wxDVStatisticsPlot*>(m_plots[PlotNum].plot))
+			if (statPlot = dynamic_cast<wxDVBoxPlot*>(m_plots[PlotNum].plot))
 			{
 				for (size_t StatNum = StatSetCounter; StatNum < StatSetCounter + 7; StatNum++)
 				{
@@ -1692,7 +1693,7 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 			if ( height > 0 ) 
 				legend_bottom = true;
 
-			box.height -= height;
+			box.height -= height + text_space;
 		}
 
 		if ( m_legendPos == RIGHT )
@@ -2220,7 +2221,7 @@ void wxPLPlotCtrl::OnPaint( wxPaintEvent & )
 
 void wxPLPlotCtrl::Invalidate()
 {
-	if ( m_titleLayout != 0 && m_scaleTextSize )
+	if ( m_titleLayout != 0 )
 	{
 		delete m_titleLayout;
 		m_titleLayout = 0;
@@ -2472,6 +2473,73 @@ void wxPLPlotCtrl::OnMotion( wxMouseEvent &evt )
 		UpdateHighlightRegion();
 		m_highlightErase = true;
 	}
+
+	wxRealPoint rpt;
+	wxPLPlottable *ds;
+	wxPoint MousePos;
+	size_t radius = 10;	//radius around a point that will trigger showing tooltip
+	wxString tipText = "";
+	wxTipWindow *tipwindow = NULL;
+	wxPLAxis *xaxis;
+	wxPLAxis *yaxis;
+	double min = 0;
+	double max = 0;
+	wxPoint DataPos;
+	int Xvar = 0;
+	int Yvar = 0;
+
+	if (tipwindow != NULL)
+	{
+		tipwindow->Destroy();
+		tipwindow = NULL;
+	}
+
+	if (!m_x1.axis || m_plots.size() == 0 || evt.Dragging()) { return; }
+
+	MousePos = evt.GetPosition();
+
+	for (size_t PlotNum = 0; PlotNum < m_plots.size(); PlotNum++)
+	{
+		ds = m_plots[PlotNum].plot;
+		xaxis = GetAxis(m_plots[PlotNum].xap);
+		yaxis = GetAxis(m_plots[PlotNum].yap, m_plots[PlotNum].ppos);
+
+		if (xaxis == 0 || yaxis == 0) continue; // this should never be encountered
+
+		min = xaxis->GetWorldMin();
+		max = xaxis->GetWorldMax();
+		wxRect &plotSurface = m_plotRects[m_plots[PlotNum].ppos];
+		wxPLAxisDeviceMapping map(xaxis, plotSurface.x, plotSurface.x + plotSurface.width, yaxis, plotSurface.y + plotSurface.height, plotSurface.y);
+
+		for (size_t i = 0; i < ds->Len(); i++)
+		{
+			rpt = ds->At(i);
+
+			if (rpt.x >= min && rpt.x <= max)
+			{
+				DataPos = map.ToDevice(rpt.x, rpt.y);
+				Xvar = MousePos.x - DataPos.x;
+				Yvar = MousePos.y - DataPos.y;
+
+				if ((Xvar * Xvar) + (Yvar * Yvar) <= (radius * radius))
+				{
+					tipText = "X: " + (wxString)std::to_string(rpt.x) + "\nY: " + (wxString)std::to_string(rpt.y);
+					break;
+				}
+			}
+		}
+
+		if (tipText != "") { break; }
+	}
+
+	if (tipText != "")
+	{
+		tipwindow = new wxTipWindow(this, wxString(tipText));	//TODO:  this line causing error that seems to be in wxWidgets itself and I can't track down why:  ..\..\src\msw\window.cpp(576): 'SetFocus' failed with error 0x00000057 (the parameter is incorrect.).
+		wxRect &rect = wxRect(DataPos.x - radius, DataPos.y - radius, 2 * radius, 2 * radius);
+		tipwindow->SetBoundingRect(rect);
+	}
+
+	evt.Skip();
 }
 
 void wxPLPlotCtrl::OnMouseCaptureLost( wxMouseCaptureLostEvent & )

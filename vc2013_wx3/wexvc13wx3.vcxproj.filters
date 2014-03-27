@@ -345,7 +345,10 @@
     <ClInclude Include="..\include\wex\dview\dvfilereader.h">
       <Filter>dview\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\wex\dview\dvstatisticsctrl.h">
+    <ClInclude Include="..\include\wex\snaplay.h">
+      <Filter>wex\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\dview\dvboxplotctrl.h">
       <Filter>dview\Headers</Filter>
     </ClInclude>
   </ItemGroup>
@@ -596,7 +599,10 @@
     <ClCompile Include="..\src\dview\dvfilereader.cpp">
       <Filter>dview\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\dview\dvstatisticsctrl.cpp">
+    <ClCompile Include="..\src\snaplay.cpp">
+      <Filter>wex\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dview\dvboxplotctrl.cpp">
       <Filter>dview\Sources</Filter>
     </ClCompile>
   </ItemGroup>
