@@ -285,6 +285,7 @@ bool wxExtGridCtrl::IsCopyPasteEnabled()
 
 void wxExtGridCtrl::Copy(bool all, bool with_headers)
 {
+	wxBusyCursor bcurs;
 	int minrow=mSelTopRow, maxrow=mSelBottomRow;
 	int mincol=mSelLeftCol, maxcol=mSelRightCol;
 
@@ -324,6 +325,7 @@ void wxExtGridCtrl::Copy(bool all, bool with_headers)
 
 void wxExtGridCtrl::Paste(bool all)
 {
+	wxBusyCursor bcurs;
 	if (wxTheClipboard->Open())
 	{
 		wxString data;
