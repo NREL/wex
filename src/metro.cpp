@@ -153,7 +153,10 @@ wxMetroButton::wxMetroButton(wxWindow *parent, int id, const wxString &label, co
 	m_state = 0;  // state: 0=normal, 1=hover, 2=click
 	m_pressed = false;
 
-	SetFont( wxMetroTheme::Font( wxMT_NORMAL, 11) );
+	if ( style & wxMB_SMALLFONT )
+		SetFont( *wxNORMAL_FONT );
+	else
+		SetFont( wxMetroTheme::Font( wxMT_NORMAL, 11) );
 }
 
 #define MB_SPACE 6

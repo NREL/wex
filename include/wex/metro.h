@@ -65,6 +65,7 @@ public:
 #define wxMB_DOWNARROW 0x04
 #define wxMB_UPARROW 0x08
 #define wxMB_ALIGNLEFT 0x10
+#define wxMB_SMALLFONT 0x20
 
 class wxMetroButton : public wxWindow
 {
