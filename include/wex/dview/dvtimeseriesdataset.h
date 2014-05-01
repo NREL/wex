@@ -96,6 +96,7 @@ enum StatisticsType { MEAN = 0, MIN, MAX, SUMMATION, STDEV, AVGDAILYMIN, AVGDAIL
 
 struct StatisticsPoint
 {
+	wxString name;
 	double x;
 	double Sum;
 	double Min;

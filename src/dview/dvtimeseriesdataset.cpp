@@ -244,7 +244,8 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 	double MaxHrs = d->GetMaxHours();
 	double Offset = d->GetOffset();
 
-	//Create monthly statistics from m_data
+	//Create monthly and total statistics from m_data
+	wxString name = "";
 	double nextDay = 0.0;
 	double nextMonth = 0.0;
 	double currentMonth = 0.0;
@@ -258,35 +259,47 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 	double AvgDailyMin = 0.0;
 	double AvgDailyMax = 0.0;
 	int DayNumber = 0;
-	int FirstOrdinalOfMonth = 0;
 	double DayCounter = 0.0;
-	StatisticsPoint sp;
-	wxRealPoint DayStats[31];
 	double StDevCounter = 0.0;
+	wxRealPoint DayStats[31];
+	int FirstOrdinalOfMonth = 0;
+	double totalcounter = 0.0;
+	double totalsum = 0.0;
+	double totalmin = 0.0;
+	double totalmax = 0.0;
+	std::vector<wxRealPoint> totalDayStats;
+	StatisticsPoint sp;
+	bool MultiYear = false;
+	int yrNum = 1;
 
 	while (MinHrs > 8760.0)
 	{
 		year += 8760.0;
 		MinHrs -= 8760.0;
+		MaxHrs -= 8760.0;
 	}
+
+	if (MaxHrs > 8760) { MultiYear = true; }	//Determine if the dataset contains data for more than one year
 
 	while (nextDay < MinHrs)
 	{
 		nextDay += 24.0;
 	}
 
-	if (MinHrs >= 0.0 && MinHrs < 744.0) { currentMonth = year; nextMonth = year + 744.0; }
-	else if (MinHrs >= 744.0 && MinHrs < 1416.0) { currentMonth = year + 744.0; nextMonth = year + 1416.0; }
-	else if (MinHrs >= 1416.0 && MinHrs < 2160.0) { currentMonth = year + 1416.0; nextMonth = year + 2160.0; }
-	else if (MinHrs >= 2160.0 && MinHrs < 2880.0) { currentMonth = year + 2160.0; nextMonth = year + 2880.0; }
-	else if (MinHrs >= 2880.0 && MinHrs < 3624.0) { currentMonth = year + 2880.0; nextMonth = year + 3624.0; }
-	else if (MinHrs >= 3624.0 && MinHrs < 4344.0) { currentMonth = year + 3624.0; nextMonth = year + 4344.0; }
-	else if (MinHrs >= 4344.0 && MinHrs < 5088.0) { currentMonth = year + 4344.0; nextMonth = year + 5088.0; }
-	else if (MinHrs >= 5088.0 && MinHrs < 5832.0) { currentMonth = year + 5088.0; nextMonth = year + 5832.0; }
-	else if (MinHrs >= 5832.0 && MinHrs < 6552.0) { currentMonth = year + 5832.0; nextMonth = year + 6552.0; }
-	else if (MinHrs >= 6552.0 && MinHrs < 7296.0) { currentMonth = year + 6552.0; nextMonth = year + 7296.0; }
-	else if (MinHrs >= 7296.0 && MinHrs < 8016.0) { currentMonth = year + 7296.0; nextMonth = year + 8016.0; }
-	else if (MinHrs >= 8016.0 && MinHrs < 8760.0) { currentMonth = year + 8016.0; nextMonth = year + 8760.0; }
+	if (MinHrs >= 0.0 && MinHrs < 744.0) { currentMonth = year; nextMonth = year + 744.0; name = "Jan"; }
+	else if (MinHrs >= 744.0 && MinHrs < 1416.0) { currentMonth = year + 744.0; nextMonth = year + 1416.0; name = "Feb"; }
+	else if (MinHrs >= 1416.0 && MinHrs < 2160.0) { currentMonth = year + 1416.0; nextMonth = year + 2160.0; name = "Mar"; }
+	else if (MinHrs >= 2160.0 && MinHrs < 2880.0) { currentMonth = year + 2160.0; nextMonth = year + 2880.0; name = "Apr"; }
+	else if (MinHrs >= 2880.0 && MinHrs < 3624.0) { currentMonth = year + 2880.0; nextMonth = year + 3624.0; name = "May"; }
+	else if (MinHrs >= 3624.0 && MinHrs < 4344.0) { currentMonth = year + 3624.0; nextMonth = year + 4344.0; name = "Jun"; }
+	else if (MinHrs >= 4344.0 && MinHrs < 5088.0) { currentMonth = year + 4344.0; nextMonth = year + 5088.0; name = "Jul"; }
+	else if (MinHrs >= 5088.0 && MinHrs < 5832.0) { currentMonth = year + 5088.0; nextMonth = year + 5832.0; name = "Aug"; }
+	else if (MinHrs >= 5832.0 && MinHrs < 6552.0) { currentMonth = year + 5832.0; nextMonth = year + 6552.0; name = "Sep"; }
+	else if (MinHrs >= 6552.0 && MinHrs < 7296.0) { currentMonth = year + 6552.0; nextMonth = year + 7296.0; name = "Oct"; }
+	else if (MinHrs >= 7296.0 && MinHrs < 8016.0) { currentMonth = year + 7296.0; nextMonth = year + 8016.0; name = "Nov"; }
+	else if (MinHrs >= 8016.0 && MinHrs < 8760.0) { currentMonth = year + 8016.0; nextMonth = year + 8760.0; name = "Dec"; }
+
+	if (MultiYear) { name += " yr 1"; }	//If the dataset contains data for more than one year then append the year number to the name
 
 	for (size_t i = 0; i < d->Length(); i++)
 	{
@@ -295,6 +308,7 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 			if (i != 0)
 			{
 				DayStats[DayNumber] = wxRealPoint(AvgDailyMin, AvgDailyMax);
+				totalDayStats.push_back(wxRealPoint(AvgDailyMin, AvgDailyMax));
 				DayNumber++;
 				AvgDailyMin = 0.0;
 				AvgDailyMax = 0.0;
@@ -347,6 +361,7 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 				{
 					sp.x = currentMonth + ((nextMonth - currentMonth) / 2.0);	//Make x the middle of the month
 				}
+				sp.name = name;
 				sp.Max = max;
 				sp.Min = min;
 				sp.Sum = sum;
@@ -358,22 +373,20 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 				Append(sp);
 
 				currentMonth = nextMonth;
-				if (nextMonth == 744.0 + year) { nextMonth = 1416.0 + year; }
-				else if (nextMonth == 1416.0 + year) { nextMonth = 2160.0 + year; }
-				else if (nextMonth == 2160.0 + year) { nextMonth = 2880.0 + year; }
-				else if (nextMonth == 2880.0 + year) { nextMonth = 3624.0 + year; }
-				else if (nextMonth == 3624.0 + year) { nextMonth = 4344.0 + year; }
-				else if (nextMonth == 4344.0 + year) { nextMonth = 5088.0 + year; }
-				else if (nextMonth == 5088.0 + year) { nextMonth = 5832.0 + year; }
-				else if (nextMonth == 5832.0 + year) { nextMonth = 6552.0 + year; }
-				else if (nextMonth == 6552.0 + year) { nextMonth = 7296.0 + year; }
-				else if (nextMonth == 7296.0 + year) { nextMonth = 8016.0 + year; }
-				else if (nextMonth == 8016.0 + year) { nextMonth = 8760.0 + year; }
-				else if (nextMonth == 8760.0 + year)
-				{
-					year += 8760.0;
-					nextMonth = 744.0 + year;
-				}
+				if (nextMonth == 744.0 + year) { nextMonth = 1416.0 + year; name = "Feb"; }
+				else if (nextMonth == 1416.0 + year) { nextMonth = 2160.0 + year; name = "Mar"; }
+				else if (nextMonth == 2160.0 + year) { nextMonth = 2880.0 + year; name = "Apr"; }
+				else if (nextMonth == 2880.0 + year) { nextMonth = 3624.0 + year; name = "May"; }
+				else if (nextMonth == 3624.0 + year) { nextMonth = 4344.0 + year; name = "Jun"; }
+				else if (nextMonth == 4344.0 + year) { nextMonth = 5088.0 + year; name = "Jul"; }
+				else if (nextMonth == 5088.0 + year) { nextMonth = 5832.0 + year; name = "Aug"; }
+				else if (nextMonth == 5832.0 + year) { nextMonth = 6552.0 + year; name = "Sep"; }
+				else if (nextMonth == 6552.0 + year) { nextMonth = 7296.0 + year; name = "Oct"; }
+				else if (nextMonth == 7296.0 + year) { nextMonth = 8016.0 + year; name = "Nov"; }
+				else if (nextMonth == 8016.0 + year) { nextMonth = 8760.0 + year; name = "Dec"; }
+				else if (nextMonth == 8760.0 + year) { year += 8760.0; nextMonth = 744.0 + year; name = "Jan"; yrNum += 1; }
+
+				if (MultiYear) { name += " yr " + wxString(std::to_string(yrNum)); }	//If the dataset contains data for more than one year then append the year number to the name
 			}
 
 			counter = 0.0;
@@ -390,17 +403,21 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 		}
 
 		counter += 1.0;
+		totalcounter += 1.0;
 		sum += d->At(i).y;
+		totalsum += d->At(i).y;
 		if (min > d->At(i).y) { min = d->At(i).y; }
+		if (totalmin > d->At(i).y) { totalmin = d->At(i).y; }
 		if (max < d->At(i).y) { max = d->At(i).y; }
+		if (totalmax < d->At(i).y) { totalmax = d->At(i).y; }
 		if (AvgDailyMin > d->At(i).y) { AvgDailyMin = d->At(i).y; }
 		if (AvgDailyMax < d->At(i).y) { AvgDailyMax = d->At(i).y; }
 	}
 
-	//Prevent appending the final point if it represents 12/31 24:00, which the system interprets as 1/1 0:00 and creates a point for January of the next year
-	if (MaxHrs > 0.0 && fmod(MaxHrs, 8760.0) != 0)
+	if (MaxHrs > 0.0 && fmod(MaxHrs, 8760.0) != 0)	//Prevent appending the final point if it represents 12/31 24:00, which the system interprets as 1/1 0:00 and creates a point for January of the next year
 	{
 		DayStats[DayNumber] = wxRealPoint(AvgDailyMin, AvgDailyMax);
+		totalDayStats.push_back(wxRealPoint(AvgDailyMin, AvgDailyMax));
 		AvgDailyMin = 0.0;
 		AvgDailyMax = 0.0;
 
@@ -445,6 +462,7 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 		{
 			sp.x = currentMonth + ((nextMonth - currentMonth) / 2.0);	//Make x the middle of the month
 		}
+		sp.name = name;
 		sp.Max = max;
 		sp.Min = min;
 		sp.Sum = sum;
@@ -454,6 +472,54 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 		sp.AvgDailyMin = AvgDailyMin;
 
 		Append(sp);
+
+		//Append StatisticsPoint for totals over all months
+
+		AvgDailyMin = 0.0;
+		AvgDailyMax = 0.0;
+		avg = totalsum / totalcounter;
+
+		//Calculate standard deviation for the month's data
+		StDev = 0.0;
+		StDevCounter = 0.0;
+		for (size_t j = 0; j < d->Length(); j++)
+		{
+			StDev += (d->At(j).y - avg) * (d->At(j).y - avg);
+			StDevCounter += 1.0;
+		}
+		if (StDevCounter > 0.0)
+		{
+			StDev = StDev / StDevCounter;
+			StDev = sqrt(StDev);
+		}
+
+		//Summarize the daily Min and Max values into average daily min and max values for the month.
+		DayCounter = 0.0;
+		for (size_t j = 0; j < totalDayStats.size(); j++)
+		{
+			AvgDailyMin += totalDayStats[j].x;
+			AvgDailyMax += totalDayStats[j].y;
+			DayCounter += 1.0;
+		}
+		if (DayCounter > 0.0)
+		{
+			AvgDailyMax = AvgDailyMax / DayCounter;
+			AvgDailyMin = AvgDailyMin / DayCounter;
+		}
+
+		sp = StatisticsPoint();
+		sp.x = d->At(d->Length() - 1).x + 1.0;	//Make x one greater than the last x value in the dataset
+		sp.name = "TOTAL";
+		sp.Max = totalmax;
+		sp.Min = totalmin;
+		sp.Sum = totalsum;
+		sp.Mean = avg;
+		sp.StDev = StDev;
+		sp.AvgDailyMax = AvgDailyMax;
+		sp.AvgDailyMin = AvgDailyMin;
+
+		Append(sp);
+
 	}
 }
 
@@ -463,6 +529,7 @@ StatisticsPoint wxDVStatisticsDataSet::At(size_t i) const
 
 	if ((i < m_sData.size()) && (i >= 0))
 	{
+		p.name = m_sData[i].name;
 		p.x = m_sData[i].x;
 		p.Sum = m_sData[i].Sum;
 		p.Min = m_sData[i].Min;
@@ -474,6 +541,7 @@ StatisticsPoint wxDVStatisticsDataSet::At(size_t i) const
 	}
 	else
 	{
+		p.name = "";
 		p.x = baseDataset->GetOffset() + (i * baseDataset->GetTimeStep());
 		p.Sum = 0.0;
 		p.Min = 0.0;

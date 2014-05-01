@@ -351,6 +351,9 @@
     <ClInclude Include="..\include\wex\dview\dvboxplotctrl.h">
       <Filter>dview\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\wex\dview\dvstatisticstablectrl.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
@@ -603,6 +606,9 @@
       <Filter>wex\Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\src\dview\dvboxplotctrl.cpp">
+      <Filter>dview\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dview\dvstatisticstablectrl.cpp">
       <Filter>dview\Sources</Filter>
     </ClCompile>
   </ItemGroup>

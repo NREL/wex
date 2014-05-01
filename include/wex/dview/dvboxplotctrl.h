@@ -11,18 +11,11 @@
 */
 
 #include <wx/panel.h>
-#include <wx/dialog.h>
 #include "wex/numeric.h"
 #include "wex/plot/plplotctrl.h"
 #include "wex/dview/dvplothelper.h"
 #include "wex/dview/dvtimeseriesdataset.h"
-
-class wxDVTimeSeriesDataSet;
-class wxPLTimeAxis;
-class wxPLLinePlot;
-class wxDVSelectionListCtrl;
-class wxGridSizer;
-class wxCheckBox;
+#include "wex/dview/dvselectionlist.h"
 
 class wxDVBoxPlot : public wxPLPlottable
 {
@@ -45,7 +38,7 @@ public:
 	wxDVStatisticsDataSet *GetDataSet() const { return m_data; }
 
 	std::vector<wxString> GetExportableDatasetHeaders(wxUniChar sep, StatisticsType type) const;
-	std::vector<wxRealPoint> wxDVBoxPlot::GetExportableDataset(StatisticsType type) const;
+	std::vector<wxRealPoint> GetExportableDataset(StatisticsType type) const;
 
 private:
 	wxDVStatisticsDataSet *m_data;

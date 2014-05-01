@@ -2534,7 +2534,7 @@ void wxPLPlotCtrl::OnMotion( wxMouseEvent &evt )
 
 	if (tipText != "")
 	{
-		tipwindow = new wxTipWindow(this, wxString(tipText));	//TODO:  this line causing error that seems to be in wxWidgets itself and I can't track down why:  ..\..\src\msw\window.cpp(576): 'SetFocus' failed with error 0x00000057 (the parameter is incorrect.).
+		tipwindow = new wxTipWindow(this, tipText);	//TODO:  this line causing error that seems to be in wxWidgets itself and I can't track down why:  ..\..\src\msw\window.cpp(576): 'SetFocus' failed with error 0x00000057 (the parameter is incorrect.).
 		wxRect &rect = wxRect(DataPos.x - radius, DataPos.y - radius, 2 * radius, 2 * radius);
 		tipwindow->SetBoundingRect(rect);
 	}

@@ -33,6 +33,7 @@
     <ClInclude Include="..\include\wex\dview\dvprofilectrl.h" />
     <ClInclude Include="..\include\wex\dview\dvscatterplotctrl.h" />
     <ClInclude Include="..\include\wex\dview\dvselectionlist.h" />
+    <ClInclude Include="..\include\wex\dview\dvstatisticstablectrl.h" />
     <ClInclude Include="..\include\wex\dview\dvtimeseriesctrl.h" />
     <ClInclude Include="..\include\wex\dview\dvtimeseriesdataset.h" />
     <ClInclude Include="..\include\wex\extgrid.h" />
@@ -136,6 +137,7 @@
     <ClCompile Include="..\src\dview\dvprofilectrl.cpp" />
     <ClCompile Include="..\src\dview\dvscatterplotctrl.cpp" />
     <ClCompile Include="..\src\dview\dvselectionlist.cpp" />
+    <ClCompile Include="..\src\dview\dvstatisticstablectrl.cpp" />
     <ClCompile Include="..\src\dview\dvtimeseriesctrl.cpp" />
     <ClCompile Include="..\src\dview\dvtimeseriesdataset.cpp" />
     <ClCompile Include="..\src\extgrid.cpp" />

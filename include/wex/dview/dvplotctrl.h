@@ -19,6 +19,7 @@
 #include "wex/dview/dvscatterplotctrl.h"
 #include "wex/dview/dvplotctrlsettings.h"
 #include "wex/dview/dvboxplotctrl.h"
+#include "wex/dview/dvstatisticstablectrl.h"
 
 class wxMetroNotebook;
 
@@ -36,6 +37,8 @@ public:
 	void RemoveDataSet(wxDVTimeSeriesDataSet *d);
 	//RemoveAll deletes data sets.
 	void RemoveAllDataSets();
+
+	wxDVStatisticsTableCtrl* GetStatisticsTable();
 
 	//These methods get and set the view perspective to resume later with the same view.
 	wxDVPlotCtrlSettings GetPerspective();
@@ -66,6 +69,7 @@ private:
 	wxDVDMapCtrl *m_dMap;
 	wxDVProfileCtrl *m_profilePlots;
 	wxDVBoxPlotCtrl *m_boxPlot;
+	wxDVStatisticsTableCtrl *m_statisticsTable;
 	wxDVPnCdfCtrl *m_pnCdf;
 	wxDVDCCtrl *m_durationCurve;
 	wxDVScatterPlotCtrl *m_scatterPlot;

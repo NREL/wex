@@ -692,6 +692,7 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 		else
 			plotWin->AddDataSet(dataSets[i], wxFileNameFromPath( filename ) ,update_ui );
 	}
+	plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
 	plotWin->Thaw();
 
 	wxLogStatus("Read %i lines of data points.\n", line);
@@ -792,6 +793,7 @@ void wxDVFileReader::ReadDataFromCSV(wxDVPlotCtrl *plotWin, const wxString& file
 	{
 		plotWin->AddDataSet(dataSets[i], wxFileNameFromPath( filename ), (i==dataSets.size()-1) );
 	}
+	plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
 }
 
 bool wxDVFileReader::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& filename)
@@ -890,6 +892,7 @@ bool wxDVFileReader::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& file
 	{
 		plotWin->AddDataSet(dataSets[i], wxFileNameFromPath(filename), (i==dataSets.size()-1) );
 	}
+	plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
 
 	return true;
 }
