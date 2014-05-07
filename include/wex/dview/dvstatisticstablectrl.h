@@ -58,7 +58,16 @@ public:
 	unsigned int GetChildCount() const;
 	void RemoveAllChildren();
 
-public:     //TODO:  change these to private and implement getters/setters
+	wxString GetName();
+	double GetMean();
+	double GetMin();
+	double GetMax();
+	double GetSum();
+	double GetStDev();
+	double GetAvgDailyMin();
+	double GetAvgDailyMax();
+
+private:
 	double m_avg;
 	double m_min;
 	double m_max;
@@ -68,8 +77,6 @@ public:     //TODO:  change these to private and implement getters/setters
 	double m_avgdailymax;
 	wxString m_nodeName;
 	bool m_container;
-
-private:
 	dvStatisticsTreeModelNode *m_parent;
 	std::vector<dvStatisticsTreeModelNode*> m_children;
 };

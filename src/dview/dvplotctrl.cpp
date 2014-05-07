@@ -54,7 +54,7 @@ wxDVPlotCtrl::wxDVPlotCtrl(wxWindow* parent, wxWindowID id,
 	m_monthlyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, MONTHLY_TIME_SERIES, AVERAGE);
 	m_dMap = new wxDVDMapCtrl(m_plotNotebook, wxID_ANY);
 	m_profilePlots = new wxDVProfileCtrl(m_plotNotebook, wxID_ANY);
-	m_boxPlot = new wxDVBoxPlotCtrl(m_plotNotebook, wxID_ANY);
+	//m_boxPlot = new wxDVBoxPlotCtrl(m_plotNotebook, wxID_ANY);
 	m_statisticsTable = new wxDVStatisticsTableCtrl(m_plotNotebook, wxID_ANY);
 	m_pnCdf = new wxDVPnCdfCtrl(m_plotNotebook, wxID_ANY);
 	m_durationCurve = new wxDVDCCtrl(m_plotNotebook, wxID_ANY);
@@ -109,7 +109,6 @@ void wxDVPlotCtrl::DisplayTabs()
 	if (MinTimeStep < 24.0) { m_plotNotebook->AddPage(m_dailyTimeSeries, _("Daily"), /*wxBITMAP_PNG_FROM_DATA( time ), */false); }
 	if (MinTimeStep < 672.0) { m_plotNotebook->AddPage(m_monthlyTimeSeries, _("Monthly"), /*wxBITMAP_PNG_FROM_DATA( time ), */false); }
 	m_plotNotebook->AddPage(m_profilePlots, _("Profiles"), /*wxBITMAP_PNG_FROM_DATA( calendar ), */false);
-	//TODO:  uncomment line below once we finish implementing box plot.  If we don't implement it reasonably soon then comment out other lines that reference it.
 	//m_plotNotebook->AddPage(m_boxPlot, _("Box Plot"), /*wxBITMAP_PNG_FROM_DATA( dmap ), */false);
 	m_plotNotebook->AddPage(m_statisticsTable, _("Statistics Table"), /*wxBITMAP_PNG_FROM_DATA( dmap ), */false);
 	m_plotNotebook->AddPage(m_dMap, _("Heat Map"), /*wxBITMAP_PNG_FROM_DATA( dmap ), */false);
@@ -134,7 +133,7 @@ void wxDVPlotCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, b
 	m_monthlyTimeSeries->AddDataSet(d, group, update_ui);
 	m_dMap->AddDataSet(d, group, update_ui);
 	m_profilePlots->AddDataSet(d, group, update_ui);
-	m_boxPlot->AddDataSet(d, group, update_ui);
+	//m_boxPlot->AddDataSet(d, group, update_ui);
 	m_statisticsTable->AddDataSet(d, group);
 	m_pnCdf->AddDataSet(d, group, update_ui);
 	m_durationCurve->AddDataSet(d, group, update_ui);
@@ -149,7 +148,7 @@ void wxDVPlotCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 	m_monthlyTimeSeries->RemoveDataSet(d);
 	m_dMap->RemoveDataSet(d);
 	m_profilePlots->RemoveDataSet(d);
-	m_boxPlot->RemoveDataSet(d);
+	//m_boxPlot->RemoveDataSet(d);
 	m_statisticsTable->RemoveDataSet(d);
 	m_pnCdf->RemoveDataSet(d);
 	m_durationCurve->RemoveDataSet(d);
@@ -166,7 +165,7 @@ void wxDVPlotCtrl::RemoveAllDataSets()
 	m_monthlyTimeSeries->RemoveAllDataSets();
 	m_dMap->RemoveAllDataSets();
 	m_profilePlots->RemoveAllDataSets();
-	m_boxPlot->RemoveAllDataSets();
+	//m_boxPlot->RemoveAllDataSets();
 	m_statisticsTable->RemoveAllDataSets();
 	m_pnCdf->RemoveAllDataSets();
 	m_durationCurve->RemoveAllDataSets();

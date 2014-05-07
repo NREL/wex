@@ -91,6 +91,46 @@ void dvStatisticsTreeModelNode::RemoveAllChildren()
 	m_children.clear();
 }
 
+wxString dvStatisticsTreeModelNode::GetName()
+{
+	return m_nodeName;
+}
+
+double dvStatisticsTreeModelNode::GetMean()
+{
+	return m_avg;
+}
+
+double dvStatisticsTreeModelNode::GetMin()
+{
+	return m_min;
+}
+
+double dvStatisticsTreeModelNode::GetMax()
+{
+	return m_max;
+}
+
+double dvStatisticsTreeModelNode::GetSum()
+{
+	return m_sum;
+}
+
+double dvStatisticsTreeModelNode::GetStDev()
+{
+	return m_stdev;
+}
+
+double dvStatisticsTreeModelNode::GetAvgDailyMin()
+{
+	return m_avgdailymin;
+}
+
+double dvStatisticsTreeModelNode::GetAvgDailyMax()
+{
+	return m_avgdailymax;
+}
+
 
 //Tree Model
 
@@ -145,28 +185,28 @@ void dvStatisticsTreeModel::GetValue(wxVariant &variant, const wxDataViewItem &i
 	switch (col)
 	{
 	case 0:
-		variant = node->m_nodeName;
+		variant = node->GetName();
 		break;
 	case 1:
-		variant = node->m_avg;
+		variant = node->GetMean();
 		break;
 	case 2:
-		variant = node->m_min;
+		variant = node->GetMin();
 		break;
 	case 3:
-		variant = node->m_max;
+		variant = node->GetMax();
 		break;
 	case 4:
-		variant = node->m_sum;
+		variant = node->GetSum();
 		break;
 	case 5:
-		variant = node->m_stdev;
+		variant = node->GetStDev();
 		break;
 	case 6:
-		variant = node->m_avgdailymin;
+		variant = node->GetAvgDailyMin();
 		break;
 	case 7:
-		variant = node->m_avgdailymax;
+		variant = node->GetAvgDailyMax();
 		break;
 	default:
 		break;
@@ -274,10 +314,10 @@ void dvStatisticsTreeModel::Refresh(std::vector<wxDVVariableStatistics*> stats)
 		groupName = "";
 		for (int j = 0; j < m_root->GetChildCount(); j++)
 		{
-			if (m_root->GetNthChild(j)->m_nodeName == stats[i]->GetGroupName())
+			if (m_root->GetNthChild(j)->GetName() == stats[i]->GetGroupName())
 			{
 				groupNode = m_root->GetNthChild(j);
-				groupName = groupNode->m_nodeName;
+				groupName = groupNode->GetName();
 				break;
 			}
 		}
@@ -358,9 +398,10 @@ wxString wxDVVariableStatistics::GetGroupName()
 }
 
 
+//wxDVStatisticsTableCtrl
+
 enum { ID_PLOT_SURFACE = wxID_HIGHEST + 1 };
 
-//wxDVStatisticsTableCtrl
 enum { ID_COPY_DATA_CLIP = wxID_HIGHEST + 1251, ID_SAVE_DATA_CSV, ID_SEND_EXCEL };
 
 BEGIN_EVENT_TABLE(wxDVStatisticsTableCtrl, wxPanel)
