@@ -105,6 +105,9 @@ wxPdfDC::Init()
   m_ppiPdfFont = screendc.GetPPI().GetHeight();
   m_mappingModeStyle = wxPDF_MAPMODESTYLE_STANDARD;
 
+  m_jpegFormat = false;
+  m_jpegQuality = 75;
+
   m_mappingMode = wxMM_TEXT;
 
   m_pdfDocument = NULL;
@@ -145,6 +148,13 @@ int
 wxPdfDC::GetResolution() const
 {
   return (int) m_ppi;
+}
+
+void
+wxPdfDC::SetImageType(wxBitmapType bitmapType, int quality)
+{
+  m_jpegFormat = (bitmapType == wxBITMAP_TYPE_JPEG);
+  m_jpegQuality = (quality >= 0) ? ((quality <= 100) ? quality : 75) : 75;
 }
 
 void
@@ -244,6 +254,7 @@ wxPdfDC::SetFont(const wxFont& font)
   if (!ok)
   {
     regFont = wxPdfFontManager::GetFontManager()->RegisterFont(font, font.GetFaceName());
+    //regFont = wxPdfFontManager::GetFontManager()->RegisterFont(font);
     ok = regFont.IsValid();
   }
 
@@ -659,7 +670,7 @@ wxPdfDC::DoDrawArc(wxCoord x1, wxCoord y1,
     {
       style = (doFill) ? wxPDF_STYLE_FILL : wxPDF_STYLE_DRAW;
     }
-    m_pdfDocument->Ellipse(xxc, yyc, r, 0, 0, start, end, style, 8, false);
+    m_pdfDocument->Ellipse(xxc, yyc, r, 0, 0, start, end, style, 8, doFill);
     wxCoord radius = (wxCoord) sqrt( (double)((x1-xc)*(x1-xc)+(y1-yc)*(y1-yc)) );
     CalcBoundingBox(xc-radius, yc-radius);
     CalcBoundingBox(xc+radius, yc+radius);
@@ -830,13 +841,13 @@ wxPdfDC::DoDrawBitmap(const wxBitmap& bitmap, wxCoord x, wxCoord y,
     SetBrush(wxBrush(m_textBackgroundColour, wxSOLID));
     DrawRectangle(xx, yy, ww, hh);        
     SetBrush(wxBrush(m_textForegroundColour, wxSOLID));
-    m_pdfDocument->Image(imgName, image, xx, yy, ww, hh, wxPdfLink(-1), idMask);
+    m_pdfDocument->Image(imgName, image, xx, yy, ww, hh, wxPdfLink(-1), idMask, m_jpegFormat, m_jpegQuality);
     SetBrush(saveBrush);
     SetPen(savePen);
   }
   else
   {
-    m_pdfDocument->Image(imgName, image, xx, yy, ww, hh, wxPdfLink(-1), idMask);
+    m_pdfDocument->Image(imgName, image, xx, yy, ww, hh, wxPdfLink(-1), idMask, m_jpegFormat, m_jpegQuality);
   }
 }
 
@@ -1375,18 +1386,21 @@ wxPdfDC::CalculateFontMetrics(wxPdfFontDescription* desc, int pointSize,
   {
     em_ascent  = os2usWinAscent;
     em_descent = os2usWinDescent;
-    em_externalLeading = (hheaLineGap - ((em_ascent + em_descent) - (hheaAscender - hheaDescender)));
+    em_externalLeading = (hheaLineGap - ((os2usWinAscent + os2usWinDescent) - (hheaAscender - hheaDescender)));
+    if (em_externalLeading < 0)
+    {
+      em_externalLeading = 0;
+    }
     em_height = em_ascent + em_descent;
   }
   else
   {
-    // magic numbers 1120 and 25 give reasonable defaults
-    // for core fonts etc.
+    // Magic numbers below give reasonable defaults for core fonts
     // This may need adjustment for CJK fonts ??
-    em_height  = 1120;
-    em_descent = desc->GetDescent();
-    em_ascent  = em_height + em_descent;
-    em_externalLeading = 25;
+    em_ascent  = 1325;
+    em_descent = 1.085 * desc->GetDescent();
+    em_height  = em_ascent + em_descent;
+    em_externalLeading = 33;   
   }
 
   if (ascent)

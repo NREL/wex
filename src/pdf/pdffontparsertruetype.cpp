@@ -233,8 +233,8 @@ wxPdfFontParserTrueType::LoadTrueTypeFontStream(const wxFont& font)
   wxFillLogFont(&lf, &font);
 
   HDC hdc = CreateCompatibleDC(0);
-  // TODO: check whether clean up is needed in addition to deleting hdc
-  /*HFONT oldfont = (HFONT)*/ SelectObject(hdc, CreateFontIndirect(&lf));
+  HFONT hFont = CreateFontIndirect(&lf);
+  /*HFONT oldfont = (HFONT)*/ SelectObject(hdc, hFont);
 
   DWORD fontDataSize;
   BYTE* fontData;
@@ -248,6 +248,7 @@ wxPdfFontParserTrueType::LoadTrueTypeFontStream(const wxFont& font)
     delete [] fontData;
   }
   DeleteDC(hdc);
+  DeleteObject(hFont);
 
   return fontStream;
 }
@@ -1221,14 +1222,7 @@ wxPdfFontParserTrueType::ReadMaps()
     os_2.m_yStrikeoutPosition = ReadShort();
     os_2.m_sFamilyClass = ReadShort();
     m_inFont->Read(os_2.m_panose, 10);
-    if (version == 0)
-    {
-      SkipBytes(4);
-    }
-    else
-    {
-      SkipBytes(16);
-    }
+    SkipBytes(16);
     m_inFont->Read(os_2.m_achVendID, 4);
     os_2.m_fsSelection = ReadUShort();
     os_2.m_usFirstCharIndex = ReadUShort();
