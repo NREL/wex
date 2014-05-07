@@ -16,36 +16,24 @@
 
 #include <wx/dataview.h>
 #include <wx/panel.h>
+#include <wx/menu.h>
+#include <wx/stream.h>
 
 #include "wex/numeric.h"
-#include "wex/plot/plplotctrl.h"
-#include "wex/dview/dvplothelper.h"
 #include "wex/dview/dvtimeseriesdataset.h"
 
 enum { ID_STATISTICS_CTRL = 50, };
 
-class wxDVVariableStatistics //: public wxPLPlottable
+class wxDVVariableStatistics
 {
 public:
 	wxDVVariableStatistics(wxDVStatisticsDataSet *ds, wxString GroupName, bool OwnsDataset = false);
 
 	~wxDVVariableStatistics();
 
-	//virtual wxString GetXDataLabel() const;
-	//virtual wxString GetYDataLabel() const;
-	//virtual wxRealPoint At(size_t i) const;
 	StatisticsPoint At(size_t i, double m_offset, double m_timestep) const;
-	//virtual size_t Len() const;
-
-	//virtual void Draw(wxDC &dc, const wxPLDeviceMapping &map);
-	//virtual void DrawInLegend(wxDC &dc, const wxRect &rct);
-	double GetPeriodLowerBoundary(double hourNumber);
-	double GetPeriodUpperBoundary(double hourNumber);
 	wxDVStatisticsDataSet *GetDataSet() const { return m_data; }
 	wxString GetGroupName();
-
-	std::vector<wxString> GetExportableDatasetHeaders(wxUniChar sep, StatisticsType type) const;
-	std::vector<wxRealPoint> GetExportableDataset(StatisticsType type) const;
 
 private:
 	wxDVStatisticsDataSet *m_data;
@@ -118,24 +106,29 @@ public:
 	virtual ~wxDVStatisticsTableCtrl();
 
 	void RebuildDataViewCtrl();
-
 	void AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group);
 	bool RemoveDataSet(wxDVTimeSeriesDataSet *d); //Releases ownership, does not delete. //true if found & removed.
 	void RemoveAllDataSets(); //Clears all data sets from graphs and memory.
-
+	void WriteDataAsText(wxUniChar sep, wxOutputStream &os, bool visible_only = true, bool include_x = true);
 	void Invalidate();
+
+	wxMenu &GetContextMenu() { return m_contextMenu; }
 
 private:
 	std::vector<wxDVVariableStatistics*> m_variableStatistics;
-	//wxPLPlotCtrl *m_plotSurface;
 	wxDataViewCtrl *m_ctrl;
 	wxObjectDataPtr<dvStatisticsTreeModel> m_StatisticsModel;
 	wxDataViewColumn* m_col;
-	wxDataViewColumn* m_attributes;
+
+	wxMenu m_contextMenu;
 
 	// event handlers
 	void OnCollapse(wxCommandEvent& event);
 	void OnExpand(wxCommandEvent& event);
+	void OnPopupMenu(wxCommandEvent& event);
+	void OnContextMenu(wxDataViewEvent& event);
+
+	DECLARE_EVENT_TABLE();
 };
 
 #endif

@@ -9,17 +9,19 @@
 #include <wx/tokenzr.h>
 #include <wx/statline.h>
 #include <wx/gdicmn.h>
+#include <wx/filename.h>
+#include <wx/clipbrd.h>
+#include <wx/menu.h>
+#include <wx/wfstream.h>
+#include <wx/txtstrm.h>
+#include <wx/sstream.h>
 #include <math.h>
 
-#include "wex/plot/pllineplot.h"
-
-#include "wex/icons/zoom_in.cpng"
-#include "wex/icons/zoom_out.cpng"
-#include "wex/icons/zoom_fit.cpng"
-#include "wex/icons/preferences.cpng"
-
 #include "wex/dview/dvstatisticstablectrl.h"
-#include "wex/plot/plplotctrl.h"
+
+#ifdef __WXMSW__
+#include "wex/ole/excelauto.h"
+#endif
 
 
 //Tree Model Node
@@ -319,26 +321,6 @@ wxDVVariableStatistics::~wxDVVariableStatistics()
 		delete m_data;
 	}
 }
-//
-//wxString wxDVVariableStatistics::GetXDataLabel() const
-//{
-//	return _("Hours since 00:00 Jan 1");
-//}
-//
-//wxString wxDVVariableStatistics::GetYDataLabel() const
-//{
-//	wxString label = m_data->GetSeriesTitle();
-//	if (!m_data->GetUnits().IsEmpty())
-//		label += " (" + m_data->GetUnits() + ")";
-//	return label;
-//}
-//
-//wxRealPoint wxDVVariableStatistics::At(size_t i) const
-//{
-//	return (i < m_data->Length())
-//		? wxRealPoint(m_data->At(i).x, m_data->At(i).Mean)
-//		: wxRealPoint(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
-//}
 
 StatisticsPoint wxDVVariableStatistics::At(size_t i, double m_offset, double m_timestep) const
 {
@@ -369,167 +351,29 @@ StatisticsPoint wxDVVariableStatistics::At(size_t i, double m_offset, double m_t
 
 	return p;
 }
-//
-//size_t wxDVVariableStatistics::Len() const
-//{
-//	return m_data->Length();
-//}
-//
-//void wxDVVariableStatistics::Draw(wxDC &dc, const wxPLDeviceMapping &map)
-//{
-//	if (!m_data || m_data->Length() < 2) return;
-//
-//	size_t len;
-//	std::vector< wxPoint > points;
-//	wxRealPoint rpt;
-//	wxRealPoint rpt2;
-//	double tempY;
-//	wxRealPoint wmin = map.GetWorldMinimum();
-//	wxRealPoint wmax = map.GetWorldMaximum();
-//
-//	dc.SetPen(wxPen(wxColour("black") , 2, wxPENSTYLE_SOLID));
-//
-//	//TODO:  UPDATE BELOW CODE TO DO statistics table INSTEAD OF LINE GRAPH
-//	//len = m_data->Length();
-//	//if (m_data->At(0).x < wmin.x) { len++; }
-//	//if (m_data->At(m_data->Length() - 1).x > wmax.x) { len++; }
-//
-//	//points.reserve(len);
-//
-//	//for (size_t i = 0; i < m_data->Length(); i++)
-//	//{
-//	//	rpt = m_data->At(i);
-//	//	if (rpt.x < wmin.x || rpt.x > wmax.x) continue;
-//	//	points.push_back(map.ToDevice(m_data->At(i)));
-//	//}
-//
-//	//if (points.size() == 0) return;
-//
-//	//dc.DrawLines(points.size(), &points[0]);
-//}
-//
-//void wxDVVariableStatistics::DrawInLegend(wxDC &dc, const wxRect &rct)
-//{
-//	// nothing to do here
-//}
-
-double wxDVVariableStatistics::GetPeriodLowerBoundary(double hourNumber)
-{
-	hourNumber = fmod(hourNumber, 8760);
-
-	if (hourNumber < 744.0) { hourNumber = 0.0; }
-	else if (hourNumber < 1416.0) { hourNumber = 744.0; }
-	else if (hourNumber < 2160.0) { hourNumber = 1416.0; }
-	else if (hourNumber < 2880.0) { hourNumber = 2160.0; }
-	else if (hourNumber < 3624.0) { hourNumber = 2880.0; }
-	else if (hourNumber < 4344.0) { hourNumber = 3624.0; }
-	else if (hourNumber < 5088.0) { hourNumber = 4344.0; }
-	else if (hourNumber < 5832.0) { hourNumber = 5088.0; }
-	else if (hourNumber < 6552.0) { hourNumber = 5832.0; }
-	else if (hourNumber < 7296.0) { hourNumber = 6552.0; }
-	else if (hourNumber < 8016.0) { hourNumber = 7296.0; }
-	else if (hourNumber < 8760.0) { hourNumber = 8016.0; }
-
-	return hourNumber;
-}
-
-double wxDVVariableStatistics::GetPeriodUpperBoundary(double hourNumber)
-{
-	hourNumber = fmod(hourNumber, 8760);
-
-	if (hourNumber < 744.0) { hourNumber = 744.0; }
-	else if (hourNumber < 1416.0) { hourNumber = 1416.0; }
-	else if (hourNumber < 2160.0) { hourNumber = 2160.0; }
-	else if (hourNumber < 2880.0) { hourNumber = 2880.0; }
-	else if (hourNumber < 3624.0) { hourNumber = 3624.0; }
-	else if (hourNumber < 4344.0) { hourNumber = 4344.0; }
-	else if (hourNumber < 5088.0) { hourNumber = 5088.0; }
-	else if (hourNumber < 5832.0) { hourNumber = 5832.0; }
-	else if (hourNumber < 6552.0) { hourNumber = 6552.0; }
-	else if (hourNumber < 7296.0) { hourNumber = 7296.0; }
-	else if (hourNumber < 8016.0) { hourNumber = 8016.0; }
-	else if (hourNumber < 8760.0) { hourNumber = 8760.0; }
-
-	return hourNumber;
-}
 
 wxString wxDVVariableStatistics::GetGroupName()
 {
 	return m_groupName;
 }
 
-std::vector<wxString> wxDVVariableStatistics::GetExportableDatasetHeaders(wxUniChar sep, StatisticsType type) const
-{
-	std::vector<wxString> tt;
-	wxString xLabel = "Month";	//GetXDataLabel();
-	wxString yLabel = m_groupName;	//GetYDataLabel();
 
-	if (xLabel.size() == 0) { xLabel = "Month"; }
-
-	//Remove sep chars that we don't want
-	while (xLabel.Find(sep) != wxNOT_FOUND)
-	{
-		xLabel = xLabel.BeforeFirst(sep) + xLabel.AfterFirst(sep);
-	}
-
-	while (yLabel.Find(sep) != wxNOT_FOUND)
-	{
-		yLabel = yLabel.BeforeFirst(sep) + yLabel.AfterFirst(sep);
-	}
-
-	tt.push_back(xLabel);
-	if (type == MEAN) { tt.push_back("Mean " + yLabel); }
-	if (type == MIN) { tt.push_back("Min. " + yLabel); }
-	if (type == MAX) { tt.push_back("Max. " + yLabel); }
-	if (type == SUMMATION) { tt.push_back("Sum " + yLabel); }
-	if (type == STDEV) { tt.push_back("St. Dev. " + yLabel); }
-	if (type == AVGDAILYMIN) { tt.push_back("Avg. Daily Min. " + yLabel); }
-	if (type == AVGDAILYMAX) { tt.push_back("Avg. Daily Max. " + yLabel); }
-
-	return tt;
-}
-
-std::vector<wxRealPoint> wxDVVariableStatistics::GetExportableDataset(StatisticsType type) const
-{
-	std::vector<wxRealPoint> data;
-	wxRealPoint pt;
-	StatisticsPoint sp;
-
-	for (size_t i = 0; i < m_data->Length(); i++)
-	{
-		sp = At(i, m_data->GetOffset(), m_data->GetTimeStep());
-
-		if (type == MEAN) { pt = wxRealPoint(sp.x, sp.Mean); }
-		if (type == MIN) { pt = wxRealPoint(sp.x, sp.Min); }
-		if (type == MAX) { pt = wxRealPoint(sp.x, sp.Max); }
-		if (type == SUMMATION) { pt = wxRealPoint(sp.x, sp.Sum); }
-		if (type == STDEV) { pt = wxRealPoint(sp.x, sp.StDev); }
-		if (type == AVGDAILYMIN) { pt = wxRealPoint(sp.x, sp.AvgDailyMin); }
-		if (type == AVGDAILYMAX) { pt = wxRealPoint(sp.x, sp.AvgDailyMax); }
-
-		data.push_back(pt);
-	}
-
-	return data;
-}
-
-enum{
-	ID_PLOT_SURFACE = wxID_HIGHEST + 1
-};
-
+enum { ID_PLOT_SURFACE = wxID_HIGHEST + 1 };
 
 //wxDVStatisticsTableCtrl
+enum { ID_COPY_DATA_CLIP = wxID_HIGHEST + 1251, ID_SAVE_DATA_CSV, ID_SEND_EXCEL };
+
+BEGIN_EVENT_TABLE(wxDVStatisticsTableCtrl, wxPanel)
+	EVT_MENU_RANGE(ID_COPY_DATA_CLIP, ID_SEND_EXCEL, wxDVStatisticsTableCtrl::OnPopupMenu)
+END_EVENT_TABLE()
 
 wxDVStatisticsTableCtrl::wxDVStatisticsTableCtrl(wxWindow *parent, wxWindowID id)
 : wxPanel(parent, id)
 {
-	m_ctrl = new wxDataViewCtrl(this, ID_STATISTICS_CTRL, wxDefaultPosition, wxSize(1040, 720), wxDV_ROW_LINES);
-	m_StatisticsModel = new dvStatisticsTreeModel();
+	m_ctrl = new wxDataViewCtrl(this, ID_STATISTICS_CTRL, wxDefaultPosition, wxSize(1040, 720), wxDV_MULTIPLE + wxDV_ROW_LINES + wxDV_VERT_RULES + wxDV_HORIZ_RULES);
+	m_ctrl->Bind(wxEVT_COMMAND_DATAVIEW_ITEM_CONTEXT_MENU, &wxDVStatisticsTableCtrl::OnContextMenu, this);
 
-	//m_plotSurface = new wxPLPlotCtrl(this, ID_PLOT_SURFACE);
-	//m_plotSurface->SetAllowHighlighting(false);
-	//m_plotSurface->ShowTitle(false);
-	//m_plotSurface->ShowLegend(false);
+	m_StatisticsModel = new dvStatisticsTreeModel();
 
 	wxBoxSizer *table_sizer = new wxBoxSizer(wxHORIZONTAL);
 	table_sizer->Add(m_ctrl, 1, wxEXPAND | wxALL, 4);
@@ -537,6 +381,12 @@ wxDVStatisticsTableCtrl::wxDVStatisticsTableCtrl(wxWindow *parent, wxWindowID id
 	wxBoxSizer *top_sizer = new wxBoxSizer(wxVERTICAL);
 	top_sizer->Add(table_sizer, 1, wxALL | wxEXPAND, 0);
 	SetSizer(top_sizer);
+
+	m_contextMenu.Append(ID_COPY_DATA_CLIP, "Copy data to clipboard");
+	m_contextMenu.Append(ID_SAVE_DATA_CSV, "Save data to CSV...");
+#ifdef __WXMSW__
+	m_contextMenu.Append(ID_SEND_EXCEL, "Send data to Excel...");
+#endif
 }
 
 wxDVStatisticsTableCtrl::~wxDVStatisticsTableCtrl(void)
@@ -591,20 +441,6 @@ void wxDVStatisticsTableCtrl::RebuildDataViewCtrl()
 	m_ctrl->AppendColumn(column7);
 }
 
-void wxDVStatisticsTableCtrl::OnCollapse(wxCommandEvent& WXUNUSED(event))
-{
-	wxDataViewItem item = m_ctrl->GetSelection();
-	if (item.IsOk())
-		m_ctrl->Collapse(item);
-}
-
-void wxDVStatisticsTableCtrl::OnExpand(wxCommandEvent& WXUNUSED(event))
-{
-	wxDataViewItem item = m_ctrl->GetSelection();
-	if (item.IsOk())
-		m_ctrl->Expand(item);
-}
-
 void wxDVStatisticsTableCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group)
 {
 	wxDVStatisticsDataSet *s;
@@ -657,5 +493,166 @@ void wxDVStatisticsTableCtrl::RemoveAllDataSets()
 	m_variableStatistics.clear();
 
 	RebuildDataViewCtrl();
+}
+
+void wxDVStatisticsTableCtrl::WriteDataAsText(wxUniChar sep, wxOutputStream &os, bool visible_only, bool include_x)
+{
+	if (m_variableStatistics.size() == 0) { return; }
+
+	wxTextOutputStream tt(os);
+	wxString sepstr(sep);
+	wxDVStatisticsDataSet* stats;
+	StatisticsPoint stat;
+
+	//Add column headers
+	tt << wxString("Variable");
+	tt << sepstr;
+	tt << wxString("Time");
+	tt << sepstr;
+	tt << wxString("Mean");
+	tt << sepstr;
+	tt << wxString("Min");
+	tt << sepstr;
+	tt << wxString("Max");
+	tt << sepstr;
+	tt << wxString("Sum");
+	tt << sepstr;
+	tt << wxString("St Dev");
+	tt << sepstr;
+	tt << wxString("Avg Daily Min");
+	tt << sepstr;
+	tt << wxString("Avg Daily Max");
+	tt << "\n";
+
+	//Add data
+	for (size_t i = 0; i < m_variableStatistics.size(); i++)
+	{
+		stats = m_variableStatistics[i]->GetDataSet();
+
+		for (size_t j = 0; j < stats->Length(); j++)
+		{
+			stat = stats->At(j);
+			if (j == 0) { tt << m_variableStatistics[i]->GetGroupName() + wxString(":") + stats->GetSeriesTitle() + " (" + stats->GetUnits() + ")"; }
+			tt << sepstr;
+			tt << stat.name;
+			tt << sepstr;
+			tt << stat.Mean;
+			tt << sepstr;
+			tt << stat.Min;
+			tt << sepstr;
+			tt << stat.Max;
+			tt << sepstr;
+			tt << stat.Sum;
+			tt << sepstr;
+			tt << stat.StDev;
+			tt << sepstr;
+			tt << stat.AvgDailyMin;
+			tt << sepstr;
+			tt << stat.AvgDailyMax;
+			tt << "\n";
+		}
+	}
+}
+
+void wxDVStatisticsTableCtrl::OnCollapse(wxCommandEvent& WXUNUSED(event))
+{
+	wxDataViewItem item = m_ctrl->GetSelection();
+	if (item.IsOk())
+		m_ctrl->Collapse(item);
+}
+
+void wxDVStatisticsTableCtrl::OnExpand(wxCommandEvent& WXUNUSED(event))
+{
+	wxDataViewItem item = m_ctrl->GetSelection();
+	if (item.IsOk())
+		m_ctrl->Expand(item);
+}
+
+void wxDVStatisticsTableCtrl::OnContextMenu(wxDataViewEvent &event)
+{
+	PopupMenu(&m_contextMenu);
+}
+
+void wxDVStatisticsTableCtrl::OnPopupMenu(wxCommandEvent &evt)
+{
+	int menuid = evt.GetId();
+
+	switch (menuid)
+	{
+		case ID_COPY_DATA_CLIP:
+			if (wxTheClipboard->Open())
+			{
+				wxString text;
+				wxStringOutputStream sstrm(&text);
+
+				WriteDataAsText('\t', sstrm);
+				wxTheClipboard->SetData(new wxTextDataObject(text));
+				wxTheClipboard->Close();
+			}
+
+			break;
+
+#ifdef __WXMSW__
+			case ID_SEND_EXCEL:
+				{
+					wxExcelAutomation xl;
+
+					if (!xl.StartExcel())
+					{
+						wxMessageBox("Could not start Excel.");
+						return;
+					}
+
+					xl.Show(true);
+
+					if (!xl.NewWorkbook())
+					{
+						wxMessageBox("Could not create a new Excel worksheet.");
+						return;
+					}
+
+					wxString text;
+					wxStringOutputStream sstrm(&text);
+					WriteDataAsText('\t', sstrm);
+
+					xl.PasteNewWorksheet("Plot Data", text);
+					xl.AutoFitColumns();
+				}
+
+				break;
+#endif
+
+				case ID_SAVE_DATA_CSV:
+					{
+						wxFileDialog fdlg(this, "Save Graph Data", "", "graphdata", "CSV Data Files (*.csv)|*.csv", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+
+						if (fdlg.ShowModal() == wxID_OK)
+						{
+							wxString fn = fdlg.GetPath();
+
+							if (fn != "")
+							{
+								//Make sure we have an extension
+								wxString ext;
+
+								wxFileName::SplitPath(fn, NULL, NULL, NULL, &ext);
+								if (ext.Lower() != "csv") { fn += ".csv"; }
+
+								wxFFileOutputStream out(fn);
+
+								if (out.IsOk())
+								{
+									WriteDataAsText(',', out);
+								}
+								else
+								{
+									wxMessageBox("Could not write to file: \n\n" + fn, "Save Error", wxICON_ERROR);
+								}
+							}
+						}
+					}
+
+					break;
+	}
 }
 
