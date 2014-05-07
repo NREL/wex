@@ -348,6 +348,12 @@
     <ClInclude Include="..\include\wex\snaplay.h">
       <Filter>wex\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\wex\pagelayout.h">
+      <Filter>wex\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\pageobjects.h">
+      <Filter>wex\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
@@ -597,6 +603,12 @@
       <Filter>dview\Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\src\snaplay.cpp">
+      <Filter>wex\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pagelayout.cpp">
+      <Filter>wex\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pageobjects.cpp">
       <Filter>wex\Sources</Filter>
     </ClCompile>
   </ItemGroup>
