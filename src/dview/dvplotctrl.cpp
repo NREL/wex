@@ -88,9 +88,14 @@ double wxDVPlotCtrl::GetMinTimeStep()
 void wxDVPlotCtrl::DisplayTabs()
 {
 	double MinTimeStep = GetMinTimeStep();
-	int PageCount = m_plotNotebook->GetPageCount();
 
-	//We have to remove all pages and then add back the ones we want since wxMetroNotebook does not have a way to insert a page at a specified index
+	if (MinTimeStep >= 1.0 && m_plotNotebook->GetPageCount() == 10) { m_plotNotebook->DeletePage(1); }	//hourly is the second tab - delete it if it exists (pagecount = 10)
+	if (MinTimeStep >= 24.0 && m_plotNotebook->GetPageCount() == 9) { m_plotNotebook->DeletePage(1); }	//daily is the second tab (hourly has been deleted) - delete it if it exists (pagecount = 9)
+	if (MinTimeStep >= 672.0 && m_plotNotebook->GetPageCount() == 8) { m_plotNotebook->DeletePage(1); }	//monthly is the second tab (hourly & daily have been deleted) - delete it if it exists (pagecount = 8)
+
+	int PageCount = m_plotNotebook->GetPageCount();	//Get count of remaining pages
+
+	//We have to remove all remaining pages and then add back the ones we want since wxMetroNotebook does not have a way to insert a page at a specified index
 	//However, since the time series tab is always first and always displayed we don't remove it since there is a bug in the wxMetroNotebook that errors on removing the last item from the pagelist.
 	for (int i = PageCount - 1; i > 0; i--)
 	{
@@ -111,6 +116,8 @@ void wxDVPlotCtrl::DisplayTabs()
 	m_plotNotebook->AddPage(m_scatterPlot, _("Scatter"), /*wxBITMAP_PNG_FROM_DATA( scatter ), */false);
 	m_plotNotebook->AddPage(m_pnCdf, _("PDF / CDF"), /*wxBITMAP_PNG_FROM_DATA( barchart ), */false);
 	m_plotNotebook->AddPage(m_durationCurve, _("Duration Curve"), /*wxBITMAP_PNG_FROM_DATA( curve ), */false);
+
+	m_plotNotebook->Refresh();
 }
 
 //This function is used to add a data set to Dview.  
@@ -171,6 +178,35 @@ void wxDVPlotCtrl::RemoveAllDataSets()
 	}
 
 	m_dataSets.clear();
+
+	//Remove hourly, daily, and monthly tab pages if they exist
+	switch (m_plotNotebook->GetPageCount())
+	{
+		case 10:
+			m_plotNotebook->RemovePage(3);
+			m_plotNotebook->RemovePage(2);
+			m_plotNotebook->RemovePage(1);
+			break;
+		case 9:
+			m_plotNotebook->RemovePage(2);
+			m_plotNotebook->RemovePage(1);
+			break;
+		case 8:
+			m_plotNotebook->RemovePage(1);
+			break;
+	}
+	m_plotNotebook->Refresh();
+
+	//delete and re-add these controls (fixes bug with tabs not behaving correctly after we remove a tab that doesn't get used with the next loaded file)
+	delete m_hourlyTimeSeries;
+	delete m_dailyTimeSeries;
+	delete m_monthlyTimeSeries;
+
+	m_hourlyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, HOURLY_TIME_SERIES, AVERAGE);
+	m_dailyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, DAILY_TIME_SERIES, AVERAGE);
+	m_monthlyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, MONTHLY_TIME_SERIES, AVERAGE);
+
+	DisplayTabs();
 }
 
 wxDVStatisticsTableCtrl* wxDVPlotCtrl::GetStatisticsTable()
