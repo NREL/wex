@@ -189,9 +189,11 @@ public:
 	int GetPageIndex(wxWindow *win);
 	wxWindow *GetPage( int index );
 	
-	int GetSelection();
+	int GetSelection() const;
 	void SetSelection(int id);
 	void SetText(int id, const wxString &text);
+	wxString GetText( int id ) const;
+	wxString GetSelectionText() const;
 	
 	wxPoint GetPopupMenuPosition( int index );
 

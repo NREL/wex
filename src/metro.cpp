@@ -956,7 +956,7 @@ void wxMetroNotebook::AddScrolledPage(wxWindow *win, const wxString &text, bool 
 	ComputeScrolledWindows();
 }
 
-int wxMetroNotebook::GetSelection()
+int wxMetroNotebook::GetSelection() const 
 {
 	return m_flipper->GetSelection();
 }
@@ -968,6 +968,19 @@ void wxMetroNotebook::SetText(int id, const wxString &text)
 		m_pageList[id].text = text;
 		UpdateTabList();
 	}
+}
+
+wxString wxMetroNotebook::GetText( int id ) const
+{
+	if ( id < (int) m_pageList.size() && id >= 0 )
+		return m_pageList[id].text;
+	else
+		return wxEmptyString;
+}
+
+wxString wxMetroNotebook::GetSelectionText() const
+{
+	return GetText( GetSelection() );
 }
 
 wxPoint wxMetroNotebook::GetPopupMenuPosition( int index )
