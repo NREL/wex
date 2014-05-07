@@ -102,8 +102,6 @@ void wxDVPlotCtrl::DisplayTabs()
 		m_plotNotebook->RemovePage(i);
 	}
 
-	//TODO:  get rid of blank rectangle at upper left of tab bar when we first open the application
-
 	if (m_plotNotebook->GetPageCount() == 0) { m_plotNotebook->AddPage(m_timeSeries, _("Time Series"), /*wxBITMAP_PNG_FROM_DATA( time ), */true); } //Only add this if it doesn't already exist
 	if (MinTimeStep < 1.0) { m_plotNotebook->AddPage(m_hourlyTimeSeries, _("Hourly"), /*wxBITMAP_PNG_FROM_DATA( time ), */false); }
 	if (MinTimeStep < 24.0) { m_plotNotebook->AddPage(m_dailyTimeSeries, _("Daily"), /*wxBITMAP_PNG_FROM_DATA( time ), */false); }
