@@ -496,6 +496,9 @@ void wxDiurnalPeriodCtrl::Paste()
 				}
 			}
 		}
+		wxCommandEvent change(wxEVT_DIURNALPERIODCTRL_CHANGE, this->GetId());
+		change.SetEventObject(this);
+		GetEventHandler()->ProcessEvent(change);
 		Refresh();
 	}
 }
