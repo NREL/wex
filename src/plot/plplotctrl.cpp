@@ -2412,6 +2412,9 @@ void wxPLPlotCtrl::OnMotion( wxMouseEvent &evt )
 		m_highlightErase = true;
 	}
 
+	//TODO:  see if we can get the below functionality to display point coordinates in a tool tip working correctly.
+	//The code properly retrieves the X and Y values but the tooltip does not display.
+	/*
 	wxRealPoint rpt;
 	wxPLPlottable *ds;
 	wxPoint MousePos;
@@ -2476,6 +2479,7 @@ void wxPLPlotCtrl::OnMotion( wxMouseEvent &evt )
 		wxRect &rect = wxRect(DataPos.x - radius, DataPos.y - radius, 2 * radius, 2 * radius);
 		tipwindow->SetBoundingRect(rect);
 	}
+	*/
 
 	evt.Skip();
 }

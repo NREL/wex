@@ -21,6 +21,7 @@
 
 #include <wx/gdicmn.h>
 #include <wx/string.h>
+#include <math.h>
 
 class wxDVTimeSeriesDataSet
 {
@@ -112,6 +113,7 @@ class wxDVStatisticsDataSet
 public:
 	wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d);
 
+	double RoundSignificant(double ValueToRound, size_t NumSignifDigits = 4);
 	StatisticsPoint At(size_t i) const;
 	size_t Length() const;
 	void Clear();

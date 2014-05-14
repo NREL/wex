@@ -88,6 +88,7 @@ public:
 	~dvStatisticsTreeModel() { delete m_root; }
 
 	void Refresh(std::vector<wxDVVariableStatistics*> stats);
+	wxDataViewItem GetRoot();
 
 	// override sorting to always sort branches ascendingly
 	int Compare(const wxDataViewItem &item1, const wxDataViewItem &item2, unsigned int column, bool ascending) const;

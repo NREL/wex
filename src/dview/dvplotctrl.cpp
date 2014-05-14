@@ -86,6 +86,7 @@ double wxDVPlotCtrl::GetMinTimeStep()
 
 void wxDVPlotCtrl::DisplayTabs()
 {
+	//TODO:  Is there a better way to do this (hide and show tabs)?  (See also RemoveAllDataSets() method) This might also fix the small blank square that sometimes appears over the tab strip.
 	double MinTimeStep = GetMinTimeStep();
 
 	if (MinTimeStep >= 1.0 && m_plotNotebook->GetPageCount() == 10) { m_plotNotebook->DeletePage(1); }	//hourly is the second tab - delete it if it exists (pagecount = 10)
@@ -190,6 +191,7 @@ void wxDVPlotCtrl::RemoveAllDataSets()
 	m_plotNotebook->Refresh();
 
 	//delete and re-add these controls (fixes bug with tabs not behaving correctly after we remove a tab that doesn't get used with the next loaded file)
+	//TODO:  Is there a better way to do this (hide and show tabs)?  (See also DisplayTabs() method) This might also fix the small blank square that sometimes appears over the tab strip.
 	delete m_hourlyTimeSeries;
 	delete m_dailyTimeSeries;
 	delete m_monthlyTimeSeries;

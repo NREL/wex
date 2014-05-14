@@ -299,7 +299,7 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 	else if (MinHrs >= 7296.0 && MinHrs < 8016.0) { currentMonth = year + 7296.0; nextMonth = year + 8016.0; name = "Nov"; }
 	else if (MinHrs >= 8016.0 && MinHrs < 8760.0) { currentMonth = year + 8016.0; nextMonth = year + 8760.0; name = "Dec"; }
 
-	if (MultiYear) { name += " yr 1"; }	//If the dataset contains data for more than one year then append the year number to the name
+	if (MultiYear) { name = "Year 1, " + name; }	//If the dataset contains data for more than one year then append the year number to the name
 
 	for (size_t i = 0; i < d->Length(); i++)
 	{
@@ -362,13 +362,13 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 					sp.x = currentMonth + ((nextMonth - currentMonth) / 2.0);	//Make x the middle of the month
 				}
 				sp.name = name;
-				sp.Max = max;
-				sp.Min = min;
-				sp.Sum = sum;
-				sp.Mean = avg;
-				sp.StDev = StDev;
-				sp.AvgDailyMax = AvgDailyMax;
-				sp.AvgDailyMin = AvgDailyMin;
+				sp.Max = RoundSignificant(max);
+				sp.Min = RoundSignificant(min);
+				sp.Sum = RoundSignificant(sum);
+				sp.Mean = RoundSignificant(avg);
+				sp.StDev = RoundSignificant(StDev);
+				sp.AvgDailyMax = RoundSignificant(AvgDailyMax);
+				sp.AvgDailyMin = RoundSignificant(AvgDailyMin);
 
 				Append(sp);
 
@@ -386,7 +386,7 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 				else if (nextMonth == 8016.0 + year) { nextMonth = 8760.0 + year; name = "Dec"; }
 				else if (nextMonth == 8760.0 + year) { year += 8760.0; nextMonth = 744.0 + year; name = "Jan"; yrNum += 1; }
 
-				if (MultiYear) { name += " yr " + wxString(std::to_string(yrNum)); }	//If the dataset contains data for more than one year then append the year number to the name
+				if (MultiYear) { name = "Year " + wxString(std::to_string(yrNum)) + ", " + name; }	//If the dataset contains data for more than one year then prepend the year number to the name
 			}
 
 			counter = 0.0;
@@ -463,13 +463,13 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 			sp.x = currentMonth + ((nextMonth - currentMonth) / 2.0);	//Make x the middle of the month
 		}
 		sp.name = name;
-		sp.Max = max;
-		sp.Min = min;
-		sp.Sum = sum;
-		sp.Mean = avg;
-		sp.StDev = StDev;
-		sp.AvgDailyMax = AvgDailyMax;
-		sp.AvgDailyMin = AvgDailyMin;
+		sp.Max = RoundSignificant(max);
+		sp.Min = RoundSignificant(min);
+		sp.Sum = RoundSignificant(sum);
+		sp.Mean = RoundSignificant(avg);
+		sp.StDev = RoundSignificant(StDev);
+		sp.AvgDailyMax = RoundSignificant(AvgDailyMax);
+		sp.AvgDailyMin = RoundSignificant(AvgDailyMin);
 
 		Append(sp);
 
@@ -509,18 +509,35 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 
 		sp = StatisticsPoint();
 		sp.x = d->At(d->Length() - 1).x + 1.0;	//Make x one greater than the last x value in the dataset
-		sp.name = "TOTAL";
-		sp.Max = totalmax;
-		sp.Min = totalmin;
-		sp.Sum = totalsum;
-		sp.Mean = avg;
-		sp.StDev = StDev;
-		sp.AvgDailyMax = AvgDailyMax;
-		sp.AvgDailyMin = AvgDailyMin;
+		sp.name = "Total";
+		sp.Max = RoundSignificant(totalmax);
+		sp.Min = RoundSignificant(totalmin);
+		sp.Sum = RoundSignificant(totalsum);
+		sp.Mean = RoundSignificant(avg);
+		sp.StDev = RoundSignificant(StDev);
+		sp.AvgDailyMax = RoundSignificant(AvgDailyMax);
+		sp.AvgDailyMin = RoundSignificant(AvgDailyMin);
 
 		Append(sp);
 
 	}
+}
+
+double wxDVStatisticsDataSet::RoundSignificant(double ValueToRound, size_t NumSignifDigits)
+{
+	double roundedValue = ValueToRound;
+	double multiplier = pow(10, (int)NumSignifDigits);	//set the multiplier to be 10 to the power of NumSignifDigits
+
+	roundedValue = roundedValue * multiplier;	//Move the digits we want to keep to the right of the decimal point
+	roundedValue = round(roundedValue);			//Round to the nearest integer (truncate digits to the left of the decimal point)
+	roundedValue = roundedValue / multiplier;	//Reset the decimal point to its original position
+
+	//TODO:   Implement more sophisticated rounding logic using significant digits:
+	//Round double values to 4 significant digits by only displaying three more digits after the first non-zero digit to the right of the decimal. 
+	//If there are no non-zero digits to the right of the decimal then we should display the number as in integer. 
+	//We must also be careful not to loose any exponential notation (XX E YY) during the rounding. The E and characters after it should be appended to the rounded value.
+
+	return roundedValue;
 }
 
 StatisticsPoint wxDVStatisticsDataSet::At(size_t i) const

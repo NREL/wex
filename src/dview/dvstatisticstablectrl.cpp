@@ -344,6 +344,11 @@ void dvStatisticsTreeModel::Refresh(std::vector<wxDVVariableStatistics*> stats)
 	}
 }
 
+wxDataViewItem dvStatisticsTreeModel::GetRoot()
+{
+	return (wxDataViewItem)m_root;
+}
+
 
 //wxDVVariableStatistics
 
@@ -449,6 +454,8 @@ void wxDVStatisticsTableCtrl::RebuildDataViewCtrl()
 	m_ctrl->ClearColumns();
 	m_ctrl->AssociateModel(m_StatisticsModel.get());
 
+	//TODO:  Is there a way to highlight "Total" nodes (i.e. bold, background color, etc...)?
+
 	tr = new wxDataViewTextRenderer("string", wxDATAVIEW_CELL_INERT, wxALIGN_LEFT);
 	wxDataViewColumn *column0 = new wxDataViewColumn("", tr, 0, 200, wxALIGN_LEFT, wxDATAVIEW_COL_RESIZABLE);
 	m_ctrl->AppendColumn(column0);
@@ -480,6 +487,9 @@ void wxDVStatisticsTableCtrl::RebuildDataViewCtrl()
 	tr = new wxDataViewTextRenderer("string", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
 	wxDataViewColumn *column7 = new wxDataViewColumn("Avg Daily Max", tr, 7, 120, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
 	m_ctrl->AppendColumn(column7);
+
+	wxDataViewItem item = m_StatisticsModel->GetRoot();
+	if (item.IsOk()) { m_ctrl->Expand(item); }
 }
 
 void wxDVStatisticsTableCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group)
