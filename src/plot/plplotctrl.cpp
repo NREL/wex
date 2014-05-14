@@ -16,6 +16,7 @@
 #include <wx/txtstrm.h>
 #include <wx/sstream.h>
 #include <wx/dcsvg.h>
+#include <wx/tipwin.h>
 
 #include "wex/plot/plhistplot.h"
 #include "wex/plot/plplotctrl.h"
@@ -1019,6 +1020,21 @@ wxPLPlottable *wxPLPlotCtrl::RemovePlot( wxPLPlottable *p, PlotPos plotPosition 
 	return 0;
 }
 
+bool wxPLPlotCtrl::ContainsPlot(wxPLPlottable *p, PlotPos plotPosition)
+{
+	for (std::vector<plot_data>::iterator it = m_plots.begin();
+		it != m_plots.end();
+		++it)
+	{
+		if (it->plot == p && (it->ppos == plotPosition || plotPosition == NPLOTPOS))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void wxPLPlotCtrl::DeleteAllPlots()
 {
 	for ( std::vector<plot_data>::iterator it = m_plots.begin();
@@ -1149,7 +1165,7 @@ void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visi
 	double worldMin;
 	double worldMax;
 	wxPLHistogramPlot* histPlot;
-	std::vector<bool> includeXForPlot( m_plots.size(), false );
+	std::vector<bool> includeXForPlot(m_plots.size(), false);
 	std::vector<wxString> Headers;
 	std::vector< std::vector<wxRealPoint> > data;
 	size_t maxLength = 0;
@@ -1209,6 +1225,15 @@ void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visi
 		}
 
 		tt << Headers[1];
+
+		if (Headers.size() > 2)
+		{
+			for (size_t j = 2; j < Headers.size(); j++)
+			{
+				tt << sepstr;
+				tt << Headers[j];
+			}
+		}
 		if ( i < m_plots.size() - 1 ) { tt << sepstr; }
 		if ( data[i].size() > maxLength ) { maxLength = data[i].size(); }
 	}
@@ -1220,10 +1245,8 @@ void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visi
 	{
 		keepGoing = false;
 
-		for ( size_t PlotNum = 0; PlotNum < m_plots.size(); PlotNum++ )
+		for (size_t PlotNum = 0; PlotNum < m_plots.size(); PlotNum++)
 		{
-			plot = m_plots[PlotNum].plot;
-
 			if ( RowNum < data[PlotNum].size() )
 			{
 				keepGoing = true;
@@ -2388,6 +2411,77 @@ void wxPLPlotCtrl::OnMotion( wxMouseEvent &evt )
 		UpdateHighlightRegion();
 		m_highlightErase = true;
 	}
+
+	//TODO:  see if we can get the below functionality to display point coordinates in a tool tip working correctly.
+	//The code properly retrieves the X and Y values but the tooltip does not display.
+	/*
+	wxRealPoint rpt;
+	wxPLPlottable *ds;
+	wxPoint MousePos;
+	size_t radius = 10;	//radius around a point that will trigger showing tooltip
+	wxString tipText = "";
+	wxTipWindow *tipwindow = NULL;
+	wxPLAxis *xaxis;
+	wxPLAxis *yaxis;
+	double min = 0;
+	double max = 0;
+	wxPoint DataPos;
+	int Xvar = 0;
+	int Yvar = 0;
+
+	if (tipwindow != NULL)
+	{
+		tipwindow->Destroy();
+		tipwindow = NULL;
+	}
+
+	if (!m_x1.axis || m_plots.size() == 0 || evt.Dragging()) { return; }
+
+	MousePos = evt.GetPosition();
+
+	for (size_t PlotNum = 0; PlotNum < m_plots.size(); PlotNum++)
+	{
+		ds = m_plots[PlotNum].plot;
+		xaxis = GetAxis(m_plots[PlotNum].xap);
+		yaxis = GetAxis(m_plots[PlotNum].yap, m_plots[PlotNum].ppos);
+
+		if (xaxis == 0 || yaxis == 0) continue; // this should never be encountered
+
+		min = xaxis->GetWorldMin();
+		max = xaxis->GetWorldMax();
+		wxRect &plotSurface = m_plotRects[m_plots[PlotNum].ppos];
+		wxPLAxisDeviceMapping map(xaxis, plotSurface.x, plotSurface.x + plotSurface.width, yaxis, plotSurface.y + plotSurface.height, plotSurface.y);
+
+		for (size_t i = 0; i < ds->Len(); i++)
+		{
+			rpt = ds->At(i);
+
+			if (rpt.x >= min && rpt.x <= max)
+			{
+				DataPos = map.ToDevice(rpt.x, rpt.y);
+				Xvar = MousePos.x - DataPos.x;
+				Yvar = MousePos.y - DataPos.y;
+
+				if ((Xvar * Xvar) + (Yvar * Yvar) <= (radius * radius))
+				{
+					tipText = "X: " + (wxString)std::to_string(rpt.x) + "\nY: " + (wxString)std::to_string(rpt.y);
+					break;
+				}
+			}
+		}
+
+		if (tipText != "") { break; }
+	}
+
+	if (tipText != "")
+	{
+		tipwindow = new wxTipWindow(this, tipText);	//TODO:  this line causing error that seems to be in wxWidgets itself and I can't track down why:  ..\..\src\msw\window.cpp(576): 'SetFocus' failed with error 0x00000057 (the parameter is incorrect.).
+		wxRect &rect = wxRect(DataPos.x - radius, DataPos.y - radius, 2 * radius, 2 * radius);
+		tipwindow->SetBoundingRect(rect);
+	}
+	*/
+
+	evt.Skip();
 }
 
 void wxPLPlotCtrl::OnMouseCaptureLost( wxMouseCaptureLostEvent & )

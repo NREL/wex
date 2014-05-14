@@ -48,25 +48,20 @@ wxDVPlotCtrl::wxDVPlotCtrl(wxWindow* parent, wxWindowID id,
 	m_plotNotebook = new wxMetroNotebook(this, ID_NOTEBOOK, wxDefaultPosition, wxDefaultSize, wxMT_LIGHTTHEME);
 	topSizer->Add(m_plotNotebook, 1, wxEXPAND, 0);
 
-	m_timeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, HOURLY_TIME_SERIES, AVERAGE);
+	m_timeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, RAW_DATA_TIME_SERIES, AVERAGE);
+	m_hourlyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, HOURLY_TIME_SERIES, AVERAGE);
 	m_dailyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, DAILY_TIME_SERIES, AVERAGE);
 	m_monthlyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, MONTHLY_TIME_SERIES, AVERAGE);
 	m_dMap = new wxDVDMapCtrl(m_plotNotebook, wxID_ANY);
 	m_profilePlots = new wxDVProfileCtrl(m_plotNotebook, wxID_ANY);
+	m_statisticsTable = new wxDVStatisticsTableCtrl(m_plotNotebook, wxID_ANY);
 	m_pnCdf = new wxDVPnCdfCtrl(m_plotNotebook, wxID_ANY);
 	m_durationCurve = new wxDVDCCtrl(m_plotNotebook, wxID_ANY);
 	m_scatterPlot = new wxDVScatterPlotCtrl(m_plotNotebook, wxID_ANY);
 
 //	m_plotNotebook->SetTextOnRight( true );
 
-	m_plotNotebook->AddPage(m_timeSeries, _("Time series"), /*wxBITMAP_PNG_FROM_DATA( time ), */true);
-	m_plotNotebook->AddPage(m_dailyTimeSeries, _("Daily"), /*wxBITMAP_PNG_FROM_DATA( time ), */false);
-	m_plotNotebook->AddPage(m_monthlyTimeSeries, _("Monthly"), /*wxBITMAP_PNG_FROM_DATA( time ), */false);
-	m_plotNotebook->AddPage(m_profilePlots, _("Profiles"), /*wxBITMAP_PNG_FROM_DATA( calendar ), */false);
-	m_plotNotebook->AddPage(m_dMap, _("Heat map"), /*wxBITMAP_PNG_FROM_DATA( dmap ), */false);
-	m_plotNotebook->AddPage(m_pnCdf, _("PDF / CDF"), /*wxBITMAP_PNG_FROM_DATA( barchart ), */false);
-	m_plotNotebook->AddPage(m_scatterPlot, _("Scatter"), /*wxBITMAP_PNG_FROM_DATA( scatter ), */false);
-	m_plotNotebook->AddPage(m_durationCurve, _("Duration curve"), /*wxBITMAP_PNG_FROM_DATA( curve ), */false);
+	DisplayTabs();
 }
 
 wxDVPlotCtrl::~wxDVPlotCtrl()
@@ -75,6 +70,51 @@ wxDVPlotCtrl::~wxDVPlotCtrl()
 		delete m_dataSets[i];
 }
 
+double wxDVPlotCtrl::GetMinTimeStep()
+{
+	double MinTimeStep = 1000000000.0;	//Rediculously high time step - no real data file would ever use a time step this big.
+	double TimeStep;
+
+	for (int i = 0; i < m_dataSets.size(); i++)
+	{
+		TimeStep = m_dataSets[i]->GetTimeStep();
+		if (TimeStep < MinTimeStep) { MinTimeStep = TimeStep; }
+	}
+
+	return MinTimeStep;
+}
+
+void wxDVPlotCtrl::DisplayTabs()
+{
+	//TODO:  Is there a better way to do this (hide and show tabs)?  (See also RemoveAllDataSets() method) This might also fix the small blank square that sometimes appears over the tab strip.
+	double MinTimeStep = GetMinTimeStep();
+
+	if (MinTimeStep >= 1.0 && m_plotNotebook->GetPageCount() == 10) { m_plotNotebook->DeletePage(1); }	//hourly is the second tab - delete it if it exists (pagecount = 10)
+	if (MinTimeStep >= 24.0 && m_plotNotebook->GetPageCount() == 9) { m_plotNotebook->DeletePage(1); }	//daily is the second tab (hourly has been deleted) - delete it if it exists (pagecount = 9)
+	if (MinTimeStep >= 672.0 && m_plotNotebook->GetPageCount() == 8) { m_plotNotebook->DeletePage(1); }	//monthly is the second tab (hourly & daily have been deleted) - delete it if it exists (pagecount = 8)
+
+	int PageCount = m_plotNotebook->GetPageCount();	//Get count of remaining pages
+
+	//We have to remove all remaining pages and then add back the ones we want since wxMetroNotebook does not have a way to insert a page at a specified index
+	//However, since the time series tab is always first and always displayed we don't remove it since there is a bug in the wxMetroNotebook that errors on removing the last item from the pagelist.
+	for (int i = PageCount - 1; i > 0; i--)
+	{
+		m_plotNotebook->RemovePage(i);
+	}
+
+	if (m_plotNotebook->GetPageCount() == 0) { m_plotNotebook->AddPage(m_timeSeries, _("Time Series"), /*wxBITMAP_PNG_FROM_DATA( time ), */true); } //Only add this if it doesn't already exist
+	if (MinTimeStep < 1.0) { m_plotNotebook->AddPage(m_hourlyTimeSeries, _("Hourly"), /*wxBITMAP_PNG_FROM_DATA( time ), */false); }
+	if (MinTimeStep < 24.0) { m_plotNotebook->AddPage(m_dailyTimeSeries, _("Daily"), /*wxBITMAP_PNG_FROM_DATA( time ), */false); }
+	if (MinTimeStep < 672.0) { m_plotNotebook->AddPage(m_monthlyTimeSeries, _("Monthly"), /*wxBITMAP_PNG_FROM_DATA( time ), */false); }
+	m_plotNotebook->AddPage(m_profilePlots, _("Profiles"), /*wxBITMAP_PNG_FROM_DATA( calendar ), */false);
+	m_plotNotebook->AddPage(m_statisticsTable, _("Statistics Table"), /*wxBITMAP_PNG_FROM_DATA( dmap ), */false);
+	m_plotNotebook->AddPage(m_dMap, _("Heat Map"), /*wxBITMAP_PNG_FROM_DATA( dmap ), */false);
+	m_plotNotebook->AddPage(m_scatterPlot, _("Scatter"), /*wxBITMAP_PNG_FROM_DATA( scatter ), */false);
+	m_plotNotebook->AddPage(m_pnCdf, _("PDF / CDF"), /*wxBITMAP_PNG_FROM_DATA( barchart ), */false);
+	m_plotNotebook->AddPage(m_durationCurve, _("Duration Curve"), /*wxBITMAP_PNG_FROM_DATA( curve ), */false);
+
+	m_plotNotebook->Refresh();
+}
 
 //This function is used to add a data set to Dview.  
 //It adds that data set to all of the tabs.
@@ -85,11 +125,13 @@ void wxDVPlotCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, b
 	m_dataSets.push_back(d);
 
 	m_timeSeries->AddDataSet(d, group, update_ui);
+	m_hourlyTimeSeries->AddDataSet(d, group, update_ui);
 	m_dailyTimeSeries->AddDataSet(d, group, update_ui);
 	m_monthlyTimeSeries->AddDataSet(d, group, update_ui);
 	m_dMap->AddDataSet(d, group, update_ui);
 	m_profilePlots->AddDataSet(d, group, update_ui);
-	m_pnCdf->AddDataSet(d, group, update_ui); 
+	m_statisticsTable->AddDataSet(d, group);
+	m_pnCdf->AddDataSet(d, group, update_ui);
 	m_durationCurve->AddDataSet(d, group, update_ui);
 	m_scatterPlot->AddDataSet(d, group, update_ui);
 }
@@ -97,10 +139,12 @@ void wxDVPlotCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, b
 void wxDVPlotCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 {
 	m_timeSeries->RemoveDataSet(d);
+	m_hourlyTimeSeries->RemoveDataSet(d);
 	m_dailyTimeSeries->RemoveDataSet(d);
 	m_monthlyTimeSeries->RemoveDataSet(d);
 	m_dMap->RemoveDataSet(d);
 	m_profilePlots->RemoveDataSet(d);
+	m_statisticsTable->RemoveDataSet(d);
 	m_pnCdf->RemoveDataSet(d);
 	m_durationCurve->RemoveDataSet(d);
 	m_scatterPlot->RemoveDataSet(d);
@@ -111,10 +155,12 @@ void wxDVPlotCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 void wxDVPlotCtrl::RemoveAllDataSets()
 {
 	m_timeSeries->RemoveAllDataSets();
+	m_hourlyTimeSeries->RemoveAllDataSets();
 	m_dailyTimeSeries->RemoveAllDataSets();
 	m_monthlyTimeSeries->RemoveAllDataSets();
 	m_dMap->RemoveAllDataSets();
 	m_profilePlots->RemoveAllDataSets();
+	m_statisticsTable->RemoveAllDataSets();
 	m_pnCdf->RemoveAllDataSets();
 	m_durationCurve->RemoveAllDataSets();
 	m_scatterPlot->RemoveAllDataSets();
@@ -125,6 +171,41 @@ void wxDVPlotCtrl::RemoveAllDataSets()
 	}
 
 	m_dataSets.clear();
+
+	//Remove hourly, daily, and monthly tab pages if they exist
+	switch (m_plotNotebook->GetPageCount())
+	{
+		case 10:
+			m_plotNotebook->RemovePage(3);
+			m_plotNotebook->RemovePage(2);
+			m_plotNotebook->RemovePage(1);
+			break;
+		case 9:
+			m_plotNotebook->RemovePage(2);
+			m_plotNotebook->RemovePage(1);
+			break;
+		case 8:
+			m_plotNotebook->RemovePage(1);
+			break;
+	}
+	m_plotNotebook->Refresh();
+
+	//delete and re-add these controls (fixes bug with tabs not behaving correctly after we remove a tab that doesn't get used with the next loaded file)
+	//TODO:  Is there a better way to do this (hide and show tabs)?  (See also DisplayTabs() method) This might also fix the small blank square that sometimes appears over the tab strip.
+	delete m_hourlyTimeSeries;
+	delete m_dailyTimeSeries;
+	delete m_monthlyTimeSeries;
+
+	m_hourlyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, HOURLY_TIME_SERIES, AVERAGE);
+	m_dailyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, DAILY_TIME_SERIES, AVERAGE);
+	m_monthlyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, MONTHLY_TIME_SERIES, AVERAGE);
+
+	DisplayTabs();
+}
+
+wxDVStatisticsTableCtrl* wxDVPlotCtrl::GetStatisticsTable()
+{
+	return m_statisticsTable;
 }
 
 wxDVPlotCtrlSettings wxDVPlotCtrl::GetPerspective()
@@ -139,6 +220,13 @@ wxDVPlotCtrlSettings wxDVPlotCtrl::GetPerspective()
 	
 	settings.SetProperty(wxT("tsTopSelectedNames"), m_timeSeries->GetDataSelectionList()->GetSelectedNamesInCol(0));
 	settings.SetProperty(wxT("tsBottomSelectedNames"), m_timeSeries->GetDataSelectionList()->GetSelectedNamesInCol(1));
+
+	//***HourlyTimeSeries Properties***
+	settings.SetProperty(wxT("tsAxisMin"), m_hourlyTimeSeries->GetViewMin());
+	settings.SetProperty(wxT("tsAxisMax"), m_hourlyTimeSeries->GetViewMax());
+
+	settings.SetProperty(wxT("tsTopSelectedNames"), m_hourlyTimeSeries->GetDataSelectionList()->GetSelectedNamesInCol(0));
+	settings.SetProperty(wxT("tsBottomSelectedNames"), m_hourlyTimeSeries->GetDataSelectionList()->GetSelectedNamesInCol(1));
 
 	//***DailyTimeSeries Properties***
 	settings.SetProperty(wxT("tsAxisMin"), m_dailyTimeSeries->GetViewMin());
@@ -182,6 +270,8 @@ wxDVPlotCtrlSettings wxDVPlotCtrl::GetPerspective()
 
 	settings.SetProperty(wxT("profileSelectedNames"), m_profilePlots->GetDataSelectionList()->GetSelectedNamesInCol(0));
 
+	//***Statistics Table Properties:  None
+
 	//***PDF CDF Tab Properties***
 	settings.SetProperty(wxT("pnCdfCurrentName"), m_pnCdf->GetCurrentDataName());
 	settings.SetProperty(wxT("pnCdfNormalize"), int(m_pnCdf->GetNormalizeType()));
@@ -212,6 +302,10 @@ void wxDVPlotCtrl::SetPerspective(wxDVPlotCtrlSettings& settings)
 	m_timeSeries->SetTopSelectedNames(settings.GetProperty(wxT("tsTopSelectedNames")));
 	m_timeSeries->SetBottomSelectedNames(settings.GetProperty(wxT("tsBottomSelectedNames")));
 
+	//***HourlyTimeSeries Properties***
+	m_hourlyTimeSeries->SetTopSelectedNames(settings.GetProperty(wxT("tsTopSelectedNames")));
+	m_hourlyTimeSeries->SetBottomSelectedNames(settings.GetProperty(wxT("tsBottomSelectedNames")));
+
 	//***DailyTimeSeries Properties***
 	m_dailyTimeSeries->SetTopSelectedNames(settings.GetProperty(wxT("tsTopSelectedNames")));
 	m_dailyTimeSeries->SetBottomSelectedNames(settings.GetProperty(wxT("tsBottomSelectedNames")));
@@ -226,6 +320,8 @@ void wxDVPlotCtrl::SetPerspective(wxDVPlotCtrlSettings& settings)
 	settings.GetProperty(wxT("tsAxisMax")).ToDouble(&max);
 	m_timeSeries->SetViewMin(min);
 	m_timeSeries->SetViewMax(max);
+	m_hourlyTimeSeries->SetViewMin(min);
+	m_hourlyTimeSeries->SetViewMax(max);
 	m_dailyTimeSeries->SetViewMin(min);
 	m_dailyTimeSeries->SetViewMax(max);
 	m_monthlyTimeSeries->SetViewMin(min);
@@ -267,6 +363,7 @@ void wxDVPlotCtrl::SetPerspective(wxDVPlotCtrlSettings& settings)
 
 	m_profilePlots->SetSelectedNames(settings.GetProperty(wxT("profileSelectedNames")));
 
+	//***Statistics Table Properties:  None
 
 	//***PDF CDF Tab Properties***
 	long normalize;
@@ -311,6 +408,7 @@ void wxDVPlotCtrl::SelectDataIndex(int index, bool allTabs)
 		return;
 
 	m_timeSeries->SelectDataSetAtIndex(index);
+	m_hourlyTimeSeries->SelectDataSetAtIndex(index);
 	m_dailyTimeSeries->SelectDataSetAtIndex(index);
 	m_monthlyTimeSeries->SelectDataSetAtIndex(index);
 	m_dMap->SelectDataSetAtIndex(index);
@@ -320,7 +418,9 @@ void wxDVPlotCtrl::SelectDataIndex(int index, bool allTabs)
 		m_pnCdf->SelectDataSetAtIndex(index);
 		m_durationCurve->SelectDataSetAtIndex(index);
 	}
-	//Does not make sense for scatter plot.
+
+	//NOTE:  Statistics Table does not allow selection of an individual dataset
+	//and data set selection does not make sense for scatter plot.
 }
 
 void wxDVPlotCtrl::SelectDataIndexOnTab(int index, int tab)
@@ -331,6 +431,9 @@ void wxDVPlotCtrl::SelectDataIndexOnTab(int index, int tab)
 	{
 	case TAB_TS:
 		m_timeSeries->SelectDataSetAtIndex(index);
+		break;
+	case TAB_HTS:
+		m_hourlyTimeSeries->SelectDataSetAtIndex(index);
 		break;
 	case TAB_DTS:
 		m_dailyTimeSeries->SelectDataSetAtIndex(index);
@@ -354,6 +457,8 @@ void wxDVPlotCtrl::SelectDataIndexOnTab(int index, int tab)
 		// There is not a good way to handle this right now.
 		break;
 	}
+
+	//NOTE:  Statistics Table does not allow selection of an individual dataset
 }
 
 void wxDVPlotCtrl::OnPageChanging(wxNotebookEvent& e)
@@ -399,6 +504,11 @@ void wxDVPlotCtrl::SelectDataOnBlankTabs()
 		&& m_timeSeries->GetDataSelectionList()->GetSelectedNamesInCol(1).size() == 0 )
 		m_timeSeries->SelectDataSetAtIndex(0);
 
+	if (m_hourlyTimeSeries != 0
+		&& m_hourlyTimeSeries->GetDataSelectionList()->GetSelectedNamesInCol(0).size() == 0
+		&& m_hourlyTimeSeries->GetDataSelectionList()->GetSelectedNamesInCol(1).size() == 0)
+		m_hourlyTimeSeries->SelectDataSetAtIndex(0);
+
 	if ( m_dailyTimeSeries != 0
 		&& m_dailyTimeSeries->GetDataSelectionList()->GetSelectedNamesInCol(0).size() == 0 
 		&& m_dailyTimeSeries->GetDataSelectionList()->GetSelectedNamesInCol(1).size() == 0 )
@@ -428,5 +538,7 @@ void wxDVPlotCtrl::SelectDataOnBlankTabs()
 		m_scatterPlot->SelectXDataAtIndex(0);
 	if (m_scatterPlot->GetScatterSelectionList()->GetSelectedNamesInCol(1).size() == 0)
 		m_scatterPlot->SelectYDataAtIndex(0);
+
+	//NOTE:  Statistics Table does not allow selection of an individual dataset
 }
 

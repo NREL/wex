@@ -692,6 +692,7 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 		else
 			plotWin->AddDataSet(dataSets[i], wxFileNameFromPath( filename ) ,update_ui );
 	}
+	plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
 	plotWin->Thaw();
 
 	wxLogStatus("Read %i lines of data points.\n", line);
@@ -792,6 +793,7 @@ void wxDVFileReader::ReadDataFromCSV(wxDVPlotCtrl *plotWin, const wxString& file
 	{
 		plotWin->AddDataSet(dataSets[i], wxFileNameFromPath( filename ), (i==dataSets.size()-1) );
 	}
+	plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
 }
 
 bool wxDVFileReader::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& filename)
@@ -864,19 +866,19 @@ bool wxDVFileReader::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& file
 	switch(wfType)
 	{
 	case WF_TM2:
-		ParseTM2Header(filename, head_info, &wFile);
-		Read8760WFLines(dataSets, wFile, wfType);
+		if (!ParseTM2Header(filename, head_info, &wFile)) { return false; }
+		if (!Read8760WFLines(dataSets, wFile, wfType)) { return false; }
 		break;
 
 	case WF_TM3:
-		ParseTM3Header(filename, head_info, &wFile);
-		Read8760WFLines(dataSets, wFile, wfType);
+		if (!ParseTM3Header(filename, head_info, &wFile)) { return false; }
+		if (!Read8760WFLines(dataSets, wFile, wfType)) { return false; }
 		fclose(wFile);
 		break;
 
 	case WF_EPW:
-		ParseEPWHeader(filename, head_info, &wFile);
-		Read8760WFLines(dataSets, wFile, wfType);
+		if (!ParseEPWHeader(filename, head_info, &wFile)) { return false; }
+		if (!Read8760WFLines(dataSets, wFile, wfType)) { return false; }
 		fclose(wFile);
 		break;
 
@@ -890,10 +892,12 @@ bool wxDVFileReader::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& file
 	{
 		plotWin->AddDataSet(dataSets[i], wxFileNameFromPath(filename), (i==dataSets.size()-1) );
 	}
+	plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
+
 	return true;
 }
 
-void wxDVFileReader::Read8760WFLines(std::vector<wxDVArrayDataSet*> &dataSets, FILE* infile, int wfType)
+bool wxDVFileReader::Read8760WFLines(std::vector<wxDVArrayDataSet*> &dataSets, FILE* infile, int wfType)
 {
 	int year, month, day, hour;
 	double gh, dn, df, wind, drytemp, wettemp, relhum, pressure, winddir, snowdepth;
@@ -901,8 +905,11 @@ void wxDVFileReader::Read8760WFLines(std::vector<wxDVArrayDataSet*> &dataSets, F
 	int hour_offset = 0;
 	for(int i=0; i<8760; i++)
 	{
-		ReadWeatherFileLine(infile, wfType, year, month, day, hour, gh, dn, df, wind, drytemp, wettemp, 
-			relhum, pressure, winddir, snowdepth);
+		if(!ReadWeatherFileLine(infile, wfType, year, month, day, hour, gh, dn, df, wind, drytemp, wettemp, 
+			relhum, pressure, winddir, snowdepth)) 
+		{
+			return false;
+		}
 
 		if (i == 0) hour_offset = hour;
 
@@ -918,4 +925,6 @@ void wxDVFileReader::Read8760WFLines(std::vector<wxDVArrayDataSet*> &dataSets, F
 		dataSets[8]->Append(wxRealPoint(currentHour, winddir));
 		dataSets[9]->Append(wxRealPoint(currentHour, snowdepth));
 	}
+
+	return true;
 }

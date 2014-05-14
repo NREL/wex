@@ -21,6 +21,7 @@
 
 #include <wx/gdicmn.h>
 #include <wx/string.h>
+#include <math.h>
 
 class wxDVTimeSeriesDataSet
 {
@@ -34,9 +35,10 @@ public:
 	virtual wxRealPoint At(size_t i) const = 0;
 	virtual size_t Length() const = 0;
 	virtual double GetTimeStep() const = 0;
+	virtual double GetOffset() const = 0;
 	virtual wxString GetSeriesTitle() const = 0;
 	virtual wxString GetUnits() const = 0;
-	
+
 	/*Helper Functions*/
 	wxRealPoint operator[] (size_t i) const;
 
@@ -63,6 +65,7 @@ public:
 	virtual wxRealPoint At(size_t i) const;
 	virtual size_t Length() const;
 	virtual double GetTimeStep() const;
+	virtual double GetOffset() const;
 	virtual wxString GetSeriesTitle() const;
 	virtual wxString GetUnits() const;
 
@@ -90,4 +93,48 @@ private:
 	
 };
 
+enum StatisticsType { MEAN = 0, MIN, MAX, SUMMATION, STDEV, AVGDAILYMIN, AVGDAILYMAX };
+
+struct StatisticsPoint
+{
+	wxString name;
+	double x;
+	double Sum;
+	double Min;
+	double Max;
+	double Mean;
+	double AvgDailyMin;
+	double AvgDailyMax;
+	double StDev;
+};
+
+class wxDVStatisticsDataSet
+{
+public:
+	wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d);
+
+	double RoundSignificant(double ValueToRound, size_t NumSignifDigits = 4);
+	StatisticsPoint At(size_t i) const;
+	size_t Length() const;
+	void Clear();
+	void Alloc(size_t n);
+	void Append(const StatisticsPoint &p);
+	bool IsSourceDataset(wxDVTimeSeriesDataSet *d);
+
+	//We need the methods below because we can't return a reference to baseDataset itself because of its pure virtual methods
+	double GetTimeStep() const;
+	double GetOffset() const;
+	wxString GetSeriesTitle() const;
+	wxString GetUnits() const;
+
+	double GetMinHours();
+	double GetMaxHours();
+	void GetDataMinAndMax(double* min, double* max);
+	void GetMinAndMaxInRange(double* min, double* max, double startHour, double endHour);
+
+private:
+	std::vector<StatisticsPoint> m_sData;
+	wxDVTimeSeriesDataSet *baseDataset;
+
+};
 #endif

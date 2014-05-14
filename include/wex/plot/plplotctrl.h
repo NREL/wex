@@ -47,7 +47,6 @@ public:
 	virtual void Draw( wxDC &dc, const wxPLDeviceMapping &map ) = 0;
 	virtual void DrawInLegend( wxDC &dc, const wxRect &rct ) = 0;
 
-
 	// properties
 
 	virtual wxString GetLabel() const { return m_label; }
@@ -120,6 +119,7 @@ public:
 
 	void AddPlot( wxPLPlottable *p, AxisPos xap = X_BOTTOM, AxisPos yap = Y_LEFT, PlotPos ppos = PLOT_TOP, bool update_axes = true );
 	wxPLPlottable *RemovePlot( wxPLPlottable *p, PlotPos plotPosition = NPLOTPOS );
+	bool ContainsPlot(wxPLPlottable *p, PlotPos plotPosition = NPLOTPOS);
 	void DeleteAllPlots();
 	size_t GetPlotCount();
 	wxPLPlottable *GetPlot( size_t i );

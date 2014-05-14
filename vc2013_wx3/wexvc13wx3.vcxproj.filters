@@ -354,6 +354,9 @@
     <ClInclude Include="..\include\wex\pageobjects.h">
       <Filter>wex\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\wex\dview\dvstatisticstablectrl.h">
+      <Filter>dview\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
@@ -610,6 +613,9 @@
     </ClCompile>
     <ClCompile Include="..\src\pageobjects.cpp">
       <Filter>wex\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dview\dvstatisticstablectrl.cpp">
+      <Filter>dview\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
