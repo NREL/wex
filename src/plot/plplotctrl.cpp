@@ -20,7 +20,6 @@
 
 #include "wex/plot/plhistplot.h"
 #include "wex/plot/plplotctrl.h"
-#include "wex/dview/dvboxplotctrl.h"
 #include "wex/pdf/pdfdc.h"
 
 #ifdef __WXMSW__
@@ -1166,13 +1165,11 @@ void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visi
 	double worldMin;
 	double worldMax;
 	wxPLHistogramPlot* histPlot;
-	wxDVBoxPlot* statPlot;
 	std::vector<bool> includeXForPlot(m_plots.size(), false);
 	std::vector<wxString> Headers;
 	std::vector< std::vector<wxRealPoint> > data;
 	size_t maxLength = 0;
 	bool keepGoing; //Used to stop early if all columns are no longer visible.
-	size_t StatSetCounter = 0;
 
 	//Add column headers
 	for ( size_t i = 0; i < m_plots.size(); i++ )
@@ -1207,10 +1204,6 @@ void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visi
 		{
 			//Do nothing
 		}
-		else if (statPlot = dynamic_cast<wxDVBoxPlot*>(m_plots[i].plot))
-		{
-			//Do nothing
-		}
 		else
 		{
 			xaxis = GetAxis( m_plots[i].xap, m_plots[i].ppos );
@@ -1221,31 +1214,8 @@ void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visi
 			}
 		}
 
-		if (statPlot = dynamic_cast<wxDVBoxPlot*>(m_plots[i].plot))
-		{
-			Headers.clear();
-			Headers.push_back(statPlot->GetExportableDatasetHeaders(sep, MEAN)[0]);
-			Headers.push_back(statPlot->GetExportableDatasetHeaders(sep, MEAN)[1]);
-			Headers.push_back(statPlot->GetExportableDatasetHeaders(sep, MIN)[1]);
-			Headers.push_back(statPlot->GetExportableDatasetHeaders(sep, MAX)[1]);
-			Headers.push_back(statPlot->GetExportableDatasetHeaders(sep, SUMMATION)[1]);
-			Headers.push_back(statPlot->GetExportableDatasetHeaders(sep, STDEV)[1]);
-			Headers.push_back(statPlot->GetExportableDatasetHeaders(sep, AVGDAILYMIN)[1]);
-			Headers.push_back(statPlot->GetExportableDatasetHeaders(sep, AVGDAILYMAX)[1]);
-
-			data.push_back(statPlot->GetExportableDataset(MEAN));
-			data.push_back(statPlot->GetExportableDataset(MIN));
-			data.push_back(statPlot->GetExportableDataset(MAX));
-			data.push_back(statPlot->GetExportableDataset(SUMMATION));
-			data.push_back(statPlot->GetExportableDataset(STDEV));
-			data.push_back(statPlot->GetExportableDataset(AVGDAILYMIN));
-			data.push_back(statPlot->GetExportableDataset(AVGDAILYMAX));
-		}
-		else
-		{
-			Headers = plot->GetExportableDatasetHeaders(sep);
-			data.push_back(plot->GetExportableDataset(worldMin, worldMax, visible_only));
-		}
+		Headers = plot->GetExportableDatasetHeaders(sep);
+		data.push_back(plot->GetExportableDataset(worldMin, worldMax, visible_only));
 
 		if (include_x && includeXForPlot[i])
 		{
@@ -1274,61 +1244,29 @@ void wxPLPlotCtrl::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visi
 	for (size_t RowNum = 0; RowNum < maxLength; RowNum++)
 	{
 		keepGoing = false;
-		StatSetCounter = 0;
 
 		for (size_t PlotNum = 0; PlotNum < m_plots.size(); PlotNum++)
 		{
-			if (statPlot = dynamic_cast<wxDVBoxPlot*>(m_plots[PlotNum].plot))
+			if ( RowNum < data[PlotNum].size() )
 			{
-				for (size_t StatNum = StatSetCounter; StatNum < StatSetCounter + 7; StatNum++)
-				{
-					if (RowNum < data[StatNum].size())
-					{
-						keepGoing = true;
+				keepGoing = true;
 
-						if (StatNum == StatSetCounter && includeXForPlot[PlotNum])
-						{
-							if (PlotNum > 0) tt << sepstr; //extra sep before to add blank column before new x values, as in header.
-							tt << wxString::Format("%lg", data[StatNum][RowNum].x);
-							tt << sepstr;
-						}
-
-						tt << wxString::Format("%lg", data[StatNum][RowNum].y);
-					}
-					else
-					{
-						if (PlotNum > 0) tt << sepstr; //extra sep before to add blank column before new x values, as in header.
-						tt << sepstr;
-					}
-
-					if (StatNum < data.size() - 1) { tt << sepstr; }
-				}
-
-				StatSetCounter += 7;
-			}
-			else
-			{
-				if ( RowNum < data[PlotNum].size() )
-				{
-					keepGoing = true;
-
-					if ( include_x && includeXForPlot[PlotNum] )
-					{
-						if (PlotNum > 0) tt << sepstr; //extra sep before to add blank column before new x values, as in header.
-						tt << wxString::Format("%lg", data[PlotNum][RowNum].x );
-						tt << sepstr; 
-					}
-
-					tt << wxString::Format("%lg", data[PlotNum][RowNum].y);
-				}
-				else
+				if ( include_x && includeXForPlot[PlotNum] )
 				{
 					if (PlotNum > 0) tt << sepstr; //extra sep before to add blank column before new x values, as in header.
+					tt << wxString::Format("%lg", data[PlotNum][RowNum].x );
 					tt << sepstr; 
 				}
 
-				if ( PlotNum < m_plots.size() - 1 ) { tt << sepstr; }
+				tt << wxString::Format("%lg", data[PlotNum][RowNum].y);
 			}
+			else
+			{
+				if (PlotNum > 0) tt << sepstr; //extra sep before to add blank column before new x values, as in header.
+				tt << sepstr; 
+			}
+
+			if ( PlotNum < m_plots.size() - 1 ) { tt << sepstr; }
 		}
 
 		if (!keepGoing) break;
