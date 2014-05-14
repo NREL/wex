@@ -29,6 +29,8 @@ public:
   void SetResolution(int ppi);
   int GetResolution() const;
 
+  void SetImageType(wxBitmapType bitmapType, int quality = 75);
+
   void SetMapModeStyle(wxPdfMapModeStyle style);
   wxPdfMapModeStyle GetMapModeStyle() const;
 
@@ -54,6 +56,8 @@ public:
 
   void SetResolution(int ppi);
   int GetResolution() const;
+
+  void SetImageType(wxBitmapType bitmapType, int quality = 75);
 
   // implement base class pure virtuals
 
@@ -161,12 +165,20 @@ protected:
 
   virtual void DoGetSize(int* width, int* height) const;
   virtual void DoGetSizeMM(int* width, int* height) const;
-  
+
+#if wxCHECK_VERSION(2,9,5)
   virtual void DoDrawLines(int n, const wxPoint points[],
-                             wxCoord xoffset, wxCoord yoffset );
+                           wxCoord xoffset, wxCoord yoffset);
   virtual void DoDrawPolygon(int n, const wxPoint points[],
                              wxCoord xoffset, wxCoord yoffset,
                              wxPolygonFillMode fillStyle = wxODDEVEN_RULE);
+#else
+  virtual void DoDrawLines(int n, wxPoint points[],
+                           wxCoord xoffset, wxCoord yoffset);
+  virtual void DoDrawPolygon(int n, wxPoint points[],
+                             wxCoord xoffset, wxCoord yoffset,
+                             wxPolygonFillMode fillStyle = wxODDEVEN_RULE);
+#endif // wxCHECK_VERSION
 
   virtual void DoDrawPolyPolygon(int n, int count[], wxPoint points[],
                                  wxCoord xoffset, wxCoord yoffset,
@@ -216,6 +228,9 @@ private:
   int            m_imageCount;
   wxPrintData    m_printData;
   wxPdfMapModeStyle m_mappingModeStyle;
+
+  bool m_jpegFormat;
+  int  m_jpegQuality;
 
   DECLARE_DYNAMIC_CLASS(wxPdfDCImpl);
 };

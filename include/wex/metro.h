@@ -65,6 +65,7 @@ public:
 #define wxMB_DOWNARROW 0x04
 #define wxMB_UPARROW 0x08
 #define wxMB_ALIGNLEFT 0x10
+#define wxMB_SMALLFONT 0x20
 
 class wxMetroButton : public wxWindow
 {
@@ -188,9 +189,11 @@ public:
 	int GetPageIndex(wxWindow *win);
 	wxWindow *GetPage( int index );
 	
-	int GetSelection();
+	int GetSelection() const;
 	void SetSelection(int id);
 	void SetText(int id, const wxString &text);
+	wxString GetText( int id ) const;
+	wxString GetSelectionText() const;
 	
 	wxPoint GetPopupMenuPosition( int index );
 

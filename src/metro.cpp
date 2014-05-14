@@ -153,7 +153,10 @@ wxMetroButton::wxMetroButton(wxWindow *parent, int id, const wxString &label, co
 	m_state = 0;  // state: 0=normal, 1=hover, 2=click
 	m_pressed = false;
 
-	SetFont( wxMetroTheme::Font( wxMT_NORMAL, 11) );
+	if ( style & wxMB_SMALLFONT )
+		SetFont( *wxNORMAL_FONT );
+	else
+		SetFont( wxMetroTheme::Font( wxMT_NORMAL, 11) );
 }
 
 #define MB_SPACE 6
@@ -953,7 +956,7 @@ void wxMetroNotebook::AddScrolledPage(wxWindow *win, const wxString &text, bool 
 	ComputeScrolledWindows();
 }
 
-int wxMetroNotebook::GetSelection()
+int wxMetroNotebook::GetSelection() const 
 {
 	return m_flipper->GetSelection();
 }
@@ -965,6 +968,19 @@ void wxMetroNotebook::SetText(int id, const wxString &text)
 		m_pageList[id].text = text;
 		UpdateTabList();
 	}
+}
+
+wxString wxMetroNotebook::GetText( int id ) const
+{
+	if ( id < (int) m_pageList.size() && id >= 0 )
+		return m_pageList[id].text;
+	else
+		return wxEmptyString;
+}
+
+wxString wxMetroNotebook::GetSelectionText() const
+{
+	return GetText( GetSelection() );
 }
 
 wxPoint wxMetroNotebook::GetPopupMenuPosition( int index )

@@ -123,6 +123,9 @@ private:
   /// Skip a PostScript procedure in the font stream
   void SkipProcedure(wxInputStream* stream);
 
+  /// Skip a PostScript array in the font stream
+  void SkipArray(wxInputStream* stream);
+
   /// Skip all bytes in the stream up to the next token
   void SkipToNextToken(wxInputStream* stream);
 
@@ -167,6 +170,8 @@ private:
 
   /// Read a binary section from the font stream
   void ReadBinary(wxInputStream& inStream, int start, int size, wxOutputStream& outStream);
+
+  bool                         m_skipArray;            ///< Flag whether to skip arrays when parsing a dictionary
 
   wxPdfFontDescription         m_fontDesc;             ///< font description
   wxPdfFontDataType1*          m_fontData;             ///< font data

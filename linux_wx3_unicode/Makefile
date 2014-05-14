@@ -13,6 +13,8 @@ TARGET = ../$(LIBNAME).a
 	
 OBJECTS = \
 	snaplay.o \
+	pagelayout.o \
+	pageobjects.o \
 	csv.o \
 	exttree.o \
 	label.o \
