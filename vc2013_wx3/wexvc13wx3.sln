@@ -38,7 +38,6 @@ Global
 		{9A4A1805-5F86-4BD6-9A7A-61D8BB682863}.Debug|Win32.ActiveCfg = Debug|Win32
 		{9A4A1805-5F86-4BD6-9A7A-61D8BB682863}.Debug|x64.ActiveCfg = Debug|x64
 		{9A4A1805-5F86-4BD6-9A7A-61D8BB682863}.Release|Win32.ActiveCfg = Release|Win32
-		{9A4A1805-5F86-4BD6-9A7A-61D8BB682863}.Release|Win32.Build.0 = Release|Win32
 		{9A4A1805-5F86-4BD6-9A7A-61D8BB682863}.Release|x64.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
