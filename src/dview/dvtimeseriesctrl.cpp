@@ -856,10 +856,16 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 	double MinHrs = d->GetMinHours();
 	double MaxHrs = d->GetMaxHours();
 	wxDVArrayDataSet *d2 = 0;
+	bool IsDataSetEmpty = true;
 
-	//Create hourly data set (avg value of data by day) from m_data if timestep < 1
-	if (m_seriesType == HOURLY_TIME_SERIES && timestep < 1.0)
+	if (m_seriesType == RAW_DATA_TIME_SERIES)
 	{
+		IsDataSetEmpty = false;
+	}
+	else if (m_seriesType == HOURLY_TIME_SERIES && timestep < 1.0)
+	{
+		//Create hourly data set (avg value of data by day) from m_data if timestep < 1
+		IsDataSetEmpty = false;
 		double nextHour = 0.0;
 		double currentHour = 0.0;
 
@@ -903,6 +909,7 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 	else if (m_seriesType == DAILY_TIME_SERIES && timestep < 24.0)
 	{
 		//Create daily data set (avg value of data by day) from m_data if timestep < 24
+		IsDataSetEmpty = false;
 		double nextDay = 0.0;
 		double currentDay = 0.0;
 
@@ -946,6 +953,7 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 	else if (m_seriesType == MONTHLY_TIME_SERIES && timestep < 672.0)	//672 hours = 28 days = shortest possible month
 	{
 		//Create monthly data set (avg value of data by month) from m_data
+		IsDataSetEmpty = false;
 		double nextMonth = 0.0;
 		double currentMonth = 0.0;
 		double year = 0.0;
@@ -1016,24 +1024,27 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 			d2->Append(wxRealPoint((double) currentMonth + (double)(nextMonth - currentMonth) / 2.0, (m_statType == AVERAGE ? avg : sum))); 
 		}
 	}
-				
-	if(m_seriesType == RAW_DATA_TIME_SERIES)
+	
+	if (!IsDataSetEmpty)
 	{
-		p = new wxDVTimeSeriesPlot(d, m_seriesType);
-	}
-	else
-	{
-		p = new wxDVTimeSeriesPlot(d2, m_seriesType, true);
-	}
+		if(m_seriesType == RAW_DATA_TIME_SERIES)
+		{
+			p = new wxDVTimeSeriesPlot(d, m_seriesType);
+		}
+		else
+		{
+			p = new wxDVTimeSeriesPlot(d2, m_seriesType, true);
+		}
 
-	p->SetStyle((wxDVTimeSeriesPlot::Style) m_lineStyle);
-	m_plots.push_back(p); //Add to data sets list.
-	m_dataSelector->Append( d->GetTitleWithUnits(), group );
+		p->SetStyle((wxDVTimeSeriesPlot::Style) m_lineStyle);
+		m_plots.push_back(p); //Add to data sets list.
+		m_dataSelector->Append( d->GetTitleWithUnits(), group );
 
-	if ( refresh_ui )
-	{
-		Layout();
-		RefreshDisabledCheckBoxes();
+		if ( refresh_ui )
+		{
+			Layout();
+			RefreshDisabledCheckBoxes();
+		}
 	}
 }
 
