@@ -33,6 +33,7 @@ OBJECTS = \
 	jsonwriter.o \
 	md5.o \
 	numeric.o \
+	dvstatisticstablectrl.o \
 	dvautocolourassigner.o \
 	dvcolourmap.o \
 	dvdcctrl.o \

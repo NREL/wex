@@ -1547,7 +1547,7 @@ public:
 		if ( origin & wxRIGHT ) pos.x -= size.x;
 		if ( origin & wxBOTTOM ) pos.y -= size.y;
 		Position( pos, wxSize(0,0) );
-		Show();
+		Show( true );
 		SetFocus();
 		if ( !HasCapture() )
 			CaptureMouse();
