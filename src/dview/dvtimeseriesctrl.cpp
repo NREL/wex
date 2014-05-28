@@ -45,6 +45,8 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 		wxDVTimeSeriesPlot( wxDVTimeSeriesDataSet *ds, TimeSeriesType seriesType, bool OwnsDataset = false )
 			: m_data(ds)
 		{
+			assert( ds != 0 );
+
 			m_colour = *wxRED;
 			m_seriesType = seriesType;
 			m_style = (seriesType == RAW_DATA_TIME_SERIES || seriesType == HOURLY_TIME_SERIES) ? NORMAL : STEPPED;
@@ -228,9 +230,16 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 			dc.DrawLines( points.size(), &points[0] );
 		}
 
+		virtual wxString GetLabel() const
+		{
+			if ( !m_data ) return wxEmptyString;
+			else return m_data->GetTitleWithUnits();
+		}
+
 		virtual void DrawInLegend( wxDC &dc, const wxRect &rct )
 		{
-			// nothing to do here
+			dc.SetPen( wxPen( m_colour, 3, wxCAP_ROUND ) );
+			dc.DrawLine( rct.x, rct.y+rct.height/2, rct.x+rct.width, rct.y+rct.height/2 );
 		}
 
 		double GetPeriodLowerBoundary(double hourNumber, double timeStep)
@@ -515,6 +524,8 @@ wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, TimeSeri
 	m_plotSurface->SetAllowHighlighting(true);
 	m_plotSurface->ShowTitle( false );
 	m_plotSurface->ShowLegend( false );
+	//m_plotSurface->SetLegendLocation( wxPLPlotCtrl::RIGHT );
+	m_plotSurface->SetIncludeLegendOnExport( true );
 	m_plotSurface->ShowGrid( true, true );
 	m_xAxis = new wxPLTimeAxis( 0, 8760 );
 	m_plotSurface->SetXAxis1( m_xAxis );

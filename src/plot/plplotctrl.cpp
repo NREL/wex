@@ -928,6 +928,7 @@ wxPLPlotCtrl::wxPLPlotCtrl( wxWindow *parent, int id, const wxPoint &pos, const 
 	m_legendRect.x = 10;
 	m_legendRect.y = 10;
 	m_reverseLegend = false;
+	m_includeLegendOnExport = false;
 	m_legendInvalidated = true;
 	m_legendPosPercent.x = 85.0;
 	m_legendPosPercent.y = 4.0;
@@ -1497,13 +1498,31 @@ bool wxPLPlotCtrl::ShowExportDialog( wxString &exp_file_name, wxBitmapType &exp_
 
 wxBitmap wxPLPlotCtrl::GetBitmap( int width, int height )
 {
-	wxSize imgSize = GetClientSize();
+	bool legend_shown = m_showLegend;
+	LegendPos legend_pos = m_legendPos;
+	wxSize imgSize( GetClientSize() );
 	
 	bool invalidated = false;
-	if (width > 10 && width < 10000 && height > 10 && height < 10000 )
+	if ( (width > 10 && width < 10000 && height > 10 && height < 10000)
+		|| (m_includeLegendOnExport && !m_showLegend ))
 	{
+		if ( m_includeLegendOnExport && !m_showLegend )
+		{
+			m_showLegend = true;
+			m_legendPos = RIGHT;
+
+			// estimate legend size and add it to exported bitmap size
+			wxBitmap bittemp( 10, 10 );
+			wxMemoryDC dctemp( bittemp );
+			dctemp.SetFont( GetFont() );
+			CalcLegendTextLayout( dctemp );
+			m_legendInvalidated = true; // keep legend invalidated for subsequent render
+
+			width += m_legendRect.width;
+		}
+
 		Invalidate(); // force recalc of layout
-		invalidated = false;
+		invalidated = true;
 		imgSize.Set(width, height);
 	}
 
@@ -1515,7 +1534,7 @@ wxBitmap wxPLPlotCtrl::GetBitmap( int width, int height )
 	gdc.SetFont( GetFont() );
 	gdc.SetBackground( *wxWHITE_BRUSH );
 	gdc.Clear();
-		
+	
 	wxRect rect(0, 0, imgSize.GetWidth(), imgSize.GetHeight());
 	Render( gdc, rect );
 
@@ -1523,6 +1542,8 @@ wxBitmap wxPLPlotCtrl::GetBitmap( int width, int height )
 
 	if ( invalidated )
 	{
+		m_showLegend = legend_shown;
+		m_legendPos = legend_pos;
 		Invalidate(); // invalidate layout cache again for next time it is draw on screen
 		Refresh(); // issue redraw to on-screen to recalculate layout right away.
 	}

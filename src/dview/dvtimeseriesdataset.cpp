@@ -9,13 +9,19 @@ wxDVTimeSeriesDataSet::wxDVTimeSeriesDataSet()
 
 wxDVTimeSeriesDataSet::~wxDVTimeSeriesDataSet()
 {
+}
 
+wxString wxDVTimeSeriesDataSet::GetLabel() const
+{
+	return GetTitleWithUnits();
 }
 
 /* Helper Functions */
-wxString wxDVTimeSeriesDataSet::GetTitleWithUnits()
+wxString wxDVTimeSeriesDataSet::GetTitleWithUnits() const
 {
-	return GetSeriesTitle() + " (" + GetUnits() + ")";
+	wxString units( GetUnits() );
+	if ( units.IsEmpty() ) return GetSeriesTitle();
+	else return GetSeriesTitle() + " (" + units + ")";
 }
 
 wxRealPoint wxDVTimeSeriesDataSet::operator[] (size_t i) const

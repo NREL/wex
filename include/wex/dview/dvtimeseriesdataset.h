@@ -38,11 +38,12 @@ public:
 	virtual double GetOffset() const = 0;
 	virtual wxString GetSeriesTitle() const = 0;
 	virtual wxString GetUnits() const = 0;
+	virtual wxString GetLabel() const;
 
 	/*Helper Functions*/
 	wxRealPoint operator[] (size_t i) const;
 
-	wxString GetTitleWithUnits();
+	wxString GetTitleWithUnits() const;
 	double GetMinHours();
 	double GetMaxHours();
 	double GetTotalHours();

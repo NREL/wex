@@ -157,6 +157,7 @@ public:
 	void SetLegendReversed( bool reverse ) { m_reverseLegend = reverse; }
 	void SetLegendLocation( LegendPos pos, double xpercent = -1.0, double ypercent = -1.0 );
 	bool SetLegendLocation( const wxString &spos );
+	void SetIncludeLegendOnExport( bool b ) { m_includeLegendOnExport = b; }
 	wxRealPoint GetLegendLocation() { return m_legendPosPercent; }
 
 	void SetAllowHighlighting( bool highlighting ) { m_allowHighlighting = highlighting; }
@@ -218,6 +219,7 @@ private:
 	LegendPos m_legendPos;
 	wxRealPoint m_legendPosPercent;
 	bool m_reverseLegend;
+	bool m_includeLegendOnExport;
 	bool m_moveLegendMode;
 	bool m_moveLegendErase;
 	wxPoint m_anchorPoint;
