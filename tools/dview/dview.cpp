@@ -278,7 +278,6 @@ public:
 			else
 			{
 				AddRecent(filenames[i]);
-				mPlotCtrl->DisplayTabs();
 			}
 		}
 		

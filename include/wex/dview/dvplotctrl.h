@@ -8,7 +8,7 @@
  * This will have a tab for hourly, daily, monthly, profile, dmap, etc.
  */
 
-#include <wx/aui/auibook.h>
+#include "wex/metro.h"
 
 #include "wex/dview/dvtimeseriesdataset.h"
 #include "wex/dview/dvtimeseriesctrl.h"
@@ -20,9 +20,7 @@
 #include "wex/dview/dvplotctrlsettings.h"
 #include "wex/dview/dvstatisticstablectrl.h"
 
-class wxMetroNotebook;
-
-class wxDVPlotCtrl : public wxPanel
+class wxDVPlotCtrl : public wxMetroNotebook
 {
 public:
 	wxDVPlotCtrl(wxWindow* parent, wxWindowID id = wxID_ANY, 
@@ -45,22 +43,17 @@ public:
 
 	enum { TAB_TS = 0, TAB_HTS, TAB_DTS, TAB_MTS, TAB_DMAP, TAB_PROFILE, TAB_PDF, TAB_DC, TAB_SCATTER };
 
-	void SelectTabIndex(int index);
-	void SelectDataIndex(int index, bool allTabs = false);
-	void SelectDataIndexOnTab(int index, int tab);
+	void SelectTabIndex( size_t index);
+	void SelectDataIndex( size_t index, bool allTabs = false);
+	void SelectDataIndexOnTab( size_t index, int tab);
 
 	void SelectDataOnBlankTabs();
-
-	void DisplayTabs();
-	double GetMinTimeStep();
-
-	//Event Handlers
+	
 	void OnPageChanging( wxNotebookEvent& e );
 	
 private:
 	std::vector<wxDVTimeSeriesDataSet*> m_dataSets;
 
-	wxMetroNotebook *m_plotNotebook;
 	wxDVTimeSeriesCtrl *m_timeSeries;
 	wxDVTimeSeriesCtrl *m_hourlyTimeSeries;
 	wxDVTimeSeriesCtrl *m_dailyTimeSeries;

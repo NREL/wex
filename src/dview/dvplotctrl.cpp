@@ -17,103 +17,46 @@
 #include "wex/metro.h"
 
 
-enum { ID_NOTEBOOK = wxID_HIGHEST + 141 };
 
-enum { TAB_TIME_SERIES = 0, TAB_DMAP, TAB_PROFILE, TAB_PNCDF};
-
-/*
-class wxDViewNotebook : public wxAuiNotebook
-{
-public:
-	wxDViewNotebook( wxWindow *parent, int id )
-		: wxAuiNotebook( parent, id, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE )
-	{
-		m_mgr.GetArtProvider()->SetMetric(wxAUI_DOCKART_PANE_BORDER_SIZE,0);
-	}
+enum {	TAB_TIME_SERIES = 0,
+		TAB_HOURLY,
+		TAB_DAILY,
+		TAB_MONTHLY,
+		TAB_DMAP,
+		TAB_PROFILE,
+		TAB_STATS,
+		TAB_PNCDF,
+		TAB_DC,
+		TAB_SCATTER
 };
-*/
 
-BEGIN_EVENT_TABLE(wxDVPlotCtrl, wxPanel)
-	EVT_NOTEBOOK_PAGE_CHANGING(ID_NOTEBOOK, wxDVPlotCtrl::OnPageChanging)
+BEGIN_EVENT_TABLE(wxDVPlotCtrl, wxMetroNotebook)
+	EVT_NOTEBOOK_PAGE_CHANGING( wxID_ANY, wxDVPlotCtrl::OnPageChanging )
 END_EVENT_TABLE()
 
 /* Constructors and Destructors */
 wxDVPlotCtrl::wxDVPlotCtrl(wxWindow* parent, wxWindowID id, 
 	const wxPoint& pos, const wxSize& size)
-	: wxPanel(parent, id, pos, size, wxTAB_TRAVERSAL)
+	: wxMetroNotebook(parent, id, pos, size, wxMT_LIGHTTHEME)
 {
-	wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
-	SetSizer(topSizer);
 
-	m_plotNotebook = new wxMetroNotebook(this, ID_NOTEBOOK, wxDefaultPosition, wxDefaultSize, wxMT_LIGHTTHEME);
-	topSizer->Add(m_plotNotebook, 1, wxEXPAND, 0);
-
-	m_timeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, RAW_DATA_TIME_SERIES, AVERAGE);
-	m_hourlyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, HOURLY_TIME_SERIES, AVERAGE);
-	m_dailyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, DAILY_TIME_SERIES, AVERAGE);
-	m_monthlyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, MONTHLY_TIME_SERIES, AVERAGE);
-	m_dMap = new wxDVDMapCtrl(m_plotNotebook, wxID_ANY);
-	m_profilePlots = new wxDVProfileCtrl(m_plotNotebook, wxID_ANY);
-	m_statisticsTable = new wxDVStatisticsTableCtrl(m_plotNotebook, wxID_ANY);
-	m_pnCdf = new wxDVPnCdfCtrl(m_plotNotebook, wxID_ANY);
-	m_durationCurve = new wxDVDCCtrl(m_plotNotebook, wxID_ANY);
-	m_scatterPlot = new wxDVScatterPlotCtrl(m_plotNotebook, wxID_ANY);
-
-//	m_plotNotebook->SetTextOnRight( true );
-
-	DisplayTabs();
+	AddPage( m_timeSeries = new wxDVTimeSeriesCtrl(this, wxID_ANY, RAW_DATA_TIME_SERIES, AVERAGE), "Time series", true );
+	AddPage( m_hourlyTimeSeries = new wxDVTimeSeriesCtrl(this, wxID_ANY, HOURLY_TIME_SERIES, AVERAGE), "Hourly" );
+	AddPage( m_dailyTimeSeries = new wxDVTimeSeriesCtrl(this, wxID_ANY, DAILY_TIME_SERIES, AVERAGE), "Daily" );
+	AddPage( m_monthlyTimeSeries = new wxDVTimeSeriesCtrl(this, wxID_ANY, MONTHLY_TIME_SERIES, AVERAGE), "Monthly" );
+	AddPage( m_dMap = new wxDVDMapCtrl(this, wxID_ANY), "Heat map" );
+	AddPage( m_profilePlots = new wxDVProfileCtrl(this, wxID_ANY), "Profile" );
+	AddPage( m_statisticsTable = new wxDVStatisticsTableCtrl(this, wxID_ANY), "Statistics" );
+	AddPage( m_pnCdf = new wxDVPnCdfCtrl(this, wxID_ANY), "PDF / CDF");
+	AddPage( m_durationCurve = new wxDVDCCtrl(this, wxID_ANY), "Duration curve" );
+	AddPage( m_scatterPlot = new wxDVScatterPlotCtrl(this, wxID_ANY), "Scatter" );
+	
 }
 
 wxDVPlotCtrl::~wxDVPlotCtrl()
 {
-	for (int i=0; i<m_dataSets.size(); i++)
+	for (size_t i=0; i<m_dataSets.size(); i++)
 		delete m_dataSets[i];
-}
-
-double wxDVPlotCtrl::GetMinTimeStep()
-{
-	double MinTimeStep = 1000000000.0;	//Rediculously high time step - no real data file would ever use a time step this big.
-	double TimeStep;
-
-	for (int i = 0; i < m_dataSets.size(); i++)
-	{
-		TimeStep = m_dataSets[i]->GetTimeStep();
-		if (TimeStep < MinTimeStep) { MinTimeStep = TimeStep; }
-	}
-
-	return MinTimeStep;
-}
-
-void wxDVPlotCtrl::DisplayTabs()
-{
-	//TODO:  Is there a better way to do this (hide and show tabs)?  (See also RemoveAllDataSets() method) This might also fix the small blank square that sometimes appears over the tab strip.
-	double MinTimeStep = GetMinTimeStep();
-
-	if (MinTimeStep >= 1.0 && m_plotNotebook->GetPageCount() == 10) { m_plotNotebook->DeletePage(1); }	//hourly is the second tab - delete it if it exists (pagecount = 10)
-	if (MinTimeStep >= 24.0 && m_plotNotebook->GetPageCount() == 9) { m_plotNotebook->DeletePage(1); }	//daily is the second tab (hourly has been deleted) - delete it if it exists (pagecount = 9)
-	if (MinTimeStep >= 672.0 && m_plotNotebook->GetPageCount() == 8) { m_plotNotebook->DeletePage(1); }	//monthly is the second tab (hourly & daily have been deleted) - delete it if it exists (pagecount = 8)
-
-	int PageCount = m_plotNotebook->GetPageCount();	//Get count of remaining pages
-
-	//We have to remove all remaining pages and then add back the ones we want since wxMetroNotebook does not have a way to insert a page at a specified index
-	//However, since the time series tab is always first and always displayed we don't remove it since there is a bug in the wxMetroNotebook that errors on removing the last item from the pagelist.
-	for (int i = PageCount - 1; i > 0; i--)
-	{
-		m_plotNotebook->RemovePage(i);
-	}
-
-	if (m_plotNotebook->GetPageCount() == 0) { m_plotNotebook->AddPage(m_timeSeries, _("Time Series"), /*wxBITMAP_PNG_FROM_DATA( time ), */true); } //Only add this if it doesn't already exist
-	if (MinTimeStep < 1.0) { m_plotNotebook->AddPage(m_hourlyTimeSeries, _("Hourly"), /*wxBITMAP_PNG_FROM_DATA( time ), */false); }
-	if (MinTimeStep < 24.0) { m_plotNotebook->AddPage(m_dailyTimeSeries, _("Daily"), /*wxBITMAP_PNG_FROM_DATA( time ), */false); }
-	if (MinTimeStep < 672.0) { m_plotNotebook->AddPage(m_monthlyTimeSeries, _("Monthly"), /*wxBITMAP_PNG_FROM_DATA( time ), */false); }
-	m_plotNotebook->AddPage(m_profilePlots, _("Profiles"), /*wxBITMAP_PNG_FROM_DATA( calendar ), */false);
-	m_plotNotebook->AddPage(m_statisticsTable, _("Statistics Table"), /*wxBITMAP_PNG_FROM_DATA( dmap ), */false);
-	m_plotNotebook->AddPage(m_dMap, _("Heat Map"), /*wxBITMAP_PNG_FROM_DATA( dmap ), */false);
-	m_plotNotebook->AddPage(m_scatterPlot, _("Scatter"), /*wxBITMAP_PNG_FROM_DATA( scatter ), */false);
-	m_plotNotebook->AddPage(m_pnCdf, _("PDF / CDF"), /*wxBITMAP_PNG_FROM_DATA( barchart ), */false);
-	m_plotNotebook->AddPage(m_durationCurve, _("Duration Curve"), /*wxBITMAP_PNG_FROM_DATA( curve ), */false);
-
-	m_plotNotebook->Refresh();
 }
 
 //This function is used to add a data set to Dview.  
@@ -165,42 +108,10 @@ void wxDVPlotCtrl::RemoveAllDataSets()
 	m_durationCurve->RemoveAllDataSets();
 	m_scatterPlot->RemoveAllDataSets();
 
-	for (int i=0; i<m_dataSets.size(); i++)
-	{
+	for (size_t i=0; i<m_dataSets.size(); i++)
 		delete m_dataSets[i];
-	}
 
 	m_dataSets.clear();
-
-	//Remove hourly, daily, and monthly tab pages if they exist
-	switch (m_plotNotebook->GetPageCount())
-	{
-		case 10:
-			m_plotNotebook->RemovePage(3);
-			m_plotNotebook->RemovePage(2);
-			m_plotNotebook->RemovePage(1);
-			break;
-		case 9:
-			m_plotNotebook->RemovePage(2);
-			m_plotNotebook->RemovePage(1);
-			break;
-		case 8:
-			m_plotNotebook->RemovePage(1);
-			break;
-	}
-	m_plotNotebook->Refresh();
-
-	//delete and re-add these controls (fixes bug with tabs not behaving correctly after we remove a tab that doesn't get used with the next loaded file)
-	//TODO:  Is there a better way to do this (hide and show tabs)?  (See also DisplayTabs() method) This might also fix the small blank square that sometimes appears over the tab strip.
-	delete m_hourlyTimeSeries;
-	delete m_dailyTimeSeries;
-	delete m_monthlyTimeSeries;
-
-	m_hourlyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, HOURLY_TIME_SERIES, AVERAGE);
-	m_dailyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, DAILY_TIME_SERIES, AVERAGE);
-	m_monthlyTimeSeries = new wxDVTimeSeriesCtrl(m_plotNotebook, wxID_ANY, MONTHLY_TIME_SERIES, AVERAGE);
-
-	DisplayTabs();
 }
 
 wxDVStatisticsTableCtrl* wxDVPlotCtrl::GetStatisticsTable()
@@ -212,7 +123,7 @@ wxDVPlotCtrlSettings wxDVPlotCtrl::GetPerspective()
 {
 	wxDVPlotCtrlSettings settings;
 
-	settings.SetProperty(wxT("tabIndex"), m_plotNotebook->GetSelection());
+	settings.SetProperty(wxT("tabIndex"), GetSelection());
 
 	//***TimeSeries Properties***
 	settings.SetProperty(wxT("tsAxisMin"), m_timeSeries->GetViewMin());
@@ -296,7 +207,7 @@ void wxDVPlotCtrl::SetPerspective(wxDVPlotCtrlSettings& settings)
 {
 	long i;
 	settings.GetProperty(wxT("tabIndex")).ToLong(&i);
-	m_plotNotebook->SetSelection(i);
+	SetSelection(i);
 
 	//***TimeSeries Properties***
 	m_timeSeries->SetTopSelectedNames(settings.GetProperty(wxT("tsTopSelectedNames")));
@@ -394,13 +305,13 @@ void wxDVPlotCtrl::SetPerspective(wxDVPlotCtrlSettings& settings)
 	Update();
 }
 
-void wxDVPlotCtrl::SelectTabIndex(int index)
+void wxDVPlotCtrl::SelectTabIndex( size_t index)
 {
-	if (index >= 0 && (unsigned int)index < m_plotNotebook->GetPageCount())
-		m_plotNotebook->SetSelection(index);
+	if ( index < GetPageCount() )
+		SetSelection(index);
 }
 
-void wxDVPlotCtrl::SelectDataIndex(int index, bool allTabs)
+void wxDVPlotCtrl::SelectDataIndex( size_t index, bool allTabs )
 {
 	//Only select this data on the slower tabs (which require sorting) if allTabs is true.
 
@@ -423,9 +334,9 @@ void wxDVPlotCtrl::SelectDataIndex(int index, bool allTabs)
 	//and data set selection does not make sense for scatter plot.
 }
 
-void wxDVPlotCtrl::SelectDataIndexOnTab(int index, int tab)
+void wxDVPlotCtrl::SelectDataIndexOnTab(size_t index, int tab)
 {
-	if (index < 0 || index >= m_dataSets.size()) return;
+	if ( index >= m_dataSets.size()) return;
 
 	switch(tab)
 	{

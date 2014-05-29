@@ -411,6 +411,12 @@ void wxMetroTabList::Remove( const wxString &label )
 		m_items.erase( m_items.begin()+idx );
 }
 
+void wxMetroTabList::RemoveAt( size_t n )
+{
+	if ( n >= 0 && n < m_items.size() )
+		m_items.erase( m_items.begin()+n );
+}
+
 int wxMetroTabList::Find( const wxString &label )
 {
 	for ( size_t i=0;i<m_items.size();i++ )
@@ -815,118 +821,205 @@ void wxMetroTabList::SwitchPage( size_t i )
 
 }
 
+#if 0
+BEGIN_EVENT_TABLE( wxMetroNotebook, wxBookCtrlBase )
+	EVT_LISTBOX( wxID_ANY, wxMetroNotebook::OnTabListChanged )
+END_EVENT_TABLE()
+
+wxMetroNotebook::wxMetroNotebook(wxWindow *parent, int id, const wxPoint &pos, const wxSize &sz, long style)
+	: wxBookCtrlBase( parent, id, pos, sz, wxBORDER_NONE|wxBK_TOP )
+{
+	//SetInternalBorder( 0 );
+	//SetControlMargin( 0 );
+
+	m_bookctrl = new wxMetroTabList( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, style );
+	
+	/*
+    wxSizer* mainSizer = new wxBoxSizer(IsVertical() ? wxVERTICAL : wxHORIZONTAL);
+	m_controlSizer = new wxBoxSizer(IsVertical() ? wxHORIZONTAL : wxVERTICAL);
+    m_controlSizer->Add(m_bookctrl, 1, (IsVertical() ? wxALIGN_CENTRE_VERTICAL : wxALIGN_CENTRE) |wxGROW, 0);
+    mainSizer->Add(m_controlSizer, 0, (IsVertical() ? (int) wxGROW : (int) wxALIGN_CENTRE_VERTICAL)|wxALL, m_controlMargin);
+    SetSizer(mainSizer);*/
+#ifdef __WXMSW__
+    // On XP with themes enabled the GetViewRect used in GetControllerSize() to
+    // determine the space needed for the list view will incorrectly return
+    // (0,0,0,0) the first time.  So send a pending event so OnSize will be
+    // called again after the window is ready to go.  Technically we don't
+    // need to do this on non-XP windows, but if things are already sized
+    // correctly then nothing changes and so there is no harm.
+    wxSizeEvent evt;
+    GetEventHandler()->AddPendingEvent(evt);
+#endif
+
+}
+
+bool wxMetroNotebook::SetPageText(size_t n, const wxString& strText)
+{
+	GetTabs()->SetLabel( n, strText );
+	return true;
+}
+
+wxString wxMetroNotebook::GetPageText(size_t n) const 
+{
+	return GetTabs()->GetLabel( n );
+}
+
+int wxMetroNotebook::GetPageImage(size_t n) const
+{
+	return wxNOT_FOUND;
+}
+
+bool wxMetroNotebook::SetPageImage(size_t n, int imageId)
+{
+	return false;
+}
+
+bool wxMetroNotebook::InsertPage(size_t n,
+                        wxWindow *page,
+                        const wxString& text,
+                        bool bSelect,
+                        int imageId )
+{    
+	if ( !wxBookCtrlBase::InsertPage(n, page, text, bSelect, imageId) )
+        return false;
+
+    GetTabs()->Insert(text, n);
+
+    // if the inserted page is before the selected one, we must update the
+    // index of the selected page
+    if ( int(n) <= m_selection )
+    {
+        // one extra page added
+        m_selection++;
+        GetTabs()->SetSelection(m_selection);
+    }
+
+	if ( bSelect ) ChangeSelection( n ); // don't fire an event on insertion
+
+	GetTabs()->Refresh();
+
+    return true;
+}
+
+int wxMetroNotebook::SetSelection(size_t n)
+{
+	return DoSetSelection(n, SetSelection_SendEvent);
+}
+
+int wxMetroNotebook::ChangeSelection(size_t n)
+{
+	return DoSetSelection(n);
+}
+
+wxWindow *wxMetroNotebook::DoRemovePage(size_t page)
+{
+    wxWindow *win = wxBookCtrlBase::DoRemovePage(page);
+
+    if ( win )
+    {
+        GetTabs()->RemoveAt(page);
+		GetTabs()->Refresh();
+        DoSetSelectionAfterRemoval(page);
+    }
+
+    return win;
+}
+
+bool wxMetroNotebook::DeleteAllPages()
+{
+    GetTabs()->Clear();
+	GetTabs()->Refresh();
+    return wxBookCtrlBase::DeleteAllPages();
+}
+
+
+void wxMetroNotebook::UpdateSelectedPage(size_t newsel)
+{
+    m_selection = static_cast<int>(newsel);
+    GetTabs()->SetSelection(m_selection);
+}
+
+wxBookCtrlEvent* wxMetroNotebook::CreatePageChangingEvent() const
+{
+    return new wxBookCtrlEvent(wxEVT_BOOKCTRL_PAGE_CHANGING, m_windowId);
+}
+
+void wxMetroNotebook::MakeChangedEvent(wxBookCtrlEvent &evt)
+{
+    evt.SetEventType(wxEVT_BOOKCTRL_PAGE_CHANGED);
+}
+
+void wxMetroNotebook::OnTabListChanged( wxCommandEvent &evt )
+{
+    if ( evt.GetEventObject() != m_bookctrl )
+    {
+        evt.Skip();
+        return;
+    }
+
+    const int selNew = evt.GetSelection();
+
+    if ( selNew == m_selection )
+    {
+        // this event can only come from our own Select(m_selection) below
+        // which we call when the page change is vetoed, so we should simply
+        // ignore it
+        return;
+    }
+
+    SetSelection(selNew);
+
+    // change wasn't allowed, return to previous state
+    if (m_selection != selNew)
+        GetTabs()->SetSelection(m_selection);
+}
+#endif
+
 /************* wxMetroNotebook ************** */
 
-enum { ID_TABLIST = wxID_HIGHEST+124 };
-
-BEGIN_EVENT_TABLE(wxMetroNotebook, wxPanel)
+BEGIN_EVENT_TABLE(wxMetroNotebook, wxWindow)
 	EVT_SIZE( wxMetroNotebook::OnSize )
 	EVT_LISTBOX( wxID_ANY, wxMetroNotebook::OnTabList )
 END_EVENT_TABLE()
 
 wxMetroNotebook::wxMetroNotebook(wxWindow *parent, int id, const wxPoint &pos, const wxSize &sz, long style)
-	: wxPanel(parent, id, pos, sz)
+	: wxWindow( parent, id, pos, sz )
 {
-	m_list = new wxMetroTabList(this, id, wxDefaultPosition, wxDefaultSize, style );
-	m_flipper = new wxSimplebook( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE );
-
-	wxBoxSizer *sizer = new wxBoxSizer( wxVERTICAL );
-	sizer->Add( m_list, 0, wxALL|wxEXPAND, 0 );
-	sizer->Add( m_flipper, 1, wxALL|wxEXPAND, 0 );
-	SetSizer( sizer );
-
+	m_sel = -1;
 	SetBackgroundColour( wxMetroTheme::Colour( wxMT_BACKGROUND ) );
 	SetForegroundColour( wxMetroTheme::Colour( wxMT_FOREGROUND ) );
-	
+	m_list = new wxMetroTabList(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, style );
+}
+
+wxMetroNotebook::~wxMetroNotebook()
+{
+	// nothing to do
 }
 
 void wxMetroNotebook::AddPage(wxWindow *win, const wxString &text, bool active, bool button)
 {
-	win->Reparent( m_flipper );
-	m_flipper->AddPage(win, text);
+	win->Show( false );
+	win->Reparent( this );
 
 	page_info x;
+	x.win = win;
 	x.text = text;
 	x.scroll_win = 0;
 	x.button = button;
 
-	m_pageList.push_back( x );
+	m_pages.push_back( x );
+
+	UpdateTabList();
+	UpdateLayout();
 
 	if (active)
-	{
-		m_list->SetSelection( m_flipper->GetPageCount()-1 );
-		m_flipper->ChangeSelection( m_flipper->GetPageCount()-1 );
-	}
-	UpdateTabList();
-	ComputeScrolledWindows();
-}
-
-int wxMetroNotebook::GetPageIndex(wxWindow *win)
-{
-	if ( win == NULL ) return -1;
-	int ndx = -1;
-	for (size_t i=0; i<m_flipper->GetPageCount(); i++)
-	{
-		if ( m_flipper->GetPage(i) == win )
-			ndx = i;
-	}
-	return ndx;
-}
-
-
-wxWindow *wxMetroNotebook::RemovePage( int ndx )
-{
-	if ( ndx < 0 || ndx >= (int)m_pageList.size() )
-		return 0;
-	
-	wxWindow *win = m_flipper->GetPage( ndx );
-
-	int cursel = m_flipper->GetSelection();
-	if ( cursel >= ndx )
-	{
-		cursel--;
-		if ( cursel < 0 )
-			cursel = 0;
-	}
-
-	if ( m_pageList[ndx].scroll_win != 0
-		&& win->GetParent() == m_pageList[ndx].scroll_win )
-	{
-		win->SetParent( this );
-		m_pageList[ndx].scroll_win->Destroy();
-		m_pageList[ndx].scroll_win = 0;
-	}
-
-	m_flipper->RemovePage(ndx);
-	m_pageList.erase( m_pageList.begin() + ndx );
-		
-	UpdateTabList();
-
-	if ( m_flipper->GetSelection() != cursel )
-	{
-		m_flipper->ChangeSelection(cursel);
-		m_list->SetSelection(cursel);
-	}
-
-	ComputeScrolledWindows();
-	return win;
-}
-
-void wxMetroNotebook::DeletePage( int ndx )
-{
-	wxWindow *win = RemovePage( ndx );
-	if ( win != 0 ) win->Destroy();
-
-}
-
-wxWindow *wxMetroNotebook::GetPage( int index )
-{
-	return m_flipper->GetPage( index );
+		SetSelection( m_pages.size()-1 );
 }
 
 void wxMetroNotebook::AddScrolledPage(wxWindow *win, const wxString &text, bool active, bool button)
 {
-	wxScrolledWindow *scrollwin = new wxScrolledWindow( m_flipper );
+	wxScrolledWindow *scrollwin = new wxScrolledWindow( this );
+	scrollwin->Show( false );
 	win->Reparent( scrollwin );
 
 	int cw, ch;
@@ -936,44 +1029,101 @@ void wxMetroNotebook::AddScrolledPage(wxWindow *win, const wxString &text, bool 
 	scrollwin->SetScrollRate(25,25);
 	
 	win->Move(0,0);
-
-	m_flipper->AddPage( scrollwin, text );
-
+	
 	page_info x;
+	x.win = win;
 	x.text = text;
-	x.scroll_win = win;
+	x.scroll_win = scrollwin;
 	x.button = button;
 
-	m_pageList.push_back( x );
+	m_pages.push_back( x );
+
 	UpdateTabList();
+	UpdateLayout();
 
 	if (active)
+		SetSelection( m_pages.size()-1 );
+}
+
+int wxMetroNotebook::GetPageIndex(wxWindow *win)
+{
+	if ( win == NULL ) return -1;
+	int ndx = -1;
+	for (size_t i=0; i<m_pages.size(); i++)
 	{
-		m_list->SetSelection( m_flipper->GetPageCount()-1 );
-		m_flipper->ChangeSelection( m_flipper->GetPageCount()-1 );
+		if ( m_pages[i].win == win )
+			ndx = i;
+	}
+	return ndx;
+}
+
+
+wxWindow *wxMetroNotebook::RemovePage( size_t ndx )
+{
+	if ( ndx < 0 || ndx >= (int)m_pages.size() )
+		return 0;
+	
+	wxWindow *win = GetPage( ndx );
+
+	int cursel = m_list->GetSelection();
+	if ( cursel >= ndx )
+	{
+		cursel--;
+		if ( cursel < 0 )
+			cursel = 0;
 	}
 
-	ComputeScrolledWindows();
+	if ( m_pages[ndx].scroll_win != 0
+		&& win->GetParent() == m_pages[ndx].scroll_win )
+	{
+		win->SetParent( this );
+		m_pages[ndx].scroll_win->Destroy();
+		m_pages[ndx].scroll_win = 0;
+	}
+
+	m_pages.erase( m_pages.begin() + ndx );
+		
+	UpdateTabList();
+
+	if ( m_list->GetSelection() != cursel )
+		m_list->SetSelection(cursel);
+
+	UpdateLayout();
+	return win;
 }
+
+void wxMetroNotebook::DeletePage( size_t ndx )
+{
+	wxWindow *win = RemovePage( ndx );
+	if ( win != 0 ) win->Destroy();
+
+}
+
+wxWindow *wxMetroNotebook::GetPage( size_t index )
+{
+	if ( index < m_pages.size() ) return m_pages[index].win;
+	else return 0;
+}
+
 
 int wxMetroNotebook::GetSelection() const 
 {
-	return m_flipper->GetSelection();
+	return m_sel;
 }
 
-void wxMetroNotebook::SetText(int id, const wxString &text)
+void wxMetroNotebook::SetText(size_t id, const wxString &text)
 {
-	if ((id < (int)m_pageList.size()) && (id >= 0))
+	if ((id < (int)m_pages.size()) && (id >= 0))
 	{
-		m_pageList[id].text = text;
+		m_pages[id].text = text;
 		UpdateTabList();
 	}
 }
 
-wxString wxMetroNotebook::GetText( int id ) const
+wxString wxMetroNotebook::GetText( size_t id ) const
 {
-	if ( id < (int) m_pageList.size() && id >= 0 )
-		return m_pageList[id].text;
+	if ( id < (int) m_pages.size() && id >= 0 )
+		return m_pages[id].text;
 	else
 		return wxEmptyString;
 }
@@ -988,33 +1138,62 @@ wxPoint wxMetroNotebook::GetPopupMenuPosition( int index )
 	return m_list->GetPopupMenuPosition(index);
 }
 
-void wxMetroNotebook::SetSelection(int id)
+void wxMetroNotebook::SetSelection(size_t id)
 {
-	m_flipper->SetSelection(id);
-	m_list->SetSelection(id);
-}
+	if ( id >= m_pages.size() ) return;
 
-int wxMetroNotebook::GetPageCount()
-{
-	return m_flipper->GetPageCount();
-}
 
-void wxMetroNotebook::OnSize(wxSizeEvent &evt)
-{
-	ComputeScrolledWindows();
-	evt.Skip();
-}
+	if ( m_sel == id ) return;
 
-void wxMetroNotebook::ComputeScrolledWindows()
-{
-	for (size_t i=0;i<m_pageList.size();i++)
+	if ( m_sel >= 0 )
 	{
-		if ( m_pageList[i].scroll_win != 0 )
+		if ( m_pages[m_sel].scroll_win )
+			m_pages[m_sel].scroll_win->Show( false );
+		else
+			m_pages[m_sel].win->Show( false );
+	}
+
+	m_sel = id;
+	m_list->SetSelection(id);
+	m_list->Refresh();
+	
+	if ( m_sel >= 0 )
+	{
+		if ( m_pages[m_sel].scroll_win )
+			m_pages[m_sel].scroll_win->Show( true );
+		else
+			m_pages[m_sel].win->Show( true );
+	}
+
+}
+
+size_t wxMetroNotebook::GetPageCount() const
+{
+	return m_pages.size();
+}
+
+void wxMetroNotebook::OnSize( wxSizeEvent &evt )
+{
+	UpdateLayout();
+}
+
+void wxMetroNotebook::UpdateLayout()
+{
+	int W, H;
+	GetClientSize(&W,&H);
+	int T = m_list->GetBestSize().y;
+	m_list->SetSize(0,0,W,T);
+	
+	wxRect pgsz( 0, T, W, H-T );	
+	for (size_t i=0;i<m_pages.size();i++)
+	{
+		if ( m_pages[i].scroll_win != 0 )
 		{
-			if (wxScrolledWindow *parent = dynamic_cast<wxScrolledWindow*>( m_flipper->GetPage(i) ))
+			m_pages[i].scroll_win->SetSize( pgsz );
+			if (wxScrolledWindow *parent = dynamic_cast<wxScrolledWindow*>( GetPage(i) ))
 			{
 				int cw, ch;
-				m_pageList[i].scroll_win->GetClientSize(&cw,&ch);
+				m_pages[i].scroll_win->GetClientSize(&cw,&ch);
 				int vw, vh;
 				parent->GetVirtualSize(&vw,&vh);
 
@@ -1025,13 +1204,15 @@ void wxMetroNotebook::ComputeScrolledWindows()
 				}
 
 				int x,y;
-				m_pageList[i].scroll_win->GetPosition(&x,&y);
+				m_pages[i].scroll_win->GetPosition(&x,&y);
 				if (vw > cw && vh > ch 
 					&& (x != 0 || y != 0))
-					m_pageList[i].scroll_win->Move(0,0);
+					m_pages[i].scroll_win->Move(0,0);
 		
 			}
 		}
+		else
+			m_pages[i].win->SetSize( pgsz );
 	}
 }
 
@@ -1039,8 +1220,8 @@ void wxMetroNotebook::UpdateTabList()
 {
 	size_t sel = m_list->GetSelection();
 	m_list->Clear();
-	for (size_t i=0;i<m_pageList.size();i++)
-		m_list->Append( m_pageList[i].text, m_pageList[i].button );
+	for (size_t i=0;i<m_pages.size();i++)
+		m_list->Append( m_pages[i].text, m_pages[i].button );
 
 	m_list->SetSelection( sel );
 }
@@ -1061,6 +1242,7 @@ void wxMetroNotebook::SwitchPage( size_t i )
 	evt.SetEventObject( this );
 	evt.SetOldSelection( GetSelection() );
 	evt.SetSelection(i);
+	evt.Allow();
 	ProcessEvent(evt);
 
 	if ( !evt.IsAllowed() )
@@ -1069,8 +1251,7 @@ void wxMetroNotebook::SwitchPage( size_t i )
 		return; // abort the selection if the changing event was vetoed.
 	}
 
-	m_flipper->ChangeSelection(i);
-	m_list->SetSelection(i);
+	SetSelection(i);
 
 	// fire EVT_NOTEBOOK_PAGE_CHANGED
 	wxNotebookEvent evt2(wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED, GetId() );
@@ -1078,6 +1259,7 @@ void wxMetroNotebook::SwitchPage( size_t i )
 	evt2.SetSelection(i);
 	ProcessEvent(evt2);
 }
+
 
 #define SCRL_RATE 25
 

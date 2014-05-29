@@ -341,6 +341,46 @@ BEGIN_EVENT_TABLE( NumericTest, wxFrame )
 END_EVENT_TABLE()
 
 
+#include "wex/dview/dvtimeseriesdataset.h"
+#include "wex/dview/dvtimeseriesctrl.h"
+#include "wex/dview/dvdmapctrl.h"
+#include "wex/dview/dvprofilectrl.h"
+#include "wex/dview/dvpncdfctrl.h"
+#include "wex/dview/dvdcctrl.h"
+#include "wex/dview/dvscatterplotctrl.h"
+#include "wex/dview/dvplotctrlsettings.h"
+#include "wex/dview/dvstatisticstablectrl.h"
+
+class MyNoteTest : public wxMetroNotebook
+{
+public:
+	MyNoteTest( wxWindow *parent )
+		: wxMetroNotebook( parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxMT_LIGHTTHEME )
+	{		
+		AddPage(  new wxDVTimeSeriesCtrl(this, wxID_ANY, RAW_DATA_TIME_SERIES, AVERAGE), "Time series", true );
+		AddPage(  new wxDVTimeSeriesCtrl(this, wxID_ANY, HOURLY_TIME_SERIES, AVERAGE), "Hourly" );
+		AddPage(  new wxDVTimeSeriesCtrl(this, wxID_ANY, DAILY_TIME_SERIES, AVERAGE), "Daily" );
+		AddPage(  new wxDVTimeSeriesCtrl(this, wxID_ANY, MONTHLY_TIME_SERIES, AVERAGE), "Monthly" );
+		AddPage(  new wxDVDMapCtrl(this, wxID_ANY), "Heat map" );
+		AddPage(  new wxDVProfileCtrl(this, wxID_ANY), "Profile" );
+		AddPage(  new wxDVStatisticsTableCtrl(this, wxID_ANY), "Statistics" );
+		AddPage(  new wxDVPnCdfCtrl(this, wxID_ANY), "PDF / CDF");
+		AddPage(  new wxDVDCCtrl(this, wxID_ANY), "Duration curve" );
+		AddPage(  new wxDVScatterPlotCtrl(this, wxID_ANY), "Scatter" );
+	}
+	void OnPageChanging( wxNotebookEvent& e )
+	{
+		wxLogStatus("page changing: %d --> %d", e.GetOldSelection(), e.GetSelection() );
+	}
+
+	
+	DECLARE_EVENT_TABLE()
+};
+
+BEGIN_EVENT_TABLE( MyNoteTest, wxMetroNotebook )	
+	EVT_NOTEBOOK_PAGE_CHANGING( wxID_ANY, MyNoteTest::OnPageChanging )
+END_EVENT_TABLE()
+
 class MyApp : public wxApp
 {
 	wxLocale m_locale;
@@ -364,9 +404,11 @@ public:
 
 		//TestPLPlot( 0 );
 
-		TestSnapLayout( 0 );
+		//TestSnapLayout( 0 );
 
 		//TestDVSelectionCtrl();
+
+
 
 
 		/*
@@ -375,8 +417,6 @@ public:
 		frame->Show();
 		*/
 
-		/*
-		
 		wxFrame *frm = new wxFrame(NULL, wxID_ANY, "SchedCtrl", wxDefaultPosition, wxSize(1100,700));
 		frm->SetBackgroundColour( *wxWHITE );
 		
@@ -402,19 +442,27 @@ public:
 		sizer->Add( new wxMetroButton( frm, wxID_ANY, wxEmptyString, wxBITMAP_PNG_FROM_DATA( demo_bitmap ), wxDefaultPosition, wxDefaultSize), 0, wxALL, 3 );
 		
 		
-		wxMetroNotebook *nb = new wxMetroNotebook( frm, wxID_ANY, wxDefaultPosition, wxDefaultSize );
-		nb->AddPage( new wxPanel( nb ), "Case 1: PV" );
-		nb->AddPage( new wxPanel( nb ), "Case 2: PV+debt" );
+		MyNoteTest *nb = new MyNoteTest( frm );
+
+		/*wxPanel *p = new wxPanel( nb );
+		p->SetBackgroundColour(*wxRED);
+		nb->AddPage( p, "Case 2: PV+debt" );
+		
+		p = new wxPanel( nb );
+		p->SetBackgroundColour(*wxBLUE);
+		nb->AddPage( p, "Case 1: PV" );
+
 		nb->AddPage( new wxPanel( nb ), "Wind system" );
-		nb->AddPage( new wxPanel( nb ), "solar water heat" );
+		nb->AddPage( new wxPanel( nb ), "solar water heat" );*/
 		sizer->Add( nb, 1, wxALL|wxEXPAND, 0 );
-		nb = new wxMetroNotebook( frm, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxMT_LIGHTTHEME );
-		nb->AddPage( new wxPanel( nb ), "Base Case" );
-		nb->AddPage( new wxPanel( nb ), "Parametrics" );
-		nb->AddPage( new wxPanel( nb ), "Sensitivities" );
-		nb->AddPage( new wxPanel( nb ), "Statistics" );
-		nb->AddPage( new wxPanel( nb ), "Scripting" );
-		sizer->Add( nb, 1, wxALL|wxEXPAND, 0 );
+		
+		wxMetroNotebook *nb2 = new wxMetroNotebook( frm, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxMT_LIGHTTHEME );
+		nb2->AddPage( new wxPanel( nb ), "Base Case" );
+		nb2->AddPage( new wxPanel( nb ), "Parametrics" );
+		nb2->AddPage( new wxPanel( nb ), "Sensitivities" );
+		nb2->AddPage( new wxPanel( nb ), "Statistics" );
+		nb2->AddPage( new wxPanel( nb ), "Scripting" );
+		sizer->Add( nb2, 1, wxALL|wxEXPAND, 0 );
 
 		//wxDiurnalPeriodCtrl *sch = new wxDiurnalPeriodCtrl( frm, wxID_ANY );
 		//sch->SetupTOUGrid();		
@@ -423,7 +471,7 @@ public:
 		frm->SetSizer( sizer );
 		frm->Show();
 		
-		*/
+		
 
 
 /*		

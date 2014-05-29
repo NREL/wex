@@ -7,8 +7,10 @@
 #include <wx/font.h>
 #include <wx/window.h>
 #include <wx/panel.h>
+#include <wx/control.h>
 #include <wx/scrolwin.h>
 #include <wx/popupwin.h>
+#include <wx/bookctrl.h>
 
 
 class wxMetroThemeProvider
@@ -121,6 +123,7 @@ public:
 	void Append( const wxString &label, bool button = false );
 	void Insert( const wxString &label, size_t pos, bool button = false );
 	void Remove( const wxString &label );
+	void RemoveAt( size_t n );
 	int Find( const wxString &label );
 	void Clear();
 	size_t Count();
@@ -173,51 +176,86 @@ protected:
 	DECLARE_EVENT_TABLE();
 };
 
+#if 0
 // sends EVT_NOTEBOOK_PAGE_CHANGED event
-
-class wxMetroNotebook : public wxPanel
+class wxMetroNotebook : public wxBookCtrlBase
 {
 public:
 	wxMetroNotebook(wxWindow *parent, int id=-1, 
 		const wxPoint &pos=wxDefaultPosition, const wxSize &sz=wxDefaultSize, long style = 0 );
 
+    virtual bool SetPageText(size_t n, const wxString& strText);
+    virtual wxString GetPageText(size_t n) const;
+    virtual int GetPageImage(size_t n) const;
+    virtual bool SetPageImage(size_t n, int imageId);
+    virtual bool InsertPage(size_t n,
+                            wxWindow *page,
+                            const wxString& text,
+                            bool bSelect = false,
+                            int imageId = NO_IMAGE);
+    virtual int SetSelection(size_t n);
+    virtual int ChangeSelection(size_t n);
+	virtual bool DeleteAllPages();
+	virtual void UpdateSelectedPage(size_t newsel);
+	virtual void MakeChangedEvent(wxBookCtrlEvent &evt);
+	virtual wxBookCtrlEvent* wxMetroNotebook::CreatePageChangingEvent() const;
+
+protected:
+	void OnTabListChanged( wxCommandEvent & );
+    virtual wxWindow *DoRemovePage(size_t page);
+	wxMetroTabList *GetTabs() const { return (wxMetroTabList*)m_bookctrl; }
+
+	DECLARE_EVENT_TABLE();
+};
+
+#endif
+
+class wxMetroNotebook : public wxWindow
+{
+public:
+	wxMetroNotebook(wxWindow *parent, int id=-1, 
+		const wxPoint &pos=wxDefaultPosition, const wxSize &sz=wxDefaultSize, long style = 0 );
+	virtual ~wxMetroNotebook();
+
 	void AddPage(wxWindow *win, const wxString &text, bool active=false, bool button=false);
 	void AddScrolledPage(wxWindow *win, const wxString &text, bool active=false, bool button=false);
-	int GetPageCount();
-	wxWindow *RemovePage( int index );
-	void DeletePage( int index );
+	size_t GetPageCount() const;
+	wxWindow *RemovePage( size_t index );
+	void DeletePage( size_t index );
 	int GetPageIndex(wxWindow *win);
-	wxWindow *GetPage( int index );
+	wxWindow *GetPage( size_t index );
 	
 	int GetSelection() const;
-	void SetSelection(int id);
-	void SetText(int id, const wxString &text);
-	wxString GetText( int id ) const;
+	void SetSelection(size_t id);
+	void SetText(size_t id, const wxString &text);
+	wxString GetText( size_t id ) const;
 	wxString GetSelectionText() const;
 	
 	wxPoint GetPopupMenuPosition( int index );
 
 private:
 	wxMetroTabList *m_list;	
-	wxSimplebook *m_flipper;
 
 	struct page_info
 	{
+		wxWindow *win;
 		wxString text;
 		wxWindow *scroll_win;
 		bool button;
 	};
 
-	std::vector<page_info> m_pageList;
+	std::vector<page_info> m_pages;
+	int m_sel;
 
 	void OnSize(wxSizeEvent &evt);
 	void UpdateTabList();
 	void OnTabList( wxCommandEvent & );
 	void SwitchPage( size_t i );
-	void ComputeScrolledWindows();
+	void UpdateLayout();
 
 	DECLARE_EVENT_TABLE()
 };
+
 
 class wxMetroListBox : public wxScrolledWindow
 {
