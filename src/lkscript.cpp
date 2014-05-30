@@ -465,7 +465,7 @@ void fcall_in(  lk::invoke_t &cxt )
 }
 
 
-lk::fcall_t* wxLKPlotFunctions()
+lk::fcall_t* wxLKHttpFunctions()
 {
 	static const lk::fcall_t vec[] = {
 		fcall_httpget,
@@ -475,7 +475,7 @@ lk::fcall_t* wxLKPlotFunctions()
 	return (lk::fcall_t*)vec;
 }
 
-lk::fcall_t* wxLKHttpFunctions()
+lk::fcall_t* wxLKPlotFunctions()
 {
 	static const lk::fcall_t vec[] = {
 		fcall_newplot,
@@ -498,26 +498,17 @@ lk::fcall_t* wxLKMiscFunctions()
 	return (lk::fcall_t*)vec;
 }
 
-
-static lk::fcall_t* wexlib_funcs()
+lk::fcall_t* wxLKBIOSFunctions()
 {
 	static const lk::fcall_t vec[] = {
-		fcall_in,
-		fcall_out,
+		fcall_out, 
 		fcall_outln,
-		fcall_httpget,
-		fcall_httpdownload,
-		fcall_decompress,
-		fcall_newplot,
-		fcall_plot,
-		fcall_plotopt,
-		fcall_plotpng,
-		fcall_axis, 
-		fcall_rand,
+		fcall_in,
 		0 };
 		
 	return (lk::fcall_t*)vec;
 }
+
 
 
 enum { IDT_TIMER = wxID_HIGHEST+213 };
@@ -544,7 +535,10 @@ wxLKScriptCtrl::wxLKScriptCtrl( wxWindow *parent, int id,
 	if( libs & wxLK_STDLIB_STRING ) RegisterLibrary( lk::stdlib_string(), "String Functions" );
 	if( libs & wxLK_STDLIB_MATH ) RegisterLibrary( lk::stdlib_math(), "Math Functions" );
 	if( libs & wxLK_STDLIB_WXUI ) RegisterLibrary( lk::stdlib_wxui(), "User interface Functions" );
-	if( libs & wxLK_STDLIB_WEXPLOT ) RegisterLibrary( wexlib_funcs(), "I/O and Plotting Functions", this );
+	if( libs & wxLK_STDLIB_PLOT ) RegisterLibrary( wxLKPlotFunctions(), "Plotting Functions", this );
+	if( libs & wxLK_STDLIB_HTTP ) RegisterLibrary( wxLKHttpFunctions(), "HTTP Functions", this );
+	if( libs & wxLK_STDLIB_MISC ) RegisterLibrary( wxLKMiscFunctions(), "Misc Functions", this );
+	if( libs & wxLK_STDLIB_BIOS ) RegisterLibrary( wxLKBIOSFunctions(), "BIOS Functions", this );
 	
 	wxFont font( *wxNORMAL_FONT );
 	AnnotationSetStyleOffset( 512 );
@@ -633,15 +627,15 @@ void wxLKScriptCtrl::OnScriptTextChanged( wxStyledTextEvent &evt )
 		AnnotationClearLine( GetCurrentLine() );
 
 		m_timer.Stop();
-		m_timer.Start( 1500, true );
-		evt.Skip();
+		m_timer.Start( 1700, true );
 	}
+	
+	evt.Skip();
 }
 
 void wxLKScriptCtrl::OnTimer( wxTimerEvent & )
 {
 	AnnotationClearAll();
-
 			
 	int first_error_line = 0;
 	wxString output;
@@ -743,10 +737,6 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 	m_topLevelWindow = toplevel;
 	s_curToplevelParent = toplevel;
 
-	//m_stopButton->Show();
-
-	//Layout();
-
 	wxString script = GetText();
 	if (!run_dir.IsEmpty())
 	{
@@ -772,7 +762,7 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 	if ( parse.error_count() != 0 
 		|| parse.token() != lk::lexer::END)
 	{
-		OnOutput("parsing did not reach end of input\n");
+		OnOutput("Parsing did not reach end of input.\n");
 	}
 	else
 	{
@@ -784,8 +774,8 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 
 		if ( e.run() )
 		{
-			long time = sw.Time();
-			OnOutput(wxString::Format("elapsed time: %ld msec\n", time));
+			double time = sw.Time();
+			OnOutput(wxString::Format("Elapsed time: %.1lf seconds.\n", 0.001*time));
 
 			/*
 			lk_string key;
@@ -802,7 +792,7 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 		}
 		else
 		{
-			OnOutput("eval fail\n");
+			OnOutput("Script did not finish.\n");
 			for (size_t i=0;i<e.error_count();i++)
 				OnOutput( e.get_error(i) + "\n");
 
@@ -813,9 +803,6 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 	while ( i < parse.error_count() )
 		OnOutput( parse.error(i++) );
 			
-	//m_stopButton->Hide();		
-	//Layout();
-		
 	m_env->clear_objs();
 
 	m_scriptRunning = false;

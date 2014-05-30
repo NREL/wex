@@ -1012,7 +1012,7 @@ void wxMetroNotebook::AddPage(wxWindow *win, const wxString &text, bool active, 
 	UpdateTabList();
 	UpdateLayout();
 
-	if (active)
+	if (active || m_pages.size() == 1)
 		SetSelection( m_pages.size()-1 );
 }
 
@@ -1041,7 +1041,7 @@ void wxMetroNotebook::AddScrolledPage(wxWindow *win, const wxString &text, bool 
 	UpdateTabList();
 	UpdateLayout();
 
-	if (active)
+	if (active || m_pages.size() == 1)
 		SetSelection( m_pages.size()-1 );
 }
 

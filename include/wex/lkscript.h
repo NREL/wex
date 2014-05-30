@@ -15,20 +15,25 @@
 #define wxLK_STDLIB_STRING 0x02
 #define wxLK_STDLIB_MATH 0x04
 #define wxLK_STDLIB_WXUI 0x08
-#define wxLK_STDLIB_WEXPLOT 0x10
+#define wxLK_STDLIB_PLOT 0x10
+#define wxLK_STDLIB_HTTP 0x11
+#define wxLK_STDLIB_MISC 0x12
+#define wxLK_STDLIB_BIOS 0x14 // in,out,outln via wxLKScriptCtrl::OnOutput() virtual method
 
 #define wxLK_STDLIB_ALL (wxLK_STDLIB_BASIC|wxLK_STDLIB_STRING| \
-	wxLK_STDLIB_MATH|wxLK_STDLIB_WXUI|wxLK_STDLIB_WEXPLOT)
+	wxLK_STDLIB_MATH|wxLK_STDLIB_WXUI|wxLK_STDLIB_PLOT| \
+	wxLK_STDLIB_HTTP|wxLK_STDLIB_MISC) // by default don't include BIOS
+
+lk::fcall_t* wxLKPlotFunctions(); // newplot, plot, plotopt, plotpng
+lk::fcall_t* wxLKHttpFunctions(); // httpget, httpdownload
+lk::fcall_t* wxLKMiscFunctions(); // rand, decompress
+lk::fcall_t* wxLKBIOSFunctions(); // in, out, outln:  must use an extended wxLKScriptCtrl that implements ::OnOutput()
 
 class wxPLPlotCtrl;
 
 void wxLKSetToplevelParent( wxWindow *parent );
 void wxLKSetPlotTarget( wxPLPlotCtrl *plot );
 wxPLPlotCtrl *wxLKGetPlotTarget();
-
-lk::fcall_t* wxLKPlotFunctions(); // newplot, plot, plotopt, plotpng
-lk::fcall_t* wxLKHttpFunctions(); // httpget, httpdownload
-lk::fcall_t* wxLKMiscFunctions(); // rand, decompress
 
 class wxLKScriptCtrl : public wxCodeEditCtrl
 {
