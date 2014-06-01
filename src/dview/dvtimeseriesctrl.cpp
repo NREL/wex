@@ -358,7 +358,7 @@ wxDVTimeSeriesSettingsDialog::wxDVTimeSeriesSettingsDialog( wxWindow *parent, co
 	: wxDialog( parent, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxRESIZE_BORDER|wxDEFAULT_DIALOG_STYLE)
 {
 	mSyncCheck = new wxCheckBox(this, wxID_ANY, "Synchronize view with heat map" );
-	mStatTypeCheck = new wxCheckBox(this, ID_StatCheckbox, "Use SUM (not AVG) for plots" );
+	mStatTypeCheck = new wxCheckBox(this, ID_StatCheckbox, "Show total sum over time step, not average value" );
 		
 	wxArrayString choices;
 	choices.Add( "Line graph");
