@@ -20,8 +20,9 @@
 #include "wex/plot/plbarplot.h"
 #include "wex/plot/pllineplot.h"
 #include "wex/plot/plscatterplot.h"
+#include "wex/plot/plwindrose.h"
 
-enum { BAR, LINE, SCATTER };
+enum { BAR, LINE, SCATTER, WINDROSE };
 static void CreatePlot( wxPLPlotCtrl *plot, double *x, double *y, int len, int thick, wxColour &col, int type,
 	const wxString &xlab, const wxString &ylab, const wxString &series,
 	int xap, int yap)
@@ -45,6 +46,9 @@ static void CreatePlot( wxPLPlotCtrl *plot, double *x, double *y, int len, int t
 		break;
 	case SCATTER:
 		p = new wxPLScatterPlot( data, series, col, thick, false );
+		break;
+	case WINDROSE:
+		p = new wxPLWindRose(data, series, col, thick, false);
 		break;
 	}
 
@@ -184,6 +188,7 @@ void fcall_plot( lk::invoke_t &cxt )
 				stype.Lower();
 				if (stype == "bar") type = BAR;
 				else if (stype == "scatter") type = SCATTER;
+				else if (stype == "windrose") type = WINDROSE;
 			}
 			
 			if (lk::vardata_t *arg = t.lookup("color") )
