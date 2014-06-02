@@ -35,6 +35,7 @@ public:
 #include "wex/plot/plplotctrl.h"
 #include "wex/plot/pllineplot.h"
 #include "wex/plot/plscatterplot.h"
+#include "wex/plot/plwindrose.h"
 
 #include "wex/dview/dvplotctrl.h"
 #include "wex/dview/dvselectionlist.h"
@@ -84,7 +85,7 @@ void TestSnapLayout( wxWindow *parent )
 	wxSnapLayout *lay = new wxSnapLayout(frame, wxID_ANY);
 
 	
-	wxPLPlotCtrl *plot = new wxPLPlotCtrl( lay, wxID_ANY, wxDefaultPosition, wxDefaultSize );
+	wxPLPlotCtrl *plot = new wxPLPlotCtrl(lay, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 	//plot->SetBackgroundColour( *wxWHITE );
 	plot->SetTitle( wxT("Demo Plot: using \\theta(x)=sin(x)^2, x_0=1\n\\zeta(x)=3\\dot sin^2(x)") );
 	plot->SetClientSize( 400, 300 );
@@ -111,7 +112,7 @@ void TestPLPlot( wxWindow *parent )
 	frame->SetIcon( wxICON( appicon ) );
 #endif
 		
-	wxPLPlotCtrl *plot = new wxPLPlotCtrl( frame, wxID_ANY, wxDefaultPosition, wxDefaultSize );
+	wxPLPlotCtrl *plot = new wxPLPlotCtrl(frame, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 	//plot->SetBackgroundColour( *wxWHITE );
 	plot->SetTitle( wxT("Demo Plot: using \\theta(x)=sin(x)^2, x_0=1\n\\zeta(x)=3\\dot sin^2(x)") );
 
@@ -213,6 +214,99 @@ void TestPLPlot( wxWindow *parent )
 				
 	frame->Show();
 }
+
+void TestPLPolarPlot(wxWindow *parent)
+{
+	wxFrame *frame = new wxFrame(parent, wxID_ANY, wxT("wxPLPolarPlotCtrl in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(850, 850));
+#ifdef __WXMSW__
+	frame->SetIcon(wxICON(appicon));
+#endif
+
+	wxPLPlotCtrl *plot = new wxPLPlotCtrl(frame, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+	//plot->SetBackgroundColour( *wxWHITE );
+	plot->SetTitle(wxT("Demo Plot: using stuff"));
+
+	wxFont font(*wxNORMAL_FONT);
+	font.SetPointSize(12);
+	plot->SetFont(font);
+
+	// setting X axis 1 to a wxPLPolarAngularAxis will tell the control to plot a polar graph
+	//plot->SetXAxis1(new wxPLPolarAngularAxis("Angular Axis"));
+	//plot->SetXAxis1(new wxPLPolarAngularAxis("Angular Axis", wxPLPolarAngularAxis::GRADIANS, wxPLPolarAngularAxis::UP));
+	plot->SetXAxis1(new wxPLPolarAngularAxis("Angular Axis", wxPLPolarAngularAxis::GRADIANS, wxPLPolarAngularAxis::DOWN));
+	//plot->SetScaleTextSize( true );
+
+	plot->ShowGrid(true, true);
+
+
+	double pi = 4.0 * atan(1.0);
+	std::vector< wxRealPoint > sine_data;
+	for (double x = 0; x < 361; x += 1)
+	{
+		//sine_data.push_back(wxRealPoint(x, 8 + 0.5*cos(pi * x/10)));
+		//sine_data.push_back(wxRealPoint(x, 3 * sin(x/12)*sin(x/12)));
+		sine_data.push_back(wxRealPoint(x, 8 + cos(x / 6)*x/30));
+
+	}
+
+	//sine_data.push_back(wxRealPoint(0, 0));
+	//sine_data.push_back(wxRealPoint(15, 2));
+	//sine_data.push_back(wxRealPoint(30, 3));
+	//sine_data.push_back(wxRealPoint(45, 4));
+	//sine_data.push_back(wxRealPoint(60, 4));
+	//sine_data.push_back(wxRealPoint(100, 8));
+	//sine_data.push_back(wxRealPoint(200, 9));
+
+	//sine_data.push_back(wxRealPoint(0, 0));
+	//sine_data.push_back(wxRealPoint(pi/3.0, 5));
+	//sine_data.push_back(wxRealPoint(pi/2.0, 3));
+	//sine_data.push_back(wxRealPoint(pi, 4));
+	//sine_data.push_back(wxRealPoint(pi*1.1, 4));
+	//sine_data.push_back(wxRealPoint(pi*1.5, 8));
+	//sine_data.push_back(wxRealPoint(pi*2.0, 9));
+
+
+	//plot->AddPlot(new wxPLScatterPlot(sine_data, "Test data", *wxBLUE, 2));
+	plot->AddPlot(new wxPLLinePlot(sine_data, "Test data", *wxBLUE));
+
+	plot->SetYAxis1(new wxPLLinearAxis(0, 20, "Radial Axis Label"));
+	frame->Show();
+}
+
+void TestWindRose(wxWindow *parent)
+{
+	wxFrame *frame = new wxFrame(parent, wxID_ANY, wxT("Testing wind rose"), wxDefaultPosition, wxSize(850, 850));
+#ifdef __WXMSW__
+	frame->SetIcon(wxICON(appicon));
+#endif
+
+	wxPLPlotCtrl *plot = new wxPLPlotCtrl(frame, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+	plot->SetTitle(wxT("Test wind rose"));
+
+	plot->ShowGrid(true, true);
+
+	plot->SetYAxis1(new wxPLLinearAxis(0, 22, "Radial Axis"));
+
+	std::vector< wxRealPoint > data;
+	//for (int i = 0; i < 18; ++i) {
+	//	data.push_back(wxRealPoint(i * 10.0, 5+sin(i/6.0)*2.0) );
+	//}
+
+	for (double x = 0; x < 360; x += 10)
+	{
+		//sine_data.push_back(wxRealPoint(x, 8 + 0.5*cos(pi * x/10)));
+		//sine_data.push_back(wxRealPoint(x, 3 * sin(x/12)*sin(x/12)));
+		data.push_back(wxRealPoint(x, 8.0 + cos(x / 6.0)*x / 30.0));
+	}
+
+
+	wxWindRose* wr = new wxWindRose(data, "Test data", *wxBLUE, 2);
+	wr->SetIgnoreAngle(false);
+	plot->AddPlot(wr); // adding a wxWindRose plot will automatically set the x-axis to a wxPLPolarAngularAxis
+
+	frame->Show();
+}
+
 
 #include "wex/dview/dvtimeseriesdataset.h"
 
@@ -408,7 +502,9 @@ public:
 
 		//TestDVSelectionCtrl();
 
+		//TestPLPolarPlot(0);
 
+		TestWindRose(0);
 
 
 		/*
@@ -455,7 +551,7 @@ public:
 		nb->AddPage( new wxPanel( nb ), "Wind system" );
 		nb->AddPage( new wxPanel( nb ), "solar water heat" );*/
 		sizer->Add( nb, 1, wxALL|wxEXPAND, 0 );
-		
+
 		wxMetroNotebook *nb2 = new wxMetroNotebook( frm, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxMT_LIGHTTHEME );
 		nb2->AddPage( new wxPanel( nb ), "Base Case" );
 		nb2->AddPage( new wxPanel( nb ), "Parametrics" );
@@ -471,7 +567,7 @@ public:
 		frm->SetSizer( sizer );
 		frm->Show();
 		
-		
+
 
 
 /*		

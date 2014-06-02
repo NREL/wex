@@ -26,6 +26,9 @@
 #include "wex/ole/excelauto.h"
 #endif
 
+static const int text_space = 3;
+static const wxSize legend_item_box(13, 13);
+
 class wxPLAxisDeviceMapping : public wxPLDeviceMapping
 {
 private:
@@ -33,16 +36,40 @@ private:
 	wxCoord m_xPhysMin, m_xPhysMax;
 	wxPLAxis *m_yAxis;
 	wxCoord m_yPhysMin, m_yPhysMax;
+	wxCoord m_physical_constraint;
+	wxPoint m_ptCenter;
+
 public:
 	wxPLAxisDeviceMapping( wxPLAxis *x, wxCoord xmin, wxCoord xmax,
 		wxPLAxis *y, wxCoord ymin, wxCoord ymax )
 		: m_xAxis(x), m_xPhysMin(xmin), m_xPhysMax(xmax), 
-		m_yAxis(y), m_yPhysMin(ymin), m_yPhysMax(ymax) {   }
+		m_yAxis(y), m_yPhysMin(ymin), m_yPhysMax(ymax)
+	{
+		wxRect box = GetDeviceExtents();
+		m_ptCenter = wxPoint(box.x + box.width / 2.0, box.y + box.height / 2.0);
+		m_physical_constraint = (box.width < box.height) ? box.width : box.height;
+	}
 	
 	virtual wxPoint ToDevice( double x, double y ) const
 	{
-		return wxPoint( m_xAxis->WorldToPhysical( x, m_xPhysMin, m_xPhysMax ),
-			m_yAxis->WorldToPhysical( y, m_yPhysMin, m_yPhysMax ) );
+		if (wxPLPolarAngularAxis *pa = dynamic_cast<wxPLPolarAngularAxis *>(m_xAxis)) {
+			// this is a polar plot, so translate the "point" as if it's a angle/radius combination
+
+			// adjust for where zero degrees should be (straight up?) and units of angular measure
+			double angle_in_rad = pa->AngleInRadians(x);
+
+			// get radius in physical units
+			double radius0 = m_yAxis->WorldToPhysical(y, 0, m_physical_constraint / 2.0); // max radius has to be 1/2 of physical constraint
+
+			// locate point relative to center of polar plot
+			wxPoint pt = wxPoint(radius0*cos(angle_in_rad), radius0*sin(angle_in_rad));
+
+			// return point on physical device
+			return (m_ptCenter + pt);
+		}
+		else // Cartesian plot
+			return wxPoint( m_xAxis->WorldToPhysical( x, m_xPhysMin, m_xPhysMax ),
+				m_yAxis->WorldToPhysical( y, m_yPhysMin, m_yPhysMax ) );
 	}
 	
 	virtual wxRect GetDeviceExtents( ) const
@@ -67,6 +94,13 @@ public:
 			m_yAxis->PhysicalToWorld( m_yPhysMax, m_yPhysMin, m_yPhysMax ) );
 	}
 
+	virtual wxPLAxis *GetXAxis() const {
+		return m_xAxis;
+	}
+
+	virtual wxPLAxis *GetYAxis() const {
+		return m_yAxis;
+	}
 };
 
 
@@ -618,6 +652,39 @@ private:
 	int m_axisPos;
 	wxSize m_bounds;
 
+	void renderAngular(wxDC &dc, wxCoord radius, wxPLPolarAngularAxis *axis, wxCoord cntr_x, wxCoord cntr_y)
+	{
+		wxPoint cntr = wxPoint(cntr_x, cntr_y);
+
+		// draw tick marks and tick labels
+		for (size_t i = 0; i < m_tickList.size(); i++)
+		{
+			tick_layout &ti = m_tickList[i];
+			wxCoord tick_length = ti.tick_size == wxPLAxis::TickData::LARGE ? 5 : 2;
+			double angle = axis->AngleInRadians(ti.world);
+			wxPoint pt0 = cntr + wxPoint(radius*cos(angle), radius*sin(angle));
+			wxPoint pt1 = cntr + wxPoint((radius - tick_length)*cos(angle), (radius - tick_length)*sin(angle));
+			dc.DrawLine(pt0, pt1);
+
+			if (ti.text.width() > 0)
+			{
+				// text is place via upper left corner of text box, which only works for the bottom right
+				// quadrant of the polar plot.  so, text must be placed based on quadrant
+				
+				if (pt0.x < pt1.x && pt0.y >= pt1.y) // bottom left quadrant
+					ti.text.render(dc, pt0.x - ti.text.width() - text_space, pt0.y, 0, false);
+				else if (pt0.x < pt1.x && pt0.y < pt1.y) // top left quadrant
+					ti.text.render(dc, pt0.x - ti.text.width() - text_space, pt0.y-ti.text.height(), 0, false);
+				else if (pt0.x >= pt1.x && pt0.y < pt1.y) // top right quadrant
+					ti.text.render(dc, pt0.x + text_space, pt0.y-ti.text.height(), 0, false);
+				else
+					ti.text.render(dc, pt0.x + text_space, pt0.y, 0, false);
+			}
+
+		}
+	}
+
+
 public:	
 	static const int TextAxisOffset = 3;
 
@@ -666,6 +733,10 @@ public:
 
 			m_bounds.x = xmax-xmin;
 			m_bounds.y = ymax;
+
+			// if this is a polar axis, we're done
+			if (wxPLPolarAngularAxis *pa = dynamic_cast<wxPLPolarAngularAxis *>(axis))
+				return;
 
 			// required pixels of separation between adjacent tick texts
 			const int tick_label_space = 4;
@@ -754,6 +825,13 @@ public:
 
 	void render( wxDC &dc, wxCoord ordinate, wxPLAxis *axis, wxCoord phys_min, wxCoord phys_max, wxCoord ordinate_opposite = -1 )
 	{
+		// if this is a polar angular axis, render it and leave
+		// radius passed in a 'ordinate', center.x as phys_min, center.y as phys_max
+		if (wxPLPolarAngularAxis *pa = dynamic_cast<wxPLPolarAngularAxis *>(axis)) {
+			renderAngular(dc, ordinate, pa, phys_min, phys_max);
+			return;
+		}
+
 		// draw tick marks and tick labels
 		for ( size_t i=0;i<m_tickList.size(); i++ )
 		{
@@ -775,7 +853,7 @@ public:
 				{
 					tickStart.x = ordinate;
 					tickStart.y = physical;
-					tickEnd.x = m_axisPos == Y_LEFT ? ordinate+tick_length : ordinate-tick_length;
+					tickEnd.x = m_axisPos == Y_LEFT ? ordinate + tick_length : ordinate - tick_length;
 					tickEnd.y = physical;
 				}
 
@@ -907,8 +985,8 @@ BEGIN_EVENT_TABLE( wxPLPlotCtrl, wxWindow )
 	EVT_MENU_RANGE( ID_COPY_DATA_CLIP, ID_EXPORT_SVG, wxPLPlotCtrl::OnPopupMenu )
 END_EVENT_TABLE()
 
-wxPLPlotCtrl::wxPLPlotCtrl( wxWindow *parent, int id, const wxPoint &pos, const wxSize &size )
-	: wxWindow( parent, id, pos, size )
+wxPLPlotCtrl::wxPLPlotCtrl(wxWindow *parent, int id, const wxPoint &pos, const wxSize &size)
+	: wxWindow(parent, id, pos, size)
 {
 	SetBackgroundStyle( wxBG_STYLE_CUSTOM );
 
@@ -1564,9 +1642,6 @@ public:
 	wxGCDC *m_ptr;
 };
 
-static const int text_space = 3;
-static const wxSize legend_item_box( 13, 13 );
-
 void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 {
 	gcdc_ref gdc;
@@ -1767,12 +1842,30 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 		box.height -= m_x2.layout->bounds().y;
 	}
 
+	// create an indicator as to whether or not this is a cartesion plot
+	bool cartesion_plot = true;
+	if (wxPLPolarAngularAxis *pa = dynamic_cast<wxPLPolarAngularAxis *>(m_x1.axis))
+		cartesion_plot = false;
+
+
 	if ( m_x1.axis != 0 )
 	{
-		if ( m_x1.layout == 0 )
-			m_x1.layout = new axis_layout( X_BOTTOM, dc, m_x1.axis, box.x, box.x+box.width );
+		if (m_x1.layout == 0) {
+			if (cartesion_plot) {
+				m_x1.layout = new axis_layout(X_BOTTOM, dc, m_x1.axis, box.x, box.x + box.width);
+				box.height -= m_x1.layout->bounds().y;
+			}
+			else {
+				if (box.width < box.height)
+					m_x1.layout = new axis_layout(X_BOTTOM, dc, m_x1.axis, box.x, box.x + box.width);
+				else
+					m_x1.layout = new axis_layout(X_BOTTOM, dc, m_x1.axis, box.y, box.y + box.height);
 
-		box.height -= m_x1.layout->bounds().y;
+				box.y += m_x1.layout->bounds().y;
+				box.height -= m_x1.layout->bounds().y*2;
+			}
+		}
+
 	}
 	
 	wxCoord yleft_max_axis_width = 0, yright_max_axis_width = 0;
@@ -1780,8 +1873,16 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 	{
 		if ( m_y1[pp].axis != 0 )
 		{
-			if ( m_y1[pp].layout == 0 )
-				m_y1[pp].layout = new axis_layout( Y_LEFT, dc, m_y1[pp].axis, box.y+box.height, box.y );
+			if (m_y1[pp].layout == 0) {
+				if (cartesion_plot)
+					m_y1[pp].layout = new axis_layout( Y_LEFT, dc, m_y1[pp].axis, box.y+box.height, box.y );
+				else {
+					if (box.width < box.height)
+						m_y1[pp].layout = new axis_layout(Y_LEFT, dc, m_y1[pp].axis, box.x, box.x + box.width);
+					else
+						m_y1[pp].layout = new axis_layout(Y_LEFT, dc, m_y1[pp].axis, box.y + box.height, box.y);
+				}
+			}
 
 			if ( m_y1[pp].layout->bounds().x > yleft_max_axis_width )
 				yleft_max_axis_width = m_y1[pp].layout->bounds().x;
@@ -1826,8 +1927,14 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 	for ( size_t pp=0;pp<nyaxes; pp++ )
 	{
 		wxRect rect( box.x, cur_plot_y_start, box.width, single_plot_height );
-		dc.DrawRectangle( rect );
-		m_plotRects.push_back( rect );
+		if (cartesion_plot) 
+			dc.DrawRectangle(rect);
+		else {
+			wxCoord radius = (box.width < box.height) ? box.width / 2.0 : box.height / 2.0;
+			wxPoint cntr = wxPoint(box.x + box.width / 2.0, box.y + box.height / 2.0);
+			dc.DrawCircle(cntr, radius);
+		}
+		m_plotRects.push_back(rect);
 		cur_plot_y_start += single_plot_height + plot_space;
 	}
 
@@ -1835,7 +1942,10 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 	if ( m_showCoarseGrid )
 	{
 		dc.SetPen( wxPen( m_gridColour, 1, wxSOLID ) );
-		DrawGrid( dc, wxPLAxis::TickData::LARGE );
+		if (cartesion_plot)
+			DrawGrid( dc, wxPLAxis::TickData::LARGE );
+		else
+			DrawPolarGrid(dc, wxPLAxis::TickData::LARGE);
 	}
 
 	if ( m_showFineGrid )
@@ -1844,7 +1954,10 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 		pen.SetCap( wxCAP_BUTT );
 		pen.SetJoin( wxJOIN_MITER );
 		dc.SetPen( pen );
-		DrawGrid( dc, wxPLAxis::TickData::SMALL );
+		if (cartesion_plot)
+			DrawGrid( dc, wxPLAxis::TickData::SMALL );
+		else
+			DrawPolarGrid(dc, wxPLAxis::TickData::SMALL);
 	}
 
 	// render plots
@@ -1881,13 +1994,24 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 			box.x, box.x+box.width, 
 			m_x1.axis == 0 ? m_plotRects[nyaxes-1].y+m_plotRects[nyaxes-1].height : -1 );
 	
+	// set up some polar plot values
+	wxRect rect1 = m_plotRects[0];
+	wxCoord pp_radius = (rect1.width < rect1.height) ? rect1.width / 2.0 : rect1.height / 2.0;
+	wxPoint pp_center = wxPoint(rect1.x + rect1.width / 2.0, rect1.y + rect1.height / 2.0);
+
 	// render y axes
 	for ( size_t pp=0;pp<nyaxes; pp++ )
 	{
-		if ( m_y1[pp].axis != 0 )
-			m_y1[pp].layout->render( dc, box.x, m_y1[pp].axis, 
-				m_plotRects[pp].y + m_plotRects[pp].height,  m_plotRects[pp].y,
-				m_y2[pp].axis == 0 ? box.x+box.width : -1 );
+		if (m_y1[pp].axis != 0) {
+			if (cartesion_plot)
+				m_y1[pp].layout->render( dc, box.x, m_y1[pp].axis, 
+					m_plotRects[pp].y + m_plotRects[pp].height,  m_plotRects[pp].y,
+					m_y2[pp].axis == 0 ? box.x+box.width : -1 );
+			else
+				m_y1[pp].layout->render( dc, pp_center.x, m_y1[pp].axis, 
+					pp_center.y,  pp_center.y-pp_radius,
+					-1 );
+		}
 		
 		if ( m_y2[pp].axis != 0 )
 			m_y2[pp].layout->render( dc, box.x+box.width, m_y2[pp].axis, 
@@ -1895,36 +2019,62 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 				m_y1[pp].axis == 0 ? box.x : -1 );
 	}
 
-	if ( m_x1.axis )
-		m_x1.layout->render( dc, m_plotRects[nyaxes-1].y + m_plotRects[nyaxes-1].height, m_x1.axis,
-			box.x, box.x+box.width,
-			m_x2.axis == 0 ? m_plotRects[0].y : -1 );
+	// render x1 axis (or angular axis on polar plots)
+	if (m_x1.axis) {
+		if (cartesion_plot)
+			m_x1.layout->render(dc, m_plotRects[nyaxes - 1].y + m_plotRects[nyaxes - 1].height, m_x1.axis,
+				box.x, box.x + box.width,
+				m_x2.axis == 0 ? m_plotRects[0].y : -1);
+		else
+			m_x1.layout->render(dc, pp_radius, m_x1.axis, pp_center.x, pp_center.y, -1);
+	}
 
-	// draw m_plotRects around plots
-	for ( size_t pp=0; pp < nyaxes; pp++ )
-	{
-		dc.DrawLine( m_plotRects[pp].x, m_plotRects[pp].y, m_plotRects[pp].x+m_plotRects[pp].width, m_plotRects[pp].y );
-		dc.DrawLine( m_plotRects[pp].x, m_plotRects[pp].y, m_plotRects[pp].x, m_plotRects[pp].y + m_plotRects[pp].height );
-		dc.DrawLine( m_plotRects[pp].x, m_plotRects[pp].y+m_plotRects[pp].height, m_plotRects[pp].x+m_plotRects[pp].width, m_plotRects[pp].y+m_plotRects[pp].height );
-		dc.DrawLine( m_plotRects[pp].x+m_plotRects[pp].width, m_plotRects[pp].y, m_plotRects[pp].x+m_plotRects[pp].width, m_plotRects[pp].y + m_plotRects[pp].height );
+	// draw boundaries around plots
+	if (cartesion_plot) {
+		for (size_t pp = 0; pp < nyaxes; pp++)
+		{
+			dc.DrawLine(m_plotRects[pp].x, m_plotRects[pp].y, m_plotRects[pp].x + m_plotRects[pp].width, m_plotRects[pp].y);
+			dc.DrawLine(m_plotRects[pp].x, m_plotRects[pp].y, m_plotRects[pp].x, m_plotRects[pp].y + m_plotRects[pp].height);
+			dc.DrawLine(m_plotRects[pp].x, m_plotRects[pp].y + m_plotRects[pp].height, m_plotRects[pp].x + m_plotRects[pp].width, m_plotRects[pp].y + m_plotRects[pp].height);
+			dc.DrawLine(m_plotRects[pp].x + m_plotRects[pp].width, m_plotRects[pp].y, m_plotRects[pp].x + m_plotRects[pp].width, m_plotRects[pp].y + m_plotRects[pp].height);
+		}
+	}
+	else {
+		dc.DrawLine(pp_center.x-pp_radius,pp_center.y,pp_center.x+pp_radius,pp_center.y);
+		dc.DrawLine(pp_center.x, pp_center.y + pp_radius, pp_center.x, pp_center.y - pp_radius);
+
+		dc.SetBrush(*wxTRANSPARENT_BRUSH); // otherwise, circle is filled in
+		dc.DrawCircle(pp_center, pp_radius);
 	}
 
 	// draw axis labels
 	dc.SetTextForeground( *wxBLACK );
 	dc.SetFont( font_normal );
 
-	if ( m_x1.axis && m_x1.axis->IsLabelVisible() && !m_x1.axis->GetLabel().IsEmpty() )
-		m_x1.label->render( dc,  box.x+box.width/2-m_x1.label->width()/2, plotbox.y+plotbox.height-m_x1.label->height()-text_space, 0, false );
+	if (m_x1.axis && m_x1.axis->IsLabelVisible() && !m_x1.axis->GetLabel().IsEmpty()) {
+		if (cartesion_plot)
+			m_x1.label->render(dc, box.x + box.width / 2 - m_x1.label->width() / 2, plotbox.y + plotbox.height - m_x1.label->height() - text_space, 0, false);
+		else {
+			double dist = sqrt(pow(pp_radius, 2) / 2.0);
+			m_x1.label->render(dc, pp_center.x + dist, pp_center.y - dist - m_x1.layout->bounds().y - m_x1.label->height() - text_space, 0, false);
+		}
+	}
 	
 	if ( m_x2.axis && m_x2.axis->IsLabelVisible() && !m_x2.axis->GetLabel().IsEmpty() )
 		m_x2.label->render( dc, box.x+box.width/2-m_x2.label->width()/2, plotbox.y, 0, false );
 
 	for ( size_t pp = 0; pp<nyaxes; pp++ )
 	{
-		if (m_y1[pp].axis && m_y1[pp].axis->IsLabelVisible() && !m_y1[pp].axis->GetLabel().IsEmpty() )
-			m_y1[pp].label->render( dc, plotbox.x + yleft_max_label_width - m_y1[pp].label->height(),
-				m_plotRects[pp].y + m_plotRects[pp].height/2 + m_y1[pp].label->width()/2, 90, false );
-		
+		if (m_y1[pp].axis && m_y1[pp].axis->IsLabelVisible() && !m_y1[pp].axis->GetLabel().IsEmpty()) {
+			if (cartesion_plot) {
+				m_y1[pp].label->render(dc, plotbox.x + yleft_max_label_width - m_y1[pp].label->height(),
+					m_plotRects[pp].y + m_plotRects[pp].height / 2 + m_y1[pp].label->width() / 2, 90, false);
+			}
+			else {
+				m_y1[pp].label->render(dc, pp_center.x, pp_center.y - pp_radius + m_y1[pp].label->width()+text_space, 90, false);
+			}
+		}
+
 		if (m_y2[pp].axis && m_y2[pp].axis->IsLabelVisible() && !m_y2[pp].axis->GetLabel().IsEmpty() )
 			m_y2[pp].label->render( dc, plotbox.x+plotbox.width - yright_max_label_width + m_y2[pp].label->height(),
 				m_plotRects[pp].y + m_plotRects[pp].height/2 - m_y2[pp].label->width()/2, -90, false );
@@ -1979,6 +2129,47 @@ void wxPLPlotCtrl::DrawGrid( wxDC &dc, wxPLAxis::TickData::TickSize size )
 		}
 	}
 }
+
+void wxPLPlotCtrl::DrawPolarGrid(wxDC &dc, wxPLAxis::TickData::TickSize size)
+{
+	if (m_plotRects.size() < 1) return;
+	dc.SetBrush(*wxTRANSPARENT_BRUSH); // otherwise, grid circles are filled in
+	wxPoint cntr = wxPoint(m_plotRects[0].x + m_plotRects[0].width / 2.0, m_plotRects[0].y + m_plotRects[0].height / 2.0);
+	wxCoord max_radius = (m_plotRects[0].width < m_plotRects[0].height) ? m_plotRects[0].width / 2.0 : m_plotRects[0].height / 2.0;
+
+	// circles from center
+	axis_data *radial_grid = 0;
+	if (m_y1[0].axis != 0) radial_grid = &m_y1[0];
+
+	if (radial_grid != 0)
+	{
+		std::vector<double> ticks = radial_grid->layout->ticks(size);
+		for (size_t j = 0; j<ticks.size(); j++)
+		{
+			wxCoord radius = radial_grid->axis->WorldToPhysical(ticks[j], 0, max_radius);
+			dc.DrawCircle(cntr, radius);
+		}
+	}
+
+	// rays from center out to edge of plot
+	axis_data *angular_grid = 0;
+	if (m_x1.axis != 0) angular_grid = &m_x1;
+
+	if (angular_grid != 0) {
+		if (wxPLPolarAngularAxis *pa = dynamic_cast<wxPLPolarAngularAxis *>(m_x1.axis)) {
+			std::vector<double> ticks = angular_grid->layout->ticks(size);
+			for (size_t i = 0; i<ticks.size(); i++)
+			{
+				double angle = pa->AngleInRadians(ticks[i]);
+				wxPoint pt = wxPoint(max_radius*cos(angle), max_radius*sin(angle));
+				dc.DrawLine(cntr, cntr + pt);
+			}
+		}
+	}
+
+}
+
+
 
 wxPLPlotCtrl::legend_item::legend_item( wxDC &dc, wxPLPlottable *p )
 {

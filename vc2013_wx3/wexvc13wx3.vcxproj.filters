@@ -357,6 +357,9 @@
     <ClInclude Include="..\include\wex\dview\dvstatisticstablectrl.h">
       <Filter>dview\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\wex\plot\plwindrose.h">
+      <Filter>plot\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
@@ -616,6 +619,9 @@
     </ClCompile>
     <ClCompile Include="..\src\dview\dvstatisticstablectrl.cpp">
       <Filter>dview\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\plot\plwindrose.cpp">
+      <Filter>plot\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

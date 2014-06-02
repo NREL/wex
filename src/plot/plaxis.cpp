@@ -865,3 +865,129 @@ void wxPLTimeAxis::RecalculateTicksAndLabel()
 	m_lastMin = m_min;
 	m_lastMax = m_max;
 }
+
+wxPLPolarAngularAxis::wxPLPolarAngularAxis(const wxString &label, PolarAngularUnits units, PolarAngularZero zero, PolarAxisLabels pal)
+: wxPLLinearAxis(0, 360, label), m_pau(units), m_pal(pal)
+{
+	switch (m_pau)
+	{
+		case wxPLPolarAngularAxis::RADIANS:
+			m_scale = 1.0;
+			m_max = 2.0 * M_PI;
+			break;
+
+		case wxPLPolarAngularAxis::GRADIANS:
+			m_scale = M_PI / 200.0; // to change gradians to radian
+			m_max = 400.0;
+			break;
+
+		default: // DEGREES
+			m_scale = M_PI / 180.0; // to change degrees to radian
+			break;
+	}
+
+	switch (zero)
+	{
+		case wxPLPolarAngularAxis::RIGHT:
+			m_offset = 0.0;
+			break;
+
+		case wxPLPolarAngularAxis::DOWN:
+			m_offset = M_PI / 2.0;
+			break;
+
+		case wxPLPolarAngularAxis::LEFT:
+			m_offset = M_PI;
+			break;
+
+		default:
+			m_offset = -M_PI / 2.0;
+			break;
+	}
+}
+
+wxPLPolarAngularAxis::wxPLPolarAngularAxis(const wxPLPolarAngularAxis &rhs)
+: wxPLLinearAxis(rhs)
+{
+
+}
+
+void wxPLPolarAngularAxis::GetAxisTicks(wxCoord phys_min, wxCoord phys_max, std::vector<TickData> &list)
+{
+	double physical_size = fabs((double)phys_min - (double)phys_max);
+	double divisions = 4;
+	int skip = (m_pau == GRADIANS) ? 5 : 3;
+
+	if (physical_size < 50) {
+		skip = 1; // all large
+	}
+	else if (physical_size < 150){
+		divisions = 8;
+		skip = 2; // every other one is large
+	}
+	else if (physical_size < 250){
+		divisions = (m_pau == GRADIANS) ? 16 : 12;
+		if (m_pau == GRADIANS) skip = 2;
+	}
+	else if (physical_size < 500){
+		divisions = (m_pau == GRADIANS) ? 40 : 36;
+	}
+	else {
+		divisions = (m_pau == GRADIANS) ? 100 : 72;
+	}
+
+	int i = 0;
+	double step = m_max / divisions;
+	for (double x = 0.0; x < m_max; x += step) {
+		wxString sLabel = wxEmptyString;
+		wxPLAxis::TickData::TickSize ts = TickData::SMALL;
+
+		if (i % skip == 0) {
+			ts = TickData::LARGE;
+			if (m_pal == NUMBERS)
+				sLabel = wxString::Format("%1.0f", x);
+			else {
+				switch (AngleInDegrees(x))
+				{
+					case 0:		sLabel = "N"; break;
+					case 45:    sLabel = "NE"; break;
+					case 90:	sLabel = "E"; break;
+					case 135:	sLabel = "SE"; break;
+					case 180:	sLabel = "S"; break;
+					case 225:	sLabel = "SW"; break;
+					case 270:	sLabel = "W"; break;
+					case 315:	sLabel = "NW"; break;
+					case 360:	sLabel = "N"; break;
+					default:	sLabel = wxString::Format("%1.0f", x); break;
+				}
+			}
+		}
+		list.push_back(TickData(x, sLabel, ts));
+		i++;
+	}
+
+
+
+}
+
+void wxPLPolarAngularAxis::ExtendBound(wxPLAxis *a)
+{
+	// don't do anything - just leave it at m_min=0 & m_max = full circle.
+	return;
+}
+
+int wxPLPolarAngularAxis::AngleInDegrees(double world)
+{
+	switch (m_pau)
+	{
+	case wxPLPolarAngularAxis::RADIANS:
+		return floor((180.0*world/M_PI) + 0.5);
+
+	case wxPLPolarAngularAxis::GRADIANS:
+		return floor((200.0*world/M_PI) + 0.5);
+
+	default: // DEGREES
+		return floor(world + 0.5);
+	}
+}
+

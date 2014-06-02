@@ -22,6 +22,8 @@ public:
 	virtual wxRect GetDeviceExtents( ) const = 0;
 	virtual wxRealPoint GetWorldMinimum() const = 0;
 	virtual wxRealPoint GetWorldMaximum() const = 0;
+	virtual wxPLAxis* GetXAxis() const = 0;
+	virtual wxPLAxis* GetYAxis() const = 0;
 	
 	inline wxPoint ToDevice( const wxRealPoint &p ) const { return ToDevice(p.x, p.y); }
 };
@@ -118,7 +120,7 @@ public:
 	enum LegendPos { FLOATING, NORTHWEST, SOUTHWEST, NORTHEAST, SOUTHEAST, NORTH, SOUTH, EAST, WEST, BOTTOM, RIGHT  };
 
 	void AddPlot( wxPLPlottable *p, AxisPos xap = X_BOTTOM, AxisPos yap = Y_LEFT, PlotPos ppos = PLOT_TOP, bool update_axes = true );
-	wxPLPlottable *RemovePlot( wxPLPlottable *p, PlotPos plotPosition = NPLOTPOS );
+	wxPLPlottable *RemovePlot(wxPLPlottable *p, PlotPos plotPosition = NPLOTPOS);
 	bool ContainsPlot(wxPLPlottable *p, PlotPos plotPosition = NPLOTPOS);
 	void DeleteAllPlots();
 	size_t GetPlotCount();
@@ -199,7 +201,8 @@ protected:
 	void OnMouseCaptureLost( wxMouseCaptureLostEvent & );
 
 	void DrawGrid( wxDC &dc, wxPLAxis::TickData::TickSize size );
-	void DrawLegend( wxDC &dc, wxDC &aadc, const wxRect &geom );
+	void DrawPolarGrid(wxDC &dc, wxPLAxis::TickData::TickSize size);
+	void DrawLegend(wxDC &dc, wxDC &aadc, const wxRect &geom);
 
 	void UpdateHighlightRegion();
 	void DrawLegendOutline();
@@ -275,7 +278,7 @@ private:
 	};
 	
 	text_layout *m_titleLayout;
-	axis_data m_x1, m_x2, m_y1[NPLOTPOS], m_y2[NPLOTPOS];
+	axis_data m_x1, m_x2, m_y1[NPLOTPOS], m_y2[NPLOTPOS]; // m_x1 used for angular axis on polar plots, m_y1[0] used for radial axis
 
 	DECLARE_EVENT_TABLE();
 

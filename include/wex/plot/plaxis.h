@@ -155,5 +155,42 @@ private:
 	void RecalculateTicksAndLabel();
 };
 
+class wxPLPolarAngularAxis : public wxPLLinearAxis
+{
+public:
+	enum PolarAngularZero { UP, RIGHT, DOWN, LEFT };
+	enum PolarAxisLabels { NUMBERS, DIRECTIONS };
+	enum PolarAngularUnits { NON_POLAR, DEGREES, RADIANS, GRADIANS };
+
+	wxPLPolarAngularAxis(const wxString &label = wxEmptyString, PolarAngularUnits units = DEGREES, PolarAngularZero zero = UP, PolarAxisLabels pal = NUMBERS);
+	wxPLPolarAngularAxis( const wxPLPolarAngularAxis &rhs );
+	
+	virtual void GetAxisTicks(wxCoord phys_min, wxCoord phys_max, std::vector<TickData> &list);
+	virtual PolarAngularUnits GetAxisUnits() { return m_pau; }
+	virtual double AngleInRadians(double world) { return AdjustedWorldValue(world); }
+	virtual void ExtendBound(wxPLAxis *a);
+
+private:
+	PolarAngularUnits m_pau;
+	PolarAxisLabels m_pal;
+	int AngleInDegrees(double world);
+};
+
+/*
+class wxPLPolarRadialAxis : public wxPLLinearAxis
+{
+public:
+	wxPLPolarRadialAxis(const wxString &label = wxEmptyString);
+	wxPLPolarRadialAxis(const wxPLPolarRadialAxis &rhs);
+
+protected:
+
+private:
+
+};
+
+*/
+
+
 #endif
 
