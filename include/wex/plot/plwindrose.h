@@ -3,17 +3,17 @@
 
 #include "wex/plot/plplotctrl.h"
 
-class wxWindRose : public wxPLPlottable
+class wxPLWindRose : public wxPLPlottable
 {
 public:
-	wxWindRose();
-	wxWindRose( const std::vector<wxRealPoint> &data,
+	wxPLWindRose();
+	wxPLWindRose( const std::vector<wxRealPoint> &data,
 		const wxString &label = wxEmptyString,
 		const wxColour &col = *wxBLUE,
 		int size = 1,
 		bool scale = false );
 
-	virtual ~wxWindRose();
+	virtual ~wxPLWindRose();
 	
 	virtual wxRealPoint At( size_t i ) const;
 	virtual size_t Len() const;

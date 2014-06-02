@@ -3,7 +3,7 @@
 #include <wx/dc.h>
 #include "wex/plot/plwindrose.h"
 
-wxWindRose::wxWindRose()
+wxPLWindRose::wxPLWindRose()
 {
 	m_colour = *wxBLUE;
 	m_size = 1;
@@ -11,7 +11,7 @@ wxWindRose::wxWindRose()
 	m_antiAliasing = false;
 }
 
-wxWindRose::wxWindRose( const std::vector<wxRealPoint> &data,
+wxPLWindRose::wxPLWindRose( const std::vector<wxRealPoint> &data,
 	const wxString &label,
 	const wxColour &col,
 	int size,
@@ -27,23 +27,23 @@ wxWindRose::wxWindRose( const std::vector<wxRealPoint> &data,
 }
 
 
-wxWindRose::~wxWindRose()
+wxPLWindRose::~wxPLWindRose()
 {
 	// nothing to do currently
 }
 
 	
-wxRealPoint wxWindRose::At( size_t i ) const
+wxRealPoint wxPLWindRose::At( size_t i ) const
 {
 	return m_data[i];
 }
 
-size_t wxWindRose::Len() const
+size_t wxPLWindRose::Len() const
 {
 	return m_data.size();
 }
 
-void wxWindRose::DrawInLegend( wxDC &dc, const wxRect &rct)
+void wxPLWindRose::DrawInLegend( wxDC &dc, const wxRect &rct)
 {
 	dc.SetPen( wxPen( m_colour, 1 ) );
 	dc.SetBrush( wxBrush( m_colour ) );
@@ -53,19 +53,19 @@ void wxWindRose::DrawInLegend( wxDC &dc, const wxRect &rct)
 	dc.DrawCircle( rct.x+rct.width/2, rct.y+rct.height/2, rad );
 }
 
-wxPLAxis *wxWindRose::SuggestXAxis() const
+wxPLAxis *wxPLWindRose::SuggestXAxis() const
 {
 	return new wxPLPolarAngularAxis("Wind Direction", wxPLPolarAngularAxis::DEGREES, wxPLPolarAngularAxis::UP, wxPLPolarAngularAxis::DIRECTIONS);
 }
 
-wxPLAxis *wxWindRose::SuggestYAxis() const
+wxPLAxis *wxPLWindRose::SuggestYAxis() const
 {
 	double xmin = 0, xmax = 0, ymin = 0, ymax = 0;
 	GetMinMax(&xmin, &xmax, &ymin, &ymax);
 	return new wxPLLinearAxis(0, ymax);
 }
 
-void wxWindRose::Draw(wxDC &dc, const wxPLDeviceMapping &map)
+void wxPLWindRose::Draw(wxDC &dc, const wxPLDeviceMapping &map)
 {
 	if (Len() == 0) return;
 	wxPLPolarAngularAxis *pa = dynamic_cast<wxPLPolarAngularAxis *>(map.GetXAxis());

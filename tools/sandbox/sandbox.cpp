@@ -300,9 +300,9 @@ void TestWindRose(wxWindow *parent)
 	}
 
 
-	wxWindRose* wr = new wxWindRose(data, "Test data", *wxBLUE, 2);
+	wxPLWindRose* wr = new wxPLWindRose(data, "Test data", *wxBLUE, 2);
 	wr->SetIgnoreAngle(false);
-	plot->AddPlot(wr); // adding a wxWindRose plot will automatically set the x-axis to a wxPLPolarAngularAxis
+	plot->AddPlot(wr); // adding a wxPLWindRose plot will automatically set the x-axis to a wxPLPolarAngularAxis
 
 	frame->Show();
 }
