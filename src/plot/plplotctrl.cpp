@@ -1850,22 +1850,23 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 
 	if ( m_x1.axis != 0 )
 	{
-		if (m_x1.layout == 0) {
-			if (cartesion_plot) {
+		if (cartesion_plot) {
+			if (m_x1.layout == 0)
 				m_x1.layout = new axis_layout(X_BOTTOM, dc, m_x1.axis, box.x, box.x + box.width);
-				box.height -= m_x1.layout->bounds().y;
-			}
-			else {
+			
+			box.height -= m_x1.layout->bounds().y;
+		}
+		else {
+			if (m_x1.layout == 0) {
 				if (box.width < box.height)
 					m_x1.layout = new axis_layout(X_BOTTOM, dc, m_x1.axis, box.x, box.x + box.width);
 				else
 					m_x1.layout = new axis_layout(X_BOTTOM, dc, m_x1.axis, box.y, box.y + box.height);
-
-				box.y += m_x1.layout->bounds().y;
-				box.height -= m_x1.layout->bounds().y*2;
 			}
-		}
 
+			box.y += m_x1.layout->bounds().y;
+			box.height -= m_x1.layout->bounds().y*2;
+		}
 	}
 	
 	wxCoord yleft_max_axis_width = 0, yright_max_axis_width = 0;
