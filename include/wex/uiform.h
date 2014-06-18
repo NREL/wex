@@ -56,6 +56,8 @@ public:
 	wxArrayString GetStringList();
 	wxImage GetImage();
 
+	wxString AsString();
+
 	bool IsValid() { return m_type != INVALID; }
 
 	void Write( wxOutputStream & );

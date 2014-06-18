@@ -987,6 +987,24 @@ wxString wxUIProperty::GetString()
 	else return m_string;
 }
 
+wxString wxUIProperty::AsString()
+{
+	int ty = GetType();
+	switch( ty )
+	{
+	case DOUBLE: return wxString::Format("%lg", GetDouble() );
+	case BOOLEAN: return GetBoolean() ? "true" : "false";
+	case INTEGER:
+		if ( m_namedOptions.size() > 0 ) return wxString::Format("%d", GetInteger() ) + ": " + wxJoin(m_namedOptions, ',');
+		else return wxString::Format("%d", GetInteger() );
+	case COLOUR: return wxString::Format("color[%d,%d,%d]", GetColour().Red(), GetColour().Green(), GetColour().Blue() );
+	case STRING: return GetString();
+	case STRINGLIST: return wxJoin(GetStringList(), ',');
+	case IMAGE: return "<image>";
+	default: return "<invalid>";
+	}
+}
+
 wxArrayString wxUIProperty::GetStringList()
 {
 	if ( m_pReference ) return m_pReference->GetStringList();
