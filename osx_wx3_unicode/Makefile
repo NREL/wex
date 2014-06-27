@@ -54,6 +54,7 @@ OBJECTS = \
 	pllineplot.o \
 	plplotctrl.o \
 	plscatterplot.o \
+	plwindrose.o \
 	pdfannotation.o \
 	pdfbarcode.o \
 	pdfcffdecoder.o \
