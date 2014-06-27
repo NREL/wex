@@ -83,6 +83,7 @@ void TestSnapLayout( wxWindow *parent )
 #endif
 
 	wxSnapLayout *lay = new wxSnapLayout(frame, wxID_ANY);
+	lay->SetShowSizing( true );
 
 	
 	wxPLPlotCtrl *plot = new wxPLPlotCtrl(lay, wxID_ANY, wxDefaultPosition, wxDefaultSize);
@@ -498,7 +499,7 @@ public:
 
 		//TestPLPlot( 0 );
 
-		//TestSnapLayout( 0 );
+		TestSnapLayout( 0 );
 
 		//TestDVSelectionCtrl();
 

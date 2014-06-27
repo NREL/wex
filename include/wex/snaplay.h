@@ -25,6 +25,7 @@ public:
 	void AutoLayout();
 	void ClearHighlights();
 	void Highlight( wxWindow * );
+	void SetShowSizing( bool b ) { m_showSizing = b; }
 
 private:
 	
@@ -69,8 +70,12 @@ private:
 
 	void ShowTransparency( wxRect r );
 	void HideTransparency();
-	wxFrame *m_transp;
+
+	class OverlayWindow;
+
+	OverlayWindow *m_transp;
 	wxRect m_sizerect;
+	bool m_showSizing;
 
 	int m_sizeHover;
 	int m_moveHover;
