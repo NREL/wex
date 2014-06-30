@@ -22,6 +22,7 @@
 #include <wx/wfstream.h>
 #include <wx/txtstrm.h>
 #include <wx/cmdline.h>
+#include <wx/tokenzr.h>
 #include <wx/msgdlg.h>
 
 #include "wex/dview/dvplotctrl.h"
@@ -466,6 +467,8 @@ private:
 	
 	bool m_arg_showLog;
 	int m_arg_tab, m_arg_data;
+	double m_startHour, m_endHour;
+	wxArrayString m_variables;
 	wxArrayString m_arg_filenames;
 
 public:
@@ -489,6 +492,9 @@ public:
 		if (m_arg_data != -1)
 			frame->GetPlot()->SelectDataIndex(m_arg_data);
 
+		if ( m_startHour >= 0 && m_endHour >= 0 && m_startHour < m_endHour )
+			frame->GetPlot()->SetTimeSeriesRange( m_startHour, m_endHour );
+
 		frame->Show();
 
 		//TestPLPlot( frame );
@@ -500,9 +506,12 @@ public:
 	{
 		wxApp::OnInitCmdLine(parser);
 
-		parser.AddSwitch(wxT("l"), wxT("show-log"), wxT("show log window"));
+		parser.AddSwitch(wxT("l"), wxT("log"), wxT("show log window"));
 		parser.AddOption(wxT("t"), wxT("tab"), wxT("initial tab number (zero-indexed)"), wxCMD_LINE_VAL_NUMBER);
-		parser.AddOption(wxT("v"), wxT("variable"), wxT("variable to display initially (zero-indexed)"), wxCMD_LINE_VAL_NUMBER);
+		parser.AddOption(wxT("i"), wxT("index"), wxT("variable to display initially (zero-indexed)"), wxCMD_LINE_VAL_NUMBER);
+		parser.AddOption(wxT("v"), wxT("variables"), wxT("comma separated list of column names to display initially"), wxCMD_LINE_VAL_STRING);
+		parser.AddOption(wxT("s"), wxT("start"), wxT("starting hour to display"), wxCMD_LINE_VAL_NUMBER);
+		parser.AddOption(wxT("e"), wxT("end"), wxT("ending hour to display"), wxCMD_LINE_VAL_NUMBER );
 		parser.AddParam(wxT("files to load"), wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL | wxCMD_LINE_PARAM_MULTIPLE);
 	}
 
@@ -514,21 +523,32 @@ public:
 		for (size_t i=0; i<parser.GetParamCount(); i++)
 			m_arg_filenames.Add(parser.GetParam(i));
 
+		double dd;
 		long tabNumber, varNumber;
 		if (parser.Found(wxT("l")))
 			m_arg_showLog = true;
 		else
 			m_arg_showLog = false;
-
+		
+		m_arg_tab = -1;
 		if (parser.Found(wxT("t"), &tabNumber) && tabNumber >= 0)
 			m_arg_tab = tabNumber;
-		else
-			m_arg_tab = -1;
 
-		if (parser.Found(wxT("v"), &varNumber) && varNumber >= 0)
+		m_arg_data = -1;
+		if (parser.Found(wxT("i"), &varNumber) && varNumber >= 0)
 			m_arg_data = varNumber;
-		else
-			m_arg_data = -1;
+
+		m_startHour = -1;
+		if ( parser.Found("s", &dd) )
+			m_startHour = dd;
+			
+		m_endHour = -1;
+		if ( parser.Found("e", &dd ) )
+			m_endHour = dd;
+
+		wxString ss;
+		if ( parser.Found("v", &ss) )
+			m_variables = wxStringTokenize( ss, ",;|" );
 
 		return true;
 	}

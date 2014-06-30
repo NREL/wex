@@ -27,8 +27,9 @@ class wxDVTimeSeriesPlot;
 class wxScrollBar;
 class wxRadioChoice;
 
-enum StatType { AVERAGE = 0, SUM };
-enum TimeSeriesType { RAW_DATA_TIME_SERIES = 0, HOURLY_TIME_SERIES, DAILY_TIME_SERIES, MONTHLY_TIME_SERIES };
+enum wxDVStatType { wxDV_AVERAGE, wxDV_SUM };
+enum wxDVTimeSeriesType { wxDV_RAW, wxDV_HOURLY, wxDV_DAILY, wxDV_MONTHLY };
+enum wxDVTimeSeriesStyle { wxDV_NORMAL, wxDV_STEPPED, wxDV_STACKED };
 
 class wxDVTimeSeriesSettingsDialog : public wxDialog
 {
@@ -41,12 +42,12 @@ public:
 	void GetTopYBounds( double *y1min, double *y1max );
 	void GetBottomYBounds( double *y2min, double *y2max );
 
-	void SetStyle( int id );
-	int GetStyle();
+	void SetStyle( wxDVTimeSeriesStyle id );
+	wxDVTimeSeriesStyle GetStyle();
 	void SetSync( bool b );
 	bool GetSync();
-	void SetStatType( StatType statType );
-	StatType GetStatType();
+	void SetStatType( wxDVStatType statType );
+	wxDVStatType GetStatType();
 	void SetAutoscale( bool b );
 	bool GetAutoscale();
 	void SetBottomAutoscale( bool b );
@@ -75,7 +76,7 @@ private:
 class wxDVTimeSeriesCtrl : public wxPanel
 {
 public:
-	wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, TimeSeriesType seriesType, StatType statType);
+	wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, wxDVTimeSeriesType seriesType, wxDVStatType statType);
 	virtual ~wxDVTimeSeriesCtrl();
 
 	//When a data set is added, wxDVTimeSeriesCtrl creates a plottable with a pointer to that data.  Does not take ownership.
@@ -97,6 +98,8 @@ public:
 	double GetViewMax();
 	void SetViewRange(double min, double max);
 
+	void SetStyle( wxDVTimeSeriesStyle sty );
+
 	void GetVisibleDataMinAndMax(double* min, double* max, const std::vector<int>& selectedChannelIndices);
 	double GetMinPossibleTimeForVisibleChannels();
 	double GetMaxPossibleTimeForVisibleChannels();
@@ -107,9 +110,9 @@ public:
 
 	bool GetSyncWithHeatMap();
 	void SetSyncWithHeatMap(bool b);
-	TimeSeriesType GetTimeSeriesType();
-	StatType GetStatType();
-	void SetStatType(StatType statType);
+	wxDVTimeSeriesType GetTimeSeriesType();
+	wxDVStatType GetStatType();
+	void SetStatType(wxDVStatType statType);
 
 	/*Graph Specific Methods*/
 	bool CanZoomIn(void);
@@ -173,9 +176,9 @@ private:
 	wxDVSelectionListCtrl *m_dataSelector;
 
 	bool m_topAutoScale, m_bottomAutoScale, m_syncToHeatMap;
-	int m_style; // line, stepped, stacked
-	TimeSeriesType m_seriesType;
-	StatType m_statType;
+	wxDVTimeSeriesStyle m_style; // line, stepped, stacked
+	wxDVTimeSeriesType m_seriesType;
+	wxDVStatType m_statType;
 
 	void AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPos, int index);
 	void RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPos, int index);

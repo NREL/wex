@@ -40,10 +40,10 @@ wxDVPlotCtrl::wxDVPlotCtrl(wxWindow* parent, wxWindowID id,
 	: wxMetroNotebook(parent, id, pos, size, wxMT_LIGHTTHEME)
 {
 
-	AddPage( m_timeSeries = new wxDVTimeSeriesCtrl(this, wxID_ANY, RAW_DATA_TIME_SERIES, AVERAGE), "Time series", true );
-	AddPage( m_hourlyTimeSeries = new wxDVTimeSeriesCtrl(this, wxID_ANY, HOURLY_TIME_SERIES, AVERAGE), "Hourly" );
-	AddPage( m_dailyTimeSeries = new wxDVTimeSeriesCtrl(this, wxID_ANY, DAILY_TIME_SERIES, AVERAGE), "Daily" );
-	AddPage( m_monthlyTimeSeries = new wxDVTimeSeriesCtrl(this, wxID_ANY, MONTHLY_TIME_SERIES, AVERAGE), "Monthly" );
+	AddPage( m_timeSeries = new wxDVTimeSeriesCtrl(this, wxID_ANY, wxDV_RAW, wxDV_AVERAGE), "Time series", true );
+	AddPage( m_hourlyTimeSeries = new wxDVTimeSeriesCtrl(this, wxID_ANY, wxDV_HOURLY, wxDV_AVERAGE), "Hourly" );
+	AddPage( m_dailyTimeSeries = new wxDVTimeSeriesCtrl(this, wxID_ANY, wxDV_DAILY, wxDV_AVERAGE), "Daily" );
+	AddPage( m_monthlyTimeSeries = new wxDVTimeSeriesCtrl(this, wxID_ANY, wxDV_MONTHLY, wxDV_AVERAGE), "Monthly" );
 	AddPage( m_dMap = new wxDVDMapCtrl(this, wxID_ANY), "Heat map" );
 	AddPage( m_profilePlots = new wxDVProfileCtrl(this, wxID_ANY), "Profile" );
 	AddPage( m_statisticsTable = new wxDVStatisticsTableCtrl(this, wxID_ANY), "Statistics" );
@@ -93,6 +93,23 @@ void wxDVPlotCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 	m_scatterPlot->RemoveDataSet(d);
 
 	m_dataSets.erase( std::find( m_dataSets.begin(), m_dataSets.end(), d) );
+}
+
+void wxDVPlotCtrl::SetTimeSeriesRange( double start, double end )
+{
+	m_timeSeries->SetViewRange( start, end );
+	m_hourlyTimeSeries->SetViewRange( start, end );
+	m_dailyTimeSeries->SetViewRange( start, end );
+	m_monthlyTimeSeries->SetViewRange( start, end );
+}
+
+void wxDVPlotCtrl::SetSelectedNames( const wxArrayString &names )
+{
+	wxString nn = wxJoin( names, ';' );
+	m_timeSeries->SetTopSelectedNames( nn );
+	m_hourlyTimeSeries->SetTopSelectedNames( nn );
+	m_dailyTimeSeries->SetTopSelectedNames( nn );
+	m_monthlyTimeSeries->SetTopSelectedNames( nn );
 }
 
 void wxDVPlotCtrl::RemoveAllDataSets()

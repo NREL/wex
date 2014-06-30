@@ -47,6 +47,9 @@ public:
 	void SelectDataIndex( size_t index, bool allTabs = false);
 	void SelectDataIndexOnTab( size_t index, int tab);
 
+	void SetTimeSeriesRange( double start, double end );
+	void SetSelectedNames( const wxArrayString &names );
+
 	void SelectDataOnBlankTabs();
 	
 	void OnPageChanging( wxNotebookEvent& e );
