@@ -125,6 +125,8 @@ public:
 	void DeleteAllPlots();
 	size_t GetPlotCount();
 	wxPLPlottable *GetPlot( size_t i );
+	bool GetPlotPosition( wxPLPlottable *p, 
+		AxisPos *xap, AxisPos *yap, PlotPos *ppos );
 
 	wxPLAxis *GetXAxis1() { return m_x1.axis; }
 	void SetXAxis1( wxPLAxis *a ) { m_x1.set( a ); }

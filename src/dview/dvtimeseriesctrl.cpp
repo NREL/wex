@@ -26,13 +26,15 @@
 #include "wex/dview/dvtimeseriesdataset.h"
 #include "wex/dview/dvtimeseriesctrl.h"
 
+#include <wex/radiochoice.h>
+
 static const wxString NO_UNITS("ThereAreNoUnitsForThisAxis.");
 enum { ID_TopCheckbox = wxID_HIGHEST + 1, ID_BottomCheckbox, ID_StatCheckbox };
 
 class wxDVTimeSeriesPlot : public wxPLPlottable
 {
 	public:
-		enum Style { NORMAL, STEPPED };
+		enum Style { NORMAL, STEPPED, STACKED };
 
 	private:
 		wxDVTimeSeriesDataSet *m_data;
@@ -40,10 +42,11 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 		Style m_style;
 		TimeSeriesType m_seriesType;
 		bool m_ownsDataset;
+		wxDVTimeSeriesPlot *m_stackedOnTopOf;
 
 	public:
 		wxDVTimeSeriesPlot( wxDVTimeSeriesDataSet *ds, TimeSeriesType seriesType, bool OwnsDataset = false )
-			: m_data(ds)
+			: m_data(ds), m_stackedOnTopOf( 0 )
 		{
 			assert( ds != 0 );
 
@@ -59,6 +62,25 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 			{
 				delete m_data;
 			}
+		}
+		
+		void StackOnTopOf( wxDVTimeSeriesPlot *p )
+		{
+			if ( !p ) { m_stackedOnTopOf = 0; return; }
+
+			wxDVTimeSeriesDataSet *ds = p->GetDataSet();
+			if ( ds != 0
+				&& ds->GetOffset() == m_data->GetOffset()
+				&& ds->Length() == m_data->Length()
+				&& ds->GetTimeStep() == m_data->GetTimeStep() )
+			{
+				m_stackedOnTopOf = p;
+			}
+		}
+
+		bool IsStackedOnTopOf( wxDVTimeSeriesPlot * p )
+		{
+			return m_stackedOnTopOf == p;
 		}
 
 		void SetStyle( Style ss ) { m_style = ss; }
@@ -76,12 +98,32 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 				label += " (" + m_data->GetUnits() + ")";
 			return label;
 		}
-
+		
 		virtual wxRealPoint At( size_t i ) const
 		{
-			return ( i < m_data->Length() )
-				? m_data->At(i) 
-				: wxRealPoint( std::numeric_limits<double>::quiet_NaN(),std::numeric_limits<double>::quiet_NaN() ); 
+			return i < m_data->Length() 
+				? m_data->At(i)
+				: wxRealPoint( std::numeric_limits<double>::quiet_NaN(),std::numeric_limits<double>::quiet_NaN() );
+		}
+		
+		virtual wxRealPoint StackedAt( size_t i, double *ybase = 0 ) const
+		{
+			if ( i >= m_data->Length() ) 
+				return wxRealPoint( std::numeric_limits<double>::quiet_NaN(),std::numeric_limits<double>::quiet_NaN() );
+
+			if ( m_stackedOnTopOf != 0 )
+			{
+				wxRealPoint base( m_stackedOnTopOf->StackedAt(i, ybase ) );
+				if ( ybase ) *ybase = base.y;
+				wxRealPoint cur( m_data->At(i)  );
+				return wxRealPoint( cur.x, base.y + cur.y );
+			}
+			else
+			{
+				if ( ybase ) *ybase = 0;
+				return m_data->At(i) ;
+			}
+
 		}
 
 		virtual size_t Len() const
@@ -103,131 +145,175 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 		
 			dc.SetPen( wxPen( m_colour, 2, wxPENSTYLE_SOLID ) );
 
-			if(m_style == NORMAL)
+			if ( m_style == STACKED )
 			{
 				len = m_data->Length();
-				if(m_data->At(0).x < wmin.x) { len++; }
-				if(m_data->At(m_data->Length() - 1).x > wmax.x) { len++; }
+				points.reserve( len*2 );
 
-				points.reserve( len );
-
-				//If this is a line plot then add a point at the left edge of the graph if there isn't one there in the data
-				if(m_style == NORMAL && m_data->At(0).x < wmin.x)
+				if ( m_stackedOnTopOf != 0 )
 				{
-					for ( size_t i = 1; i < m_data->Length(); i++ )
+					std::vector<wxRealPoint> base;
+					base.reserve( len );
+					for( size_t i=0;i<len;i++ )
 					{
-						rpt = m_data->At(i);
-						rpt2 = m_data->At(i - 1);
-						if ( rpt.x > wmin.x )
-						{
-							tempY = rpt2.y + ((rpt.y - rpt2.y) * (wmin.x - rpt2.x) / (rpt.x - rpt2.x));
-							points.push_back( map.ToDevice( wxRealPoint(wmin.x, tempY) ) );
-							break;
-						}
+						double yb = 0;
+						wxRealPoint p( StackedAt(i, &yb) );					
+						if ( p.x < wmin.x || p.x > wmax.x ) continue;
+
+						base.push_back( wxRealPoint( p.x, yb ) );
+						points.push_back( map.ToDevice( p ) );
 					}
-				}
 
-				for ( size_t i = 0; i < m_data->Length(); i++ )
-				{
-					rpt = m_data->At(i);
-					if ( rpt.x < wmin.x || rpt.x > wmax.x ) continue;
-					points.push_back( map.ToDevice( m_data->At(i) ) );
+					for( size_t i=0;i<base.size();i++ )
+						points.push_back( map.ToDevice( base[ base.size() - i - 1 ] ) );
 				}
-
-				//If this is a line plot then add a point at the right edge of the graph if there isn't one there in the data
-				if(m_style == NORMAL && m_data->At(m_data->Length() - 1).x > wmax.x)
-				{
-					for ( size_t i = m_data->Length() - 2; i >= 0; i-- )
+				else
+				{	
+					for( size_t i=0;i<len;i++ )
 					{
-						rpt = m_data->At(i);
-						rpt2 = m_data->At(i + 1);
-						if ( rpt.x < wmax.x )
-						{
-							tempY = rpt.y + ((rpt2.y - rpt.y) * (wmax.x - rpt.x) / (rpt2.x - rpt.x));
-							points.push_back( map.ToDevice( wxRealPoint(wmax.x, tempY) ) );
-							break;
-						}
+						wxRealPoint p( At(i) );					
+						if ( p.x < wmin.x || p.x > wmax.x ) continue;
+						points.push_back( map.ToDevice( p ) );
 					}
+
+					points.push_back( wxPoint( points[ points.size()-1 ].x,  map.ToDevice( wxRealPoint(0,0) ).y ) );
+					points.push_back( wxPoint( points[ 0 ].x, map.ToDevice( wxRealPoint(0,0) ).y ) );
 				}
+				
+				dc.SetPen( *wxTRANSPARENT_PEN );
+				dc.SetBrush( wxBrush( m_colour, wxSOLID ) );
+				dc.DrawPolygon( points.size(), &points[0], 0, 0, wxWINDING_RULE );
 			}
 			else
 			{
-				//For stepped graphs create an array twice as big as the original and replace each single x value with two x values, one with the prior y value and one with the current y value
-				len = m_data->Length() * 2;
-				points.reserve( len );
-				double timeStep = m_data->GetTimeStep();
-				double lowX;
-				double highX;
-				double priorY;
-				double nextY;
+				// not stacked - just lines
 
-				for (size_t i = 0; i < m_data->Length(); i++)
+				if( m_style == NORMAL )
 				{
-					rpt = m_data->At(i);
-					lowX = GetPeriodLowerBoundary(rpt.x, timeStep);
-					highX = GetPeriodUpperBoundary(rpt.x, timeStep);
+					len = m_data->Length();
+					if(m_data->At(0).x < wmin.x) { len++; }
+					if(m_data->At(m_data->Length() - 1).x > wmax.x) { len++; }
 
-					
-					if(lowX >= wmin.x && highX <= wmax.x)	//Draw points for the lower and upper X boundaries of the point's horizontal range for each range that fits in the boundaries of the plot
+					points.reserve( len );
+
+					//If this is a line plot then add a point at the left edge of the graph if there isn't one there in the data
+					if(m_style == NORMAL && m_data->At(0).x < wmin.x)
 					{
-						//If the prior point's lower X boundary is off the left edge of the plot then draw points for the left edge of the plot and the visible point's lower X boundary at the prior point's Y
-						if(i > 0 && GetPeriodLowerBoundary(m_data->At(i - 1).x, timeStep) < wmin.x)
+						for ( size_t i = 1; i < m_data->Length(); i++ )
 						{
-							priorY = m_data->At(i - 1).y;
-							points.push_back( map.ToDevice( wxRealPoint(wmin.x, priorY) ) );
-							points.push_back( map.ToDevice( wxRealPoint(lowX, priorY) ) );
-						}
-
-						points.push_back( map.ToDevice( wxRealPoint(lowX, rpt.y) ) );
-						points.push_back( map.ToDevice( wxRealPoint(highX, rpt.y) ) );
-
-						//If the next point's upper X boundary is off the right edge of the plot then draw points for the visible point's upper X boundary and the right edge of the plot at the next point's Y
-						if(i < m_data->Length() - 1 && GetPeriodUpperBoundary(m_data->At(i + 1).x, timeStep) > wmax.x)
-						{
-							nextY = m_data->At(i + 1).y;
-							points.push_back( map.ToDevice( wxRealPoint(highX, nextY) ) );
-							points.push_back( map.ToDevice( wxRealPoint(wmax.x, nextY) ) );
-							break;	//Any future points are outside the bounds of the graph
+							rpt = m_data->At(i);
+							rpt2 = m_data->At(i - 1);
+							if ( rpt.x > wmin.x )
+							{
+								tempY = rpt2.y + ((rpt.y - rpt2.y) * (wmin.x - rpt2.x) / (rpt.x - rpt2.x));
+								points.push_back( map.ToDevice( wxRealPoint(wmin.x, tempY) ) );
+								break;
+							}
 						}
 					}
-					else if(lowX < wmin.x && highX > wmin.x && highX <= wmax.x)	//Draw points for the plot left edge and point's upper X boundary at the point's Y if the lower boundary (only) is off the plot's left edge
-					{
-						points.push_back( map.ToDevice( wxRealPoint(wmin.x, rpt.y) ) );
-						points.push_back( map.ToDevice( wxRealPoint(highX, rpt.y) ) );
 
-						//If the next point's upper X boundary is off the right edge of the plot then draw points for the visible point's upper X boundary and the right edge of the plot at the next point's Y
-						if(i < m_data->Length() - 1 && GetPeriodUpperBoundary(m_data->At(i + 1).x, timeStep) > wmax.x)
-						{
-							nextY = m_data->At(i + 1).y;
-							points.push_back( map.ToDevice( wxRealPoint(highX, nextY) ) );
-							points.push_back( map.ToDevice( wxRealPoint(wmax.x, nextY) ) );
-							break;	//Any future points are outside the bounds of the graph
-						}
-					}
-					else if(highX > wmax.x && lowX < wmax.x && lowX >= wmin.x)	//Draw points for the point's upper X boundary and the plot right edge at the point's Y if the upper boundary (only) is off the plot's right edge
+					for ( size_t i = 0; i < m_data->Length(); i++ )
 					{
-						//If the prior point's lower X boundary is off the left edge of the plot then draw points for the left edge of the plot and the visible point's lower X boundary at the prior point's Y
-						if(i > 0 && GetPeriodLowerBoundary(m_data->At(i - 1).x, timeStep) < wmin.x)
-						{
-							priorY = m_data->At(i - 1).y;
-							points.push_back( map.ToDevice( wxRealPoint(wmin.x, priorY) ) );
-							points.push_back( map.ToDevice( wxRealPoint(lowX, priorY) ) );
-						}
+						rpt = m_data->At(i);
+						if ( rpt.x < wmin.x || rpt.x > wmax.x ) continue;
+						points.push_back( map.ToDevice( m_data->At(i) ) );
+					}
 
-						points.push_back( map.ToDevice( wxRealPoint(wmin.x, rpt.y) ) );
-						points.push_back( map.ToDevice( wxRealPoint(highX, rpt.y) ) );
-					}
-					else if(lowX < wmin.x && highX > wmax.x)	//Draw points for the plot's left and right edges and point's Y if the point's lower X boundary is off the plot's left edge and the upper X boundary is off the right edge
+					//If this is a line plot then add a point at the right edge of the graph if there isn't one there in the data
+					if(m_style == NORMAL && m_data->At(m_data->Length() - 1).x > wmax.x)
 					{
-						points.push_back( map.ToDevice( wxRealPoint(wmin.x, rpt.y) ) );
-						points.push_back( map.ToDevice( wxRealPoint(highX, rpt.y) ) );
+						for ( size_t i = m_data->Length() - 2; i >= 0; i-- )
+						{
+							rpt = m_data->At(i);
+							rpt2 = m_data->At(i + 1);
+							if ( rpt.x < wmax.x )
+							{
+								tempY = rpt.y + ((rpt2.y - rpt.y) * (wmax.x - rpt.x) / (rpt2.x - rpt.x));
+								points.push_back( map.ToDevice( wxRealPoint(wmax.x, tempY) ) );
+								break;
+							}
+						}
 					}
 				}
+				else
+				{
+					//For stepped graphs create an array twice as big as the original and replace each single x value with two x values, one with the prior y value and one with the current y value
+					len = m_data->Length() * 2;
+					points.reserve( len );
+					double timeStep = m_data->GetTimeStep();
+					double lowX;
+					double highX;
+					double priorY;
+					double nextY;
+
+					for (size_t i = 0; i < m_data->Length(); i++)
+					{
+						rpt = m_data->At(i);
+						lowX = GetPeriodLowerBoundary(rpt.x, timeStep);
+						highX = GetPeriodUpperBoundary(rpt.x, timeStep);
+
+					
+						if(lowX >= wmin.x && highX <= wmax.x)	//Draw points for the lower and upper X boundaries of the point's horizontal range for each range that fits in the boundaries of the plot
+						{
+							//If the prior point's lower X boundary is off the left edge of the plot then draw points for the left edge of the plot and the visible point's lower X boundary at the prior point's Y
+							if(i > 0 && GetPeriodLowerBoundary(m_data->At(i - 1).x, timeStep) < wmin.x)
+							{
+								priorY = m_data->At(i - 1).y;
+								points.push_back( map.ToDevice( wxRealPoint(wmin.x, priorY) ) );
+								points.push_back( map.ToDevice( wxRealPoint(lowX, priorY) ) );
+							}
+
+							points.push_back( map.ToDevice( wxRealPoint(lowX, rpt.y) ) );
+							points.push_back( map.ToDevice( wxRealPoint(highX, rpt.y) ) );
+
+							//If the next point's upper X boundary is off the right edge of the plot then draw points for the visible point's upper X boundary and the right edge of the plot at the next point's Y
+							if(i < m_data->Length() - 1 && GetPeriodUpperBoundary(m_data->At(i + 1).x, timeStep) > wmax.x)
+							{
+								nextY = m_data->At(i + 1).y;
+								points.push_back( map.ToDevice( wxRealPoint(highX, nextY) ) );
+								points.push_back( map.ToDevice( wxRealPoint(wmax.x, nextY) ) );
+								break;	//Any future points are outside the bounds of the graph
+							}
+						}
+						else if(lowX < wmin.x && highX > wmin.x && highX <= wmax.x)	//Draw points for the plot left edge and point's upper X boundary at the point's Y if the lower boundary (only) is off the plot's left edge
+						{
+							points.push_back( map.ToDevice( wxRealPoint(wmin.x, rpt.y) ) );
+							points.push_back( map.ToDevice( wxRealPoint(highX, rpt.y) ) );
+
+							//If the next point's upper X boundary is off the right edge of the plot then draw points for the visible point's upper X boundary and the right edge of the plot at the next point's Y
+							if(i < m_data->Length() - 1 && GetPeriodUpperBoundary(m_data->At(i + 1).x, timeStep) > wmax.x)
+							{
+								nextY = m_data->At(i + 1).y;
+								points.push_back( map.ToDevice( wxRealPoint(highX, nextY) ) );
+								points.push_back( map.ToDevice( wxRealPoint(wmax.x, nextY) ) );
+								break;	//Any future points are outside the bounds of the graph
+							}
+						}
+						else if(highX > wmax.x && lowX < wmax.x && lowX >= wmin.x)	//Draw points for the point's upper X boundary and the plot right edge at the point's Y if the upper boundary (only) is off the plot's right edge
+						{
+							//If the prior point's lower X boundary is off the left edge of the plot then draw points for the left edge of the plot and the visible point's lower X boundary at the prior point's Y
+							if(i > 0 && GetPeriodLowerBoundary(m_data->At(i - 1).x, timeStep) < wmin.x)
+							{
+								priorY = m_data->At(i - 1).y;
+								points.push_back( map.ToDevice( wxRealPoint(wmin.x, priorY) ) );
+								points.push_back( map.ToDevice( wxRealPoint(lowX, priorY) ) );
+							}
+
+							points.push_back( map.ToDevice( wxRealPoint(wmin.x, rpt.y) ) );
+							points.push_back( map.ToDevice( wxRealPoint(highX, rpt.y) ) );
+						}
+						else if(lowX < wmin.x && highX > wmax.x)	//Draw points for the plot's left and right edges and point's Y if the point's lower X boundary is off the plot's left edge and the upper X boundary is off the right edge
+						{
+							points.push_back( map.ToDevice( wxRealPoint(wmin.x, rpt.y) ) );
+							points.push_back( map.ToDevice( wxRealPoint(highX, rpt.y) ) );
+						}
+					}
+				}
+
+				if ( points.size() < 2 ) return;
+
+				dc.DrawLines( points.size(), &points[0] );
 			}
-
-			if ( points.size() == 0 ) return;
-
-			dc.DrawLines( points.size(), &points[0] );
 		}
 
 		virtual wxString GetLabel() const
@@ -360,10 +446,10 @@ wxDVTimeSeriesSettingsDialog::wxDVTimeSeriesSettingsDialog( wxWindow *parent, co
 	mSyncCheck = new wxCheckBox(this, wxID_ANY, "Synchronize view with heat map" );
 	mStatTypeCheck = new wxCheckBox(this, ID_StatCheckbox, "Show total sum over time step, not average value" );
 		
-	wxArrayString choices;
-	choices.Add( "Line graph");
-	choices.Add( "Stepped line graph" );
-	mLineStyleCombo = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, choices);
+	mStyleChoice = new wxRadioChoice( this, wxID_ANY );
+	mStyleChoice->Add( "Line graph" );
+	mStyleChoice->Add( "Stepped line graph" );
+	mStyleChoice->Add( "Stacked area graph" );
 				
 	mTopAutoscaleCheck = new wxCheckBox(this, ID_TopCheckbox, "Autoscale top y1-axis");
 	mBottomTopAutoscaleCheck = new wxCheckBox(this, ID_BottomCheckbox, "Autoscale bottom y1-axis");
@@ -387,7 +473,7 @@ wxDVTimeSeriesSettingsDialog::wxDVTimeSeriesSettingsDialog( wxWindow *parent, co
 	wxBoxSizer *boxmain = new wxBoxSizer(wxVERTICAL);
 	boxmain->Add( mSyncCheck, 0, wxALL|wxEXPAND, 10 );
 	boxmain->Add( mStatTypeCheck, 0, wxALL|wxEXPAND, 10 );
-	boxmain->Add( mLineStyleCombo, 0, wxALL|wxEXPAND, 10 );
+	boxmain->Add( mStyleChoice, 0, wxALL|wxEXPAND, 10 );
 	boxmain->Add( new wxStaticLine( this ), 0, wxALL|wxEXPAND, 0 );
 	boxmain->Add( mTopAutoscaleCheck, 0, wxALL|wxEXPAND, 10 );
 	boxmain->Add( yTopBoundSizer, 1, wxALL|wxEXPAND, 10 );
@@ -435,8 +521,8 @@ void wxDVTimeSeriesSettingsDialog::GetBottomYBounds( double *y2min, double *y2ma
 	*y2max = mBottomYMaxCtrl->Value();
 }
 
-void wxDVTimeSeriesSettingsDialog::SetLineStyle( int id ) { mLineStyleCombo->SetSelection(id); }
-int wxDVTimeSeriesSettingsDialog::GetLineStyle() { return mLineStyleCombo->GetSelection(); }
+void wxDVTimeSeriesSettingsDialog::SetStyle( int id ) { mStyleChoice->SetSelection(id); }
+int wxDVTimeSeriesSettingsDialog::GetStyle() { return mStyleChoice->GetSelection(); }
 
 void wxDVTimeSeriesSettingsDialog::SetSync( bool b ) { mSyncCheck->SetValue( b ); }
 bool wxDVTimeSeriesSettingsDialog::GetSync() { return mSyncCheck->GetValue(); }
@@ -511,16 +597,18 @@ END_EVENT_TABLE()
 
 /*Constructors and Destructors*/
 wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, TimeSeriesType seriesType, StatType statType)
-: wxPanel(parent, id)
+	: wxPanel(parent, id)
 {	
+	SetBackgroundColour( *wxWHITE );
 	m_topAutoScale = true;
 	m_bottomAutoScale = true;
 	m_syncToHeatMap = false;
-	m_lineStyle = ((seriesType == RAW_DATA_TIME_SERIES || seriesType == HOURLY_TIME_SERIES) ? wxDVTimeSeriesPlot::NORMAL : wxDVTimeSeriesPlot::STEPPED); // line, stepped, points
+	m_style = ((seriesType == RAW_DATA_TIME_SERIES || seriesType == HOURLY_TIME_SERIES) ? wxDVTimeSeriesPlot::NORMAL : wxDVTimeSeriesPlot::STEPPED); // line, stepped, points
 	m_seriesType = seriesType;
 	m_statType = statType;
 
 	m_plotSurface = new wxPLPlotCtrl(this, ID_PLOT_SURFACE); 
+	m_plotSurface->SetBackgroundColour( *wxWHITE );
 	m_plotSurface->SetAllowHighlighting(true);
 	m_plotSurface->ShowTitle( false );
 	m_plotSurface->ShowLegend( false );
@@ -638,7 +726,7 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 	dlg.CentreOnParent();
 	dlg.SetSync( m_syncToHeatMap );
 	dlg.SetStatType( m_statType );
-	dlg.SetLineStyle( m_lineStyle );
+	dlg.SetStyle( m_style );
 	dlg.SetAutoscale( m_topAutoScale );
 	dlg.SetBottomAutoscale( m_bottomAutoScale );
 	dlg.SetTopYBounds( y1min, y1max );
@@ -646,7 +734,9 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 	if (wxID_OK == dlg.ShowModal())
 	{
 		m_syncToHeatMap = dlg.GetSync();
-		m_lineStyle = dlg.GetLineStyle();
+		m_style = dlg.GetStyle();
+		for (size_t i=0; i<m_plots.size(); i++)
+			m_plots[i]->SetStyle( (wxDVTimeSeriesPlot::Style) m_style );
 
 		if(m_statType != dlg.GetStatType())
 		{
@@ -655,7 +745,6 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 
 			for(size_t i = 0; i < m_plots.size(); i++)
 			{
-				m_plots[i]->SetStyle( (wxDVTimeSeriesPlot::Style) m_lineStyle );
 				m_plots[i]->UpdateSummaryData(m_statType == AVERAGE ? true : false);
 
 				if ( 0 == dynamic_cast<wxDVArrayDataSet*>( m_plots[i]->GetDataSet() ) )
@@ -665,13 +754,8 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 			if ( nonmodifiables.size() > 0 )
 				wxMessageBox("The following plots could not be configured for the modified statistic type:\n\n" + nonmodifiables );
 		}
-		else
-		{
-			for (size_t i=0; i<m_plots.size(); i++)
-			{
-				m_plots[i]->SetStyle( (wxDVTimeSeriesPlot::Style) m_lineStyle );
-			}
-		}
+	
+		UpdateStacking();
 
 		m_topAutoScale = dlg.GetAutoscale();
 		m_bottomAutoScale = dlg.GetBottomAutoscale();
@@ -844,7 +928,7 @@ void wxDVTimeSeriesCtrl::OnPlotDragEnd(wxCommandEvent& e)
 
 void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, bool refresh_ui)
 {
-	wxDVTimeSeriesPlot *p;
+	wxDVTimeSeriesPlot *p = 0;
 
 	//For daily and monthly time series create a dataset with the average x and y values for the day/month
 	//For stepped graphs we have to start the array with the average y value for the first period at x = 0, have each avg y value at the beginning of the period (leftmost x for the period),
@@ -1036,7 +1120,7 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 			p = new wxDVTimeSeriesPlot(d2, m_seriesType, true);
 		}
 
-		p->SetStyle((wxDVTimeSeriesPlot::Style) m_lineStyle);
+		p->SetStyle((wxDVTimeSeriesPlot::Style) m_style);
 		m_plots.push_back(p); //Add to data sets list.
 		m_dataSelector->Append( d->GetTitleWithUnits(), group );
 
@@ -1071,9 +1155,12 @@ bool wxDVTimeSeriesCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 	for (int i=0; i<wxPLPlotCtrl::NPLOTPOS; i++)
 		m_plotSurface->RemovePlot(plotToRemove);
 
-	Invalidate();
-
 	m_plots.erase( m_plots.begin() + removedIndex); //This is more efficient than remove when we already know the index.
+	
+	// make sure an erased plot is nolonger referenced in stacking
+	UpdateStacking();
+
+	Invalidate();
 
 	//We base our logic for showing/hiding plots, etc on indices, so when a single data set is removed
 	//we have to re-index everything.
@@ -1162,33 +1249,59 @@ void wxDVTimeSeriesCtrl::GetVisibleDataMinAndMax(double* min, double* max, const
 	*min = 0;
 	*max = 0; 
 
-	double tempMin = 0;
-	double tempMax = 0;
-	if (m_xAxis)
-	{
+	if ( m_style == wxDVTimeSeriesPlot::STACKED && m_xAxis )
+	{		
 		double worldMin = m_xAxis->GetWorldMin();
 		double worldMax = m_xAxis->GetWorldMax();
 
 		for(size_t i=0; i<selectedChannelIndices.size(); i++)
 		{
-			m_plots[selectedChannelIndices[i]]->GetDataSet()->GetMinAndMaxInRange(&tempMin, &tempMax, worldMin, worldMax);
-			if (tempMin < *min)
-				*min = tempMin;
-			if (tempMax > *max)
-				*max = tempMax;		
+			wxDVTimeSeriesPlot *plot = m_plots[selectedChannelIndices[i]];
+			for( size_t j=0;j<plot->Len();j++ )
+			{
+				wxRealPoint p( plot->StackedAt(j) );
+				if ( p.x < worldMin || p.x > worldMax )
+					continue;
+				if ( p.y > *max )
+					*max = p.y;
+				if ( p.y < *min )
+					*min = p.y;
+			}
 		}
+
+		if ( *min > 0 ) *min = 0;
+		if ( *max < 0 ) *max = 0;
 	}
 	else
 	{
-		for(size_t i=0; i<selectedChannelIndices.size(); i++)
+		double tempMin = 0;
+		double tempMax = 0;
+		if (m_xAxis)
 		{
-			m_plots[selectedChannelIndices[i]]->GetDataSet()->GetDataMinAndMax(&tempMin, &tempMax);
-			if (tempMin < *min)
-				*min = tempMin;
-			if (tempMax > *max)
-				*max = tempMax;		
+			double worldMin = m_xAxis->GetWorldMin();
+			double worldMax = m_xAxis->GetWorldMax();
+
+			for(size_t i=0; i<selectedChannelIndices.size(); i++)
+			{
+				m_plots[selectedChannelIndices[i]]->GetDataSet()->GetMinAndMaxInRange(&tempMin, &tempMax, worldMin, worldMax);
+				if (tempMin < *min)
+					*min = tempMin;
+				if (tempMax > *max)
+					*max = tempMax;		
+			}
 		}
-	}	
+		else
+		{
+			for(size_t i=0; i<selectedChannelIndices.size(); i++)
+			{
+				m_plots[selectedChannelIndices[i]]->GetDataSet()->GetDataMinAndMax(&tempMin, &tempMax);
+				if (tempMin < *min)
+					*min = tempMin;
+				if (tempMax > *max)
+					*max = tempMax;		
+			}
+		}	
+	}
 }
 
 double wxDVTimeSeriesCtrl::GetMinPossibleTimeForVisibleChannels()
@@ -1511,9 +1624,12 @@ void wxDVTimeSeriesCtrl::AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPo
 		yap = wxPLPlotCtrl::Y_LEFT;
 	else
 		yap = wxPLPlotCtrl::Y_RIGHT;
-	
+		
 	m_plotSurface->AddPlot( m_plots[index], wxPLPlotCtrl::X_BOTTOM, yap, pPos, false );
 	m_plotSurface->GetAxis( yap, pPos )->SetLabel( units );
+
+	if ( m_style == wxDVTimeSeriesPlot::STACKED )
+		StackUp( yap, pPos );
 		
 	//Calculate index from 0-3.  0,1 are top graph L,R axis.  2,3 are L,R axis on bottom graph.
 	int graphIndex = TOP_LEFT_AXIS;
@@ -1559,8 +1675,17 @@ void wxDVTimeSeriesCtrl::RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos 
 	bool keepAxis = false;
 	if (m_selectedChannelIndices[graphIndex]->size() > 0)
 		keepAxis = true;
+	
+	wxPLPlotCtrl::AxisPos ryap;
+	wxPLPlotCtrl::PlotPos rppos;
+	m_plotSurface->GetPlotPosition( m_plots[index], 0, &ryap, &rppos );
 
 	m_plotSurface->RemovePlot(m_plots[index], pPos);
+
+	// if there was another plot stacked on top of this one, reset that plot's stacking
+	// pointer to the previous plot in the list that is on the same axis
+	if ( m_style == wxDVTimeSeriesPlot::STACKED )
+		StackUp( ryap, rppos );
 
 	//See if axis is still in use or not, and to some cleanup.
 	wxPLLinearAxis *axisThatWasUsed;
@@ -1627,6 +1752,42 @@ void wxDVTimeSeriesCtrl::RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos 
 	Invalidate();
 }
 
+void wxDVTimeSeriesCtrl::StackUp( wxPLPlotCtrl::AxisPos yap, wxPLPlotCtrl::PlotPos ppos )
+{
+	wxPLPlotCtrl::AxisPos tyap;
+	wxPLPlotCtrl::PlotPos tppos;
+	wxDVTimeSeriesPlot *prev = 0;
+
+	for( size_t i=0;i<m_plotSurface->GetPlotCount();i++ )
+	{
+		if ( wxDVTimeSeriesPlot *cur = dynamic_cast<wxDVTimeSeriesPlot*>( m_plotSurface->GetPlot(i) ) )
+		{
+			if ( m_plotSurface->GetPlotPosition( cur, 0, &tyap, &tppos )
+				&& tyap == yap && tppos == ppos )
+			{
+				cur->StackOnTopOf( prev );
+				prev = cur;
+			}
+		}
+	}
+}
+
+void wxDVTimeSeriesCtrl::ClearStacking()
+{
+	for( size_t i=0;i<m_plots.size();i++ )
+		m_plots[i]->StackOnTopOf( NULL );
+}
+
+void wxDVTimeSeriesCtrl::UpdateStacking()
+{
+	ClearStacking();
+	// update all stacking pointers for plots.
+	StackUp( wxPLPlotCtrl::Y_LEFT, wxPLPlotCtrl::PLOT_TOP );
+	StackUp( wxPLPlotCtrl::Y_RIGHT, wxPLPlotCtrl::PLOT_TOP );
+	StackUp( wxPLPlotCtrl::Y_LEFT, wxPLPlotCtrl::PLOT_BOTTOM );
+	StackUp( wxPLPlotCtrl::Y_RIGHT, wxPLPlotCtrl::PLOT_BOTTOM );
+}
+
 void wxDVTimeSeriesCtrl::ClearAllChannelSelections(wxPLPlotCtrl::PlotPos pPos)
 {
 	m_dataSelector->ClearColumn(int(pPos));
@@ -1642,6 +1803,8 @@ void wxDVTimeSeriesCtrl::ClearAllChannelSelections(wxPLPlotCtrl::PlotPos pPos)
 		}
 		m_selectedChannelIndices[i]->clear();
 	}
+
+	ClearStacking();
 
 	m_plotSurface->SetYAxis1(NULL, pPos);
 	m_plotSurface->SetYAxis2(NULL, pPos);

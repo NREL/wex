@@ -25,6 +25,7 @@ class wxGridSizer;
 class wxCheckBox;
 class wxDVTimeSeriesPlot;
 class wxScrollBar;
+class wxRadioChoice;
 
 enum StatType { AVERAGE = 0, SUM };
 enum TimeSeriesType { RAW_DATA_TIME_SERIES = 0, HOURLY_TIME_SERIES, DAILY_TIME_SERIES, MONTHLY_TIME_SERIES };
@@ -40,8 +41,8 @@ public:
 	void GetTopYBounds( double *y1min, double *y1max );
 	void GetBottomYBounds( double *y2min, double *y2max );
 
-	void SetLineStyle( int id );
-	int GetLineStyle();
+	void SetStyle( int id );
+	int GetStyle();
 	void SetSync( bool b );
 	bool GetSync();
 	void SetStatType( StatType statType );
@@ -65,7 +66,7 @@ private:
 	wxNumericCtrl *mTopYMinCtrl;
 	wxNumericCtrl *mBottomYMaxCtrl;
 	wxNumericCtrl *mBottomYMinCtrl;
-	wxChoice *mLineStyleCombo;
+	wxRadioChoice *mStyleChoice;
 
 	DECLARE_EVENT_TABLE();
 	
@@ -118,10 +119,15 @@ public:
 	void PanByPercent(double p); //Negative goes left.
 	void UpdateScrollbarPosition(void);
 	void AutoscaleYAxis(bool forceUpdate = false);
+
+	void ClearStacking();
+	void UpdateStacking();
 	
 	void Invalidate();
 
 protected:
+	void StackUp( wxPLPlotCtrl::AxisPos yap, wxPLPlotCtrl::PlotPos ppos );
+
 	void OnZoomIn(wxCommandEvent& e);
 	void OnZoomOut(wxCommandEvent& e);
 	void OnZoomFit(wxCommandEvent& e);
@@ -141,6 +147,7 @@ protected:
 	void OnPlotDragEnd(wxCommandEvent& e);
 	*/
 	
+
 	
 	void AutoscaleYAxis(wxPLAxis* axisToScale, 
 		const std::vector<int>& selectedChannelIndices, bool forceUpdate = false);
@@ -166,7 +173,7 @@ private:
 	wxDVSelectionListCtrl *m_dataSelector;
 
 	bool m_topAutoScale, m_bottomAutoScale, m_syncToHeatMap;
-	int m_lineStyle; // line, stepped, points
+	int m_style; // line, stepped, stacked
 	TimeSeriesType m_seriesType;
 	StatType m_statType;
 

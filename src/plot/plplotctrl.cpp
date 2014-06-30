@@ -1139,6 +1139,25 @@ wxPLPlottable *wxPLPlotCtrl::GetPlot( size_t i )
 	return m_plots[i].plot;
 }
 
+bool wxPLPlotCtrl::GetPlotPosition( wxPLPlottable *p, 
+	AxisPos *xap, AxisPos *yap, PlotPos *ppos )
+{
+	for ( std::vector<plot_data>::iterator it = m_plots.begin();
+		it != m_plots.end();
+		++it )
+	{
+		if ( it->plot == p )
+		{
+			if ( xap != 0 ) *xap = it->xap;
+			if ( yap != 0 ) *yap = it->yap;
+			if ( ppos != 0 ) *ppos = it->ppos;
+			return true;
+		}
+	}
+
+	return false;
+}
+
 wxPLAxis *wxPLPlotCtrl::GetAxis( AxisPos axispos, PlotPos ppos )
 {
 	switch( axispos )
