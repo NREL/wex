@@ -470,6 +470,7 @@ private:
 	double m_startHour, m_endHour;
 	wxArrayString m_variables;
 	wxArrayString m_arg_filenames;
+	long m_lineMode;
 
 public:
 	bool OnInit()
@@ -495,6 +496,12 @@ public:
 		if ( m_startHour >= 0 && m_endHour >= 0 && m_startHour < m_endHour )
 			frame->GetPlot()->SetTimeSeriesRange( m_startHour, m_endHour );
 
+		if ( m_variables.size() > 0 )
+			frame->GetPlot()->SetSelectedNames( m_variables );
+
+		if ( m_lineMode >= 0 && m_lineMode <= 2 )
+			frame->GetPlot()->SetTimeSeriesMode( m_lineMode );
+
 		frame->Show();
 
 		//TestPLPlot( frame );
@@ -510,8 +517,9 @@ public:
 		parser.AddOption(wxT("t"), wxT("tab"), wxT("initial tab number (zero-indexed)"), wxCMD_LINE_VAL_NUMBER);
 		parser.AddOption(wxT("i"), wxT("index"), wxT("variable to display initially (zero-indexed)"), wxCMD_LINE_VAL_NUMBER);
 		parser.AddOption(wxT("v"), wxT("variables"), wxT("comma separated list of column names to display initially"), wxCMD_LINE_VAL_STRING);
-		parser.AddOption(wxT("s"), wxT("start"), wxT("starting hour to display"), wxCMD_LINE_VAL_NUMBER);
-		parser.AddOption(wxT("e"), wxT("end"), wxT("ending hour to display"), wxCMD_LINE_VAL_NUMBER );
+		parser.AddOption(wxT("s"), wxT("start"), wxT("starting hour to display"), wxCMD_LINE_VAL_DOUBLE);
+		parser.AddOption(wxT("e"), wxT("end"), wxT("ending hour to display"), wxCMD_LINE_VAL_DOUBLE );
+		parser.AddOption(wxT("m"), wxT("mode"), wxT("time series mode: 0=normal,1=stepped,2=stacked"), wxCMD_LINE_VAL_NUMBER);
 		parser.AddParam(wxT("files to load"), wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL | wxCMD_LINE_PARAM_MULTIPLE);
 	}
 
@@ -549,6 +557,10 @@ public:
 		wxString ss;
 		if ( parser.Found("v", &ss) )
 			m_variables = wxStringTokenize( ss, ",;|" );
+
+		m_lineMode = -1;
+		if ( parser.Found("m", &varNumber )  && varNumber >= 0 && varNumber <= 2 )
+			m_lineMode = varNumber;
 
 		return true;
 	}

@@ -46,7 +46,8 @@ public:
 	void SelectTabIndex( size_t index);
 	void SelectDataIndex( size_t index, bool allTabs = false);
 	void SelectDataIndexOnTab( size_t index, int tab);
-
+	
+	void SetTimeSeriesMode( int mode );
 	void SetTimeSeriesRange( double start, double end );
 	void SetSelectedNames( const wxArrayString &names );
 

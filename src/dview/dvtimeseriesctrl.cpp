@@ -1241,6 +1241,15 @@ void wxDVTimeSeriesCtrl::SetViewRange(double min, double max)
 	Invalidate();
 }
 
+void wxDVTimeSeriesCtrl::SetStyle( wxDVTimeSeriesStyle sty )
+{
+	m_style = sty;	
+	for (size_t i=0; i<m_plots.size(); i++)
+		m_plots[i]->SetStyle( m_style );
+	UpdateStacking();
+	Invalidate();
+}
+
 void wxDVTimeSeriesCtrl::GetVisibleDataMinAndMax(double* min, double* max, const std::vector<int>& selectedChannelIndices)
 {
 	*min = 0;

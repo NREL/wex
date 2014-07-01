@@ -95,6 +95,16 @@ void wxDVPlotCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 	m_dataSets.erase( std::find( m_dataSets.begin(), m_dataSets.end(), d) );
 }
 
+void wxDVPlotCtrl::SetTimeSeriesMode( int mode )
+{
+	wxDVTimeSeriesStyle sty((wxDVTimeSeriesStyle)mode);
+	m_timeSeries->SetStyle( sty );
+	m_hourlyTimeSeries->SetStyle( sty );
+	m_dailyTimeSeries->SetStyle( sty );
+	m_monthlyTimeSeries->SetStyle( sty );
+
+}
+
 void wxDVPlotCtrl::SetTimeSeriesRange( double start, double end )
 {
 	m_timeSeries->SetViewRange( start, end );
