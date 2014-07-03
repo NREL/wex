@@ -344,10 +344,13 @@ public:
 	virtual bool IsNativeObject() { return false; }
 	virtual bool DrawDottedOutline() { return true; }
 	virtual void Draw( wxWindow *win, wxDC &dc, const wxRect &r ) {
-		wxLabelDraw( dc, r, *wxNORMAL_FONT, Property("Caption").GetString(),
-			Property("TextColour").GetColour(), Property("AlignTop").GetBoolean(),
-			Property("AlignRight").GetBoolean(), Property("Bold").GetBoolean(),
-			Property("WordWrap").GetBoolean(), Property("FontSize").GetInteger() );
+		if ( IsVisible() )
+		{
+			wxLabelDraw( dc, r, *wxNORMAL_FONT, Property("Caption").GetString(),
+				Property("TextColour").GetColour(), Property("AlignTop").GetBoolean(),
+				Property("AlignRight").GetBoolean(), Property("Bold").GetBoolean(),
+				Property("WordWrap").GetBoolean(), Property("FontSize").GetInteger() );
+		}
 	}
 };
 
@@ -2121,7 +2124,8 @@ wxUIObject *wxUIFormEditor::CreateObject( const wxString &type )
 		if ( !obj ) return 0;
 
 		m_form->Add( obj );
-		obj->Show( m_viewMode );
+		if ( obj->GetNative() != 0 )
+			obj->Show( m_viewMode );
 
 		Refresh();
 		return obj;
@@ -2175,7 +2179,10 @@ void wxUIFormEditor::SetViewMode( bool b )
 	{
 		std::vector<wxUIObject*> objs = m_form->GetObjects();
 		for( size_t i=0;i<objs.size();i++ )
-			objs[i]->Show( m_viewMode );
+		{
+			if ( objs[i]->GetNative() != 0 )
+				objs[i]->Show( m_viewMode );
+		}
 
 		Refresh();
 	}
@@ -2927,7 +2934,9 @@ void wxUIFormEditor::OnPopup(wxCommandEvent &evt)
 		{
 			wxUIObject *obj = topaste[i]->Duplicate();
 			m_form->Add( obj );
-			obj->Show( m_viewMode );
+			if ( obj->GetNative() != 0 )
+				obj->Show( m_viewMode );
+
 			m_selected.push_back(obj);
 		}
 		Refresh();
@@ -2955,7 +2964,9 @@ void wxUIFormEditor::OnPopup(wxCommandEvent &evt)
 				wxUIObject *obj = tocopy->Duplicate();
 				obj->SetGeometry( wxRect( m_popupX+dx, m_popupY+dy, geom.width, geom.height ) );
 				m_form->Add( obj );
-				obj->Show( m_viewMode );
+				if ( obj->GetNative() != 0 )
+					obj->Show( m_viewMode );
+
 				added.push_back( obj );
 			}
 
@@ -3033,7 +3044,9 @@ void wxUIFormEditor::OnCreateCtrl( wxCommandEvent &evt )
 		rct.y = m_popupY - rct.height/2;
 		obj->SetGeometry( rct );
 		m_form->Add( obj );	
-		obj->Show( m_viewMode );
+		if ( obj->GetNative() != 0 )
+			obj->Show( m_viewMode );
+
 		m_selected.clear();
 		if ( m_propEditor ) m_propEditor->SetObject( 0 );
 		Refresh();
