@@ -22,14 +22,11 @@ public:
 
 	void SetColour( const wxColour &col ) { m_colour = col; }
 	void SetSize( int radius ) { m_size = radius; }
-	void SetLineOfPerfectAgreementFlag(bool flagValue);
 
 protected:
 	wxColour m_colour;
 	int m_size;
 	bool m_scale;
-	bool m_drawLineOfPerfectAgreement;
-	bool m_isLineOfPerfectAgreementDrawn;
 	std::vector<wxRealPoint> m_data;
 };
 

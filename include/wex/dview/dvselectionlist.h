@@ -50,7 +50,6 @@ public:
 	wxString GetSelectedNamesInCol(int col = 0);
 	std::vector<int> GetSelectionsInCol( int col = 0 );
 	int GetNumSelected( int col = 0 );
-	int GetUnsortedRowIndex(int SortedIndex = 0);	//Returns the raw index of a row (index of the underlying data element) when passed the sorted index (the displayed position)
 
 	void ExpandAll();
 	void ExpandSelections();

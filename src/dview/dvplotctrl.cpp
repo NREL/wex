@@ -141,6 +141,7 @@ void wxDVPlotCtrl::RemoveAllDataSets()
 	m_dataSets.clear();
 }
 
+
 wxDVPlotCtrlSettings wxDVPlotCtrl::GetPerspective()
 {
 	wxDVPlotCtrlSettings settings;

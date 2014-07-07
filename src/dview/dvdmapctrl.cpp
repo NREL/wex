@@ -470,7 +470,7 @@ void wxDVDMapCtrl::SelectDataSetAtIndex(int index)
 	if (index < 0 || index >= m_dataSets.size()) return;
 
 	ChangePlotDataTo(m_dataSets[index]);
-	m_dataSelector->SetStringSelection(m_indexedDataNames[index]);
+	m_dataSelector->SetSelection(index);
 }
 
 void wxDVDMapCtrl::SetZMin(double min)

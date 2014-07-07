@@ -230,27 +230,6 @@ int wxDVSelectionListCtrl::GetNumSelected( int col )
 	return count;
 }
 
-int wxDVSelectionListCtrl::GetUnsortedRowIndex(int SortedIndex)
-{
-	int Ctr = 0;
-
-	for (size_t i = 0; i < m_groups.size(); i++)
-	{
-		for (size_t j = 0; j < m_groups[i].items.size(); j++)
-		{
-			if (Ctr == SortedIndex)
-			{
-				return m_groups[i].items[j]->row_index;
-			}
-			else
-			{
-				Ctr++;
-			}
-		}
-	}
-
-	return 0;
-}
 void wxDVSelectionListCtrl::ExpandAll()
 {
 	m_collapsedGroups.clear();

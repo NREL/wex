@@ -517,9 +517,6 @@ void wxDVProfileCtrl::ShowPlotAtIndex( int i )
 {
 	if ( i < 0 || i >= m_plots.size() ) return;
 
-	wxString YLabelText;
-	size_t NumY1AxisSelections = 0;
-	size_t NumY2AxisSelections = 0;
 	m_plots[i]->CalculateProfileData(); 
 	
 	wxPLPlotCtrl::AxisPos yap = wxPLPlotCtrl::Y_LEFT;
@@ -535,10 +532,10 @@ void wxDVProfileCtrl::ShowPlotAtIndex( int i )
 		wxString y1Units = NO_UNITS, y2Units = NO_UNITS;
 
 		if ( m_plotSurfaces[j]->GetYAxis1() )
-			y1Units = m_plotSurfaces[j]->GetYAxis1()->GetUnits();
+			y1Units = m_plotSurfaces[j]->GetYAxis1()->GetLabel();
 
 		if ( m_plotSurfaces[j]->GetYAxis2() )
-			y2Units = m_plotSurfaces[j]->GetYAxis2()->GetUnits();
+			y2Units = m_plotSurfaces[j]->GetYAxis2()->GetLabel();
 
 		if ( m_plotSurfaces[j]->GetYAxis1() && y1Units == units )
 			yap = wxPLPlotCtrl::Y_LEFT;
@@ -550,28 +547,7 @@ void wxDVProfileCtrl::ShowPlotAtIndex( int i )
 			yap = wxPLPlotCtrl::Y_RIGHT;
 
 		m_plotSurfaces[j]->AddPlot(  m_plots[i]->plots[j], wxPLPlotCtrl::X_BOTTOM, yap );
-		m_plotSurfaces[j]->GetAxis(yap)->SetUnits(units);
-
-		YLabelText = units;
-		for (size_t i = 0; i < m_dataSelector->Length(); i++)
-		{
-			if (m_dataSelector->IsSelected(i, 0) && m_plots[i]->dataset->GetUnits() == units)
-			{
-				if (yap == wxPLPlotCtrl::Y_LEFT)
-				{
-					NumY1AxisSelections++;
-				}
-				else
-				{
-					NumY2AxisSelections++;
-				}
-			}
-		}
-		if ((NumY1AxisSelections == 1 && yap == wxPLPlotCtrl::Y_LEFT) || (NumY2AxisSelections == 1 && yap == wxPLPlotCtrl::Y_RIGHT))
-		{
-			YLabelText = m_plots[i]->dataset->GetLabel();
-		}
-		m_plotSurfaces[j]->GetAxis(yap)->SetLabel(YLabelText);
+		m_plotSurfaces[j]->GetAxis( yap )->SetLabel( units );
 
 		m_plotSurfaces[j]->GetXAxis1()->SetWorld(0, 24);
 		m_plotSurfaces[j]->GetXAxis1()->ShowLabel( false );
@@ -604,131 +580,76 @@ void wxDVProfileCtrl::HidePlotAtIndex(int i, bool update)
 	if (i < 0 || i >= m_plots.size())
 		return;
 	
-	wxString YLabelText;
-	size_t NumY1AxisSelections = 0;
-	size_t NumY2AxisSelections = 0;
-	int FirstY1AxisSelectionIndex = -1;
-	int FirstY2AxisSelectionIndex = -1;
-	wxPLPlotCtrl::AxisPos yap = wxPLPlotCtrl::Y_LEFT;
-	wxString y1Units = NO_UNITS, y2Units = NO_UNITS;
-	int SelIndex = -1;
-	wxString units = m_plots[i]->dataset->GetUnits();
-
-	if (m_plotSurfaces[0]->GetYAxis1())
-		y1Units = m_plotSurfaces[0]->GetYAxis1()->GetUnits();
-
-	if (m_plotSurfaces[0]->GetYAxis2())
-		y2Units = m_plotSurfaces[0]->GetYAxis2()->GetUnits();
-
 	std::vector<int> currently_shown = m_dataSelector->GetSelectionsInCol();
-
-	for (size_t j = 0; j < currently_shown.size(); j++)
+	bool keepAxis = false;
+	for (int j=0; j<currently_shown.size(); j++)
 	{
-		if (m_plots[currently_shown[j]]->dataset->GetUnits() == y1Units)
+		int index = currently_shown[j];
+		if ( index >= 0 && index < m_plots.size()
+			&& m_plots[index]->dataset->GetUnits() == m_plots[i]->dataset->GetUnits())
 		{
-			NumY1AxisSelections++;
-			if (FirstY1AxisSelectionIndex == -1) { FirstY1AxisSelectionIndex = currently_shown[j]; }
-		}
-		if (m_plots[currently_shown[j]]->dataset->GetUnits() == y2Units)
-		{
-			NumY2AxisSelections++;
-			if (FirstY2AxisSelectionIndex == -1) { FirstY2AxisSelectionIndex = currently_shown[j]; }
+			keepAxis = true;
+			break;
 		}
 	}
 
-	if (currently_shown.size() == 0)
+	if (!keepAxis)
 	{
-		for (int k=0; k<13; k++)
+		if (currently_shown.size() == 0)
 		{
-			m_plotSurfaces[k]->SetYAxis1( 0 );
-			m_plotSurfaces[k]->SetYAxis2( 0 );
-		}
-
-		m_leftAxisLabel->SetLabelText( wxEmptyString );
-		m_rightAxisLabel->SetLabelText( wxEmptyString );
-	}
-	else
-	{
-		if (NumY1AxisSelections > 0)
-		{
-			YLabelText = y1Units;
-			if (NumY1AxisSelections == 1 && FirstY1AxisSelectionIndex > -1) { YLabelText = m_plots[FirstY1AxisSelectionIndex]->dataset->GetLabel(); }
-			for (int k = 0; k<13; k++)
+			for (int k=0; k<13; k++)
 			{
-				m_plotSurfaces[k]->GetXAxis1()->SetWorld(0, 24);
-				if (m_plotSurfaces[k]->GetAxis(wxPLPlotCtrl::Y_LEFT))
-				{
-					m_plotSurfaces[k]->GetAxis(wxPLPlotCtrl::Y_LEFT)->SetUnits(y1Units);
-					m_plotSurfaces[k]->GetAxis(wxPLPlotCtrl::Y_LEFT)->SetLabel(YLabelText);
-				}
+				m_plotSurfaces[k]->SetYAxis1( 0 );
+				m_plotSurfaces[k]->SetYAxis2( 0 );
 			}
 
-			if (NumY2AxisSelections > 0)
+			m_leftAxisLabel->SetLabelText( wxEmptyString );
+			m_rightAxisLabel->SetLabelText( wxEmptyString );
+		}
+		else
+		{
+			// If we only have one Y axis, we must use the left y axis.
+			// Code in wxPLPlotCtrl uses this assumption.
+			if (m_plots[i]->axisPosition == wxPLPlotCtrl::Y_LEFT)
 			{
-				YLabelText = y2Units;
-				if (NumY2AxisSelections == 1 && FirstY2AxisSelectionIndex > -1) { YLabelText = m_plots[FirstY2AxisSelectionIndex]->dataset->GetLabel(); }
-				for (int k = 0; k<13; k++)
+				// Set the y axis to the left side (instead of the right)
+				for (int j=0; j<currently_shown.size(); j++)
 				{
-					if (m_plotSurfaces[k]->GetAxis(wxPLPlotCtrl::Y_RIGHT))
+					int index = currently_shown[j];
+					if ( index < 0 || index >= m_plots.size() )
+						continue;
+
+					m_plots[index]->CalculateProfileData();
+					m_plots[index]->axisPosition = wxPLPlotCtrl::Y_LEFT;
+					for(int k=0; k<13; k++)
 					{
-						m_plotSurfaces[k]->GetAxis(wxPLPlotCtrl::Y_RIGHT)->SetUnits(y2Units);
-						m_plotSurfaces[k]->GetAxis(wxPLPlotCtrl::Y_RIGHT)->SetLabel(YLabelText);
+						m_plotSurfaces[k]->RemovePlot(m_plots[index]->plots[k]);
+						m_plotSurfaces[k]->AddPlot(m_plots[index]->plots[k], 
+							wxPLPlotCtrl::X_BOTTOM, wxPLPlotCtrl::Y_LEFT);
 					}
 				}
+
+				for( int k=0; k<13; k++ )
+				{
+					m_plotSurfaces[k]->GetXAxis1()->SetWorld(0, 24);
+					if ( currently_shown.size() > 0 )
+					{
+						int index = currently_shown[0];
+						if ( index >= 0 && index < m_plots.size() )
+							m_plotSurfaces[k]->GetYAxis1()->SetLabel( m_plots[index]->dataset->GetUnits() );
+					}
+				}
+				
 			}
+
+			for (int k=0; k<13; k++)
+				m_plotSurfaces[k]->SetYAxis2( 0 );
+
+			m_leftAxisLabel->SetLabelText( m_plotSurfaces[0]->GetYAxis1()->GetLabel() );
+			if (m_plotSurfaces[0]->GetYAxis2())
+				m_rightAxisLabel->SetLabelText( m_plotSurfaces[0]->GetYAxis2()->GetLabel() );
 			else
-			{
-				for (int k = 0; k<13; k++)
-				{
-					m_plotSurfaces[k]->SetYAxis2(0);
-				}
-			}
-		}
-		else if (NumY2AxisSelections > 0)	//We deselected the last variable with Y1 units, so move Y2 to Y1 
-		{
-			for (int j = 0; j < currently_shown.size(); j++)
-			{
-				int index = currently_shown[j];
-				m_plots[index]->CalculateProfileData();
-				m_plots[index]->axisPosition = wxPLPlotCtrl::Y_LEFT;
-				for (int k = 0; k<13; k++)
-				{
-					m_plotSurfaces[k]->RemovePlot(m_plots[index]->plots[k]);
-					m_plotSurfaces[k]->AddPlot(m_plots[index]->plots[k], wxPLPlotCtrl::X_BOTTOM, wxPLPlotCtrl::Y_LEFT);
-				}
-			}
-
-			YLabelText = y2Units;
-			if (NumY2AxisSelections == 1 && FirstY2AxisSelectionIndex > -1) { YLabelText = m_plots[FirstY2AxisSelectionIndex]->dataset->GetLabel(); }
-			for (int k = 0; k<13; k++)
-			{
-				m_plotSurfaces[k]->GetXAxis1()->SetWorld(0, 24);
-				if (m_plotSurfaces[k]->GetAxis(wxPLPlotCtrl::Y_LEFT))
-				{
-					m_plotSurfaces[k]->GetAxis(wxPLPlotCtrl::Y_LEFT)->SetUnits(y2Units);
-					m_plotSurfaces[k]->GetAxis(wxPLPlotCtrl::Y_LEFT)->SetLabel(YLabelText);
-				}
-
-				m_plotSurfaces[k]->SetYAxis2(0);
-			}
-		}
-
-		if (m_plotSurfaces[0]->GetYAxis1()) 
-		{ 
-			m_leftAxisLabel->SetLabelText(m_plotSurfaces[0]->GetYAxis1()->GetLabel()); 
-		}
-		else
-		{
-			m_leftAxisLabel->SetLabelText(wxEmptyString);
-		}
-
-		if (m_plotSurfaces[0]->GetYAxis2() && m_plotSurfaces[0]->GetYAxis2()->GetLabel() != m_plotSurfaces[0]->GetYAxis1()->GetLabel())
-		{
-			m_rightAxisLabel->SetLabelText(m_plotSurfaces[0]->GetYAxis2()->GetLabel());
-		}
-		else
-		{
-			m_rightAxisLabel->SetLabelText( wxEmptyString);
+				m_rightAxisLabel->SetLabelText( wxEmptyString);
 		}
 	}
 

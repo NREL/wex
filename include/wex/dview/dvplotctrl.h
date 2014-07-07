@@ -35,6 +35,7 @@ public:
 	//RemoveAll deletes data sets.
 	void RemoveAllDataSets();
 
+
 	//These methods get and set the view perspective to resume later with the same view.
 	wxDVPlotCtrlSettings GetPerspective();
 	void SetPerspective( wxDVPlotCtrlSettings& settings);
