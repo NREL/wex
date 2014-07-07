@@ -46,7 +46,7 @@ wxDVPlotCtrl::wxDVPlotCtrl(wxWindow* parent, wxWindowID id,
 	AddPage( m_monthlyTimeSeries = new wxDVTimeSeriesCtrl(this, wxID_ANY, wxDV_MONTHLY, wxDV_AVERAGE), "Monthly" );
 	AddPage( m_dMap = new wxDVDMapCtrl(this, wxID_ANY), "Heat map" );
 	AddPage( m_profilePlots = new wxDVProfileCtrl(this, wxID_ANY), "Profile" );
-	AddPage( m_statisticsTable = new wxDVStatisticsTableCtrl(this, wxID_ANY), "Statistics" );
+	//AddPage( m_statisticsTable = new wxDVStatisticsTableCtrl(this, wxID_ANY), "Statistics" );
 	AddPage( m_pnCdf = new wxDVPnCdfCtrl(this, wxID_ANY), "PDF / CDF");
 	AddPage( m_durationCurve = new wxDVDCCtrl(this, wxID_ANY), "Duration curve" );
 	AddPage( m_scatterPlot = new wxDVScatterPlotCtrl(this, wxID_ANY), "Scatter" );
@@ -73,7 +73,7 @@ void wxDVPlotCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, b
 	m_monthlyTimeSeries->AddDataSet(d, group, update_ui);
 	m_dMap->AddDataSet(d, group, update_ui);
 	m_profilePlots->AddDataSet(d, group, update_ui);
-	m_statisticsTable->AddDataSet(d, group);
+	//m_statisticsTable->AddDataSet(d, group);
 	m_pnCdf->AddDataSet(d, group, update_ui);
 	m_durationCurve->AddDataSet(d, group, update_ui);
 	m_scatterPlot->AddDataSet(d, group, update_ui);
@@ -87,7 +87,7 @@ void wxDVPlotCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 	m_monthlyTimeSeries->RemoveDataSet(d);
 	m_dMap->RemoveDataSet(d);
 	m_profilePlots->RemoveDataSet(d);
-	m_statisticsTable->RemoveDataSet(d);
+	//m_statisticsTable->RemoveDataSet(d);
 	m_pnCdf->RemoveDataSet(d);
 	m_durationCurve->RemoveDataSet(d);
 	m_scatterPlot->RemoveDataSet(d);
@@ -130,7 +130,7 @@ void wxDVPlotCtrl::RemoveAllDataSets()
 	m_monthlyTimeSeries->RemoveAllDataSets();
 	m_dMap->RemoveAllDataSets();
 	m_profilePlots->RemoveAllDataSets();
-	m_statisticsTable->RemoveAllDataSets();
+	//m_statisticsTable->RemoveAllDataSets();
 	m_pnCdf->RemoveAllDataSets();
 	m_durationCurve->RemoveAllDataSets();
 	m_scatterPlot->RemoveAllDataSets();
@@ -139,11 +139,6 @@ void wxDVPlotCtrl::RemoveAllDataSets()
 		delete m_dataSets[i];
 
 	m_dataSets.clear();
-}
-
-wxDVStatisticsTableCtrl* wxDVPlotCtrl::GetStatisticsTable()
-{
-	return m_statisticsTable;
 }
 
 wxDVPlotCtrlSettings wxDVPlotCtrl::GetPerspective()

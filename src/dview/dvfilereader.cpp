@@ -455,7 +455,6 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 	std::vector<wxString> groupNames;
 	std::vector<double> timeCounters;
 	int columns = 0;
-	bool CommaDelimiters = false;
 
 	wxString firstLine;
 	AllocReadLine(inFile, firstLine, lnchars); //Read a line from inFile preallocating lnchars length.
@@ -511,7 +510,6 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 		{
 			tkz_names = tkz_names_commas;
 			tkz_units = tkz_units_commas;
-			CommaDelimiters = true;
 		}
 
 		int count_names, count_units;
@@ -648,14 +646,7 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
                     bp = dblbuf;
                     ndbuf = 0;
 					while(*p && (*p==' '||*p=='\t'||*p==',')) p++; // skip white space and commas
-					if (CommaDelimiters)
-					{
-						while (*p && *p != ',' && ++ndbuf < 127) *bp++ = *p++; // read in number
-					}
-					else
-					{
-						while (*p && (*p != ' '&&*p != '\t') && ++ndbuf < 127) *bp++ = *p++; // read in number
-					}
+					while (*p && (*p != ' '&&*p != '\t'&&*p!=',') && ++ndbuf < 127) *bp++ = *p++; // read in number
                     *bp = '\0'; // terminate string
 					dataSets[ncol]->Append(wxRealPoint(timeCounters[ncol], atof(dblbuf))); // convert number and add data point.
 					timeCounters[ncol] += dataSets[ncol]->GetTimeStep();
@@ -704,7 +695,7 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 			plotWin->AddDataSet(dataSets[i], wxFileNameFromPath( filename ) ,update_ui );
 	}
 	plotWin->SelectDataOnBlankTabs();
-	plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
+//	plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
 	plotWin->Thaw();
 
 	wxLogStatus("Read %i lines of data points.\n", line);
@@ -806,7 +797,7 @@ void wxDVFileReader::ReadDataFromCSV(wxDVPlotCtrl *plotWin, const wxString& file
 		plotWin->AddDataSet(dataSets[i], wxFileNameFromPath( filename ), (i==dataSets.size()-1) );
 	}
 	plotWin->SelectDataOnBlankTabs();
-	plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
+	//plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
 }
 
 bool wxDVFileReader::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& filename)
@@ -906,7 +897,7 @@ bool wxDVFileReader::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& file
 		plotWin->AddDataSet(dataSets[i], wxFileNameFromPath(filename), (i==dataSets.size()-1) );
 	}
 	plotWin->SelectDataOnBlankTabs();
-	plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
+	//plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
 
 	return true;
 }
