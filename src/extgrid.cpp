@@ -203,8 +203,9 @@ void wxExtGridCtrl::OnGridCellChange(wxGridEvent &evt)
 	mSelLeftCol = -1;
 	mSelRightCol = -1;
 
-	if (bCopyPaste && evt.GetRow() >= 0 && evt.GetCol() >= 0)
-	{
+//	if (bCopyPaste && evt.GetRow() >= 0 && evt.GetCol() >= 0)
+	if (bCopyPaste && evt.GetRow() >= 0 && evt.GetCol() >= 0 && !IsCellEditControlShown())
+		{
 		wxString cell = GetCellValue(evt.GetRow(),evt.GetCol());
 		cell.Replace("\n", "");
 		cell.Replace("\t", "");
