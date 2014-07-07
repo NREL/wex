@@ -50,7 +50,7 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos
 
 	m_hideZeros = new wxCheckBox(this, wxID_ANY, "Exclude Zero Values", wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
 
-	m_PlotTypeDisplayed = new wxChoice(this, wxID_PLOT_TYPE);
+	m_PlotTypeDisplayed = new wxComboBox(this, wxID_PLOT_TYPE);
 	m_PlotTypeDisplayed->Append(wxT("PDF and CDF"));
 	m_PlotTypeDisplayed->Append(wxT("PDF Only"));
 	m_PlotTypeDisplayed->Append(wxT("CDF Only"));
@@ -195,7 +195,7 @@ void wxDVPnCdfCtrl::SelectDataSetAtIndex(int index)
 
 	m_selectedDataSetIndex = index;
 	ChangePlotDataTo(m_dataSets[index]);
-	m_dataSelector->SetSelection(index);
+	m_dataSelector->SetStringSelection(m_indexedDataNames[index]);
 }
 
 void wxDVPnCdfCtrl::SetNumberOfBins(int n)

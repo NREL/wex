@@ -392,7 +392,7 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 				else if (nextMonth == 8016.0 + year) { nextMonth = 8760.0 + year; name = "Dec"; }
 				else if (nextMonth == 8760.0 + year) { year += 8760.0; nextMonth = 744.0 + year; name = "Jan"; yrNum += 1; }
 
-				if (MultiYear) { name = "Year " + wxString::Format("%d", yrNum) + ", " + name; }	//If the dataset contains data for more than one year then prepend the year number to the name
+				if (MultiYear) { name = "Year " + wxString(std::to_string(yrNum)) + ", " + name; }	//If the dataset contains data for more than one year then prepend the year number to the name
 			}
 
 			counter = 0.0;

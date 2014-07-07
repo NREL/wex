@@ -24,6 +24,10 @@ public:
 	static bool FastRead( wxDVPlotCtrl* plotWin, const wxString& filename, int prealloc_data = 8760, int prealloc_lnchars = 1024 );
 	static bool Read8760WFLines( std::vector<wxDVArrayDataSet*> &dataSets, FILE* infile, int wfType );
 	static bool ReadWeatherFile( wxDVPlotCtrl* plotWin, const wxString& filename );
+
+	
+	static bool IsNumeric(wxString stringToCheck);
+	static bool IsDate(wxString stringToCheck);
 };
 
 #endif
