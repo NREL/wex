@@ -23,6 +23,8 @@ private:
 
 	struct ColourCounter
 	{
+		ColourCounter() { useCount = 0; }
+		ColourCounter( const wxColour &c ) : colour(c), useCount(0) { }
 		wxColour colour;
 		int useCount;
 	};

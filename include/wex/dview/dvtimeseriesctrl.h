@@ -29,7 +29,7 @@ class wxRadioChoice;
 
 enum wxDVStatType { wxDV_AVERAGE, wxDV_SUM };
 enum wxDVTimeSeriesType { wxDV_RAW, wxDV_HOURLY, wxDV_DAILY, wxDV_MONTHLY };
-enum wxDVTimeSeriesStyle { wxDV_NORMAL, wxDV_STEPPED, wxDV_STACKED };
+enum wxDVTimeSeriesStyle { wxDV_NORMAL, wxDV_STEPPED };
 
 class wxDVTimeSeriesSettingsDialog : public wxDialog
 {
@@ -52,6 +52,8 @@ public:
 	bool GetAutoscale();
 	void SetBottomAutoscale( bool b );
 	bool GetBottomAutoscale();
+	void SetStacked( bool b );
+	bool GetStacked();
 
 protected:
 	void OnClickTopHandler(wxCommandEvent& event);
@@ -68,6 +70,7 @@ private:
 	wxNumericCtrl *mBottomYMaxCtrl;
 	wxNumericCtrl *mBottomYMinCtrl;
 	wxRadioChoice *mStyleChoice;
+	wxCheckBox *mStackedArea;
 
 	DECLARE_EVENT_TABLE();
 	
@@ -176,7 +179,8 @@ private:
 	wxDVSelectionListCtrl *m_dataSelector;
 
 	bool m_topAutoScale, m_bottomAutoScale, m_syncToHeatMap;
-	wxDVTimeSeriesStyle m_style; // line, stepped, stacked
+	wxDVTimeSeriesStyle m_style; // line, stepped
+	bool m_stackingOnYLeft;
 	wxDVTimeSeriesType m_seriesType;
 	wxDVStatType m_statType;
 

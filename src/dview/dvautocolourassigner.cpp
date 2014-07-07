@@ -64,45 +64,26 @@ void wxDVAutoColourAssigner::ResetColourList()
 
 	mAvailableColours.clear();
 
-	cc.colour = "red";
-	cc.useCount = 0;
-	mAvailableColours.push_back(cc);
+	/*
+	mAvailableColours.push_back( ColourCounter("red") );
+	mAvailableColours.push_back( ColourCounter("forest green") );
+	mAvailableColours.push_back( ColourCounter("blue") );
+	mAvailableColours.push_back( ColourCounter("purple") );
+	mAvailableColours.push_back( ColourCounter("salmon") );
+	mAvailableColours.push_back( ColourCounter("magenta") );
+	mAvailableColours.push_back( ColourCounter("grey") );
+	mAvailableColours.push_back( ColourCounter("aquamarine") );
+	mAvailableColours.push_back( ColourCounter("brown") );
+	*/
 
-	cc.colour = "forest green";
-	cc.useCount = 0;
-	mAvailableColours.push_back(cc);
-
-	cc.colour = "blue";
-	cc.useCount = 0;
-	mAvailableColours.push_back(cc);
-
-	cc.colour = "purple";
-	cc.useCount = 0;
-	mAvailableColours.push_back(cc);
-
-	//cc.colour = "goldenrod";
-	//cc.useCount = 0;
-	//mAvailableColours.push_back(cc);
-
-	cc.colour = "salmon";
-	cc.useCount = 0;
-	mAvailableColours.push_back(cc);
-
-	cc.colour = "magenta";
-	cc.useCount = 0;
-	mAvailableColours.push_back(cc);
-
-	cc.colour = "grey";
-	cc.useCount = 0;
-	mAvailableColours.push_back(cc);
-
-	cc.colour = "aquamarine";
-	cc.useCount = 0;
-	mAvailableColours.push_back(cc);
-
-	cc.colour = "brown";
-	cc.useCount = 0;
-	mAvailableColours.push_back(cc);
+	mAvailableColours.push_back( ColourCounter( wxColour( 0, 114, 198 ) ) );
+	mAvailableColours.push_back( ColourCounter( wxColour( 255,150,64) ) );
+	mAvailableColours.push_back( ColourCounter("FIREBRICK") );
+	mAvailableColours.push_back( ColourCounter("DARK SLATE GREY") );
+	mAvailableColours.push_back( ColourCounter("PALE GREEN") );
+	mAvailableColours.push_back( ColourCounter("MEDIUM VIOLET RED") );
+	mAvailableColours.push_back( ColourCounter("GOLDENROD") );
+	mAvailableColours.push_back( ColourCounter("dark orchid") );
 }
 
 void wxDVAutoColourAssigner::DeAssignAll()

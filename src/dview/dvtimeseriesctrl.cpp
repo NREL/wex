@@ -40,6 +40,7 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 		wxDVTimeSeriesType m_seriesType;
 		bool m_ownsDataset;
 		wxDVTimeSeriesPlot *m_stackedOnTopOf;
+		bool m_stacked;
 
 	public:
 		wxDVTimeSeriesPlot( wxDVTimeSeriesDataSet *ds, wxDVTimeSeriesType seriesType, bool OwnsDataset = false )
@@ -47,6 +48,7 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 		{
 			assert( ds != 0 );
 
+			m_stacked = false;
 			m_colour = *wxRED;
 			m_seriesType = seriesType;
 			m_style = (seriesType == wxDV_RAW || seriesType == wxDV_HOURLY) ? wxDV_NORMAL : wxDV_STEPPED;
@@ -60,6 +62,9 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 				delete m_data;
 			}
 		}
+
+		void SetStackingMode( bool b ) { m_stacked = b; }
+		bool GetStackingMode() { return m_stacked; }
 		
 		void StackOnTopOf( wxDVTimeSeriesPlot *p )
 		{
@@ -142,7 +147,7 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 		
 			dc.SetPen( wxPen( m_colour, 2, wxPENSTYLE_SOLID ) );
 
-			if ( m_style == wxDV_STACKED )
+			if ( m_stacked )
 			{
 				len = m_data->Length();
 				points.reserve( len*2 );
@@ -446,7 +451,8 @@ wxDVTimeSeriesSettingsDialog::wxDVTimeSeriesSettingsDialog( wxWindow *parent, co
 	mStyleChoice = new wxRadioChoice( this, wxID_ANY );
 	mStyleChoice->Add( "Line graph" );
 	mStyleChoice->Add( "Stepped line graph" );
-	mStyleChoice->Add( "Stacked area graph" );
+
+	mStackedArea = new wxCheckBox( this, wxID_ANY, "Stacked area on left Y axis");
 				
 	mTopAutoscaleCheck = new wxCheckBox(this, ID_TopCheckbox, "Autoscale top y1-axis");
 	mBottomTopAutoscaleCheck = new wxCheckBox(this, ID_BottomCheckbox, "Autoscale bottom y1-axis");
@@ -471,6 +477,7 @@ wxDVTimeSeriesSettingsDialog::wxDVTimeSeriesSettingsDialog( wxWindow *parent, co
 	boxmain->Add( mSyncCheck, 0, wxALL|wxEXPAND, 10 );
 	boxmain->Add( mStatTypeCheck, 0, wxALL|wxEXPAND, 10 );
 	boxmain->Add( mStyleChoice, 0, wxALL|wxEXPAND, 10 );
+	boxmain->Add( mStackedArea, 0, wxALL|wxEXPAND, 10 );
 	boxmain->Add( new wxStaticLine( this ), 0, wxALL|wxEXPAND, 0 );
 	boxmain->Add( mTopAutoscaleCheck, 0, wxALL|wxEXPAND, 10 );
 	boxmain->Add( yTopBoundSizer, 1, wxALL|wxEXPAND, 10 );
@@ -517,6 +524,10 @@ void wxDVTimeSeriesSettingsDialog::GetBottomYBounds( double *y2min, double *y2ma
 	*y2min = mBottomYMinCtrl->Value();
 	*y2max = mBottomYMaxCtrl->Value();
 }
+
+
+void wxDVTimeSeriesSettingsDialog::SetStacked( bool b ) { mStackedArea->SetValue( b ); }
+bool wxDVTimeSeriesSettingsDialog::GetStacked() { return mStackedArea->GetValue(); }
 
 void wxDVTimeSeriesSettingsDialog::SetStyle( wxDVTimeSeriesStyle id ) { mStyleChoice->SetSelection( (int) id); }
 wxDVTimeSeriesStyle wxDVTimeSeriesSettingsDialog::GetStyle() { return (wxDVTimeSeriesStyle)mStyleChoice->GetSelection(); }
@@ -597,6 +608,7 @@ wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, wxDVTime
 	: wxPanel(parent, id)
 {	
 	SetBackgroundColour( *wxWHITE );
+	m_stackingOnYLeft = false;
 	m_topAutoScale = true;
 	m_bottomAutoScale = true;
 	m_syncToHeatMap = false;
@@ -724,12 +736,14 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 	dlg.SetSync( m_syncToHeatMap );
 	dlg.SetStatType( m_statType );
 	dlg.SetStyle( m_style );
+	dlg.SetStacked( m_stackingOnYLeft );
 	dlg.SetAutoscale( m_topAutoScale );
 	dlg.SetBottomAutoscale( m_bottomAutoScale );
 	dlg.SetTopYBounds( y1min, y1max );
 	dlg.SetBottomYBounds( y2min, y2max );
 	if (wxID_OK == dlg.ShowModal())
 	{
+		m_stackingOnYLeft = dlg.GetStacked();
 		m_syncToHeatMap = dlg.GetSync();
 		m_style = dlg.GetStyle();
 		for (size_t i=0; i<m_plots.size(); i++)
@@ -1255,7 +1269,13 @@ void wxDVTimeSeriesCtrl::GetVisibleDataMinAndMax(double* min, double* max, const
 	*min = 0;
 	*max = 0; 
 
-	if ( m_style == wxDV_STACKED && m_xAxis )
+	bool has_stacking = false;
+	
+	for( size_t i=0;i<selectedChannelIndices.size();i++ )
+		if ( m_plots[selectedChannelIndices[i]]->GetStackingMode() )
+			has_stacking = true;
+
+	if ( has_stacking )
 	{		
 		double worldMin = m_xAxis->GetWorldMin();
 		double worldMax = m_xAxis->GetWorldMax();
@@ -1307,6 +1327,10 @@ void wxDVTimeSeriesCtrl::GetVisibleDataMinAndMax(double* min, double* max, const
 					*max = tempMax;		
 			}
 		}	
+
+		double range = (*max-*min);
+		*min -= 0.025*range;
+		*max += 0.025*range;
 	}
 }
 
@@ -1634,7 +1658,7 @@ void wxDVTimeSeriesCtrl::AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPo
 	m_plotSurface->AddPlot( m_plots[index], wxPLPlotCtrl::X_BOTTOM, yap, pPos, false );
 	m_plotSurface->GetAxis( yap, pPos )->SetLabel( units );
 
-	if ( m_style == wxDV_STACKED )
+	if ( m_stackingOnYLeft && yap == wxPLPlotCtrl::Y_LEFT )
 		StackUp( yap, pPos );
 		
 	//Calculate index from 0-3.  0,1 are top graph L,R axis.  2,3 are L,R axis on bottom graph.
@@ -1688,9 +1712,13 @@ void wxDVTimeSeriesCtrl::RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos 
 
 	m_plotSurface->RemovePlot(m_plots[index], pPos);
 
+	// reset the stacking info for this plot upon removal
+	m_plots[index]->SetStackingMode( false );
+	m_plots[index]->StackOnTopOf( 0 );
+
 	// if there was another plot stacked on top of this one, reset that plot's stacking
 	// pointer to the previous plot in the list that is on the same axis
-	if ( m_style == wxDV_STACKED )
+	if ( m_stackingOnYLeft && ryap == wxPLPlotCtrl::Y_LEFT )
 		StackUp( ryap, rppos );
 
 	//See if axis is still in use or not, and to some cleanup.
@@ -1771,6 +1799,7 @@ void wxDVTimeSeriesCtrl::StackUp( wxPLPlotCtrl::AxisPos yap, wxPLPlotCtrl::PlotP
 			if ( m_plotSurface->GetPlotPosition( cur, 0, &tyap, &tppos )
 				&& tyap == yap && tppos == ppos )
 			{
+				cur->SetStackingMode( true );
 				cur->StackOnTopOf( prev );
 				prev = cur;
 			}
@@ -1781,17 +1810,21 @@ void wxDVTimeSeriesCtrl::StackUp( wxPLPlotCtrl::AxisPos yap, wxPLPlotCtrl::PlotP
 void wxDVTimeSeriesCtrl::ClearStacking()
 {
 	for( size_t i=0;i<m_plots.size();i++ )
+	{
+		m_plots[i]->SetStackingMode( false );
 		m_plots[i]->StackOnTopOf( NULL );
+	}
 }
 
 void wxDVTimeSeriesCtrl::UpdateStacking()
 {
 	ClearStacking();
-	// update all stacking pointers for plots.
-	StackUp( wxPLPlotCtrl::Y_LEFT, wxPLPlotCtrl::PLOT_TOP );
-	StackUp( wxPLPlotCtrl::Y_RIGHT, wxPLPlotCtrl::PLOT_TOP );
-	StackUp( wxPLPlotCtrl::Y_LEFT, wxPLPlotCtrl::PLOT_BOTTOM );
-	StackUp( wxPLPlotCtrl::Y_RIGHT, wxPLPlotCtrl::PLOT_BOTTOM );
+	if ( m_stackingOnYLeft )
+	{
+		// update all stacking pointers for plots.
+		StackUp( wxPLPlotCtrl::Y_LEFT, wxPLPlotCtrl::PLOT_TOP );
+		StackUp( wxPLPlotCtrl::Y_LEFT, wxPLPlotCtrl::PLOT_BOTTOM );
+	}
 }
 
 void wxDVTimeSeriesCtrl::ClearAllChannelSelections(wxPLPlotCtrl::PlotPos pPos)
