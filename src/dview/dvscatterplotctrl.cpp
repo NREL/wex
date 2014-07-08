@@ -61,6 +61,7 @@ wxDVScatterPlotCtrl::wxDVScatterPlotCtrl(wxWindow* parent, wxWindowID id, const 
 {
 	m_plotSurface = new wxPLPlotCtrl(this, wxID_ANY);
 	m_plotSurface->ShowTitle( false );
+	m_plotSurface->SetBackgroundColour( *wxWHITE );
 	m_plotSurface->ShowLegend( false );
 
 	m_dataSelectionList = new wxDVSelectionListCtrl(this, wxID_SCATTER_DATA_SELECTOR,2,

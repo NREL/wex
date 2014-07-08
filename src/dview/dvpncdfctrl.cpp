@@ -32,6 +32,7 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos
 	: wxPanel(parent, id, pos, size, style, name)
 {
 	m_plotSurface = new wxPLPlotCtrl( this, wxID_ANY );
+	m_plotSurface->SetBackgroundColour( *wxWHITE );
 	m_pdfPlot = new wxPLHistogramPlot();
 	m_cdfPlot = new wxPLLinePlot();
 	m_cdfPlot->SetColour( *wxBLACK );

@@ -101,6 +101,7 @@ public:
 		: wxWindow(parent, id)
 	{
 		SetBackgroundStyle(wxBG_STYLE_CUSTOM);
+		SetBackgroundColour( *wxWHITE );
 	}
 
 	virtual wxSize DoGetBestSize() const
@@ -195,6 +196,7 @@ wxDVProfileCtrl::wxDVProfileCtrl(wxWindow* parent, wxWindowID id, const wxPoint&
 	for( int i=0; i<12; i++ )
 	{
 		m_plotSurfaces[i] = new wxPLPlotCtrl( this, wxID_ANY );
+		m_plotSurfaces[i]->SetBackgroundColour( *wxWHITE );
 		m_plotSurfaces[i]->SetTitle( wxDateTime::GetMonthName(wxDateTime::Month(i)) );
 		m_plotSurfaces[i]->ShowGrid( true, false );
 		m_plotSurfaces[i]->ShowLegend( false );

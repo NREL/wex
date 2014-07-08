@@ -158,6 +158,7 @@ wxDVDMapCtrl::wxDVDMapCtrl(wxWindow* parent, wxWindowID id,
 	m_colourMap = new wxDVCoarseRainbowColourMap(0, 24);
 
 	m_plotSurface = new wxPLPlotCtrl( this, ID_DMAP_SURFACE );
+	m_plotSurface->SetBackgroundColour( *wxWHITE );
 	m_plotSurface->SetAllowHighlighting( true );
 	m_plotSurface->ShowGrid( false, false );
 	m_plotSurface->ShowTitle( false );
