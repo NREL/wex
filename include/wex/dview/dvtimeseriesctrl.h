@@ -126,12 +126,14 @@ public:
 	void UpdateScrollbarPosition(void);
 	void AutoscaleYAxis(bool forceUpdate = false);
 
+	void SetStackingOnYLeft( bool b );
 	void ClearStacking();
 	void UpdateStacking();
 	
 	void Invalidate();
 
 protected:
+
 	void StackUp( wxPLPlotCtrl::AxisPos yap, wxPLPlotCtrl::PlotPos ppos );
 
 	void OnZoomIn(wxCommandEvent& e);

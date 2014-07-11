@@ -711,6 +711,14 @@ void wxDVTimeSeriesCtrl::OnZoomFit(wxCommandEvent& e)
 	ZoomToFit();		
 }
 
+void wxDVTimeSeriesCtrl::SetStackingOnYLeft( bool b )
+{
+	m_stackingOnYLeft = b;
+	UpdateStacking();
+	Invalidate();
+}
+
+
 void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 {
 	double y1min = 0, y1max = 0, y2min = 0, y2max = 0;
@@ -966,7 +974,7 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 
 		d2 = new wxDVArrayDataSet(d->GetSeriesTitle(), d->GetUnits(), 1.0 / timestep);
 
-		while (nextHour < MinHrs)
+		while (nextHour <= MinHrs)
 		{
 			nextHour += 1.0;
 		}
@@ -1010,7 +1018,7 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 
 		d2 = new wxDVArrayDataSet(d->GetSeriesTitle(), d->GetUnits(), 24.0 / timestep);
 
-		while (nextDay < MinHrs)
+		while (nextDay <= MinHrs)
 		{
 			nextDay += 24.0;
 		}
@@ -1266,7 +1274,7 @@ void wxDVTimeSeriesCtrl::SetStyle( wxDVTimeSeriesStyle sty )
 
 void wxDVTimeSeriesCtrl::GetVisibleDataMinAndMax(double* min, double* max, const std::vector<int>& selectedChannelIndices)
 {
-	*min = 0;
+	*min = 1000000000;
 	*max = 0; 
 
 	bool has_stacking = false;

@@ -267,7 +267,8 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 	int DayNumber = 0;
 	double DayCounter = 0.0;
 	double StDevCounter = 0.0;
-	wxRealPoint DayStats[31];
+	double DayMins[31] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+	double DayMaxs[31] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 	int FirstOrdinalOfMonth = 0;
 	double totalcounter = 0.0;
 	double totalsum = 0.0;
@@ -287,7 +288,7 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 
 	if (MaxHrs > 8760) { MultiYear = true; }	//Determine if the dataset contains data for more than one year
 
-	while (nextDay < MinHrs)
+	while (nextDay <= MinHrs)
 	{
 		nextDay += 24.0;
 	}
@@ -313,7 +314,8 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 		{
 			if (i != 0)
 			{
-				DayStats[DayNumber] = wxRealPoint(AvgDailyMin, AvgDailyMax);
+				DayMins[DayNumber] = AvgDailyMin;
+				DayMaxs[DayNumber] = AvgDailyMax;
 				totalDayStats.push_back(wxRealPoint(AvgDailyMin, AvgDailyMax));
 				DayNumber++;
 				AvgDailyMin = 0.0;
@@ -345,10 +347,10 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 				//Summarize the daily Min and Max values into average daily min and max values for the month.
 				for (size_t j = 0; j < 31; j++)
 				{
-					if (DayStats[j].y > 0)	//Not every month will have 31 days and endpoints may be missing some days in the month, as denoted by a 0 maximum value
+					if (DayMaxs[j] > 0)	//Not every month will have 31 days and endpoints may be missing some days in the month, as denoted by a 0 maximum value
 					{
-						AvgDailyMin += DayStats[j].x;
-						AvgDailyMax += DayStats[j].y;
+						AvgDailyMin += DayMins[j];
+						AvgDailyMax += DayMaxs[j];
 						DayCounter += 1.0;
 					}
 				}
@@ -422,7 +424,8 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 
 	if (MaxHrs > 0.0 && fmod(MaxHrs, 8760.0) != 0)	//Prevent appending the final point if it represents 12/31 24:00, which the system interprets as 1/1 0:00 and creates a point for January of the next year
 	{
-		DayStats[DayNumber] = wxRealPoint(AvgDailyMin, AvgDailyMax);
+		DayMins[DayNumber] = AvgDailyMin;
+		DayMaxs[DayNumber] = AvgDailyMax;
 		totalDayStats.push_back(wxRealPoint(AvgDailyMin, AvgDailyMax));
 		AvgDailyMin = 0.0;
 		AvgDailyMax = 0.0;
@@ -446,10 +449,10 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 		//Summarize the daily Min and Max values into average daily min and max values for the month.
 		for (size_t j = 0; j < 31; j++)
 		{
-			if (DayStats[j].y > 0)	//Not every month will have 31 days and endpoints may be missing some days in the month, as denoted by a 0 maximum value
+			if (DayMaxs[j] > 0)	//Not every month will have 31 days and endpoints may be missing some days in the month, as denoted by a 0 maximum value
 			{
-				AvgDailyMin += DayStats[j].x;
-				AvgDailyMax += DayStats[j].y;
+				AvgDailyMin += DayMins[j];
+				AvgDailyMax += DayMaxs[j];
 				DayCounter += 1.0;
 			}
 		}
