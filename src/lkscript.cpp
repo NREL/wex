@@ -5,6 +5,7 @@
 #include "wex/lkscript.h" // defines LK_USE_WXWIDGETS
 #include "wex/mtrand.h"
 #include "wex/utils.h"
+#include "wex/jsonreader.h"
 
 #include <lk_lex.h>
 #include <lk_absyn.h>
@@ -440,6 +441,90 @@ void fcall_decompress( lk::invoke_t &cxt )
 	cxt.result().assign( wxDecompressFile( cxt.arg(0).as_string(), cxt.arg(1).as_string() ) );
 }
 
+
+
+
+static void jsonval_to_lkval( const wxJSONValue &jv, lk::vardata_t &lv )
+{
+	switch( jv.GetType() )
+	{
+    case wxJSONTYPE_INT:        /*!< the object contains an integer           */
+		lv.assign( (double)jv.AsInt() );
+		break;
+    case wxJSONTYPE_UINT:       /*!< the object contains an unsigned integer  */
+		lv.assign( (double)jv.AsUInt() );
+		break;
+    case wxJSONTYPE_DOUBLE:     /*!< the object contains a double             */
+		lv.assign( jv.AsDouble() );
+		break;
+    case wxJSONTYPE_STRING:     /*!< the object contains a wxString object    */
+		lv.assign( jv.AsString() );
+		break;
+    case wxJSONTYPE_CSTRING:    /*!< the object contains a static C-string    */
+		lv.assign( wxString(jv.AsCString()) );
+		break;
+    case wxJSONTYPE_BOOL:       /*!< the object contains a boolean            */
+		lv.assign( (double)( jv.AsBool() ? 1.0 : 0.0 ) );
+		break;
+    case wxJSONTYPE_ARRAY:      /*!< the object contains an array of values   */
+		lv.empty_vector();
+		lv.vec()->resize( jv.Size() );
+		for( size_t i=0;i<(size_t)jv.Size();i++ )
+			jsonval_to_lkval( jv.ItemAt( i ), lv.vec()->at( i ) );
+		break;
+    case wxJSONTYPE_OBJECT:     /*!< the object contains a map of keys/values */
+	{
+		lv.empty_hash();
+		wxArrayString keys = jv.GetMemberNames();
+		for( size_t i=0;i<keys.size();i++ )
+		{
+			lk::vardata_t &val = lv.hash_item( keys[i] );
+			jsonval_to_lkval( jv.ItemAt( keys[i] ), val );
+		}
+	}
+		break;
+    case wxJSONTYPE_LONG:       /*!< the object contains a 32-bit integer     */
+		lv.assign( (double)jv.AsInt32() );
+		break;
+    case wxJSONTYPE_INT64:      /*!< the object contains a 64-bit integer     */
+		lv.assign( (double)jv.AsInt64() );
+		break;
+    case wxJSONTYPE_ULONG:      /*!< the object contains an unsigned 32-bit integer  */
+		lv.assign( (double)jv.AsUInt32() );
+		break;
+    case wxJSONTYPE_UINT64:     /*!< the object contains an unsigned 64-bit integer  */
+		lv.assign( (double)jv.AsUInt64() );
+		break;
+    case wxJSONTYPE_SHORT:      /*!< the object contains a 16-bit integer            */
+		lv.assign( (double)jv.AsShort() );
+		break;
+    case wxJSONTYPE_USHORT:     /*!< the object contains a 16-bit unsigned integer   */
+		lv.assign( (double)jv.AsUShort() );
+		break;
+
+	case wxJSONTYPE_MEMORYBUFF:  /*!< the object contains a binary memory buffer   */
+    case wxJSONTYPE_INVALID:  /*!< the object is not uninitialized        */
+    case wxJSONTYPE_NULL:       /*!< the object contains a NULL value         */
+	default:
+		lv.nullify();
+		return;
+	}
+}
+
+static void fcall_jsonparse( lk::invoke_t &cxt )
+{
+	LK_DOC( "jsonparse", "Parse a JSON string and return an LK object hierarchy.  On error, returns null.", "(string):variant" );
+	wxJSONReader reader;
+	wxJSONValue root;
+	if (reader.Parse( cxt.arg(0).as_string(), &root )!=0)
+	{
+		cxt.result().nullify();
+		return;
+	}
+
+	jsonval_to_lkval( root, cxt.result() );
+}
+
 void fcall_out( lk::invoke_t &cxt )
 {
 	LK_DOC("out", "Output data to the console.", "(...):none");
@@ -498,6 +583,7 @@ lk::fcall_t* wxLKMiscFunctions()
 	static const lk::fcall_t vec[] = {
 		fcall_decompress, 
 		fcall_rand,
+		fcall_jsonparse,
 		0 };
 		
 	return (lk::fcall_t*)vec;
