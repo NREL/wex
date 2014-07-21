@@ -834,28 +834,61 @@ void wxDrawArrow(wxDC &dc, wxArrowType type, int x, int y, int width, int height
 class TextMessageDialog : public wxDialog
 {
 public:
-	TextMessageDialog(const wxString &text, const wxString &title, wxWindow *parent, const wxSize &size = wxSize(600,400))
+	TextMessageDialog(const wxString &text, const wxString &title, wxWindow *parent, const wxSize &size, long buttons)
 		: wxDialog( parent, wxID_ANY, title, wxDefaultPosition, size, 
 			wxRESIZE_BORDER|wxDEFAULT_DIALOG_STYLE )
 	{
+
 		wxTextCtrl *txtctrl = new wxTextCtrl(this, -1, text, 
 			wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_DONTWRAP|wxTE_READONLY|wxBORDER_NONE);
-		txtctrl->SetFont( wxFont(10, wxMODERN, wxNORMAL, wxNORMAL) );
+		//txtctrl->SetFont( wxFont(10, wxMODERN, wxNORMAL, wxNORMAL) );
 		
 		wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
 		sizer->Add( txtctrl, 1, wxALL|wxEXPAND, 0 );
-		sizer->Add( CreateButtonSizer( wxOK ), 0, wxALL|wxEXPAND, 4 );
+		sizer->Add( CreateButtonSizer( buttons ), 0, wxALL|wxEXPAND, 4 );
 		SetSizer( sizer );
 
 		SetEscapeId( wxID_CANCEL );
 	}
+
+	void OnCommand( wxCommandEvent &evt )
+	{
+		switch( evt.GetId() )
+		{
+		case wxID_OK: EndModal( wxOK ); break;
+		case wxID_YES: EndModal( wxYES ); break;
+		case wxID_NO: EndModal( wxNO ); break;
+		case wxID_CLOSE: EndModal( wxCLOSE ); break;
+		case wxID_APPLY: EndModal( wxAPPLY ); break;
+		case wxID_CANCEL: default:
+			EndModal( wxCANCEL ); break;
+		}
+	}
+
+	DECLARE_EVENT_TABLE();
 };
 
-void wxShowTextMessageDialog(const wxString &text, const wxString &title, wxWindow *parent, const wxSize &size )
+BEGIN_EVENT_TABLE( TextMessageDialog, wxDialog )
+	EVT_BUTTON( wxID_YES, TextMessageDialog::OnCommand )
+	EVT_BUTTON( wxID_NO, TextMessageDialog::OnCommand )
+	EVT_BUTTON( wxID_CANCEL, TextMessageDialog::OnCommand )
+	EVT_BUTTON( wxID_OK, TextMessageDialog::OnCommand )
+	EVT_BUTTON( wxID_APPLY, TextMessageDialog::OnCommand )
+	EVT_BUTTON( wxID_CLOSE, TextMessageDialog::OnCommand )
+END_EVENT_TABLE()
+
+int wxShowTextMessageDialog(const wxString &text, const wxString &title, wxWindow *parent, const wxSize &size, long buttons )
 {
-   TextMessageDialog dlg(text, "Notice", parent, size);
+	wxSize sz(size);
+	if ( sz == wxDefaultSize )
+		sz.Set( 600, 400 );
+
+	wxString tt(title);
+	if( tt.IsEmpty() )
+		tt = "Notice";
+   TextMessageDialog dlg(text, tt, parent, sz, buttons);
    if( parent ) dlg.CenterOnParent();
-   dlg.ShowModal();  
+   return dlg.ShowModal();  
 }
 
 

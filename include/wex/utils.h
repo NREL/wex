@@ -42,7 +42,11 @@ void wxDrawArrowButton(wxDC &dc, wxArrowType type, int x, int y, int width, int 
 void wxDrawArrow(wxDC &dc, wxArrowType type, int x, int y, int width, int height);
 
 
-void wxShowTextMessageDialog(const wxString &text, const wxString &title = wxEmptyString, wxWindow *parent = 0, const wxSize &size = wxSize(600,400));
+int wxShowTextMessageDialog(const wxString &text, 
+	const wxString &title = wxEmptyString, 
+	wxWindow *parent = 0, 
+	const wxSize &size = wxDefaultSize, 
+	long buttons = wxOK );
 
 
 /* time/date helper functions for working with generic years */
