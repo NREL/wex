@@ -36,8 +36,8 @@ OBJECTS = \
 	dvcolourmap.o \
 	dvdcctrl.o \
 	dvdmapctrl.o \
-	dvfiledataset.o \
 	dvplotctrl.o \
+	dvfilereader.o \
 	dvplotctrlsettings.o \
 	dvplothelper.o \
 	dvpncdfctrl.o \
@@ -52,6 +52,7 @@ OBJECTS = \
 	pllineplot.o \
 	plplotctrl.o \
 	plscatterplot.o \
+	plwindrose.o \
 	pdfannotation.o \
 	pdfbarcode.o \
 	pdfcffdecoder.o \
