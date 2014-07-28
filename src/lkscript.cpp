@@ -762,16 +762,21 @@ void wxLKScriptCtrl::OnTimer( wxTimerEvent & )
 		output.Trim();
 
 	first_error_line--;
+	if ( first_error_line < 0 ) first_error_line = 0;
 
 	AnnotationSetText( first_error_line, output );
 	AnnotationSetStyle( first_error_line, 0 );
 	
-	if ( first_error_line != GetCurrentLine() 
+	int curline = GetCurrentLine();
+	if ( curline < 0 )
+		curline = GetFirstVisibleLine();
+
+	if ( first_error_line != curline
 		&& ( first_error_line < GetFirstVisibleLine() 
 			|| first_error_line > GetFirstVisibleLine()+LinesOnScreen()) )
 	{
-		AnnotationSetText( GetCurrentLine(), output );
-		AnnotationSetStyle( GetCurrentLine(), 0 );
+		AnnotationSetText( curline, output );
+		AnnotationSetStyle( curline, 0 );
 	}
 
 	AnnotationSetVisible( wxSTC_ANNOTATION_BOXED );
