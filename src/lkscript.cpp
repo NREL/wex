@@ -548,13 +548,6 @@ void fcall_outln( lk::invoke_t &cxt )
 	lksc->OnOutput( output );
 }
 
-void fcall_in(  lk::invoke_t &cxt )
-{
-	LK_DOC("in", "Input text from the user.", "(none):string");
-	cxt.result().assign( wxGetTextFromUser("Standard Input:") );	
-}
-
-
 lk::fcall_t* wxLKHttpFunctions()
 {
 	static const lk::fcall_t vec[] = {
@@ -589,12 +582,11 @@ lk::fcall_t* wxLKMiscFunctions()
 	return (lk::fcall_t*)vec;
 }
 
-lk::fcall_t* wxLKBIOSFunctions()
+lk::fcall_t* wxLKStdOutFunctions()
 {
 	static const lk::fcall_t vec[] = {
 		fcall_out, 
 		fcall_outln,
-		fcall_in,
 		0 };
 		
 	return (lk::fcall_t*)vec;
@@ -629,7 +621,7 @@ wxLKScriptCtrl::wxLKScriptCtrl( wxWindow *parent, int id,
 	if( libs & wxLK_STDLIB_PLOT ) RegisterLibrary( wxLKPlotFunctions(), "Plotting Functions", this );
 	if( libs & wxLK_STDLIB_HTTP ) RegisterLibrary( wxLKHttpFunctions(), "HTTP Functions", this );
 	if( libs & wxLK_STDLIB_MISC ) RegisterLibrary( wxLKMiscFunctions(), "Misc Functions", this );
-	if( libs & wxLK_STDLIB_BIOS ) RegisterLibrary( wxLKBIOSFunctions(), "BIOS Functions", this );
+	if( libs & wxLK_STDLIB_SOUT ) RegisterLibrary( wxLKStdOutFunctions(), "BIOS Functions", this );
 	
 	wxFont font( *wxNORMAL_FONT );
 	AnnotationSetStyleOffset( 512 );
