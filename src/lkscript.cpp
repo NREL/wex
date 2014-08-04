@@ -23,10 +23,10 @@
 #include "wex/plot/plscatterplot.h"
 #include "wex/plot/plwindrose.h"
 
-enum { BAR, LINE, SCATTER, WINDROSE };
+enum { BAR, HBAR, LINE, SCATTER, WINDROSE };
 static void CreatePlot( wxPLPlotCtrl *plot, double *x, double *y, int len, int thick, wxColour &col, int type,
 	const wxString &xlab, const wxString &ylab, const wxString &series,
-	int xap, int yap)
+	int xap, int yap, double base_x, const wxString &stackon)
 {
 	if (len <= 0 ) return;
 		
@@ -40,7 +40,26 @@ static void CreatePlot( wxPLPlotCtrl *plot, double *x, double *y, int len, int t
 	switch (type )
 	{
 	case BAR:
-		p = new wxPLBarPlot( data, series, col );
+	{
+		wxPLBarPlot *bar = new wxPLBarPlot( data, series, col );
+
+		if ( !stackon.IsEmpty() )
+			if ( wxPLBarPlot *pp = dynamic_cast<wxPLBarPlot*>( plot->GetPlotByLabel( stackon ) ) )
+				bar->SetStackedOn( pp );
+		
+		p = bar;
+	}
+		break;
+	case HBAR:
+	{
+		wxPLHBarPlot *hbar = new wxPLHBarPlot( data, base_x, series, col );
+		
+		if ( !stackon.IsEmpty() )
+			if ( wxPLHBarPlot *pp = dynamic_cast<wxPLHBarPlot*>( plot->GetPlotByLabel( stackon ) ) )
+				hbar->SetStackedOn( pp );
+
+		p = hbar;
+	}
 		break;
 	case LINE:
 		p = new wxPLLinePlot( data, series, col, wxPLLinePlot::SOLID, thick, false );
@@ -59,7 +78,7 @@ static void CreatePlot( wxPLPlotCtrl *plot, double *x, double *y, int len, int t
 	p->SetXDataLabel( xlab );
 	p->SetYDataLabel( ylab );
 	plot->AddPlot( p, (wxPLPlotCtrl::AxisPos)xap, (wxPLPlotCtrl::AxisPos) yap );
-	//plot->RescaleAxes();
+	plot->Invalidate();
 	plot->Refresh();
 }
 
@@ -153,7 +172,7 @@ void fcall_newplot( lk::invoke_t &cxt )
 
 void fcall_plot( lk::invoke_t &cxt )
 {
-	LK_DOC("plot", "Creates an XY line, bar, or scatter plot. Options include thick, type, color, xap, yap, xlabel, ylabel, series.", "(array:x, array:y, table:options):void");
+	LK_DOC("plot", "Creates an XY line, bar, horizontal bar, or scatter plot. Options include thick, type, color, xap, yap, xlabel, ylabel, series, baseline, stackon.", "(array:x, array:y, table:options):void");
 	
 	wxPLPlotCtrl *plot = GetPlotSurface( s_curToplevelParent );
 
@@ -166,6 +185,7 @@ void fcall_plot( lk::invoke_t &cxt )
 		&& a0.length() > 0 )
 	{
 		int thick = 1;
+		double base_x = 0.0; // used for horizontal bar plots
 		int type = LINE;
 		wxColour col = *wxBLUE;
 		wxString xlab = "x";
@@ -173,6 +193,7 @@ void fcall_plot( lk::invoke_t &cxt )
 		wxString series = wxEmptyString;
 		int xap = wxPLPlotCtrl::X_BOTTOM;
 		int yap = wxPLPlotCtrl::Y_LEFT;
+		wxString stackon;
 
 		if (cxt.arg_count() > 2 && cxt.arg(2).deref().type() == lk::vardata_t::HASH )
 		{
@@ -188,8 +209,19 @@ void fcall_plot( lk::invoke_t &cxt )
 				wxString stype = arg->as_string().c_str();
 				stype.Lower();
 				if (stype == "bar") type = BAR;
+				if (stype == "hbar") type = HBAR;
 				else if (stype == "scatter") type = SCATTER;
 				else if (stype == "windrose") type = WINDROSE;
+			}
+
+			if ( lk::vardata_t *arg = t.lookup("baseline") )
+			{
+				base_x = arg->as_number();
+			}
+
+			if ( lk::vardata_t *arg = t.lookup("stackon") )
+			{
+				stackon = arg->as_string();
 			}
 			
 			if (lk::vardata_t *arg = t.lookup("color") )
@@ -237,7 +269,7 @@ void fcall_plot( lk::invoke_t &cxt )
 			y[i] = a1.index(i)->as_number();
 		}
 
-		CreatePlot( plot, x, y, len, thick, col, type, xlab, ylab, series, xap, yap );
+		CreatePlot( plot, x, y, len, thick, col, type, xlab, ylab, series, xap, yap, base_x, stackon );
 
 		delete [] x;
 		delete [] y;
@@ -311,7 +343,10 @@ void fcall_plotopt( lk::invoke_t &cxt )
 	}
 	
 	if (mod)
+	{
+		plot->Invalidate();
 		plot->Refresh();
+	}
 }
 
 void fcall_plotpng( lk::invoke_t &cxt )
@@ -324,7 +359,7 @@ void fcall_plotpng( lk::invoke_t &cxt )
 
 void fcall_axis( lk::invoke_t &cxt )
 {
-	LK_DOC("axis", "Modifies axis properties (type, label, showlabel, min, max, ticklabels) on the current plot.", "(string:axis name 'x1' 'y1' 'x2' 'y2', table:options):void");
+	LK_DOC("axis", "Modifies axis properties (type, label, labels[2D array for 'label' axis type], showlabel, min, max, ticklabels) on the current plot.", "(string:axis name 'x1' 'y1' 'x2' 'y2', table:options):void");
 	lk_string axname = cxt.arg(0).as_string();
 	wxPLPlotCtrl *plot = s_curPlot;
 	if (!plot) return;
@@ -344,37 +379,54 @@ void fcall_axis( lk::invoke_t &cxt )
 		double min, max;
 		axis->GetWorld(&min, &max);
 
+		wxPLAxis *axis_new = 0;
+
 		if ( arg->as_string() == "log" )
 		{
 			if ( min <= 0 ) min = 0.001;
 			if ( max < min ) max = min+10;
 
-			wxPLLogAxis *log = new wxPLLogAxis( min, max, axis->GetLabel() );
-			log->ShowTickText( axis->IsTickTextVisible() );
-			log->ShowLabel( axis->IsLabelVisible() );
-
-			if ( axname == "x1" ) plot->SetXAxis1( log );
-			if ( axname == "x2" ) plot->SetXAxis2( log );
-			if ( axname == "y1" ) plot->SetYAxis1( log );
-			if ( axname == "y2" ) plot->SetYAxis2( log );
-
-			axis = log;
-			mod = true;
+			axis_new = new wxPLLogAxis( min, max, axis->GetLabel() );
 		}
 		else if ( arg->as_string() == "linear" )
 		{
-			wxPLLinearAxis *lin = new wxPLLinearAxis( min, max, axis->GetLabel() );
-			lin->ShowTickText( axis->IsTickTextVisible() );
-			lin->ShowLabel( axis->IsLabelVisible() );
+			axis_new = new wxPLLinearAxis( min, max, axis->GetLabel() );
+		}
+		else if ( arg->as_string() == "time" )
+		{
+			axis_new = new wxPLTimeAxis( min, max, axis->GetLabel() );
+		}
+		else if ( arg->as_string() == "label" )
+		{
+			if (lk::vardata_t *tx = cxt.arg(1).lookup("labels"))
+			{
+				if ( tx->type() == lk::vardata_t::VECTOR )
+				{
+					wxPLLabelAxis *axl = new wxPLLabelAxis( min, max, axis->GetLabel() );					
+					for( size_t i=0;i<tx->length();i++ )
+					{
+						lk::vardata_t *item = tx->index(i);
+						if ( item->type() == lk::vardata_t::VECTOR && item->length() == 2 )
+							axl->Add( item->index(0)->as_number(), item->index(1)->as_string() );
+					}
 
-			if ( axname == "x1" ) plot->SetXAxis1( lin );
-			if ( axname == "x2" ) plot->SetXAxis2( lin );
-			if ( axname == "y1" ) plot->SetYAxis1( lin );
-			if ( axname == "y2" ) plot->SetYAxis2( lin );
+					axis_new = axl;
+				}
+			}
 
-			axis = lin;
+		}
+
+		if ( axis_new != 0 )
+		{
+			axis_new->ShowTickText( axis->IsTickTextVisible() );
+			axis_new->ShowLabel( axis->IsLabelVisible() );
 			mod = true;
-		}		
+			axis = axis_new;
+			if (axname == "x1") plot->SetXAxis1( axis_new );
+			if (axname == "x2") plot->SetXAxis2( axis_new );
+			if (axname == "y1") plot->SetYAxis1( axis_new );
+			if (axname == "y2") plot->SetYAxis2( axis_new );
+		}
 	}
 
 	if ( lk::vardata_t *arg = cxt.arg(1).lookup("label") )
@@ -413,7 +465,10 @@ void fcall_axis( lk::invoke_t &cxt )
 		mod = true;
 	}
 	
-	if (mod) plot->Refresh();
+	if (mod) {
+		plot->Invalidate();
+		plot->Refresh();
+	}
 }
 
 void fcall_rand( lk::invoke_t &cxt )

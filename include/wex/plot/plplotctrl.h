@@ -125,6 +125,7 @@ public:
 	void DeleteAllPlots();
 	size_t GetPlotCount();
 	wxPLPlottable *GetPlot( size_t i );
+	wxPLPlottable *GetPlotByLabel( const wxString &series );
 	bool GetPlotPosition( wxPLPlottable *p, 
 		AxisPos *xap, AxisPos *yap, PlotPos *ppos );
 

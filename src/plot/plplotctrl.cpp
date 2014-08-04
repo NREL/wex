@@ -1139,6 +1139,15 @@ wxPLPlottable *wxPLPlotCtrl::GetPlot( size_t i )
 	return m_plots[i].plot;
 }
 
+wxPLPlottable *wxPLPlotCtrl::GetPlotByLabel( const wxString &series )
+{
+	for( size_t i=0;i<m_plots.size();i++ )
+		if ( m_plots[i].plot->GetLabel() == series )
+			return m_plots[i].plot;
+
+	return 0;
+}
+
 bool wxPLPlotCtrl::GetPlotPosition( wxPLPlottable *p, 
 	AxisPos *xap, AxisPos *yap, PlotPos *ppos )
 {

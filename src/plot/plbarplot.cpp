@@ -3,12 +3,12 @@
 #include "wex/plot/plbarplot.h"
 
 
-wxPLBarPlot::wxPLBarPlot()
+wxPLBarPlotBase::wxPLBarPlotBase()
 {
 	Init();
 }
 
-wxPLBarPlot::wxPLBarPlot( const std::vector<wxRealPoint> &data, 
+wxPLBarPlotBase::wxPLBarPlotBase( const std::vector<wxRealPoint> &data, 
 	const wxString &label, 
 	const wxColour &col )
 	: wxPLPlottable( label )
@@ -18,36 +18,55 @@ wxPLBarPlot::wxPLBarPlot( const std::vector<wxRealPoint> &data,
 	m_data = data;
 }
 
-wxPLBarPlot::~wxPLBarPlot()
+wxPLBarPlotBase::~wxPLBarPlotBase()
 {
 	// nothing to do
 }
 
-void wxPLBarPlot::Init()
+void wxPLBarPlotBase::Init()
 {
-	m_stackedOn = 0;
 	m_colour = *wxLIGHT_GREY;
-	m_scaleThickness = true;
-	m_thickness = 10;
+	m_thickness = wxPL_BAR_AUTOSIZE;
 }
 	
-wxRealPoint wxPLBarPlot::At( size_t i ) const
+wxRealPoint wxPLBarPlotBase::At( size_t i ) const
 {
 	return m_data[i];
 }
 
-size_t wxPLBarPlot::Len() const
+size_t wxPLBarPlotBase::Len() const
 {
 	return m_data.size();
 }
 
-void wxPLBarPlot::DrawInLegend( wxDC &dc, const wxRect &rct)
+void wxPLBarPlotBase::DrawInLegend( wxDC &dc, const wxRect &rct)
 {
 	dc.SetPen( *wxTRANSPARENT_PEN );
 	dc.SetBrush( wxBrush( m_colour ) );
 	dc.DrawRectangle( rct );
 }
 
+////////// wxPLBarPlot ///////////
+
+
+wxPLBarPlot::wxPLBarPlot()
+	: wxPLBarPlotBase()
+{
+	m_stackedOn = 0;
+}
+
+wxPLBarPlot::wxPLBarPlot( const std::vector<wxRealPoint> &data, 
+	const wxString &label, 
+	const wxColour &col )
+	: wxPLBarPlotBase( data, label, col )
+{
+	m_stackedOn = 0;
+}
+
+wxPLBarPlot::~wxPLBarPlot()
+{
+	// nothing to do
+}
 
 double wxPLBarPlot::CalcYStart(double x)
 {
@@ -102,7 +121,7 @@ double wxPLBarPlot::CalcXStart(double x, const wxPLDeviceMapping &map, int dispw
 
 int wxPLBarPlot::CalcDispBarWidth( const wxPLDeviceMapping &map )
 {
-	if ( m_scaleThickness )
+	if ( m_thickness <= 1 )
 	{
 		wxRect rct = map.GetDeviceExtents();
 		double xmin = map.GetWorldMinimum().x;
@@ -159,3 +178,111 @@ void wxPLBarPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 	}
 }
 
+
+/////////// wxPLHBarPlot ////////////
+
+wxPLHBarPlot::wxPLHBarPlot() : wxPLBarPlotBase() { /* nothing to do */ }
+
+wxPLHBarPlot::wxPLHBarPlot( const std::vector<wxRealPoint> &data, double baseline_x,
+	const wxString &label,
+	const wxColour &col)
+	: wxPLBarPlotBase( data, label, col ), m_baselineX( baseline_x )
+{
+	m_stackedOn = 0;
+}
+
+wxPLHBarPlot:: ~wxPLHBarPlot()
+{
+	m_stackedOn = 0;
+}
+
+void wxPLHBarPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
+{
+	if( Len() == 0 ) return;
+
+	int bar_width = CalcDispBarWidth( map );
+
+	dc.SetBrush(wxBrush(m_colour));
+	dc.SetPen( *wxTRANSPARENT_PEN );
+
+	for (size_t i=0; i<Len(); i++)
+	{
+		wxRealPoint pt(  At(i) );
+		int pleft=0, pright=0;
+		double x_start=m_baselineX;
+			
+		if ( m_stackedOn != NULL && m_stackedOn != this )
+			x_start = m_stackedOn->CalcXStart( pt.y );	
+
+		wxRect prct;
+
+		pleft = map.ToDevice( x_start, 0 ).x;
+		pright = map.ToDevice( pt.x, 0 ).x;
+
+		if (pleft < pright)
+		{
+			prct.x = pleft;
+			prct.width = pright-pleft;
+		}
+		else
+		{
+			prct.x = pright;
+			prct.width = pleft-pright;
+		}
+						
+		prct.y = map.ToDevice( 0, pt.y ).y - bar_width/2;
+		prct.height = bar_width;
+
+		dc.DrawRectangle(prct.x, prct.y, prct.width, prct.height);
+	}
+	
+	dc.SetPen(*wxBLACK_PEN);
+	wxPoint start,end;
+	end.x = start.x = map.ToDevice( m_baselineX, 0 ).x;
+	start.y = map.GetDeviceExtents().y+1;
+	end.y = start.y + map.GetDeviceExtents().height-1;
+	dc.DrawLine(start.x, start.y, end.x, end.y);
+}
+
+	
+double wxPLHBarPlot::CalcXStart(double y)
+{
+	double x_start = m_baselineX;
+
+	if (m_stackedOn && m_stackedOn != this)
+		x_start += m_stackedOn->CalcXStart(y);
+
+	for (size_t i=0; i<Len(); i++)
+	{
+		if (At(i).y == y)
+		{
+			x_start += At(i).x;
+			break;
+		}
+	}
+
+	return x_start;
+
+}
+
+int wxPLHBarPlot::CalcDispBarWidth( const wxPLDeviceMapping &map )
+{
+	if ( m_thickness <= 1 )
+	{
+		wxRect rct = map.GetDeviceExtents();
+		double ymin = map.GetWorldMinimum().y;
+		double ymax = map.GetWorldMaximum().y;
+
+		int bars_in_view = 0;
+		for ( size_t i=0;i<Len();i++ )
+		{
+			double y = At(i).y;
+			if ( y >= ymin && y <= ymax )
+				bars_in_view++;
+		}
+
+
+		return (int)( ((double)rct.GetHeight()) / ((double)( bars_in_view + 4 )) );
+	}
+	else return m_thickness;
+}
