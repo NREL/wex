@@ -90,6 +90,17 @@ static int _iplot = 1;
 static PlotWin *s_curPlotWin = 0;
 static wxPLPlotCtrl *s_curPlot = 0;
 
+static wxWindow *GetCurrentTopLevelWindow()
+{
+	wxWindowList &wl = ::wxTopLevelWindows;
+	for( wxWindowList::iterator it = wl.begin(); it != wl.end(); ++it )
+		if ( wxTopLevelWindow *tlw = dynamic_cast<wxTopLevelWindow*>( *it ) )
+			if ( tlw->IsActive() )
+				return tlw;
+
+	return 0;
+}
+
 class PlotWin : public wxFrame
 {
 public:
@@ -98,7 +109,8 @@ public:
 	PlotWin( wxWindow *parent )
 		: wxFrame( parent, wxID_ANY, 
 			wxString::Format("plot %d", _iplot++),
-			wxDefaultPosition, wxSize(500,400) )
+			wxDefaultPosition, wxSize(500,400),
+			wxCLOSE_BOX|wxCLIP_CHILDREN|wxCAPTION|wxRESIZE_BORDER|wxFRAME_FLOAT_ON_PARENT )
 	{
 		m_plot = new wxPLPlotCtrl( this, wxID_ANY );
 		m_plot->SetBackgroundColour(*wxWHITE);
@@ -140,7 +152,6 @@ static wxPLPlotCtrl *GetPlotSurface( wxWindow *parent )
 	return s_curPlot;
 }
 
-
 void wxLKSetToplevelParent( wxWindow *parent )
 {
 	s_curToplevelParent = parent;
@@ -174,7 +185,7 @@ void fcall_plot( lk::invoke_t &cxt )
 {
 	LK_DOC("plot", "Creates an XY line, bar, horizontal bar, or scatter plot. Options include thick, type, color, xap, yap, xlabel, ylabel, series, baseline, stackon.", "(array:x, array:y, table:options):void");
 	
-	wxPLPlotCtrl *plot = GetPlotSurface( s_curToplevelParent );
+	wxPLPlotCtrl *plot = GetPlotSurface( s_curToplevelParent ? s_curToplevelParent : GetCurrentTopLevelWindow() );
 
 	lk::vardata_t &a0 = cxt.arg(0).deref();
 	lk::vardata_t &a1 = cxt.arg(1).deref();
@@ -398,16 +409,17 @@ void fcall_axis( lk::invoke_t &cxt )
 		}
 		else if ( arg->as_string() == "label" )
 		{
-			if (lk::vardata_t *tx = cxt.arg(1).lookup("labels"))
+			if (lk::vardata_t *_tx = cxt.arg(1).lookup("labels"))
 			{
-				if ( tx->type() == lk::vardata_t::VECTOR )
+				lk::vardata_t &tx = _tx->deref();
+				if ( tx.type() == lk::vardata_t::VECTOR )
 				{
 					wxPLLabelAxis *axl = new wxPLLabelAxis( min, max, axis->GetLabel() );					
-					for( size_t i=0;i<tx->length();i++ )
+					for( size_t i=0;i<tx.length();i++ )
 					{
-						lk::vardata_t *item = tx->index(i);
-						if ( item->type() == lk::vardata_t::VECTOR && item->length() == 2 )
-							axl->Add( item->index(0)->as_number(), item->index(1)->as_string() );
+						lk::vardata_t &item = tx.index(i)->deref();
+						if ( item.type() == lk::vardata_t::VECTOR && item.length() == 2 )
+							axl->Add( item.index(0)->as_number(), item.index(1)->as_string() );
 					}
 
 					axis_new = axl;
