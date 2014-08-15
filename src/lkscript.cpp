@@ -360,12 +360,30 @@ void fcall_plotopt( lk::invoke_t &cxt )
 	}
 }
 
-void fcall_plotpng( lk::invoke_t &cxt )
+void fcall_plotout( lk::invoke_t &cxt )
 {
-	LK_DOC( "plotpng", "Export the current plot as rendered on the screen to a PNG image file.", "(string:file name):boolean" );
+	LK_DOC( "plotout", "Output the current plot to a file. If the optional format parameter is not given, a PNG format image file is generated.  Valid formats are png, bmp, jpg, pdf, svg.", "(string:file name, [string:format]):boolean" );
 	wxPLPlotCtrl *plot = s_curPlot;
 	if (!plot) return;
-	cxt.result().assign( plot->Export( cxt.arg(0).as_string() ) );
+	
+	wxString file( cxt.arg(0).as_string() );
+	wxString format( "png" ); // default format is PNG
+	if ( cxt.arg_count() > 1 )
+		format = cxt.arg(1).as_string().Lower();
+
+	bool ok = false;
+	if ( format == "pdf" ) 
+		ok = plot->ExportPdf( file );
+	else if ( format == "svg" )
+		ok = plot->ExportSvg( file );
+	else if ( format == "bmp" )
+		ok = plot->Export( file, wxBITMAP_TYPE_BMP );
+	else if ( format == "jpg" )
+		ok = plot->Export( file, wxBITMAP_TYPE_JPEG );
+	else if ( format == "png" )
+		ok = plot->Export( file, wxBITMAP_TYPE_PNG );
+
+	cxt.result().assign( ok );
 }
 
 void fcall_axis( lk::invoke_t &cxt )
@@ -631,7 +649,7 @@ lk::fcall_t* wxLKPlotFunctions()
 		fcall_newplot,
 		fcall_plot,
 		fcall_plotopt,
-		fcall_plotpng,
+		fcall_plotout,
 		fcall_axis, 
 		0 };
 		

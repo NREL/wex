@@ -1453,39 +1453,8 @@ void wxPLPlotCtrl::OnPopupMenu( wxCommandEvent &evt )
 			wxFileDialog fdlg(this, "Export as PDF", wxEmptyString, "graph",
 				"PDF Document (*.pdf)|*.pdf", wxFD_SAVE | wxFD_OVERWRITE_PROMPT );
 			if ( fdlg.ShowModal() == wxID_OK )
-			{
-				wxPrintData prnDat;
-				prnDat.SetFilename( fdlg.GetPath() );
-				prnDat.SetOrientation( wxLANDSCAPE );
-				prnDat.SetPaperId( wxPAPER_A5 );
-				wxPdfDC  dc( prnDat );			
-				bool ok = dc.StartDoc(_("Exporting to pdf..."));
-				if (ok)
-				{
-					dc.StartPage();
-					dc.SetFont( *wxNORMAL_FONT );
-					dc.SetBackground( *wxWHITE_BRUSH );
-					dc.Clear();
-					
-					wxSize size = dc.GetSize();
-					const double frac = 0.01;
-					wxPoint margin( (int)(frac*((double)size.x)), (int)(frac*((double)size.y)) );
-					wxRect geom( margin, wxSize( size.x - 2*margin.x, size.y - 2*margin.y ) );
-
-					bool save = m_scaleTextSize ;
-					m_scaleTextSize = false;
-					Invalidate();
-					Render( dc, geom );
-					m_scaleTextSize = save;
-					Invalidate();
-					Refresh();
-
-					dc.EndPage();
-					dc.EndDoc();
-				}
-				else
+				if( !ExportPdf( fdlg.GetPath() ) )
 					wxMessageBox("PDF encountered an error: \n" + fdlg.GetPath());
-			}
 		}
 		break;
 	case ID_EXPORT_SVG:
@@ -1493,29 +1462,8 @@ void wxPLPlotCtrl::OnPopupMenu( wxCommandEvent &evt )
 			wxFileDialog fdlg(this, "Export as SVG", wxEmptyString, "graph",
 				"SVG File (*.svg)|*.svg", wxFD_SAVE | wxFD_OVERWRITE_PROMPT );
 			if ( fdlg.ShowModal() == wxID_OK )
-			{
-				wxSize imgSize = this->GetClientSize();			
-				//wxBitmap img(imgSize.GetWidth(), imgSize.GetHeight());
-				//wxMemoryDC memdc(img);
-
-				wxSVGFileDC svgdc( fdlg.GetPath(), imgSize.GetWidth(), imgSize.GetHeight() );
-
-				if ( !svgdc.IsOk() )
-				{
+				if ( !ExportSvg( fdlg.GetPath() ) )
 					wxMessageBox("Failed to write SVG: " + fdlg.GetPath());
-					return;
-				}
-				
-				// initialize font and background
-				svgdc.SetFont( GetFont() );
-				svgdc.SetBackground( *wxWHITE_BRUSH );
-				svgdc.Clear();
-				wxRect rect(0, 0, imgSize.GetWidth(), imgSize.GetHeight());
-				Invalidate();
-				Render( svgdc, rect );
-				Invalidate();
-				Refresh(); // redraw on-screen version to recompute layout
-			}
 		}
 		break;
 	case ID_TO_CLIP_SCREEN:
@@ -1660,6 +1608,58 @@ wxBitmap wxPLPlotCtrl::GetBitmap( int width, int height )
 bool wxPLPlotCtrl::Export( const wxString &file, wxBitmapType type, int width, int height )
 {
 	return GetBitmap(width,height).SaveFile(file, type);
+}
+
+bool wxPLPlotCtrl::ExportPdf( const wxString &file )
+{
+	wxPrintData prnDat;
+	prnDat.SetFilename( file );
+	prnDat.SetOrientation( wxLANDSCAPE );
+	prnDat.SetPaperId( wxPAPER_A5 );
+	wxPdfDC  dc( prnDat );			
+	if ( !dc.StartDoc(_("Exporting to pdf...")) )
+		return false;
+
+	dc.StartPage();
+	dc.SetFont( *wxNORMAL_FONT );
+	dc.SetBackground( *wxWHITE_BRUSH );
+	dc.Clear();
+					
+	wxSize size = dc.GetSize();
+	const double frac = 0.01;
+	wxPoint margin( (int)(frac*((double)size.x)), (int)(frac*((double)size.y)) );
+	wxRect geom( margin, wxSize( size.x - 2*margin.x, size.y - 2*margin.y ) );
+
+	bool save = m_scaleTextSize ;
+	m_scaleTextSize = false;
+	Invalidate();
+	Render( dc, geom );
+	m_scaleTextSize = save;
+	Invalidate();
+	Refresh();
+
+	dc.EndPage();
+	dc.EndDoc();
+	
+	return true;
+}
+
+bool wxPLPlotCtrl::ExportSvg( const wxString &file )
+{
+	wxSize imgSize = GetClientSize();			
+	wxSVGFileDC svgdc( file, imgSize.GetWidth(), imgSize.GetHeight() );
+	if ( !svgdc.IsOk() ) return false;
+				
+	// initialize font and background
+	svgdc.SetFont( GetFont() );
+	svgdc.SetBackground( *wxWHITE_BRUSH );
+	svgdc.Clear();
+	wxRect rect(0, 0, imgSize.GetWidth(), imgSize.GetHeight());
+	Invalidate();
+	Render( svgdc, rect );
+	Invalidate();
+	Refresh(); // redraw on-screen version to recompute layout
+	return true;
 }
 
 class gcdc_ref 
