@@ -9,6 +9,8 @@ enum { ID_popup_first = wxID_HIGHEST+941,
 	ID_EXPAND_ALL, ID_EXPAND_SELECTIONS, ID_COLLAPSE_ALL,
 	ID_popup_last };
 
+#define SCRL_RATE 10
+
 
 DEFINE_EVENT_TYPE(wxEVT_DVSELECTIONLIST)
 	
@@ -341,7 +343,7 @@ void wxDVSelectionListCtrl::ResetScrollbars()
 {
 	int hpos, vpos;
 	GetViewStart( &hpos, &vpos );
-	SetScrollbars(1,1,m_bestSize.GetWidth(),m_bestSize.GetHeight(),hpos,vpos);	
+	SetScrollbars( SCRL_RATE, SCRL_RATE, m_bestSize.GetWidth(),m_bestSize.GetHeight(),hpos,vpos );	
 	InvalidateBestSize();
 }
 
@@ -481,10 +483,13 @@ int wxDVSelectionListCtrl::FindGroup( const wxString &label )
 
 void wxDVSelectionListCtrl::OnLeftDown(wxMouseEvent &evt)
 {
+	if ( !HasFocus() )
+		SetFocus();
+
 	int vsx, vsy;
 	GetViewStart(&vsx,&vsy);
-	int mx = vsx+evt.GetX();
-	int my = vsy+evt.GetY();
+	int mx = vsx*SCRL_RATE + evt.GetX();
+	int my = vsy*SCRL_RATE + evt.GetY();
 
 	for( size_t g=0;g<m_groups.size();g++ )
 	{

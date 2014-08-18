@@ -827,12 +827,14 @@ void wxDVTimeSeriesCtrl::OnMouseWheel(wxMouseEvent& e)
 	if (!m_xAxis || m_plots.size() == 0)
 		return;
 
+	bool update_view = false;
 	if (e.ShiftDown()) //shift + wheel: scroll
 	{
 		//Negative rotation will go left.
 		PanByPercent(-0.25 * e.GetWheelRotation() / e.GetWheelDelta()); 
+		update_view = true;
 	}
-	else //wheel only: zoom
+	else if ( e.ControlDown() ) //wheel only: zoom
 	{
 		if (e.GetWheelRotation() > 0 && !CanZoomIn()) return;
 		//Center zooming on the location of the mouse.
@@ -847,11 +849,20 @@ void wxDVTimeSeriesCtrl::OnMouseWheel(wxMouseEvent& e)
 
 		MakeXBoundsNice(&min, &max);
 		m_xAxis->SetWorld( min, max );
+		update_view = true;
+	}
+	else
+	{
+		m_dataSelector->GetEventHandler()->ProcessEvent( e );
 	}
 
-	AutoscaleYAxis();
-	UpdateScrollbarPosition();
-	Invalidate();
+
+	if (update_view)
+	{
+		AutoscaleYAxis();
+		UpdateScrollbarPosition();
+		Invalidate();
+	}
 }
 
 void wxDVTimeSeriesCtrl::OnHighlight(wxCommandEvent& e)
