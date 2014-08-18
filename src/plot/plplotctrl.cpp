@@ -2429,6 +2429,7 @@ void wxPLPlotCtrl::Invalidate()
 		m_titleLayout = 0;
 	}
 
+	m_legendInvalidated = true;
 	m_x1.invalidate();
 	m_x2.invalidate();
 	for ( size_t i=0;i<NPLOTPOS;i++ )

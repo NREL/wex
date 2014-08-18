@@ -109,6 +109,17 @@ void wxDVPlotCtrl::SetTimeSeriesMode( int mode )
 	}
 }
 
+
+void wxDVPlotCtrl::SetupTopYLeft( double min, double max )
+{
+	m_timeSeries->SetupTopYLeft( min, max );
+}
+
+void wxDVPlotCtrl::SetupTopYRight( double min, double max )
+{
+	m_timeSeries->SetupTopYRight( min, max );
+}
+
 void wxDVPlotCtrl::SetTimeSeriesRange( double start, double end )
 {
 	m_timeSeries->SetViewRange( start, end );

@@ -34,7 +34,8 @@ enum wxDVTimeSeriesStyle { wxDV_NORMAL, wxDV_STEPPED };
 class wxDVTimeSeriesSettingsDialog : public wxDialog
 {
 public:
-	wxDVTimeSeriesSettingsDialog( wxWindow *parent, const wxString &title, bool isBottomGraphVisible = true );
+	wxDVTimeSeriesSettingsDialog( wxWindow *parent, const wxString &title, 
+		bool isTopRightYVisible = true, bool isBottomGraphVisible = true );
 
 	void SetTopYBounds( double y1min, double y1max );
 	void SetTopY2Bounds( double ymin, double ymax );
@@ -132,6 +133,9 @@ public:
 	void UpdateScrollbarPosition(void);
 	void AutoscaleYAxis(bool forceUpdate = false);
 
+	void SetupTopYLeft( double min=0, double max=0 );
+	void SetupTopYRight( double min=0, double max=0 );
+	
 	void SetStackingOnYLeft( bool b );
 	void ClearStacking();
 	void UpdateStacking();

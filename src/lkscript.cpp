@@ -1,6 +1,7 @@
 #include <wx/app.h>
 #include <wx/thread.h>
 #include <wx/html/htmlwin.h>
+#include <wx/fontenum.h>
 
 #include "wex/lkscript.h" // defines LK_USE_WXWIDGETS
 #include "wex/mtrand.h"
@@ -26,7 +27,7 @@
 enum { BAR, HBAR, LINE, SCATTER, WINDROSE };
 static void CreatePlot( wxPLPlotCtrl *plot, double *x, double *y, int len, int thick, wxColour &col, int type,
 	const wxString &xlab, const wxString &ylab, const wxString &series,
-	int xap, int yap, double base_x, const wxString &stackon)
+	int xap, int yap, double base_x, const wxString &stackon, const wxString &lnsty )
 {
 	if (len <= 0 ) return;
 		
@@ -36,6 +37,7 @@ static void CreatePlot( wxPLPlotCtrl *plot, double *x, double *y, int len, int t
 		data.push_back( wxRealPoint( x[i], y[i] ) );
 
 	wxPLPlottable *p = 0;
+	wxPLLinePlot::Style sty = wxPLLinePlot::SOLID;
 
 	switch (type )
 	{
@@ -62,7 +64,11 @@ static void CreatePlot( wxPLPlotCtrl *plot, double *x, double *y, int len, int t
 	}
 		break;
 	case LINE:
-		p = new wxPLLinePlot( data, series, col, wxPLLinePlot::SOLID, thick, false );
+		if ( lnsty == "dotted" || lnsty == "dot" )
+			sty = wxPLLinePlot::DOTTED;
+		else if ( lnsty == "dashed" || lnsty == "dash" )
+			sty = wxPLLinePlot::DASHED;
+		p = new wxPLLinePlot( data, series, col, sty, thick, false );
 		break;
 	case SCATTER:
 		p = new wxPLScatterPlot( data, series, col, thick, false );
@@ -183,7 +189,7 @@ void fcall_newplot( lk::invoke_t &cxt )
 
 void fcall_plot( lk::invoke_t &cxt )
 {
-	LK_DOC("plot", "Creates an XY line, bar, horizontal bar, or scatter plot. Options include thick, type, color, xap, yap, xlabel, ylabel, series, baseline, stackon.", "(array:x, array:y, table:options):void");
+	LK_DOC("plot", "Creates an XY line, bar, horizontal bar, or scatter plot. Options include thick, type, color, xap, yap, xlabel, ylabel, series, baseline, stackon, style.", "(array:x, array:y, table:options):void");
 	
 	wxPLPlotCtrl *plot = GetPlotSurface( 
 		(s_curToplevelParent!=0)
@@ -204,6 +210,7 @@ void fcall_plot( lk::invoke_t &cxt )
 		wxColour col = *wxBLUE;
 		wxString xlab = "x";
 		wxString ylab = "y";
+		wxString lnsty("solid");
 		wxString series = wxEmptyString;
 		int xap = wxPLPlotCtrl::X_BOTTOM;
 		int yap = wxPLPlotCtrl::Y_LEFT;
@@ -264,13 +271,16 @@ void fcall_plot( lk::invoke_t &cxt )
 			}
 
 			if ( lk::vardata_t *arg = t.lookup("series"))
-				series = arg->as_string().c_str();
+				series = arg->as_string();
 
 			if ( lk::vardata_t *arg = t.lookup("xlabel"))
-				xlab = arg->as_string().c_str();
+				xlab = arg->as_string();
 
 			if ( lk::vardata_t *arg = t.lookup("ylabel"))
-				ylab = arg->as_string().c_str();
+				ylab = arg->as_string();
+
+			if ( lk::vardata_t *arg = t.lookup("style"))
+				lnsty = arg->as_string().Lower();
 		}
 		
 		int len = cxt.arg(0).length();
@@ -283,7 +293,7 @@ void fcall_plot( lk::invoke_t &cxt )
 			y[i] = a1.index(i)->as_number();
 		}
 
-		CreatePlot( plot, x, y, len, thick, col, type, xlab, ylab, series, xap, yap, base_x, stackon );
+		CreatePlot( plot, x, y, len, thick, col, type, xlab, ylab, series, xap, yap, base_x, stackon, lnsty );
 
 		delete [] x;
 		delete [] y;
@@ -292,7 +302,7 @@ void fcall_plot( lk::invoke_t &cxt )
 
 void fcall_plotopt( lk::invoke_t &cxt )
 {
-	LK_DOC("plotopt", "Modifies the current plot properties like title, coarse, fine, legend, legendpos, window", "(table:options):void");
+	LK_DOC("plotopt", "Modifies the current plot properties like title, coarse, fine, legend, legendpos, scale, font, window", "(table:options):void");
 	wxPLPlotCtrl *plot = s_curPlot;
 	if (!plot) return;
 
@@ -353,6 +363,32 @@ void fcall_plotopt( lk::invoke_t &cxt )
 			if ( w > 0 && h > 0 )
 				s_curPlotWin->SetClientSize( wxSize(w,h) );
 
+		}
+	}
+
+	if ( lk::vardata_t *arg = cxt.arg(0).lookup("scale") )
+	{
+		double scale = arg->as_number();
+		if ( scale > 0.2 && scale < 5 )
+		{
+			wxFont font( plot->GetFont() );
+			double point = font.GetPointSize();
+			point *= scale;
+			font.SetPointSize( (int)point );
+			plot->SetFont( font );
+			mod = true;
+		}
+	}
+
+	if ( lk::vardata_t *arg = cxt.arg(0).lookup("font") )
+	{
+		wxString face( arg->as_string() );
+		if ( wxFontEnumerator::IsValidFacename(face) )
+		{
+			wxFont font( plot->GetFont() );
+			font.SetFaceName( face );
+			plot->SetFont( font );
+			mod = true;
 		}
 	}
 	
