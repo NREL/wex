@@ -95,7 +95,7 @@ static wxWindow *GetCurrentTopLevelWindow()
 	wxWindowList &wl = ::wxTopLevelWindows;
 	for( wxWindowList::iterator it = wl.begin(); it != wl.end(); ++it )
 		if ( wxTopLevelWindow *tlw = dynamic_cast<wxTopLevelWindow*>( *it ) )
-			if ( tlw->IsActive() )
+			if ( tlw->IsShown() && tlw->IsActive() )
 				return tlw;
 
 	return 0;
@@ -110,7 +110,7 @@ public:
 		: wxFrame( parent, wxID_ANY, 
 			wxString::Format("plot %d", _iplot++),
 			wxDefaultPosition, wxSize(500,400),
-			wxCLOSE_BOX|wxCLIP_CHILDREN|wxCAPTION|wxRESIZE_BORDER|wxFRAME_FLOAT_ON_PARENT )
+			(parent != 0 ? wxFRAME_FLOAT_ON_PARENT : 0 )|wxCLOSE_BOX|wxCLIP_CHILDREN|wxCAPTION|wxRESIZE_BORDER )
 	{
 		m_plot = new wxPLPlotCtrl( this, wxID_ANY );
 		m_plot->SetBackgroundColour(*wxWHITE);
@@ -185,7 +185,10 @@ void fcall_plot( lk::invoke_t &cxt )
 {
 	LK_DOC("plot", "Creates an XY line, bar, horizontal bar, or scatter plot. Options include thick, type, color, xap, yap, xlabel, ylabel, series, baseline, stackon.", "(array:x, array:y, table:options):void");
 	
-	wxPLPlotCtrl *plot = GetPlotSurface( s_curToplevelParent ? s_curToplevelParent : GetCurrentTopLevelWindow() );
+	wxPLPlotCtrl *plot = GetPlotSurface( 
+		(s_curToplevelParent!=0)
+			? s_curToplevelParent 
+			: GetCurrentTopLevelWindow() );
 
 	lk::vardata_t &a0 = cxt.arg(0).deref();
 	lk::vardata_t &a1 = cxt.arg(1).deref();

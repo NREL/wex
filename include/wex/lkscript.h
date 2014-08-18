@@ -33,7 +33,10 @@ lk::fcall_t* wxLKStdOutFunctions(); // out, outln:  must use an extended wxLKScr
 
 class wxPLPlotCtrl;
 
-void wxLKSetToplevelParent( wxWindow *parent );
+// if parent=NULL and no_parent=true, then the plot will have no parent.  
+// otherwise, even if parent=NULL, LK will use the currently active 
+// toplevel window as the parent.
+void wxLKSetToplevelParent( wxWindow *parent ); 
 void wxLKSetPlotTarget( wxPLPlotCtrl *plot );
 wxPLPlotCtrl *wxLKGetPlotTarget();
 
