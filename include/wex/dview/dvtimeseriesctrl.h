@@ -35,11 +35,12 @@ class wxDVTimeSeriesSettingsDialog : public wxDialog
 {
 public:
 	wxDVTimeSeriesSettingsDialog( wxWindow *parent, const wxString &title, bool isBottomGraphVisible = true );
-	~wxDVTimeSeriesSettingsDialog();
 
 	void SetTopYBounds( double y1min, double y1max );
+	void SetTopY2Bounds( double ymin, double ymax );
 	void SetBottomYBounds( double y2min, double y2max );
 	void GetTopYBounds( double *y1min, double *y1max );
+	void GetTopY2Bounds( double *ymin, double *ymax );
 	void GetBottomYBounds( double *y2min, double *y2max );
 
 	void SetStyle( wxDVTimeSeriesStyle id );
@@ -49,7 +50,9 @@ public:
 	void SetStatType( wxDVStatType statType );
 	wxDVStatType GetStatType();
 	void SetAutoscale( bool b );
+	void SetAutoscale2( bool b );
 	bool GetAutoscale();
+	bool GetAutoscale2();
 	void SetBottomAutoscale( bool b );
 	bool GetBottomAutoscale();
 	void SetStacked( bool b );
@@ -64,9 +67,12 @@ private:
 	wxCheckBox *mSyncCheck;
 	wxCheckBox *mStatTypeCheck;
 	wxCheckBox *mTopAutoscaleCheck;
+	wxCheckBox *mTop2AutoscaleCheck;
 	wxCheckBox *mBottomTopAutoscaleCheck;
 	wxNumericCtrl *mTopYMaxCtrl;
 	wxNumericCtrl *mTopYMinCtrl;
+	wxNumericCtrl *mTopY2MaxCtrl;
+	wxNumericCtrl *mTopY2MinCtrl;
 	wxNumericCtrl *mBottomYMaxCtrl;
 	wxNumericCtrl *mBottomYMinCtrl;
 	wxRadioChoice *mStyleChoice;
@@ -180,7 +186,7 @@ private:
 	wxScrollBar *m_graphScrollBar;
 	wxDVSelectionListCtrl *m_dataSelector;
 
-	bool m_topAutoScale, m_bottomAutoScale, m_syncToHeatMap;
+	bool m_topAutoScale,  m_top2AutoScale, m_bottomAutoScale, m_syncToHeatMap;
 	wxDVTimeSeriesStyle m_style; // line, stepped
 	bool m_stackingOnYLeft;
 	wxDVTimeSeriesType m_seriesType;
