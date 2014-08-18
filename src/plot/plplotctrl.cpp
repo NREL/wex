@@ -122,24 +122,47 @@ bool wxPLPlottable::GetMinMax(double *pxmin, double *pxmax, double *pymin, doubl
 {
 	if (Len() == 0) return false;
 
-	double myXMin = At(0).x;
-	double myXMax = At(0).x;
-	double myYMin = At(0).y;
-	double myYMax = At(0).y;
+	double myXMin = std::numeric_limits<double>::quiet_NaN();
+	double myXMax = std::numeric_limits<double>::quiet_NaN();
+	double myYMin = std::numeric_limits<double>::quiet_NaN();
+	double myYMax = std::numeric_limits<double>::quiet_NaN();
 
-	for (size_t i=1; i<Len(); i++)
+	for (size_t i=0; i<Len(); i++)
 	{
-		if (At(i).x < myXMin) myXMin = At(i).x;
-		if (At(i).y < myYMin) myYMin = At(i).y;
-		if (At(i).x > myXMax) myXMax = At(i).x;
-		if (At(i).y > myYMax) myYMax = At(i).y;
+		wxRealPoint pt(At(i));
+
+		bool nanval = wxIsNaN( pt.x ) || wxIsNaN( pt.y );
+		if ( !nanval )
+		{
+			if ( wxIsNaN( myXMin ) ) 
+				myXMin = pt.x;
+			if ( wxIsNaN( myXMax ) ) 
+				myXMax = pt.x;
+			if ( wxIsNaN( myYMin ) ) 
+				myYMin = pt.y;
+			if ( wxIsNaN( myYMax ) ) 
+				myYMax = pt.y;
+
+			if ( pt.x < myXMin )
+				myXMin = pt.x;
+			if ( pt.x > myXMax )
+				myXMax = pt.x;
+			if ( pt.y < myYMin )
+				myYMin = pt.y;
+			if ( pt.y > myYMax )
+				myYMax = pt.y;
+		}
 	}
 
 	if (pxmin) *pxmin = myXMin;
 	if (pxmax) *pxmax = myXMax;
 	if (pymin) *pymin = myYMin;
 	if (pymax) *pymax = myYMax;
-	return true;
+
+	return !wxIsNaN( myXMin )
+		&& !wxIsNaN( myXMax )
+		&& !wxIsNaN( myYMin )
+		&& !wxIsNaN( myYMax );
 }
 
 bool wxPLPlottable::ExtendMinMax(double *pxmin, double *pxmax, double *pymin, double *pymax) const

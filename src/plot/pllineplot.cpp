@@ -68,34 +68,32 @@ void wxPLLinePlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 	size_t len = Len();
 	if ( len < 2 ) return;
 
-	dc.SetPen( wxPen( m_colour, m_thickness, GetWxLineStyle(m_style) ) );
-	wxPoint start = map.ToDevice( At(0).x, At(0).y );
+	wxRealPoint wmin( map.GetWorldMinimum() );
+	wxRealPoint wmax( map.GetWorldMaximum() );
 
+	dc.SetPen( wxPen( m_colour, m_thickness, GetWxLineStyle(m_style) ) );
 	std::vector< wxPoint > points;
+	points.reserve( len );
+
 	for ( size_t i = 0; i<len; i++ )
 	{
-		points.push_back(map.ToDevice( At(i) ));
+		wxRealPoint pt( At(i) );
+		bool nanval = wxIsNaN( pt.x ) || wxIsNaN( pt.y );
+		if ( !nanval && pt.x >= wmin.x && pt.x <= wmax.x )
+			points.push_back(map.ToDevice( At(i) ));
+
+		if ( nanval && points.size() > 1 )
+		{
+			// draw currently accumulated points and clear
+			// accumulator - this will draw the contiguous
+			// segments of data that don't have any NaN values
+			dc.DrawLines( points.size(), &points[0] );
+			points.clear();
+		}
 	}
 	
-	dc.DrawLines( points.size(), &points[0] );
-	
-	/*
-	// example code to fill the plot below the line to the bottom of the 
-	// device extents.  uses alpha channel for color transparency
-	// someday this could be fully implemented...
-	
-	wxCoord phys_left = points[0].x;
-	wxCoord phys_right = points[ points.size()-1 ].x;
-	wxCoord phys_ymax = map.GetDeviceExtents().y + map.GetDeviceExtents().height;
-
-	points.push_back( wxPoint( phys_right, phys_ymax ) );
-	points.push_back( wxPoint( phys_left, phys_ymax ) );
-	
-	dc.SetPen( *wxTRANSPARENT_PEN );
-	wxColour transcol( m_colour.Red(), m_colour.Green(), m_colour.Blue(), 100 );
-	dc.SetBrush( wxBrush( transcol, wxSOLID ) );
-	dc.DrawPolygon( points.size(), &points[0] );
-	*/
+	if ( points.size() > 1 )
+		dc.DrawLines( points.size(), &points[0] );
 }
 
 void wxPLLinePlot::DrawInLegend( wxDC &dc, const wxRect &rct)

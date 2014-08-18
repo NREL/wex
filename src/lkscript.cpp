@@ -292,7 +292,7 @@ void fcall_plot( lk::invoke_t &cxt )
 
 void fcall_plotopt( lk::invoke_t &cxt )
 {
-	LK_DOC("plotopt", "Modifies the current plot properties like title, coarse, fine, legend, legendpos, wpos, wsize, autoscale", "(table:options):void");
+	LK_DOC("plotopt", "Modifies the current plot properties like title, coarse, fine, legend, legendpos, window", "(table:options):void");
 	wxPLPlotCtrl *plot = s_curPlot;
 	if (!plot) return;
 
