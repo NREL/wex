@@ -28,6 +28,11 @@
 
 #include <wex/radiochoice.h>
 
+#ifdef __WXOSX__
+#include <cmath>
+#define wxIsNaN(a) std::isnan(a)
+#endif
+
 static const wxString NO_UNITS("ThereAreNoUnitsForThisAxis.");
 enum { ID_TopCheckbox = wxID_HIGHEST + 1, ID_BottomCheckbox, ID_StatCheckbox };
 

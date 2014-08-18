@@ -1,5 +1,12 @@
+
+
 #include <wx/dc.h>
 #include "wex/plot/pllineplot.h"
+
+#ifdef __WXOSX__
+#include <cmath>
+#define wxIsNaN(a) std::isnan(a)
+#endif
 
 static int GetWxLineStyle( wxPLLinePlot::Style sty )
 {

@@ -26,6 +26,11 @@
 #include "wex/ole/excelauto.h"
 #endif
 
+#ifdef __WXOSX__
+#include <cmath>
+#define wxIsNaN(a) std::isnan(a)
+#endif
+
 static const int text_space = 3;
 static const wxSize legend_item_box(13, 13);
 
