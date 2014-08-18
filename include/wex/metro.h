@@ -308,6 +308,7 @@ public:
 	wxMetroPopupMenu( long theme = 0  /* can be wxMT_LIGHTTHEME */ );
 	void SetFont( const wxFont &f );
 	void Append( int id, const wxString &label );
+	void AppendCheckItem( int id, const wxString &label, bool checked = false );
 	void AppendSeparator();
 
 	void Popup( wxWindow *parent, const wxPoint &pos = wxDefaultPosition, int origin = wxTOP|wxLEFT );
@@ -317,6 +318,8 @@ private:
 	struct item {
 		int id;
 		wxString label;
+		bool is_checkItem;
+		bool checked;
 	};
 	std::vector<item> m_items;
 	wxFont m_font;

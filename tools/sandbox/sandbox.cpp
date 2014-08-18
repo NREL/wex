@@ -420,6 +420,10 @@ public:
 		menu.Append( id++, "Third item" );
 		menu.Append( id++, "Fourth item" );
 		menu.AppendSeparator();
+		menu.AppendCheckItem( id++, "Check 1" );
+		menu.AppendCheckItem( id++, "Check 2" );
+		menu.AppendCheckItem( id++, "Check 3", true );
+		menu.AppendSeparator();
 		menu.Append( id++, "Exit" );
 		menu.Popup( this );
 	}
@@ -493,8 +497,8 @@ public:
 		wxLog::SetActiveTarget(log);
 		log->Show();
 
-		//wxFrame *frame = new NumericTest();
-		//frame->Show();
+		wxFrame *frame = new NumericTest();
+		frame->Show();
 		
 
 		//TestPLPlot( 0 );

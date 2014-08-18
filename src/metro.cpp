@@ -723,12 +723,13 @@ void wxMetroTabList::OnLeftDown(wxMouseEvent &evt)
 	if ( m_selection >= 0 && m_selection < m_items.size()
 		&& m_dotdotWidth > 0 && mouse_x > cwidth - m_dotdotWidth )
 	{
-		wxMenu menu;			
+		wxMetroPopupMenu menu( m_style&wxMT_LIGHTTHEME ? wxMT_LIGHTTHEME : 0 );			
 		for ( size_t i=0;i< m_items.size();i++)
-			menu.AppendCheckItem( ID_TAB0+i, m_items[i].label );
+			menu.AppendCheckItem( ID_TAB0+i, m_items[i].label, i == (int)m_selection );
 		
-		menu.Check( ID_TAB0+m_selection, true );
-		PopupMenu( &menu );
+		wxPoint pos( cwidth-m_dotdotWidth, cheight );
+		pos = ClientToScreen(pos);		
+		menu.Popup( this, pos, wxTOP|wxLEFT );
 	}
 }
 
@@ -1513,17 +1514,23 @@ void wxMetroListBox::OnLeave(wxMouseEvent &evt)
 
 #define POPUP_BORDER 1
 #define POPUP_SPACE 5
+#define CHECK_SPACE 14
+#define CHECK_HEIGHT 14
+#define CHECK_WIDTH 10
 
 class wxMetroPopupMenuWindow : public wxPopupWindow
 {
 	struct item {
 		int id;
 		wxString label;
+		bool is_checkItem;
+		bool checked;
 		int ymin, ymax;
 	};
 	int m_hover;
 	std::vector<item> m_items;
 	long m_theme; 
+	bool m_hasCheckItems;
 public:
 	wxMetroPopupMenuWindow( wxWindow *parent, long theme = 0)
 		: wxPopupWindow( parent, wxBORDER_NONE|wxWANTS_CHARS ),
@@ -1534,7 +1541,7 @@ public:
 	}
 	
 
-	void Append( int id, const wxString &label )
+	void Append( int id, const wxString &label, bool isCheck, bool checked )
 	{
 		item x;
 		x.id = id;
@@ -1543,13 +1550,18 @@ public:
 		x.label.Replace( wxT("\tCtrl-"), wxT("\t\x2318") );
 	#endif
 		x.ymin = x.ymax = 0;
+		x.is_checkItem = isCheck;
+		x.checked = checked;
 		m_items.push_back( x );
+
+		if ( isCheck ) m_hasCheckItems = true;
+
 		InvalidateBestSize();
 	}
 
 	void AppendSeparator()
 	{
-		Append( -1, wxEmptyString );
+		Append( -1, wxEmptyString, false, false );
 	}
 
 	virtual wxSize DoGetBestSize() const
@@ -1588,6 +1600,8 @@ public:
 		}
 	
 		wl += 4*POPUP_SPACE;
+		if ( m_hasCheckItems ) wl += CHECK_SPACE;
+
 		if ( wr > 0 ) wr += 3*POPUP_SPACE;
 
 		return wxSize( wl + wr, h+POPUP_BORDER );
@@ -1612,7 +1626,8 @@ public:
 		dc.DrawRectangle( wxRect(0,0,sz.x,sz.y) );
 
 		int uh = ch + POPUP_SPACE;
-
+		int x0 = m_hasCheckItems ? CHECK_SPACE : 0;
+		
 		dc.SetPen( wxPen( text, 1) );
 
 		size_t yy = POPUP_BORDER;
@@ -1639,13 +1654,23 @@ public:
 					wxString l = m_items[i].label.Left(tpos);
 					wxString r = m_items[i].label.Mid(tpos+1);
 
-					dc.DrawText( l, POPUP_BORDER+POPUP_SPACE, texty );
+					dc.DrawText( l, x0+POPUP_BORDER+POPUP_SPACE, texty );
 					dc.SetTextForeground( *wxLIGHT_GREY );
 					dc.DrawText( r, sz.x - POPUP_BORDER - POPUP_SPACE - dc.GetTextExtent(r).x, texty );
 				}
 				else
 				{
-					dc.DrawText( m_items[i].label, POPUP_BORDER+POPUP_SPACE, texty );			
+					dc.DrawText( m_items[i].label, x0+POPUP_BORDER+POPUP_SPACE, texty );			
+				}
+
+				if ( m_items[i].is_checkItem )
+				{
+					wxColour chkcol( m_hover == (int)i ? acc : acchi );
+					if( m_items[i].checked ) dc.SetBrush( wxBrush( chkcol ) );
+					else dc.SetBrush( *wxTRANSPARENT_BRUSH );
+
+					dc.SetPen( wxPen( chkcol, 1 ) );
+					dc.DrawRectangle( 4, yy + uh/2 - CHECK_HEIGHT/2, CHECK_WIDTH, CHECK_HEIGHT );
 				}
 
 				yy += uh;
@@ -1795,6 +1820,18 @@ void wxMetroPopupMenu::Append( int id, const wxString &label )
 	item x;
 	x.id = id;
 	x.label = label;
+	x.is_checkItem = false;
+	x.checked = false;
+	m_items.push_back( x );
+}
+
+void wxMetroPopupMenu::AppendCheckItem( int id, const wxString &label, bool checked )
+{
+	item x;
+	x.id = id;
+	x.label = label;
+	x.is_checkItem = true;
+	x.checked = checked;
 	m_items.push_back( x );
 }
 
@@ -1809,6 +1846,6 @@ void wxMetroPopupMenu::Popup( wxWindow *parent, const wxPoint &pos, int origin )
 	wxMetroPopupMenuWindow *menu = new wxMetroPopupMenuWindow( parent, m_theme );
 	menu->SetFont( m_font );
 	for( size_t i=0;i<m_items.size();i++ )
-		menu->Append( m_items[i].id, m_items[i].label );
+		menu->Append( m_items[i].id, m_items[i].label, m_items[i].is_checkItem, m_items[i].checked );
 	menu->Popup( pos, origin );
 }
