@@ -819,10 +819,11 @@ void wxLKScriptCtrl::ShowHelpDialog( wxWindow *custom_parent )
 		custom_parent = this;
 
 	wxFrame *frm = new wxFrame( custom_parent, wxID_ANY, 
-		"Scripting Reference", wxDefaultPosition, wxSize(900, 800) );
+		"Scripting Reference", wxDefaultPosition, wxSize(900, 800),
+		wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN | wxRESIZE_BORDER | wxFRAME_TOOL_WINDOW );
 	wxHtmlWindow *html = new wxHtmlWindow( frm, wxID_ANY, 
 		wxDefaultPosition, wxDefaultSize, 
-		wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN | wxRESIZE_BORDER | wxFRAME_TOOL_WINDOW );
+		wxHW_DEFAULT_STYLE | wxBORDER_NONE );
 	html->SetPage( GetHtmlDocs() );
 	frm->Show();
 }
