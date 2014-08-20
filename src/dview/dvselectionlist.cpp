@@ -343,7 +343,7 @@ void wxDVSelectionListCtrl::ResetScrollbars()
 {
 	int hpos, vpos;
 	GetViewStart( &hpos, &vpos );
-	SetScrollbars( SCRL_RATE, SCRL_RATE, m_bestSize.GetWidth(),m_bestSize.GetHeight(),hpos,vpos );	
+	SetScrollbars( SCRL_RATE, SCRL_RATE, m_bestSize.GetWidth()/SCRL_RATE,m_bestSize.GetHeight()/SCRL_RATE,hpos,vpos );	
 	InvalidateBestSize();
 }
 

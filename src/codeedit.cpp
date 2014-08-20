@@ -16,39 +16,42 @@ class FRDialog : public wxFrame
 	wxTextCtrl *m_findText, *m_replaceText;
 	wxCheckBox *m_matchCase, *m_wholeWord;
 	wxStaticText *m_replaceLabel;
-	wxButton *m_replaceNextButton, *m_replaceAllButton;
+	wxButton *m_findButton, *m_replaceNextButton, *m_replaceAllButton;
 
 public:
 	FRDialog( wxCodeEditCtrl *parent )
 		: wxFrame( parent, wxID_ANY, "Find & Replace", wxDefaultPosition, wxDefaultSize,
-			wxFRAME_FLOAT_ON_PARENT|wxFRAME_TOOL_WINDOW|wxCLOSE_BOX|wxCAPTION|wxSYSTEM_MENU )
+			wxFRAME_FLOAT_ON_PARENT|wxRESIZE_BORDER|wxFRAME_TOOL_WINDOW|wxCLOSE_BOX|wxCAPTION|wxSYSTEM_MENU )
 	{
 		SetBackgroundColour( *wxWHITE );
 		m_editor = parent;
+		
+		wxPanel *panel = new wxPanel( this ); // build it on a panel to handle tab traversal
 
-		m_findText = new wxTextCtrl( this, ID_FIND_TEXT, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER  );
-		m_replaceText = new wxTextCtrl( this, ID_REPLACE_TEXT, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER   );
-		m_matchCase = new wxCheckBox( this, wxID_ANY, "Match case" );
-		m_wholeWord = new wxCheckBox( this, wxID_ANY, "Whole word" );
+		m_findText = new wxTextCtrl( panel, ID_FIND_TEXT, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER  );
+		m_replaceText = new wxTextCtrl( panel, ID_REPLACE_TEXT, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER   );
+		m_matchCase = new wxCheckBox( panel, wxID_ANY, "Match case" );
+		m_wholeWord = new wxCheckBox( panel, wxID_ANY, "Whole word" );
 		
 		
 		wxFlexGridSizer *find_sizer = new wxFlexGridSizer( 3, 0, 0 );
 		find_sizer->AddGrowableCol(1);
-		find_sizer->Add( new wxStaticText( this, wxID_ANY, "   Search for:"), 0, wxALL|wxALIGN_CENTER_VERTICAL, 3 );
+		find_sizer->Add( new wxStaticText( panel, wxID_ANY, "   Search for:"), 0, wxALL|wxALIGN_CENTER_VERTICAL, 3 );
 		find_sizer->Add( m_findText, 0, wxALL|wxEXPAND, 3 );
-		find_sizer->Add( new wxButton( this, ID_FIND_NEXT, "Find next" ), 0, wxALL|wxEXPAND, 3 );
+		find_sizer->Add( m_findButton = new wxButton( panel, ID_FIND_NEXT, "Find next" ), 0, wxALL|wxEXPAND, 3 );
 				
-		find_sizer->Add( m_replaceLabel = new wxStaticText( this, wxID_ANY, "   Replace with:"), 0, wxALL|wxALIGN_CENTER_VERTICAL, 3 );
+		find_sizer->Add( m_replaceLabel = new wxStaticText( panel, wxID_ANY, "   Replace with:"), 0, wxALL|wxALIGN_CENTER_VERTICAL, 3 );
 		find_sizer->Add( m_replaceText, 0, wxALL|wxEXPAND, 3 );
-		find_sizer->Add( m_replaceNextButton = new wxButton( this, ID_REPLACE_NEXT, "Replace next" ), 0, wxALL|wxEXPAND, 3 );
+		find_sizer->Add( m_replaceNextButton = new wxButton( panel, ID_REPLACE_NEXT, "Replace next" ), 0, wxALL|wxEXPAND, 3 );
 		
 		find_sizer->Add( m_matchCase, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
 		find_sizer->Add( m_wholeWord, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
-		find_sizer->Add( m_replaceAllButton = new wxButton( this, ID_REPLACE_ALL, "Replace all" ), 0, wxALL|wxEXPAND, 3 );
+		find_sizer->Add( m_replaceAllButton = new wxButton( panel, ID_REPLACE_ALL, "Replace all" ), 0, wxALL|wxEXPAND, 3 );
 
-		SetSizer( find_sizer );
+		panel->SetSizerAndFit( find_sizer );
 		Fit();
-	
+
+		m_findButton->SetDefault();
 	}
 
 	void OnCharHook( wxKeyEvent &evt )
@@ -77,6 +80,11 @@ public:
 	{
 		m_editor->ReplaceAll( m_findText->GetValue(), m_replaceText->GetValue(),
 			m_matchCase->GetValue(), m_wholeWord->GetValue() );	
+	}
+
+	void SetFindText( const wxString &find )
+	{
+		m_findText->ChangeValue( find );
 	}
 
 	void SelectAll()
@@ -715,7 +723,9 @@ std::vector<int> wxCodeEditCtrl::GetBreakpoints()
 
 void wxCodeEditCtrl::ShowFindReplaceDialog()
 {
+	m_lastFindPos = -1;
 	m_frDialog->Show();
+	m_frDialog->SetFindText( GetSelectedText() );
 	m_frDialog->SetFocus();
 	m_frDialog->SelectAll();
 }
@@ -739,7 +749,7 @@ int	wxCodeEditCtrl::FindNext( const wxString &text, int frtxt_len, bool match_ca
 {
 	if (frtxt_len < 0) frtxt_len = text.Len();
 
-	int start = m_lastFindPos >= 0 ? m_lastFindPos+frtxt_len : 0;
+	int start = m_lastFindPos >= 0 ? m_lastFindPos+frtxt_len : GetCurrentPos();
 	if (start > GetLength())
 		start = 0;
 
