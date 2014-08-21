@@ -53,6 +53,10 @@ public:
 
     static int  UTF8NumBytes( char ch );
 
+	//! skip double quotest in strings
+	void SetSkipStringDoubleQuotes(bool skip){ m_skip_string_double_quotes = skip; }
+	bool GetSkipStringDoubleQuotes() { return m_skip_string_double_quotes; }
+
 #if defined( wxJSON_64BIT_INT )
     static bool Strtoll( const wxString& str, wxInt64* i64 );
     static bool Strtoull( const wxString& str, wxUint64* ui64 );
@@ -126,6 +130,9 @@ protected:
 
     //! ANSI: do not convert UTF-8 strings
     bool        m_noUtf8;
+
+	//! skip non-escaped double quotes in strings
+	bool m_skip_string_double_quotes;
 };
 
 

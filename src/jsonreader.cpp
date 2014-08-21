@@ -235,6 +235,9 @@ wxJSONReader::wxJSONReader( int flags, int maxErrors )
     m_flags     = flags;
     m_maxErrors = maxErrors;
     m_noUtf8    = false;
+
+	m_skip_string_double_quotes = false; // normal behavior JSON strings start with " and end with "
+
 #if !defined( wxJSON_USE_UNICODE )
     // in ANSI builds we can suppress UTF-8 conversion for both the writer and the reader
     if ( m_flags & wxJSONREADER_NOUTF8_STREAM )    {
@@ -1180,9 +1183,41 @@ wxJSONReader::ReadString( wxInputStream& is, wxJSONValue& val )
         else {
             // we have read a non-escaped character so we have to append it to
             // the temporary UTF-8 buffer until the next quote char
-            if ( ch == '\"' )    {
-                break;
-            }
+			// URDB V3 has double quotes embedded within JSON string
+			// handle non-escaped double quotes in JSON (i.e. ends string at ",)
+			if (ch == '\"')
+			{
+				if (m_skip_string_double_quotes)
+				{
+					int pc = PeekChar(is);
+					if (pc == ':')  // handles "name": value
+						break;
+					else if (pc == ',') // handle "M","t", r end of string is ",\n
+					{
+						ch = ReadChar(is); //','
+						pc = PeekChar(is);
+						if (pc == '\n') // actual end of string
+						{
+							is.Ungetch(',');
+							break;
+						}
+						else
+						{
+							//utf8Buff.AppendByte('\\');
+							utf8Buff.AppendByte('\"');
+						}
+					}
+					//else
+					//	utf8Buff.AppendByte('\\');
+				}
+				else
+				{
+					break;
+				}
+			}
+            //if ( ch == '\"' )    {
+            //    break;
+            //}
             utf8Buff.AppendByte( c );
         }
     }
