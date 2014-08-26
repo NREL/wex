@@ -128,13 +128,14 @@ wxString wxNumericCtrl::Format( double val, Mode mode, int deci, bool thousep, c
 		else if ( deci == EXPONENTIAL ) buf.Printf( "%le", val );
 		else
 		{
+			/*
 			if ( deci <= 0 )
 			{
 				if ( thousep ) buf = wxNumberFormatter::ToString( (long)val, wxNumberFormatter::Style_WithThousandsSep );
 				else buf.Printf( "%d", (int)val );
 			}
 			else
-			{
+			{*/
 				if ( thousep )
 					buf = wxNumberFormatter::ToString( val, deci, wxNumberFormatter::Style_WithThousandsSep );
 				else
@@ -143,7 +144,7 @@ wxString wxNumericCtrl::Format( double val, Mode mode, int deci, bool thousep, c
 					fmt.Printf( "%%.%dlf", deci );
 					buf.Printf( fmt, val );
 				}
-			}
+			//}
 		}
 	}
 
