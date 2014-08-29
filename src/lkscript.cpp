@@ -820,7 +820,7 @@ void wxLKScriptCtrl::ShowHelpDialog( wxWindow *custom_parent )
 
 	wxFrame *frm = new wxFrame( custom_parent, wxID_ANY, 
 		"Scripting Reference", wxDefaultPosition, wxSize(900, 800),
-		wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN | wxRESIZE_BORDER | wxFRAME_TOOL_WINDOW );
+		wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN | wxRESIZE_BORDER | wxFRAME_TOOL_WINDOW | wxFRAME_FLOAT_ON_PARENT);
 	wxHtmlWindow *html = new wxHtmlWindow( frm, wxID_ANY, 
 		wxDefaultPosition, wxDefaultSize, 
 		wxHW_DEFAULT_STYLE | wxBORDER_NONE );
