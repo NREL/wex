@@ -484,54 +484,54 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 
 		Append(sp);
 
-		//Append StatisticsPoint for totals over all months
-
-		AvgDailyMin = 0.0;
-		AvgDailyMax = 0.0;
-		avg = totalsum / totalcounter;
-
-		//Calculate standard deviation for the month's data
-		StDev = 0.0;
-		StDevCounter = 0.0;
-		for (size_t j = 0; j < d->Length(); j++)
-		{
-			StDev += (d->At(j).y - avg) * (d->At(j).y - avg);
-			StDevCounter += 1.0;
-		}
-		if (StDevCounter > 0.0)
-		{
-			StDev = StDev / StDevCounter;
-			StDev = sqrt(StDev);
-		}
-
-		//Summarize the daily Min and Max values into average daily min and max values for the month.
-		DayCounter = 0.0;
-		for (size_t j = 0; j < totalDayStats.size(); j++)
-		{
-			AvgDailyMin += totalDayStats[j].x;
-			AvgDailyMax += totalDayStats[j].y;
-			DayCounter += 1.0;
-		}
-		if (DayCounter > 0.0)
-		{
-			AvgDailyMax = AvgDailyMax / DayCounter;
-			AvgDailyMin = AvgDailyMin / DayCounter;
-		}
-
-		sp = StatisticsPoint();
-		sp.x = d->At(d->Length() - 1).x + 1.0;	//Make x one greater than the last x value in the dataset
-		sp.name = "Total";
-		sp.Max = RoundSignificant(totalmax);
-		sp.Min = RoundSignificant(totalmin);
-		sp.Sum = RoundSignificant(totalsum);
-		sp.Mean = RoundSignificant(avg);
-		sp.StDev = RoundSignificant(StDev);
-		sp.AvgDailyMax = RoundSignificant(AvgDailyMax);
-		sp.AvgDailyMin = RoundSignificant(AvgDailyMin);
-
-		Append(sp);
-
 	}
+
+	//Append StatisticsPoint for totals over all months
+
+	AvgDailyMin = 0.0;
+	AvgDailyMax = 0.0;
+	avg = totalsum / totalcounter;
+
+	//Calculate standard deviation for the month's data
+	StDev = 0.0;
+	StDevCounter = 0.0;
+	for (size_t j = 0; j < d->Length(); j++)
+	{
+		StDev += (d->At(j).y - avg) * (d->At(j).y - avg);
+		StDevCounter += 1.0;
+	}
+	if (StDevCounter > 0.0)
+	{
+		StDev = StDev / StDevCounter;
+		StDev = sqrt(StDev);
+	}
+
+	//Summarize the daily Min and Max values into average daily min and max values for the month.
+	DayCounter = 0.0;
+	for (size_t j = 0; j < totalDayStats.size(); j++)
+	{
+		AvgDailyMin += totalDayStats[j].x;
+		AvgDailyMax += totalDayStats[j].y;
+		DayCounter += 1.0;
+	}
+	if (DayCounter > 0.0)
+	{
+		AvgDailyMax = AvgDailyMax / DayCounter;
+		AvgDailyMin = AvgDailyMin / DayCounter;
+	}
+
+	sp = StatisticsPoint();
+	sp.x = d->At(d->Length() - 1).x + 1.0;	//Make x one greater than the last x value in the dataset
+	sp.name = "Total";
+	sp.Max = RoundSignificant(totalmax);
+	sp.Min = RoundSignificant(totalmin);
+	sp.Sum = RoundSignificant(totalsum);
+	sp.Mean = RoundSignificant(avg);
+	sp.StDev = RoundSignificant(StDev);
+	sp.AvgDailyMax = RoundSignificant(AvgDailyMax);
+	sp.AvgDailyMin = RoundSignificant(AvgDailyMin);
+
+	Append(sp); 
 }
 
 double wxDVStatisticsDataSet::RoundSignificant(double ValueToRound, size_t NumSignifDigits)
