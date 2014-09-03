@@ -96,37 +96,22 @@ namespace wxDVPlotHelper
 		*numToRound -= fmod(*numToRound, interval);
 	}
 
-	void ExtendBoundToNiceNumber(double* boundToExtend)
+	void ExtendBoundsToNiceNumber(double* upperBoundToExtend, double* lowerBoundToExtend)
 	{
-		//This function will always move a bound farther away from 0.
-		bool negate = false;
-		if (*boundToExtend < 0)
+		int rangeExp;
+		double range = abs(*upperBoundToExtend - *lowerBoundToExtend);
+
+		if (range == 0)
 		{
-			negate = true;
-			*boundToExtend = -*boundToExtend;
+			rangeExp = (int)(floor(log10(abs(*upperBoundToExtend))));
+		}
+		else
+		{
+			rangeExp = (int)(floor(log10(range)));
 		}
 
-		int exp = int(log10(*boundToExtend));
-		double ratio = *boundToExtend / pow(double(10), exp);
-		/*RoundUpToNearest(ratio, 0.5); This could work instead of niceMultiplier*/
-
-		double niceMultiplier;
-		if (ratio <= 1)
-			niceMultiplier = 1;
-		else if (ratio <= 2)
-			niceMultiplier = 2;
-		else if (ratio <= 5)
-			niceMultiplier = 5;
-		else if (ratio <= 8)
-			niceMultiplier = 8;
-		else
-			niceMultiplier = 10;
-	
-
-		*boundToExtend = niceMultiplier * pow(double(10), exp); //return this.
-
-		if(negate)
-			*boundToExtend = -*boundToExtend;
+		*upperBoundToExtend = ceil(*upperBoundToExtend / pow(double(10), rangeExp)) * pow(double(10), rangeExp);
+		*lowerBoundToExtend = floor(*lowerBoundToExtend / pow(double(10), rangeExp)) * pow(double(10), rangeExp);
 	}
 	
 }

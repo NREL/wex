@@ -25,6 +25,7 @@ END_DECLARE_EVENT_TYPES()
 
 #define wxDVSEL_RADIO_FIRST_COL 0x01
 #define wxDVSEL_NO_COLOURS 0x02
+#define wxDVSEL_RADIO_ALL_COL 0x03
 
 
 class wxDVSelectionListCtrl : public wxScrolledWindow, public wxDVAutoColourAssigner
@@ -50,6 +51,7 @@ public:
 	wxString GetSelectedNamesInCol(int col = 0);
 	std::vector<int> GetSelectionsInCol( int col = 0 );
 	int GetNumSelected( int col = 0 );
+	int GetUnsortedRowIndex(int SortedIndex = 0);	//Returns the raw index of a row (index of the underlying data element) when passed the sorted index (the displayed position)
 
 	void ExpandAll();
 	void ExpandSelections();

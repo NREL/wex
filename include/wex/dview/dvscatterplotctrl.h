@@ -26,6 +26,8 @@ public:
 
 	//EVENT HANDLERS
 	void OnChannelSelection( wxCommandEvent & );
+	void OnShowLine(wxCommandEvent &);
+	void RefreshPlot();
 
 private:
 	std::vector<wxDVTimeSeriesDataSet*> m_dataSets;
@@ -35,6 +37,8 @@ private:
 	std::vector<int> m_yDataIndices;
 
 	wxPLPlotCtrl *m_plotSurface;
+	wxCheckBox *m_showPerfAgreeLine;
+	bool m_showLine;
 
 	void SetXAxisChannel(int index);
 	void AddYAxisChannel(int index);

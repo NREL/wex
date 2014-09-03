@@ -289,7 +289,7 @@ unsigned int dvStatisticsTreeModel::GetChildren(const wxDataViewItem &parent, wx
 	return count;
 }
 
-void dvStatisticsTreeModel::Refresh(std::vector<wxDVVariableStatistics*> stats)
+void dvStatisticsTreeModel::Refresh(std::vector<wxDVVariableStatistics*> stats, bool showMonths)
 {
 	wxDVStatisticsDataSet *ds;
 	dvStatisticsTreeModelNode *groupNode;
@@ -331,7 +331,9 @@ void dvStatisticsTreeModel::Refresh(std::vector<wxDVVariableStatistics*> stats)
 
 		ds = stats[i]->GetDataSet();
 
-		variableNode = new dvStatisticsTreeModelNode(groupNode, ds->GetSeriesTitle() + " (" + ds->GetUnits() + ")");
+		if (showMonths)
+		{
+			variableNode = new dvStatisticsTreeModelNode(groupNode, ds->GetSeriesTitle() + " (" + ds->GetUnits() + ")");
 
 		for (int j = 0; j < ds->Length(); j++)
 		{
@@ -340,7 +342,21 @@ void dvStatisticsTreeModel::Refresh(std::vector<wxDVVariableStatistics*> stats)
 			variableNode->Append(monthNode);
 		}
 
-		groupNode->Append(variableNode);
+			groupNode->Append(variableNode);
+		}
+		else
+		{
+			for (int j = 0; j < ds->Length(); j++)
+			{
+				if (ds->At(j).name == "Total")
+				{
+					p = ds->At(j);
+					variableNode = new dvStatisticsTreeModelNode(groupNode, ds->GetSeriesTitle() + " (" + ds->GetUnits() + ")", p.Mean, p.Min, p.Max, p.Sum, p.StDev, p.AvgDailyMin, p.AvgDailyMax);
+					groupNode->Append(variableNode);
+					break;
+				}
+			}
+		}
 	}
 }
 
@@ -411,20 +427,25 @@ enum { ID_COPY_DATA_CLIP = wxID_HIGHEST + 1251, ID_SAVE_DATA_CSV, ID_SEND_EXCEL 
 
 BEGIN_EVENT_TABLE(wxDVStatisticsTableCtrl, wxPanel)
 	EVT_MENU_RANGE(ID_COPY_DATA_CLIP, ID_SEND_EXCEL, wxDVStatisticsTableCtrl::OnPopupMenu)
-END_EVENT_TABLE()
+	EVT_CHECKBOX(wxID_ANY, wxDVStatisticsTableCtrl::OnShowMonthsClick)
+	END_EVENT_TABLE()
 
 wxDVStatisticsTableCtrl::wxDVStatisticsTableCtrl(wxWindow *parent, wxWindowID id)
 : wxPanel(parent, id)
 {
+	m_showMonths = false;
+
 	m_ctrl = new wxDataViewCtrl(this, ID_STATISTICS_CTRL, wxDefaultPosition, wxSize(1040, 720), wxDV_MULTIPLE + wxDV_ROW_LINES + wxDV_VERT_RULES + wxDV_HORIZ_RULES);
 	m_ctrl->Bind(wxEVT_COMMAND_DATAVIEW_ITEM_CONTEXT_MENU, &wxDVStatisticsTableCtrl::OnContextMenu, this);
 
 	m_StatisticsModel = new dvStatisticsTreeModel();
+	m_chkShowMonths = new wxCheckBox(this, wxID_ANY, "Show Monthly Values", wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
 
 	wxBoxSizer *table_sizer = new wxBoxSizer(wxHORIZONTAL);
 	table_sizer->Add(m_ctrl, 1, wxEXPAND | wxALL, 4);
 
 	wxBoxSizer *top_sizer = new wxBoxSizer(wxVERTICAL);
+	top_sizer->Add(m_chkShowMonths, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
 	top_sizer->Add(table_sizer, 1, wxALL | wxEXPAND, 0);
 	SetSizer(top_sizer);
 
@@ -450,7 +471,7 @@ void wxDVStatisticsTableCtrl::RebuildDataViewCtrl()
 {
 	wxDataViewTextRenderer *tr;
 
-	m_StatisticsModel->Refresh(m_variableStatistics);
+	m_StatisticsModel->Refresh(m_variableStatistics, m_showMonths);
 	m_ctrl->ClearColumns();
 	m_ctrl->AssociateModel(m_StatisticsModel.get());
 
@@ -707,3 +728,8 @@ void wxDVStatisticsTableCtrl::OnPopupMenu(wxCommandEvent &evt)
 	}
 }
 
+void wxDVStatisticsTableCtrl::OnShowMonthsClick(wxCommandEvent &e)
+{
+	m_showMonths = m_chkShowMonths->GetValue();
+	RebuildDataViewCtrl();
+}

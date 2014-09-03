@@ -42,13 +42,13 @@ double wxDVColourMap::GetScaleMax()
 	return m_max;
 }
 
-void wxDVColourMap::ExtendScaleToNiceNumbers()
+void wxDVColourMap::ExtendScaleToNiceNumbers(bool useFineScale)
 {
-	ExtendToNiceInPosDir(&m_max, true);
-	ExtendToNiceInPosDir(&m_min, false);
+	ExtendToNiceInPosDir(&m_max, true, useFineScale);
+	ExtendToNiceInPosDir(&m_min, false, useFineScale);
 }
 
-void wxDVColourMap::ExtendToNiceInPosDir(double* d, bool posDir)
+void wxDVColourMap::ExtendToNiceInPosDir(double* d, bool posDir, bool useFineScale)
 {
 	//If dir is true move in positive direction.  Otherwise negative.
 	bool neg = false;
@@ -66,31 +66,91 @@ void wxDVColourMap::ExtendToNiceInPosDir(double* d, bool posDir)
 	double niceMultiplier;
 	if ((!neg && posDir) || (neg && !posDir))
 	{
-		if (ratio <= 1)
+		if (ratio <= 0.5)
+			niceMultiplier = 0.5;
+		else if (ratio <= 1)
 			niceMultiplier = 1;
+		else if (ratio <= 1.5 && useFineScale)
+			niceMultiplier = 1.5;
 		else if (ratio <= 2)
 			niceMultiplier = 2;
+		else if (ratio <= 2.5 && useFineScale)
+			niceMultiplier = 2.5;
+		else if (ratio <= 3 && useFineScale)
+			niceMultiplier = 3;
+		else if (ratio <= 3.5 && useFineScale)
+			niceMultiplier = 3.5;
+		else if (ratio <= 4 && useFineScale)
+			niceMultiplier = 4;
+		else if (ratio <= 4.5 && useFineScale)
+			niceMultiplier = 4.5;
 		else if (ratio <= 5)
 			niceMultiplier = 5;
+		else if (ratio <= 5.5 && useFineScale)
+			niceMultiplier = 5.5;
+		else if (ratio <= 6 && useFineScale)
+			niceMultiplier = 6;
+		else if (ratio <= 6.5 && useFineScale)
+			niceMultiplier = 6.5;
+		else if (ratio <= 7 && useFineScale)
+			niceMultiplier = 7;
+		else if (ratio <= 7.5 && useFineScale)
+			niceMultiplier = 7.5;
 		else if (ratio <= 8)
 			niceMultiplier = 8;
+		else if (ratio <= 8.5 && useFineScale)
+			niceMultiplier = 8.5;
+		else if (ratio <= 9 && useFineScale)
+			niceMultiplier = 9;
+		else if (ratio <= 9.5 && useFineScale)
+			niceMultiplier = 9.5;
 		else
 			niceMultiplier = 10;
 	}
 	else //negative number.  must go closer to 0.
 	{
-		if (ratio >= 8)
+		if (ratio >= 9.5 && useFineScale)
+			niceMultiplier = 9.5;
+		else if(ratio >= 9 && useFineScale)
+			niceMultiplier = 9;
+		else if (ratio >= 8.5 && useFineScale)
+			niceMultiplier = 8.5;
+		else if (ratio >= 8)
 			niceMultiplier = 8;
+		else if (ratio >= 7.5 && useFineScale)
+			niceMultiplier = 7.5;
+		else if (ratio >= 7 && useFineScale)
+			niceMultiplier = 7;
+		else if (ratio >= 6.5 && useFineScale)
+			niceMultiplier = 6.5;
+		else if (ratio >= 6 && useFineScale)
+			niceMultiplier = 6;
+		else if (ratio >= 5.5 && useFineScale)
+			niceMultiplier = 5.5;
 		else if (ratio >= 5)
 			niceMultiplier = 5;
+		else if (ratio >= 4.5 && useFineScale)
+			niceMultiplier = 4.5;
+		else if (ratio >= 4 && useFineScale)
+			niceMultiplier = 4;
+		else if (ratio >= 3.5 && useFineScale)
+			niceMultiplier = 3.5;
+		else if (ratio >= 3 && useFineScale)
+			niceMultiplier = 3;
+		else if (ratio >= 2.5 && useFineScale)
+			niceMultiplier = 2.5;
 		else if (ratio >= 2)
 			niceMultiplier = 2;
+		else if (ratio >= 1.5 && useFineScale)
+			niceMultiplier = 1.5;
 		else if (ratio >= 1)
 			niceMultiplier = 1;
-		else 
+		else if (ratio >= 0.5 && useFineScale)
+			niceMultiplier = 0.5;
+		else
 		{
 			exp --;
-			niceMultiplier = 8;
+			niceMultiplier = useFineScale ? 9.5 : 8;
 		}
 	}
 

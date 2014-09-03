@@ -196,7 +196,7 @@ void wxDVPnCdfCtrl::SelectDataSetAtIndex(int index)
 
 	m_selectedDataSetIndex = index;
 	ChangePlotDataTo(m_dataSets[index]);
-	m_dataSelector->SetSelection(index);
+	m_dataSelector->SetStringSelection(m_indexedDataNames[index]);
 }
 
 void wxDVPnCdfCtrl::SetNumberOfBins(int n)

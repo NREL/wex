@@ -35,6 +35,7 @@ public:
 	//RemoveAll deletes data sets.
 	void RemoveAllDataSets();
 
+	wxDVStatisticsTableCtrl* GetStatisticsTable();
 
 	//These methods get and set the view perspective to resume later with the same view.
 	wxDVPlotCtrlSettings GetPerspective();
@@ -54,18 +55,20 @@ public:
 
 	void SelectDataOnBlankTabs();
 	
+	void DisplayTabs();
+	double GetMinTimeStep();
 	void OnPageChanging( wxNotebookEvent& e );
 	
 private:
 	std::vector<wxDVTimeSeriesDataSet*> m_dataSets;
 
 	wxDVTimeSeriesCtrl *m_timeSeries;
-	//wxDVTimeSeriesCtrl *m_hourlyTimeSeries;
+	wxDVTimeSeriesCtrl *m_hourlyTimeSeries;
 	wxDVTimeSeriesCtrl *m_dailyTimeSeries;
-	//wxDVTimeSeriesCtrl *m_monthlyTimeSeries;
+	wxDVTimeSeriesCtrl *m_monthlyTimeSeries;
 	wxDVDMapCtrl *m_dMap;
 	wxDVProfileCtrl *m_profilePlots;
-	//wxDVStatisticsTableCtrl *m_statisticsTable;
+	wxDVStatisticsTableCtrl *m_statisticsTable;
 	wxDVPnCdfCtrl *m_pnCdf;
 	wxDVDCCtrl *m_durationCurve;
 	wxDVScatterPlotCtrl *m_scatterPlot;

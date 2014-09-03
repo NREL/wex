@@ -22,10 +22,10 @@ public:
 	virtual void SetScaleMax(double max);
 	virtual double GetScaleMin();
 	virtual double GetScaleMax();
-	void ExtendScaleToNiceNumbers();
+	void ExtendScaleToNiceNumbers(bool useFineScale = false);
 
 	//If true, + dir.  If false, - dir.
-	void ExtendToNiceInPosDir(double* d, bool posDir);
+	void ExtendToNiceInPosDir(double* d, bool posDir, bool useFineScale = false);
 
 	virtual wxColour ColourForValue(double val);
 	

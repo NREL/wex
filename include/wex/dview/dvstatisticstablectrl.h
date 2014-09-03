@@ -87,7 +87,7 @@ public:
 	dvStatisticsTreeModel();
 	~dvStatisticsTreeModel() { delete m_root; }
 
-	void Refresh(std::vector<wxDVVariableStatistics*> stats);
+	void Refresh(std::vector<wxDVVariableStatistics*> stats, bool showMonths);
 	wxDataViewItem GetRoot();
 
 	// override sorting to always sort branches ascendingly
@@ -98,7 +98,7 @@ public:
 	virtual wxString GetColumnType(unsigned int col) const;
 	virtual void GetValue(wxVariant &variant, const wxDataViewItem &item, unsigned int col) const;
 	virtual bool SetValue(const wxVariant &variant, const wxDataViewItem &item, unsigned int col);
-	virtual bool IsEnabled(const wxDataViewItem &, unsigned int ) const { return false; }
+	virtual bool IsEnabled(const wxDataViewItem &item, unsigned int col) const { return false; }
 	virtual wxDataViewItem GetParent(const wxDataViewItem &item) const;
 	virtual bool IsContainer(const wxDataViewItem &item) const;
 	virtual unsigned int GetChildren(const wxDataViewItem &parent, wxDataViewItemArray &array) const;
@@ -121,6 +121,7 @@ public:
 	void Invalidate();
 
 	wxMenu &GetContextMenu() { return m_contextMenu; }
+	void OnShowMonthsClick(wxCommandEvent &e);
 
 private:
 	std::vector<wxDVVariableStatistics*> m_variableStatistics;
@@ -129,6 +130,8 @@ private:
 	wxDataViewColumn* m_col;
 
 	wxMenu m_contextMenu;
+	wxCheckBox *m_chkShowMonths;
+	bool m_showMonths;
 
 	// event handlers
 	void OnCollapse(wxCommandEvent& event);

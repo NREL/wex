@@ -95,6 +95,8 @@ void wxDVDCCtrl::RemoveAllDataSets()
 	}
 	m_plots.clear();
 
+	m_plotSurface->SetYAxis1(NULL);
+	m_plotSurface->SetYAxis2(NULL);
 	Layout();
 	Refresh();
 }
@@ -133,6 +135,9 @@ void wxDVDCCtrl::CalculateDCPlotData( PlotSet *p)
 
 void wxDVDCCtrl::ShowPlotAtIndex(int index)
 {
+	wxString YLabelText;
+	size_t NumY1AxisSelections = 0;
+	size_t NumY2AxisSelections = 0;
 	if (index >= 0 && index < m_plots.size())
 	{
 		CalculateDCPlotData( m_plots[index] );
@@ -142,10 +147,10 @@ void wxDVDCCtrl::ShowPlotAtIndex(int index)
 		wxString y1Units = NO_UNITS, y2Units = NO_UNITS;
 
 		if ( m_plotSurface->GetYAxis1() )
-			y1Units = m_plotSurface->GetYAxis1()->GetLabel();
+			y1Units = m_plotSurface->GetYAxis1()->GetUnits();
 
 		if ( m_plotSurface->GetYAxis2() )
-			y2Units = m_plotSurface->GetYAxis2()->GetLabel();
+			y2Units = m_plotSurface->GetYAxis2()->GetUnits();
 
 		wxString units = m_plots[index]->dataset->GetUnits();
 
@@ -159,10 +164,32 @@ void wxDVDCCtrl::ShowPlotAtIndex(int index)
 			yap = wxPLPlotCtrl::Y_RIGHT;
 
 		m_plotSurface->AddPlot( m_plots[index]->plot, wxPLPlotCtrl::X_BOTTOM, yap );
-		m_plotSurface->GetAxis( yap )->SetLabel( units );
+		m_plotSurface->GetAxis(yap)->SetUnits(units);
 
+		YLabelText = units;
+		for (size_t i = 0; i < m_dataSelector->Length(); i++)
+		{
+			if (m_dataSelector->IsSelected(i, 0) && m_plots[i]->dataset->GetUnits() == units)
+			{
+				if (yap == wxPLPlotCtrl::Y_LEFT)
+				{
+					NumY1AxisSelections++;
+				}
+				else
+				{
+					NumY2AxisSelections++;
+				}
+			}
+		}
+		if ((NumY1AxisSelections == 1 && yap == wxPLPlotCtrl::Y_LEFT) || (NumY2AxisSelections == 1 && yap == wxPLPlotCtrl::Y_RIGHT))
+		{
+			YLabelText = m_plots[index]->dataset->GetLabel(); 
+		}
+		m_plotSurface->GetAxis(yap)->SetLabel(YLabelText);
 		m_plotSurface->GetXAxis1()->SetLabel( "Hours Equaled or Exceeded" );
 		RefreshDisabledCheckBoxes();
+		m_plotSurface->Invalidate();
+		m_plotSurface->Refresh();
 	}
 }
 
@@ -171,37 +198,63 @@ void wxDVDCCtrl::HidePlotAtIndex(int index, bool update)
 	if (index < 0 || index >= m_plots.size())
 		return;
 
+	wxString YLabelText = "";
+	size_t NumY1AxisSelections = 0;
+	size_t NumY2AxisSelections = 0;
+	int FirstY1AxisSelectionIndex = -1;
+	int FirstY2AxisSelectionIndex = -1;
+	wxPLPlotCtrl::AxisPos yap = wxPLPlotCtrl::Y_LEFT;
+	wxString y1Units = NO_UNITS, y2Units = NO_UNITS;
+	int SelIndex = -1;
 	m_plotSurface->RemovePlot(m_plots[index]->plot);
 
+	if (m_plotSurface->GetYAxis1())
+		y1Units = m_plotSurface->GetYAxis1()->GetUnits();
+
+	if (m_plotSurface->GetYAxis2())
+		y2Units = m_plotSurface->GetYAxis2()->GetUnits();
 	std::vector<int> currently_shown = m_dataSelector->GetSelectionsInCol();
-	bool keepAxis = false;
-	for (int j=0; j<currently_shown.size(); j++)
+
+	for (size_t j = 0; j < currently_shown.size(); j++)
 	{
-		if (m_plots[currently_shown[j]]->dataset->GetUnits() == m_plots[index]->dataset->GetUnits())
-		{
-			keepAxis = true;
-			break;
+		if (m_plots[currently_shown[j]]->dataset->GetUnits() == y1Units) 
+		{ 
+			NumY1AxisSelections++; 
+			if (FirstY1AxisSelectionIndex == -1) { FirstY1AxisSelectionIndex = currently_shown[j]; }
+		}
+		if (m_plots[currently_shown[j]]->dataset->GetUnits() == y2Units) 
+		{ 
+			NumY2AxisSelections++; 
+			if (FirstY2AxisSelectionIndex == -1) { FirstY2AxisSelectionIndex = currently_shown[j]; }
 		}
 	}
 
-	if (keepAxis)
+	if (NumY1AxisSelections > 0)
 	{
-		//Scale axis down if we removed data set with highest max.
-		m_plotSurface->RescaleAxes();
-	}
-	else
-	{
-		
-		if (currently_shown.size() == 0)
+		YLabelText = y1Units;
+		if (NumY1AxisSelections == 1 && FirstY1AxisSelectionIndex > -1) { YLabelText = m_plots[FirstY1AxisSelectionIndex]->dataset->GetLabel(); }
+		if (m_plotSurface->GetAxis(wxPLPlotCtrl::Y_LEFT)) 
+		{ 
+			m_plotSurface->GetAxis(wxPLPlotCtrl::Y_LEFT)->SetUnits(y1Units);
+			m_plotSurface->GetAxis(wxPLPlotCtrl::Y_LEFT)->SetLabel(YLabelText);
+		}
+
+		if (NumY2AxisSelections > 0)
 		{
-			m_plotSurface->SetYAxis1(NULL);
-			m_plotSurface->SetYAxis2(NULL);
+			YLabelText = y2Units;
+			if (NumY2AxisSelections == 1 && FirstY2AxisSelectionIndex > -1) { YLabelText = m_plots[FirstY2AxisSelectionIndex]->dataset->GetLabel(); }
+			if (m_plotSurface->GetAxis(wxPLPlotCtrl::Y_RIGHT)) 
+			{ 
+				m_plotSurface->GetAxis(wxPLPlotCtrl::Y_RIGHT)->SetUnits(y2Units);
+				m_plotSurface->GetAxis(wxPLPlotCtrl::Y_RIGHT)->SetLabel(YLabelText);
+			}
 		}
 		else
 		{
-			//If we only have one Y axis, we must use the left y axis.
-			//Code in wxPLPlotCtrl uses this assumption.
-			if (m_plots[index]->axisPosition == wxPLPlotCtrl::Y_LEFT)
+			m_plotSurface->SetYAxis2(NULL);
+		}
+	}
+	else if (NumY2AxisSelections > 0)	//We deselected the last variable with Y1 units, so move Y2 to Y1 
 			{
 				m_plotSurface->SetYAxis1(NULL); //Force rescaling.
 				m_plotSurface->SetYAxis2(NULL);
@@ -212,11 +265,21 @@ void wxDVDCCtrl::HidePlotAtIndex(int index, bool update)
 					m_plotSurface->RemovePlot(m_plots[currently_shown[j]]->plot);
 					m_plotSurface->AddPlot(m_plots[currently_shown[j]]->plot, wxPLPlotCtrl::X_BOTTOM, wxPLPlotCtrl::Y_LEFT);
 				}
-				m_plotSurface->GetYAxis1()->SetLabel( m_plots[currently_shown[0]]->dataset->GetUnits() );
-			}
 
-			m_plotSurface->SetYAxis2(NULL);
+		YLabelText = y2Units;
+		if (NumY2AxisSelections == 1 && FirstY2AxisSelectionIndex > -1) { YLabelText = m_plots[FirstY2AxisSelectionIndex]->dataset->GetLabel(); }
+		if (m_plotSurface->GetAxis(wxPLPlotCtrl::Y_LEFT)) 
+		{ 
+			m_plotSurface->GetAxis(wxPLPlotCtrl::Y_LEFT)->SetUnits(y2Units);
+			m_plotSurface->GetAxis(wxPLPlotCtrl::Y_LEFT)->SetLabel(YLabelText);
 		}
+
+		m_plotSurface->SetYAxis2(NULL);
+	}
+	else
+	{
+		m_plotSurface->SetYAxis1(NULL);
+		m_plotSurface->SetYAxis2(NULL);
 	}
 
 	RefreshDisabledCheckBoxes();

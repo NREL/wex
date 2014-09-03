@@ -250,7 +250,7 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 	double MaxHrs = d->GetMaxHours();
 	double Offset = d->GetOffset();
 
-	//Create monthly and total statistics from m_data
+	//Create monthly and total statistics from m_data - start with very large number (2 billion) for Min variables and -2 billion for Max's, since we'll be looking for anything lower than this in the data.
 	wxString name = "";
 	double nextDay = 0.0;
 	double nextMonth = 0.0;
@@ -259,11 +259,11 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 	double counter = 0.0;
 	double sum = 0.0;
 	double avg = 0.0;
-	double min = 0.0;
-	double max = 0.0;
+	double min = 2000000000.0;
+	double max = -2000000000.0;
 	double StDev = 0.0;
-	double AvgDailyMin = 0.0;
-	double AvgDailyMax = 0.0;
+	double AvgDailyMin = 2000000000.0;
+	double AvgDailyMax = -2000000000.0;
 	int DayNumber = 0;
 	double DayCounter = 0.0;
 	double StDevCounter = 0.0;
@@ -272,8 +272,8 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 	int FirstOrdinalOfMonth = 0;
 	double totalcounter = 0.0;
 	double totalsum = 0.0;
-	double totalmin = 0.0;
-	double totalmax = 0.0;
+	double totalmin = 2000000000.0;
+	double totalmax = -2000000000.0;
 	std::vector<wxRealPoint> totalDayStats;
 	StatisticsPoint sp;
 	bool MultiYear = false;
@@ -314,12 +314,12 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 		{
 			if (i != 0)
 			{
-				DayMins[DayNumber] = AvgDailyMin;
-				DayMaxs[DayNumber] = AvgDailyMax;
+				DayMins[DayNumber] = (AvgDailyMin == 2000000000.0) ? 0.0 : AvgDailyMin;
+				DayMaxs[DayNumber] = (AvgDailyMax == -2000000000.0) ? 0.0 : AvgDailyMax;
 				totalDayStats.push_back(wxRealPoint(AvgDailyMin, AvgDailyMax));
 				DayNumber++;
-				AvgDailyMin = 0.0;
-				AvgDailyMax = 0.0;
+				AvgDailyMin = 2000000000.0;
+				AvgDailyMax = -2000000000.0;
 				nextDay += 24.0;
 			}
 		}
@@ -328,6 +328,8 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 		{
 			if (i != 0 && counter != 0)
 			{
+				AvgDailyMin = 0.0;
+				AvgDailyMax = 0.0;
 				avg = sum / counter;
 
 				//Calculate standard deviation for the month's data
@@ -400,11 +402,11 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 			counter = 0.0;
 			sum = 0.0;
 			avg = 0.0;
-			min = 0.0;
-			max = 0.0;
+			min = 2000000000.0;
+			max = -2000000000.0;
 			StDev = 0.0;
-			AvgDailyMin = 0.0;
-			AvgDailyMax = 0.0;
+			AvgDailyMin = 2000000000.0;
+			AvgDailyMax = -2000000000.0;
 			DayNumber = 0;
 			DayCounter = 0.0;
 			FirstOrdinalOfMonth = i;

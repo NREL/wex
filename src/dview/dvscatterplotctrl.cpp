@@ -49,10 +49,11 @@ public:
 };
 
 
-enum { wxID_SCATTER_DATA_SELECTOR = wxID_HIGHEST + 1 };
+enum { wxID_SCATTER_DATA_SELECTOR = wxID_HIGHEST + 1, wxID_PERFECT_AGREE_LINE };
 
 BEGIN_EVENT_TABLE(wxDVScatterPlotCtrl, wxPanel)
 	EVT_DVSELECTIONLIST( wxID_SCATTER_DATA_SELECTOR, wxDVScatterPlotCtrl::OnChannelSelection )
+	EVT_CHECKBOX(wxID_PERFECT_AGREE_LINE, wxDVScatterPlotCtrl::OnShowLine)
 END_EVENT_TABLE()
 
 wxDVScatterPlotCtrl::wxDVScatterPlotCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos, 
@@ -64,15 +65,25 @@ wxDVScatterPlotCtrl::wxDVScatterPlotCtrl(wxWindow* parent, wxWindowID id, const 
 	m_plotSurface->SetBackgroundColour( *wxWHITE );
 	m_plotSurface->ShowLegend( false );
 
-	m_dataSelectionList = new wxDVSelectionListCtrl(this, wxID_SCATTER_DATA_SELECTOR,2,
-		wxDefaultPosition,wxDefaultSize,wxDVSEL_RADIO_FIRST_COL);
+	m_dataSelectionList = new wxDVSelectionListCtrl(this, wxID_SCATTER_DATA_SELECTOR, 2, wxDefaultPosition, wxDefaultSize, wxDVSEL_RADIO_FIRST_COL);
+
+	wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
+	SetSizer(mainSizer);
+
+	wxBoxSizer *optionsSizer = new wxBoxSizer(wxHORIZONTAL);
+	m_showPerfAgreeLine = new wxCheckBox(this, wxID_PERFECT_AGREE_LINE, "Show Line of Perfect Agreement", wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
+	optionsSizer->Add(m_showPerfAgreeLine, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
 
 	wxBoxSizer *topSizer = new wxBoxSizer(wxHORIZONTAL);
-	topSizer->Add(m_plotSurface, 1, wxEXPAND|wxALL, 10);
+	topSizer->Add(m_plotSurface, 1, wxEXPAND | wxALL, 10);
 	topSizer->Add(m_dataSelectionList, 0, wxEXPAND, 0);
-	SetSizer(topSizer);
+
+	mainSizer->Add(optionsSizer, 0, wxEXPAND, 0);
+	mainSizer->Add(topSizer, 1, wxEXPAND | wxALL, 0);
 
 	m_xDataIndex = -1;
+
+	m_showLine = false;
 }
 
 //*** DATA SET HANDLING ***
@@ -153,11 +164,15 @@ void wxDVScatterPlotCtrl::UpdatePlotWithChannelSelections()
 	if (m_xDataIndex < 0 || (size_t)m_xDataIndex >= m_dataSets.size())
 		return;
 
+	wxString YLabelText;
+	size_t NumY1AxisSelections = 0;
+	size_t NumY2AxisSelections = 0;
 	for (size_t i=0; i<m_yDataIndices.size(); i++)
 	{
 		if ( (size_t)m_yDataIndices[i] < m_dataSets.size() )
 		{
 			wxDVScatterPlot *p = new wxDVScatterPlot(m_dataSets[m_xDataIndex], m_dataSets[m_yDataIndices[i]]);
+			p->SetLineOfPerfectAgreementFlag(m_showLine);
 			p->SetLabel(m_dataSets[m_yDataIndices[i]]->GetSeriesTitle());
 			p->SetSize( 2 );
 			p->SetColour( m_dataSelectionList->GetColourForIndex(m_yDataIndices[i]) );
@@ -168,23 +183,50 @@ void wxDVScatterPlotCtrl::UpdatePlotWithChannelSelections()
 			wxPLPlotCtrl::AxisPos yap = wxPLPlotCtrl::Y_LEFT;
 			wxString y1Units = NO_UNITS, y2Units = NO_UNITS;
 
-			if ( m_plotSurface->GetYAxis1() )
-				y1Units = m_plotSurface->GetYAxis1()->GetLabel();
+			if (m_plotSurface->GetYAxis1())
+			{
+				y1Units = m_plotSurface->GetYAxis1()->GetUnits();
+			}
 
-			if ( m_plotSurface->GetYAxis2() )
-				y2Units = m_plotSurface->GetYAxis2()->GetLabel();
+			if (m_plotSurface->GetYAxis2())
+			{
+				y2Units = m_plotSurface->GetYAxis2()->GetUnits();
+			}
 
-			if ( m_plotSurface->GetYAxis1() && y1Units == units )
+			if (m_plotSurface->GetYAxis1() && y1Units == units)
+			{
 				yap = wxPLPlotCtrl::Y_LEFT;
-			else if ( m_plotSurface->GetYAxis2() && y2Units == units )
+			}
+			else if (m_plotSurface->GetYAxis2() && y2Units == units)
+			{
 				yap = wxPLPlotCtrl::Y_RIGHT;
-			else if ( m_plotSurface->GetYAxis1() == 0 )
+			}
+			else if (m_plotSurface->GetYAxis1() == 0)
+			{
 				yap = wxPLPlotCtrl::Y_LEFT;
+			}
 			else
+			{
 				yap = wxPLPlotCtrl::Y_RIGHT;
+			}
 
 			m_plotSurface->AddPlot( p, wxPLPlotCtrl::X_BOTTOM, yap );
-			m_plotSurface->GetAxis( yap )->SetLabel( units );
+
+			m_plotSurface->GetAxis(yap)->SetUnits(units);
+			YLabelText = units;
+			if (m_dataSelectionList->IsSelected(m_yDataIndices[i], 1) && m_dataSets[m_yDataIndices[i]]->GetUnits() == units)
+			{
+				if (yap == wxPLPlotCtrl::Y_LEFT)
+				{
+					NumY1AxisSelections++;
+				}
+				else
+				{
+					NumY2AxisSelections++;
+				}
+			}
+			if ((NumY1AxisSelections == 1 && yap == wxPLPlotCtrl::Y_LEFT) || (NumY2AxisSelections == 1 && yap == wxPLPlotCtrl::Y_RIGHT)) { YLabelText = m_dataSets[m_yDataIndices[i]]->GetLabel(); }
+			m_plotSurface->GetAxis(yap)->SetLabel(YLabelText);
 		}
 	}
 
@@ -199,9 +241,9 @@ void wxDVScatterPlotCtrl::RefreshDisabledCheckBoxes()
 	wxString axis2Label = NO_UNITS;
 
 	if (m_plotSurface->GetYAxis1())
-		axis1Label = m_plotSurface->GetYAxis1()->GetLabel();
+		axis1Label = m_plotSurface->GetYAxis1()->GetUnits();
 	if (m_plotSurface->GetYAxis2())
-		axis2Label = m_plotSurface->GetYAxis2()->GetLabel();
+		axis2Label = m_plotSurface->GetYAxis2()->GetUnits();
 
 	if (axis1Label != NO_UNITS
 		&& axis2Label != NO_UNITS
@@ -266,6 +308,19 @@ void wxDVScatterPlotCtrl::SetYSelectedNames(const wxString& names)
 }
 
 void wxDVScatterPlotCtrl::OnChannelSelection( wxCommandEvent & )
+{
+	RefreshPlot();
+}
+
+void wxDVScatterPlotCtrl::OnShowLine(wxCommandEvent& e)
+{
+	m_showLine = m_showPerfAgreeLine->GetValue();
+	UpdatePlotWithChannelSelections();
+	m_plotSurface->Invalidate();
+	m_plotSurface->Refresh();
+}
+
+void wxDVScatterPlotCtrl::RefreshPlot()
 {
 	int row, col;
 	bool selected;

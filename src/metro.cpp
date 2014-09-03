@@ -392,16 +392,16 @@ wxMetroTabList::wxMetroTabList( wxWindow *parent, int id,
 	SetFont( wxMetroTheme::Font( wxMT_LIGHT, 16 ) );
 }
 
-void wxMetroTabList::Append( const wxString &label, bool button )
+void wxMetroTabList::Append( const wxString &label, bool button, bool visible )
 {
 	if ( m_style & wxMT_MENUBUTTONS ) button = true;
-	m_items.push_back( item(label, button) );
+	m_items.push_back( item(label, button, visible) );
 }
 
-void wxMetroTabList::Insert( const wxString &label, size_t pos, bool button )
+void wxMetroTabList::Insert( const wxString &label, size_t pos, bool button, bool visible )
 {
 	if ( m_style & wxMT_MENUBUTTONS ) button = true;
-	m_items.insert( m_items.begin()+pos, item(label, button) );
+	m_items.insert( m_items.begin()+pos, item(label, button, visible) );
 }
 
 void wxMetroTabList::Remove( const wxString &label )
@@ -503,6 +503,16 @@ void wxMetroTabList::SetSelection( size_t i )
 		m_selection = m_items.size()-1;
 }
 
+void wxMetroTabList::HideItem(size_t idx)
+{
+	if (m_items[idx].visible) { m_items[idx].visible = false; }
+}
+
+void wxMetroTabList::ShowItem(size_t idx)
+{
+	if (!m_items[idx].visible) { m_items[idx].visible = true; }
+}
+
 size_t wxMetroTabList::GetSelection()
 {
 	return m_selection;
@@ -568,16 +578,23 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 	for (size_t i=0;i<m_items.size();i++)
 	{
 		int txtw, txth;
-		dc.GetTextExtent( m_items[i].label, &txtw, &txth );
-		m_items[i].x_start = x;
-		m_items[i].width = txtw+TB_XPADDING+TB_XPADDING;
-		if ( m_items[i].button ) m_items[i].width += button_width;
-		x += m_items[i].width + TB_SPACE;
+		if (m_items[i].visible)
+		{
+			dc.GetTextExtent( m_items[i].label, &txtw, &txth );
+			m_items[i].x_start = x;
+			m_items[i].width = txtw+TB_XPADDING+TB_XPADDING;
+			if ( m_items[i].button ) m_items[i].width += button_width;
+			x += m_items[i].width + TB_SPACE;
 
-		if ( i > 0 && x > cwidth - 25 ) // 25 approximates width of '...'	
-			m_dotdotWidth = 1;
+			if ( i > 0 && x > cwidth - 25 ) // 25 approximates width of '...'	
+				m_dotdotWidth = 1;
 
-		m_items[i].shown = ( m_dotdotWidth == 0 );
+			m_items[i].shown = ( m_dotdotWidth == 0 );
+		}
+		else
+		{
+			if (m_items[i].shown) { m_items[i].shown = false; }
+		}
 	}
 
 	// compute size of '...'
@@ -616,7 +633,7 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 	// now draw all the items that have been determined to be visible
 	for ( size_t i=0; i<m_items.size(); i++ )
 	{
-		if ( !m_items[i].shown ) continue;
+		if ( !m_items[i].shown || !m_items[i].visible ) continue;
 
 		if ( !light )
 		{
@@ -1007,6 +1024,7 @@ void wxMetroNotebook::AddPage(wxWindow *win, const wxString &text, bool active, 
 	x.text = text;
 	x.scroll_win = 0;
 	x.button = button;
+	x.visible = true;
 
 	m_pages.push_back( x );
 
@@ -1015,6 +1033,20 @@ void wxMetroNotebook::AddPage(wxWindow *win, const wxString &text, bool active, 
 
 	if (active || m_pages.size() == 1)
 		SetSelection( m_pages.size()-1 );
+}
+
+void wxMetroNotebook::HidePage(size_t index)
+{
+	if ( index >= m_pages.size() ) return;
+	m_list->HideItem(index);
+	if (m_pages[index].visible) { m_pages[index].visible = false; }
+}
+
+void wxMetroNotebook::ShowPage(size_t index)
+{
+	if ( index >= m_pages.size() ) return;
+	m_list->ShowItem(index);
+	if (!m_pages[index].visible) { m_pages[index].visible = true; }
 }
 
 void wxMetroNotebook::AddScrolledPage(wxWindow *win, const wxString &text, bool active, bool button)
@@ -1036,6 +1068,7 @@ void wxMetroNotebook::AddScrolledPage(wxWindow *win, const wxString &text, bool 
 	x.text = text;
 	x.scroll_win = scrollwin;
 	x.button = button;
+	x.visible = true;
 
 	m_pages.push_back( x );
 
@@ -1222,7 +1255,7 @@ void wxMetroNotebook::UpdateTabList()
 	size_t sel = m_list->GetSelection();
 	m_list->Clear();
 	for (size_t i=0;i<m_pages.size();i++)
-		m_list->Append( m_pages[i].text, m_pages[i].button );
+		m_list->Append( m_pages[i].text, m_pages[i].button, m_pages[i].visible );
 
 	m_list->SetSelection( sel );
 }

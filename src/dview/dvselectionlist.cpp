@@ -232,6 +232,28 @@ int wxDVSelectionListCtrl::GetNumSelected( int col )
 	return count;
 }
 
+int wxDVSelectionListCtrl::GetUnsortedRowIndex(int SortedIndex)
+{
+	int Ctr = 0;
+
+	for (size_t i = 0; i < m_groups.size(); i++)
+	{
+		for (size_t j = 0; j < m_groups[i].items.size(); j++)
+		{
+			if (Ctr == SortedIndex)
+			{
+				return m_groups[i].items[j]->row_index;
+			}
+			else
+			{
+				Ctr++;
+			}
+		}
+	}
+
+	return 0;
+}
+
 void wxDVSelectionListCtrl::ExpandAll()
 {
 	m_collapsedGroups.clear();
@@ -424,10 +446,10 @@ static wxBitmap s_cirMinus, s_cirPlus;
 			int yoff = (m_itemHeight-m_boxSize)/2;
 			int radius = m_boxSize / 2;
 		
-		
-			if ( !(m_style&wxDVSEL_NO_COLOURS)
-				&& IsRowSelected(items[i]->row_index, 
-						(m_style&wxDVSEL_RADIO_FIRST_COL) ? 1 : 0) )
+			int Start_Col = 0;
+			if ((m_style&wxDVSEL_RADIO_FIRST_COL) || (m_style == wxDVSEL_RADIO_ALL_COL)) { Start_Col = 1; }
+
+			if (!(m_style&wxDVSEL_NO_COLOURS) && IsRowSelected(items[i]->row_index, Start_Col))
 			{
 				dc.SetPen( wxPen(bg,1) );
 				dc.SetBrush( wxBrush( items[i]->color, wxSOLID ) );
@@ -445,7 +467,7 @@ static wxBitmap s_cirMinus, s_cirPlus;
 				dc.SetBrush( *wxWHITE_BRUSH );
 				dc.SetPen( wxPen( color, 1 ) );
 
-				if( (m_style&wxDVSEL_RADIO_FIRST_COL) && c == 0 ) 
+				if (((m_style&wxDVSEL_RADIO_FIRST_COL) && c == 0) || (m_style == wxDVSEL_RADIO_ALL_COL))
 					dc.DrawCircle(x + radius, y + radius + yoff, radius);
 				else 
 					dc.DrawRectangle( x, y+yoff, m_boxSize, m_boxSize );
@@ -454,7 +476,7 @@ static wxBitmap s_cirMinus, s_cirPlus;
 				{
 					dc.SetBrush( *wxBLACK_BRUSH );
 					dc.SetPen( *wxBLACK_PEN );
-					if( (m_style&wxDVSEL_RADIO_FIRST_COL) && c == 0)
+					if (((m_style&wxDVSEL_RADIO_FIRST_COL) && c == 0) || (m_style == wxDVSEL_RADIO_ALL_COL))
 						dc.DrawCircle(x + radius, y + radius + yoff, radius - 2);
 					else
 						dc.DrawRectangle( x+2, y+yoff+2, m_boxSize-4, m_boxSize-4 );
@@ -594,12 +616,21 @@ void wxDVSelectionListCtrl::OnLeave(wxMouseEvent &evt)
 
 void wxDVSelectionListCtrl::HandleRadio( int r, int c )
 {
-	if ( c == 0 && (m_style&wxDVSEL_RADIO_FIRST_COL) )
+	if (((m_style&wxDVSEL_RADIO_FIRST_COL) || (m_style == wxDVSEL_RADIO_ALL_COL)) && c == 0)
 	{
 		for (size_t k=0;k<m_itemList.size();k++)
 		{
 			m_itemList[k]->value[0] = ( k == r );			
 			HandleLineColour( k );
+		}
+	}
+
+	if (m_style == wxDVSEL_RADIO_ALL_COL)
+	{
+		for (size_t k = 0; k < m_itemList.size(); k++)
+		{
+			m_itemList[k]->value[1] = (k == r);
+			HandleLineColour(k);
 		}
 	}
 }

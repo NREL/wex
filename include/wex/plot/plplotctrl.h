@@ -72,7 +72,7 @@ public:
 	virtual wxPLAxis *SuggestYAxis() const;
 
 	virtual bool GetMinMax(double *pxmin, double *pxmax, double *pymin, double *pymax) const;
-	virtual bool ExtendMinMax(double *pxmin, double *pxmax, double *pymin, double *pymax) const;
+	virtual bool ExtendMinMax(double *pxmin, double *pxmax, double *pymin, double *pymax, bool extendToNice = false) const;
 	virtual std::vector<wxString> GetExportableDatasetHeaders( wxUniChar sep ) const;
 	virtual std::vector<wxRealPoint> GetExportableDataset(double Xmin, double Xmax, bool visible_only) const;
 };
