@@ -431,22 +431,20 @@ BEGIN_EVENT_TABLE(wxDVStatisticsTableCtrl, wxPanel)
 	END_EVENT_TABLE()
 
 wxDVStatisticsTableCtrl::wxDVStatisticsTableCtrl(wxWindow *parent, wxWindowID id)
-: wxPanel(parent, id)
+	: wxPanel(parent, id)
 {
 	m_showMonths = false;
 
-	m_ctrl = new wxDataViewCtrl(this, ID_STATISTICS_CTRL, wxDefaultPosition, wxSize(1040, 720), wxDV_MULTIPLE + wxDV_ROW_LINES + wxDV_VERT_RULES + wxDV_HORIZ_RULES);
+	m_ctrl = new wxDataViewCtrl(this, ID_STATISTICS_CTRL, wxDefaultPosition, wxSize(1040, 720), 
+		wxDV_MULTIPLE | wxDV_ROW_LINES | wxDV_VERT_RULES | wxDV_HORIZ_RULES | wxBORDER_NONE);
 	m_ctrl->Bind(wxEVT_COMMAND_DATAVIEW_ITEM_CONTEXT_MENU, &wxDVStatisticsTableCtrl::OnContextMenu, this);
 
 	m_StatisticsModel = new dvStatisticsTreeModel();
 	m_chkShowMonths = new wxCheckBox(this, wxID_ANY, "Show Monthly Values", wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
 
-	wxBoxSizer *table_sizer = new wxBoxSizer(wxHORIZONTAL);
-	table_sizer->Add(m_ctrl, 1, wxEXPAND | wxALL, 4);
-
 	wxBoxSizer *top_sizer = new wxBoxSizer(wxVERTICAL);
-	top_sizer->Add(m_chkShowMonths, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
-	top_sizer->Add(table_sizer, 1, wxALL | wxEXPAND, 0);
+	top_sizer->Add(m_chkShowMonths, 0, wxALL | wxALIGN_CENTER_VERTICAL, 4);
+	top_sizer->Add(m_ctrl, 1, wxALL | wxEXPAND, 0);
 	SetSizer(top_sizer);
 
 	m_contextMenu.Append(ID_COPY_DATA_CLIP, "Copy data to clipboard");
@@ -478,39 +476,40 @@ void wxDVStatisticsTableCtrl::RebuildDataViewCtrl()
 	//TODO:  Is there a way to highlight "Total" nodes (i.e. bold, background color, etc...)?
 
 	tr = new wxDataViewTextRenderer("string", wxDATAVIEW_CELL_INERT, wxALIGN_LEFT);
-	wxDataViewColumn *column0 = new wxDataViewColumn("", tr, 0, 200, wxALIGN_LEFT, wxDATAVIEW_COL_RESIZABLE);
+	wxDataViewColumn *column0 = new wxDataViewColumn("", tr, 0, 350, wxALIGN_LEFT, wxDATAVIEW_COL_RESIZABLE);
 	m_ctrl->AppendColumn(column0);
 
 	tr = new wxDataViewTextRenderer("string", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
-	wxDataViewColumn *column1 = new wxDataViewColumn("Mean", tr, 1, 120, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
+	wxDataViewColumn *column1 = new wxDataViewColumn("Mean", tr, 1, 110, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
 	m_ctrl->AppendColumn(column1);
 
 	tr = new wxDataViewTextRenderer("string", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
-	wxDataViewColumn *column2 = new wxDataViewColumn("Min", tr, 2, 120, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
+	wxDataViewColumn *column2 = new wxDataViewColumn("Min", tr, 2, 110, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
 	m_ctrl->AppendColumn(column2);
 
 	tr = new wxDataViewTextRenderer("string", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
-	wxDataViewColumn *column3 = new wxDataViewColumn("Max", tr, 3, 120, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
+	wxDataViewColumn *column3 = new wxDataViewColumn("Max", tr, 3, 110, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
 	m_ctrl->AppendColumn(column3);
 
 	tr = new wxDataViewTextRenderer("string", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
-	wxDataViewColumn *column4 = new wxDataViewColumn("Sum", tr, 4, 120, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
+	wxDataViewColumn *column4 = new wxDataViewColumn("Sum", tr, 4, 110, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
 	m_ctrl->AppendColumn(column4);
 
 	tr = new wxDataViewTextRenderer("string", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
-	wxDataViewColumn *column5 = new wxDataViewColumn("Std Dev", tr, 5, 120, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
+	wxDataViewColumn *column5 = new wxDataViewColumn("Std Dev", tr, 5, 110, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
 	m_ctrl->AppendColumn(column5);
 
 	tr = new wxDataViewTextRenderer("string", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
-	wxDataViewColumn *column6 = new wxDataViewColumn("Avg Daily Min", tr, 6, 120, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
+	wxDataViewColumn *column6 = new wxDataViewColumn("Avg Daily Min", tr, 6, 110, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
 	m_ctrl->AppendColumn(column6);
 
 	tr = new wxDataViewTextRenderer("string", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
-	wxDataViewColumn *column7 = new wxDataViewColumn("Avg Daily Max", tr, 7, 120, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
+	wxDataViewColumn *column7 = new wxDataViewColumn("Avg Daily Max", tr, 7, 110, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
 	m_ctrl->AppendColumn(column7);
 
 	wxDataViewItem item = m_StatisticsModel->GetRoot();
 	if (item.IsOk()) { m_ctrl->Expand(item); }
+
 }
 
 void wxDVStatisticsTableCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group)
