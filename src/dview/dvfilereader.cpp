@@ -648,15 +648,8 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
                     bp = dblbuf;
                     ndbuf = 0;
 					while(*p && (*p==' '||*p=='\t'||*p==',')) p++; // skip white space and commas
-					if (CommaDelimiters)
-					{
-						while (*p && *p != ',' && ++ndbuf < 127) *bp++ = *p++; // read in number
-					}
-					else
-					{
-						while (*p && (*p != ' '&&*p != '\t') && ++ndbuf < 127) *bp++ = *p++; // read in number
-					}
-                    *bp = '\0'; // terminate string
+					while(*p && *p != ',' && *p != '\t' && *p != ' ' && ++ndbuf < 127) *bp++ = *p++; // read in number
+					*bp = '\0'; // terminate string
 					dataSets[ncol]->Append(wxRealPoint(timeCounters[ncol], atof(dblbuf))); // convert number and add data point.
 					timeCounters[ncol] += dataSets[ncol]->GetTimeStep();
 					ncol++;

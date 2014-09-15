@@ -868,7 +868,7 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 			SetupTopYLeft( min, max );
 		}
 		
-		if ( m_top2AutoScale ) SetupTopYRight();
+		if ( m_top2AutoScale ) SetupTopYRight( m_topLockYAxes, 0.0, 0.0 );
 		else {
 			double min, max;
 			dlg.GetTopY2Bounds(&min,&max);
@@ -1670,21 +1670,19 @@ void wxDVTimeSeriesCtrl::SetupTopYLeft( double min, double max )
 void wxDVTimeSeriesCtrl::SetupTopYRight( bool lock, double min, double max )
 {
 	m_topLockYAxes = lock;
+	m_top2AutoScale = false;
 
 	wxPLAxis *axis = m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_TOP);
 	if ( !axis ) return;	
-
-	if( m_topLockYAxes )
+	
+	wxPLAxis *axy1 = m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP);
+	if( m_topLockYAxes && axy1 )
 	{
-		wxPLAxis *axy1 = m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP);
-		if ( axy1 )
-		{
-			double min, max;
-			axy1->GetWorld( &min, &max );
-			axis->SetWorld( min, max );
-			m_plotSurface->Invalidate();
-			return;
-		}
+		double min, max;
+		axy1->GetWorld( &min, &max );
+		axis->SetWorld( min, max );
+		m_plotSurface->Invalidate();
+		return;
 	}
 
 	m_top2AutoScale = ( !wxIsNaN(min) && !wxIsNaN(max) &&  min >= max );
