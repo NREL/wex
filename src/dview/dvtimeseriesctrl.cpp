@@ -465,6 +465,7 @@ wxDVTimeSeriesSettingsDialog::wxDVTimeSeriesSettingsDialog( wxWindow *parent, co
 	mStyleChoice->Add( "Stepped line graph" );
 
 	mStackedArea = new wxCheckBox( this, wxID_ANY, "Stacked area on left Y axis");
+	mLockYAxes = new wxCheckBox( this, wxID_ANY, "Lock Y axes on top plot");
 				
 	mTopAutoscaleCheck = new wxCheckBox(this, ID_TopCheckbox, "Autoscale left Y axis on top plot");
 	mTop2AutoscaleCheck = new wxCheckBox(this, ID_TopCheckbox, "Autoscale right Y axis on top plot");
@@ -500,6 +501,7 @@ wxDVTimeSeriesSettingsDialog::wxDVTimeSeriesSettingsDialog( wxWindow *parent, co
 	boxmain->Add( mStatTypeCheck, 0, wxALL|wxEXPAND, 10 );
 	boxmain->Add( mStyleChoice, 0, wxALL|wxEXPAND, 10 );
 	boxmain->Add( mStackedArea, 0, wxALL|wxEXPAND, 10 );
+	boxmain->Add( mLockYAxes, 0, wxALL|wxEXPAND, 10 );
 	boxmain->Add( new wxStaticLine( this ), 0, wxALL|wxEXPAND, 0 );
 
 	boxmain->Add( mTopAutoscaleCheck, 0, wxALL|wxEXPAND, 10 );
@@ -569,6 +571,17 @@ void wxDVTimeSeriesSettingsDialog::GetBottomYBounds( double *y2min, double *y2ma
 	*y2min = mBottomYMinCtrl->Value();
 	*y2max = mBottomYMaxCtrl->Value();
 }
+
+void wxDVTimeSeriesSettingsDialog::SetLockY2ToY1( bool b )
+{
+	mLockYAxes->SetValue( b );
+}
+
+bool wxDVTimeSeriesSettingsDialog::GetLockY2ToY1()
+{
+	return mLockYAxes->GetValue();
+}
+
 
 
 void wxDVTimeSeriesSettingsDialog::SetStacked( bool b ) { mStackedArea->SetValue( b ); }
@@ -664,6 +677,7 @@ wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, wxDVTime
 {	
 	SetBackgroundColour( *wxWHITE );
 	m_stackingOnYLeft = false;
+	m_topLockYAxes = false;
 	m_topAutoScale = true;
 	m_top2AutoScale = true;
 	m_bottomAutoScale = true;
@@ -706,13 +720,13 @@ wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, wxDVTime
 	//Contains boxes to turn lines on or off.
 	m_dataSelector = new wxDVSelectionListCtrl(this, ID_DATA_CHANNEL_SELECTOR, 2);
 		
-	wxBoxSizer *graph_sizer = new wxBoxSizer(wxHORIZONTAL);	
+	wxBoxSizer *graph_sizer = new wxBoxSizer(wxVERTICAL);	
 	graph_sizer->Add( m_plotSurface, 1, wxEXPAND|wxALL, 4);
-	graph_sizer->Add( m_dataSelector, 0, wxEXPAND|wxALL, 0);
+	graph_sizer->Add( scrollerAndZoomSizer, 0, wxEXPAND|wxALL, 0);
 
-	wxBoxSizer *top_sizer = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer *top_sizer = new wxBoxSizer(wxHORIZONTAL);
 	top_sizer->Add( graph_sizer, 1, wxALL|wxEXPAND, 0 );
-	top_sizer->Add( scrollerAndZoomSizer, 0, wxEXPAND, 0);
+	top_sizer->Add( m_dataSelector, 0, wxEXPAND, 0);
 	SetSizer(top_sizer);
 
 	for (int i=0; i<GRAPH_AXIS_POSITION_COUNT; i++)
@@ -807,6 +821,7 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 	dlg.SetStatType( m_statType );
 	dlg.SetStyle( m_style );
 	dlg.SetStacked( m_stackingOnYLeft );
+	dlg.SetLockY2ToY1( m_topLockYAxes );
 	dlg.SetAutoscale( m_topAutoScale );
 	dlg.SetAutoscale2( m_top2AutoScale );
 	dlg.SetBottomAutoscale( m_bottomAutoScale );
@@ -841,6 +856,7 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 	
 		UpdateStacking();
 
+		m_topLockYAxes = dlg.GetLockY2ToY1();
 		m_topAutoScale = dlg.GetAutoscale();
 		m_top2AutoScale = dlg.GetAutoscale2();
 		m_bottomAutoScale = dlg.GetBottomAutoscale();
@@ -856,7 +872,7 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 		else {
 			double min, max;
 			dlg.GetTopY2Bounds(&min,&max);
-			SetupTopYRight( min, max );
+			SetupTopYRight( m_topLockYAxes, min, max );
 		}
 
 		if ( m_bottomAutoScale )
@@ -1651,10 +1667,26 @@ void wxDVTimeSeriesCtrl::SetupTopYLeft( double min, double max )
 
 }
 
-void wxDVTimeSeriesCtrl::SetupTopYRight( double min, double max )
+void wxDVTimeSeriesCtrl::SetupTopYRight( bool lock, double min, double max )
 {
+	m_topLockYAxes = lock;
+
 	wxPLAxis *axis = m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_TOP);
 	if ( !axis ) return;	
+
+	if( m_topLockYAxes )
+	{
+		wxPLAxis *axy1 = m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP);
+		if ( axy1 )
+		{
+			double min, max;
+			axy1->GetWorld( &min, &max );
+			axis->SetWorld( min, max );
+			m_plotSurface->Invalidate();
+			return;
+		}
+	}
+
 	m_top2AutoScale = ( !wxIsNaN(min) && !wxIsNaN(max) &&  min >= max );
 	if ( m_top2AutoScale )
 		AutoscaleYAxis( axis, *m_selectedChannelIndices[TOP_RIGHT_AXIS], true);
@@ -1670,10 +1702,21 @@ void wxDVTimeSeriesCtrl::AutoscaleYAxis(bool forceUpdate)
 	//It is probably best to avoid this function and use the more specific version where possible.
 	if (m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP))
 		AutoscaleYAxis(m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP), *m_selectedChannelIndices[TOP_LEFT_AXIS], forceUpdate);
-	if (m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_TOP))
-		AutoscaleYAxis(m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_TOP), 
-		m_selectedChannelIndices[TOP_RIGHT_AXIS]->size() > 0 ? *m_selectedChannelIndices[TOP_RIGHT_AXIS] : *m_selectedChannelIndices[TOP_LEFT_AXIS], 
-		forceUpdate);
+
+	if (wxPLAxis *axis = m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_TOP))
+	{
+		wxPLAxis *axy1 = m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP);
+		if ( m_topLockYAxes && axy1 != 0)
+		{
+			double min, max;
+			axy1->GetWorld( &min, &max );
+			axis->SetWorld( min, max );
+		}
+		else
+			AutoscaleYAxis(axis,
+				m_selectedChannelIndices[TOP_RIGHT_AXIS]->size() > 0 ? *m_selectedChannelIndices[TOP_RIGHT_AXIS] : *m_selectedChannelIndices[TOP_LEFT_AXIS], 
+				forceUpdate);
+	}
 
 	if (m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM))
 		AutoscaleYAxis(m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM), *m_selectedChannelIndices[BOTTOM_LEFT_AXIS], forceUpdate);
@@ -1701,37 +1744,15 @@ void wxDVTimeSeriesCtrl::AutoscaleYAxis( wxPLAxis *axisToScale, const std::vecto
 
 	//If the maximum of the visible data is outside the acceptable range
 	if(forceUpdate || (dataMax > 0 && (dataMax >= axisToScale->GetWorldMax() || dataMax < axisToScale->GetWorldMax()/2.0)))
-	{	
 		needsRescale = true;
-	}
-	if(forceUpdate || (dataMin < 0 && (dataMin <= axisToScale->GetWorldMin() || dataMin > axisToScale->GetWorldMin()/2.0)))
-	{
-		needsRescale = true;
-	}
 
+	if(forceUpdate || (dataMin < 0 && (dataMin <= axisToScale->GetWorldMin() || dataMin > axisToScale->GetWorldMin()/2.0)))
+		needsRescale = true;
+	
 	if (needsRescale)
 	{
 		wxDVPlotHelper::ExtendBoundsToNiceNumber(&dataMax, &dataMin);
-
-		//0 should always be visible.
-		//if (dataMin > 0)
-		//	dataMin = 0;
-		//if (dataMax < 0)
-		//	dataMax = 0;
-
-		//applog("Setting y axis bounds to (%.2f, %.2f) \n", dataMin, dataMax);
 		axisToScale->SetWorld(dataMin, dataMax);
-		/*
-		if (axisToScale == m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP))
-		{
-			m_y1Min = dataMin;
-			m_y1Max = dataMax;
-		}
-		else if (axisToScale == m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM))
-		{
-			m_y2Min = dataMin;
-			m_y2Max = dataMax;
-		}*/
 	}
 }
 

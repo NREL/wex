@@ -49,7 +49,7 @@ public:
 	
 	void SetTimeSeriesMode( int mode );
 	void SetupTopYLeft( double min, double max );
-	void SetupTopYRight( double min, double max );
+	void SetupTopYRight( bool lock, double min=0, double max=0 );
 	void SetTimeSeriesRange( double start, double end );
 	void SetSelectedNames( const wxArrayString &names );
 

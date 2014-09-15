@@ -493,6 +493,7 @@ private:
 	long m_lineMode;
 	double m_ylmin, m_ylmax;
 	double m_yrmin, m_yrmax;
+	bool m_yrlock;
 
 public:
 	bool OnInit()
@@ -529,7 +530,7 @@ public:
 
 		if ( m_yrmin < m_yrmax )
 		{
-			frame->GetPlot()->SetupTopYRight( m_yrmin, m_yrmax );
+			frame->GetPlot()->SetupTopYRight( m_yrlock, m_yrmin, m_yrmax );
 		}
 
 		frame->Show();
@@ -551,7 +552,7 @@ public:
 		parser.AddOption(wxT("e"), wxT("end"), wxT("ending hour to display"), wxCMD_LINE_VAL_DOUBLE );
 		parser.AddOption(wxT("m"), wxT("mode"), wxT("time series mode: 0=normal,1=stepped,2=stacked"), wxCMD_LINE_VAL_NUMBER);
 		parser.AddOption(wxT("y1"), wxT("y1"), wxT("string min,max range for left y axis on top plot. if not specified, autoscaled."), wxCMD_LINE_VAL_STRING );
-		parser.AddOption(wxT("y2"), wxT("y2"), wxT("string min,max range for right y axis on top plot. if not specified, autoscaled."), wxCMD_LINE_VAL_STRING );
+		parser.AddOption(wxT("y2"), wxT("y2"), wxT("string min,max range for right y axis on top plot. 'lock' is also allowed to lock y2 to y1. if not specified, autoscaled."), wxCMD_LINE_VAL_STRING );
 		parser.AddParam(wxT("files to load"), wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL | wxCMD_LINE_PARAM_MULTIPLE);
 	}
 
@@ -601,12 +602,18 @@ public:
 			m_ylmax = wxAtof( ss.Mid( ss.Find(',')+1 ) );
 		}
 
+		m_yrlock = false;
 		m_yrmin = m_yrmax = 0;
 		if ( parser.Found("y2", &ss) )
 		{
-			m_yrmin = wxAtof( ss );
-			m_yrmax = wxAtof( ss.Mid( ss.Find(',')+1 ) );
-			//wxMessageBox(wxString::Format("Y2= %lg to %lg", m_yrmin, m_yrmax));
+			if ( ss.Trim().Lower() == "lock" )
+				m_yrlock = true;
+			else
+			{
+				m_yrmin = wxAtof( ss );
+				m_yrmax = wxAtof( ss.Mid( ss.Find(',')+1 ) );
+				//wxMessageBox(wxString::Format("Y2= %lg to %lg", m_yrmin, m_yrmax));
+			}
 		}
 
 		return true;
