@@ -421,8 +421,6 @@ wxString wxDVVariableStatistics::GetGroupName()
 
 //wxDVStatisticsTableCtrl
 
-enum { ID_PLOT_SURFACE = wxID_HIGHEST + 1 };
-
 enum { ID_COPY_DATA_CLIP = wxID_HIGHEST + 1251, ID_SAVE_DATA_CSV, ID_SEND_EXCEL };
 
 BEGIN_EVENT_TABLE(wxDVStatisticsTableCtrl, wxPanel)
@@ -479,31 +477,31 @@ void wxDVStatisticsTableCtrl::RebuildDataViewCtrl()
 	wxDataViewColumn *column0 = new wxDataViewColumn("", tr, 0, 350, wxALIGN_LEFT, wxDATAVIEW_COL_RESIZABLE);
 	m_ctrl->AppendColumn(column0);
 
-	tr = new wxDataViewTextRenderer("string", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
+	tr = new wxDataViewTextRenderer("double", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
 	wxDataViewColumn *column1 = new wxDataViewColumn("Mean", tr, 1, 110, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
 	m_ctrl->AppendColumn(column1);
 
-	tr = new wxDataViewTextRenderer("string", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
+	tr = new wxDataViewTextRenderer("double", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
 	wxDataViewColumn *column2 = new wxDataViewColumn("Min", tr, 2, 110, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
 	m_ctrl->AppendColumn(column2);
 
-	tr = new wxDataViewTextRenderer("string", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
+	tr = new wxDataViewTextRenderer("double", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
 	wxDataViewColumn *column3 = new wxDataViewColumn("Max", tr, 3, 110, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
 	m_ctrl->AppendColumn(column3);
 
-	tr = new wxDataViewTextRenderer("string", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
+	tr = new wxDataViewTextRenderer("double", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
 	wxDataViewColumn *column4 = new wxDataViewColumn("Sum", tr, 4, 110, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
 	m_ctrl->AppendColumn(column4);
 
-	tr = new wxDataViewTextRenderer("string", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
+	tr = new wxDataViewTextRenderer("double", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
 	wxDataViewColumn *column5 = new wxDataViewColumn("Std Dev", tr, 5, 110, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
 	m_ctrl->AppendColumn(column5);
 
-	tr = new wxDataViewTextRenderer("string", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
+	tr = new wxDataViewTextRenderer("double", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
 	wxDataViewColumn *column6 = new wxDataViewColumn("Avg Daily Min", tr, 6, 110, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
 	m_ctrl->AppendColumn(column6);
 
-	tr = new wxDataViewTextRenderer("string", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
+	tr = new wxDataViewTextRenderer("double", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
 	wxDataViewColumn *column7 = new wxDataViewColumn("Avg Daily Max", tr, 7, 110, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
 	m_ctrl->AppendColumn(column7);
 
