@@ -528,7 +528,7 @@ public:
 		if ( m_ylmin < m_ylmax )
 			frame->GetPlot()->SetupTopYLeft( m_ylmin, m_ylmax );
 
-		if ( m_yrmin < m_yrmax )
+		if ( m_yrlock || m_yrmin < m_yrmax )
 		{
 			frame->GetPlot()->SetupTopYRight( m_yrlock, m_yrmin, m_yrmax );
 		}
