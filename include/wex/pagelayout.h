@@ -5,6 +5,8 @@
 
 #include <wx/wx.h>
 
+class wxPdfDocument;
+
 // forward
 class wxPageOutputDevice
 {
@@ -13,6 +15,8 @@ public:
 
 	enum { SERIF, SANSERIF, FIXED };
 	enum { SOLID, DOTTED };
+
+	// note: page output device operates natively in inches.
 
 	virtual void Clip( float x, float y, float width, float height ) = 0;
 	virtual void Unclip() = 0;
@@ -27,6 +31,65 @@ public:
 	virtual void Measure( const wxString &text, float *width, float *height ) = 0;
 	virtual void Image( const wxImage &img, float top, float left, float width = 0.0f, float height = 0.0f ) = 0;
 };
+
+
+class wxPageScaleInterface {
+public:
+	wxPageScaleInterface() { }
+	virtual ~wxPageScaleInterface() { }
+	virtual float GetPPI() = 0;
+	virtual void PageToScreen( float x, float y, int *px, int *py ) = 0;
+	virtual void ScreenToPage( int px, int py, float *x, float *y ) = 0;
+};
+
+class wxScreenOutputDevice : public wxPageOutputDevice
+{
+private:
+	wxPageScaleInterface *m_lc;
+	wxDC &m_dc;
+	wxPen m_pen;
+	wxBrush m_brush;
+	wxFont m_font;
+public:
+	wxScreenOutputDevice( wxPageScaleInterface *lc, wxDC &dc );
+	virtual void Clip( float x, float y, float width, float height );
+	virtual void Unclip();
+	virtual void Color( const wxColour &c );
+	virtual void LineStyle( float thick, int sty );
+	virtual void Line( float x1, float y1, float x2, float y2 );
+	virtual void Rect( float x, float y, float width, float height, bool fill, float radius );
+	virtual void Circle( float x, float y, float radius, bool fill );
+	virtual void Arc( float x, float y, float width, float height, float angle1, float angle2, bool fill );
+	virtual void Font( int face, int points, bool bold, bool italic );
+	virtual void Text( float x, float y, const wxString &text, float angle );
+	virtual void Measure( const wxString &text, float *width, float *height );
+	virtual void Image( const wxImage &img, float top, float left, float width, float height );
+	float DevicePPI();
+	int ScalePointSizeToScreen( int requested );
+};
+
+
+class wxPdfOutputDevice : public wxPageOutputDevice
+{
+private:
+static int m_imageIndex;
+	wxPdfDocument &m_pdf;
+public:
+	wxPdfOutputDevice( wxPdfDocument &pdf );
+	virtual void Clip( float x, float y, float width, float height );
+	virtual void Unclip();
+	virtual void Color( const wxColour &c );
+	virtual void LineStyle( float thick, int style );
+	virtual void Line( float x1, float y1, float x2, float y2 );
+	virtual void Rect( float x, float y, float width, float height, bool fill = false, float radius = 0.0f  ) ;
+	virtual void Circle( float x, float y, float radius, bool fill = false );
+	virtual void Arc( float x, float y, float width, float height, float angle1, float angle2, bool fill = false );
+	virtual void Font( int face, int points, bool bold, bool italic );
+	virtual void Text( float x, float y, const wxString &text, float angle );
+	virtual void Measure( const wxString &text, float *width, float *height );
+	virtual void Image( const wxImage &img, float top, float left, float width = 0.0f, float height = 0.0f );
+};
+
 
 
 class wxPageLayout;
@@ -179,7 +242,9 @@ typedef void (wxEvtHandler::*wxPageLayoutEventFunction)( wxPageLayoutEvent & );
 #define EVT_PAGELAYOUT_CREATE( id, fn ) EVT_PAGELAYOUT_GENERIC( id, wxEVT_PAGELAYOUT_CREATE, fn )
 
 
-class wxPageLayoutCtrl : public wxScrolledWindow
+class wxPageLayoutCtrl : 
+		public wxScrolledWindow, 
+		public wxPageScaleInterface
 {
 public:
 	wxPageLayoutCtrl( wxWindow *parent, int id, const wxPoint &pos=wxDefaultPosition, const wxSize &size = wxDefaultSize);
@@ -193,10 +258,10 @@ public:
 	void Invalidate( wxPageObject * );
 
 	void SetPPI( float ppi );
-	float GetPPI() { return m_ppi; }
 	float GetScreenPPI() { return m_screenPPI; }
-	void PageToScreen( float x, float y, int *px, int *py );
-	void ScreenToPage( int px, int py, float *x, float *y );
+	virtual float GetPPI() { return m_ppi; }
+	virtual void PageToScreen( float x, float y, int *px, int *py );
+	virtual void ScreenToPage( int px, int py, float *x, float *y );
 
 	void Zoom( float percent = -1.0f );
 	void FitHorizontal();

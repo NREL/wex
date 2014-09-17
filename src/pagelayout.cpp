@@ -15,291 +15,274 @@
 
 #include "wex/pagelayout.h"
 
-class wxScreenOutputDevice : public wxPageOutputDevice
+wxScreenOutputDevice::wxScreenOutputDevice( wxPageScaleInterface *lc, wxDC &dc ) : m_lc(lc), m_dc(dc)
 {
-private:
-	wxPageLayoutCtrl *m_lc;
-	wxDC &m_dc;
-	wxPen m_pen;
-	wxBrush m_brush;
-	wxFont m_font;
-public:
-	wxScreenOutputDevice( wxPageLayoutCtrl *lc, wxDC &dc ) : m_lc(lc), m_dc(dc)
-	{
-		Color( *wxBLUE );
-		Font( SERIF, 12, false, false );
-	}
+	Color( *wxBLUE );
+	Font( SERIF, 12, false, false );
+}
 	
-	virtual void Clip( float x, float y, float width, float height )
+void wxScreenOutputDevice::Clip( float x, float y, float width, float height )
+{
+	wxPoint tl;
+	m_lc->PageToScreen( x, y, &tl.x, &tl.y );
+	m_dc.SetClippingRegion( tl.x, tl.y, width*m_lc->GetPPI(), height*m_lc->GetPPI() );
+}
+
+void wxScreenOutputDevice::Unclip()
+{
+	m_dc.DestroyClippingRegion();
+}
+
+void wxScreenOutputDevice::Color( const wxColour &c )
+{
+	m_pen.SetColour( c );
+	m_brush.SetColour( c );
+	m_dc.SetPen( m_pen );
+	m_dc.SetBrush( m_brush );
+	m_dc.SetTextForeground( c );
+
+}
+
+void wxScreenOutputDevice::LineStyle( float thick, int sty )
+{
+	int pixels = thick*m_lc->GetPPI();
+	if (pixels < 1) pixels = 1;
+	m_pen.SetStyle( sty==DOTTED ? wxDOT : wxSOLID );
+	m_pen.SetWidth( pixels );
+	m_dc.SetPen( m_pen );
+}
+
+void wxScreenOutputDevice::Line( float x1, float y1, float x2, float y2 )
+{
+	wxPoint start, end;
+	m_lc->PageToScreen( x1, y1, &start.x, &start.y );
+	m_lc->PageToScreen( x2, y2, &end.x, &end.y );
+	m_dc.DrawLine( start, end );
+}
+
+void wxScreenOutputDevice::Rect( float x, float y, float width, float height, bool fill, float radius )
+{
+	wxPoint topleft;
+	m_lc->PageToScreen( x, y, &topleft.x, &topleft.y );
+	m_brush.SetStyle( fill ? wxSOLID : wxTRANSPARENT );
+	m_pen.SetWidth(1);
+	m_dc.SetPen( m_pen );
+	m_dc.SetBrush( m_brush );
+	if (radius > 0)
 	{
-		wxPoint tl;
-		m_lc->PageToScreen( x, y, &tl.x, &tl.y );
-		m_dc.SetClippingRegion( x, y, width*m_lc->GetPPI(), height*m_lc->GetPPI() );
-	}
-
-	virtual void Unclip()
-	{
-		m_dc.DestroyClippingRegion();
-	}
-
-	virtual void Color( const wxColour &c )
-	{
-		m_pen.SetColour( c );
-		m_brush.SetColour( c );
-		m_dc.SetPen( m_pen );
-		m_dc.SetBrush( m_brush );
-		m_dc.SetTextForeground( c );
-
-	}
-
-	virtual void LineStyle( float thick, int sty )
-	{
-		int pixels = thick*m_lc->GetPPI();
-		if (pixels < 1) pixels = 1;
-		m_pen.SetStyle( sty==DOTTED ? wxDOT : wxSOLID );
-		m_pen.SetWidth( pixels );
-		m_dc.SetPen( m_pen );
-	}
-
-	virtual void Line( float x1, float y1, float x2, float y2 )
-	{
-		wxPoint start, end;
-		m_lc->PageToScreen( x1, y1, &start.x, &start.y );
-		m_lc->PageToScreen( x2, y2, &end.x, &end.y );
-		m_dc.DrawLine( start, end );
-	}
-
-	virtual void Rect( float x, float y, float width, float height, bool fill, float radius )
-	{
-		wxPoint topleft;
-		m_lc->PageToScreen( x, y, &topleft.x, &topleft.y );
-		m_brush.SetStyle( fill ? wxSOLID : wxTRANSPARENT );
-		m_pen.SetWidth(1);
-		m_dc.SetPen( m_pen );
-		m_dc.SetBrush( m_brush );
-		if (radius > 0)
-		{
-			m_dc.DrawRoundedRectangle( topleft.x, topleft.y,
-				width * m_lc->GetPPI(),
-				height * m_lc->GetPPI(),
-				radius * m_lc->GetPPI() );
-		}
-		else
-			m_dc.DrawRectangle( topleft.x, topleft.y, width * m_lc->GetPPI(), height * m_lc->GetPPI() );
-	}
-
-	virtual void Circle( float x, float y, float radius, bool fill )
-	{
-		wxPoint center;
-		m_lc->PageToScreen( x, y, &center.x, &center.y );
-
-		m_pen.SetWidth(1);
-		m_brush.SetStyle( fill ? wxSOLID : wxTRANSPARENT );
-		m_dc.SetPen( m_pen );
-		m_dc.SetBrush( m_brush );
-
-		m_dc.DrawCircle( center.x, center.y, radius * m_lc->GetPPI() );
-	}
-
-	virtual void Arc( float x, float y, float width, float height, float angle1, float angle2, bool fill )
-	{
-		wxPoint topleft;
-		m_lc->PageToScreen( x, y, &topleft.x, &topleft.y );
-
-		m_pen.SetWidth(1);
-		m_brush.SetStyle( fill ? wxSOLID : wxTRANSPARENT );
-		m_dc.SetPen( m_pen );
-		m_dc.SetBrush( m_brush );
-		m_dc.DrawEllipticArc( topleft.x, topleft.y,
+		m_dc.DrawRoundedRectangle( topleft.x, topleft.y,
 			width * m_lc->GetPPI(),
 			height * m_lc->GetPPI(),
-			angle1, angle2 );
+			radius * m_lc->GetPPI() );
 	}
+	else
+		m_dc.DrawRectangle( topleft.x, topleft.y, width * m_lc->GetPPI(), height * m_lc->GetPPI() );
+}
 
-	virtual void Font( int face, int points, bool bold, bool italic )
-	{
-		switch( face )
-		{
-		case wxPageOutputDevice::FIXED: 
-			m_font.SetFamily( wxFONTFAMILY_MODERN ); 
-			if (!m_font.SetFaceName("Courier New") )
-				if (!m_font.SetFaceName("Courier"))
-					m_font.SetFaceName("Consolas");
-			break;
-		case wxPageOutputDevice::SERIF:
-			m_font.SetFamily( wxFONTFAMILY_ROMAN );
-			if (!m_font.SetFaceName("Times New Roman"))
-				if (!m_font.SetFaceName("Times"))
-					m_font.SetFaceName("Century Schoolbook");
-			break;
-		case wxPageOutputDevice::SANSERIF:
-			m_font.SetFamily( wxFONTFAMILY_SWISS );
-			if (!m_font.SetFaceName("Helvetica"))
-				if (!m_font.SetFaceName("Arial"))
-					m_font.SetFaceName("Verdana");
-			break;
-		default: m_font = *wxNORMAL_FONT; break;
-		}
-
-		m_font.SetWeight( bold ? wxFONTWEIGHT_BOLD : wxFONTWEIGHT_NORMAL );
-		m_font.SetStyle( italic ? wxFONTSTYLE_ITALIC : wxFONTSTYLE_NORMAL );
-		if (points < 1) points = 1;
-		m_font.SetPointSize( points );
-		m_dc.SetFont( m_font );
-	}
-
-	virtual void Text( float x, float y, const wxString &text, float angle )
-	{
-		wxPoint topleft;
-		m_lc->PageToScreen( x, y, &topleft.x, &topleft.y );
-		wxFont f = m_font;
-		f.SetPointSize( ScalePointSizeToScreen( m_font.GetPointSize() ) );
-		m_dc.SetFont( f );
-		if ( angle == 0.0f )
-			m_dc.DrawText( text, topleft.x, topleft.y );
-		else
-			m_dc.DrawRotatedText( text, topleft.x, topleft.y, angle );
-	}
-
-	virtual void Measure( const wxString &text, float *width, float *height )
-	{
-		wxFont f = m_font;
-		f.SetPointSize( ScalePointSizeToScreen( m_font.GetPointSize() ) );
-		m_dc.SetFont( f );
-		wxSize sz = m_dc.GetTextExtent( text );
-		sz.y = m_dc.GetCharHeight();
-
-		if (width) *width = sz.x/m_lc->GetPPI();
-		if (height) *height = sz.y/m_lc->GetPPI();
-	}
-
-	virtual void Image( const wxImage &img, float top, float left, float width, float height )
-	{
-		wxPoint topleft;
-		m_lc->PageToScreen( top, left, &topleft.x, &topleft.y );
-
-		float img_width_inches = width < 1 ? img.GetWidth() / 72.0f : width;
-		float img_height_inches = height < 1 ? img.GetHeight() / 72.0f : height;
-				
-		float scale = m_lc->GetPPI() / DevicePPI();
-
-		int pix_width = (int)( scale * img_width_inches * DevicePPI() );
-		int pix_height = (int)( scale * img_height_inches * DevicePPI() );
-
-		m_dc.DrawBitmap( img.Scale( pix_width, pix_height, ::wxIMAGE_QUALITY_NORMAL ),
-			topleft.x, topleft.y );
-	}
-
-	float DevicePPI()
-	{
-		wxSize sz = m_dc.GetPPI();
-		if (sz.x != sz.y) return (float) (sz.x>sz.y)?sz.x:sz.y;
-		else return (float)sz.x;
-	}
-
-	int ScalePointSizeToScreen( int requested )
-	{
-		int points = (int)(requested * m_lc->GetPPI() / DevicePPI());
-		if (points < 1) points = 1;
-		return points;
-	}
-};
-
-
-class wxPdfOutputDevice : public wxPageOutputDevice
+void wxScreenOutputDevice::Circle( float x, float y, float radius, bool fill )
 {
-private:
-static int m_imageIndex;
-	wxPdfDocument &m_pdf;
-public:
-	wxPdfOutputDevice( wxPdfDocument &pdf )
-		: m_pdf(pdf) { }
+	wxPoint center;
+	m_lc->PageToScreen( x, y, &center.x, &center.y );
 
-	virtual void Clip( float x, float y, float width, float height )
+	m_pen.SetWidth(1);
+	m_brush.SetStyle( fill ? wxSOLID : wxTRANSPARENT );
+	m_dc.SetPen( m_pen );
+	m_dc.SetBrush( m_brush );
+
+	m_dc.DrawCircle( center.x, center.y, radius * m_lc->GetPPI() );
+}
+
+void wxScreenOutputDevice::Arc( float x, float y, float width, float height, float angle1, float angle2, bool fill )
+{
+	wxPoint topleft;
+	m_lc->PageToScreen( x, y, &topleft.x, &topleft.y );
+
+	m_pen.SetWidth(1);
+	m_brush.SetStyle( fill ? wxSOLID : wxTRANSPARENT );
+	m_dc.SetPen( m_pen );
+	m_dc.SetBrush( m_brush );
+	m_dc.DrawEllipticArc( topleft.x, topleft.y,
+		width * m_lc->GetPPI(),
+		height * m_lc->GetPPI(),
+		angle1, angle2 );
+}
+
+void wxScreenOutputDevice::Font( int face, int points, bool bold, bool italic )
+{
+	switch( face )
 	{
-		m_pdf.ClippingRect( x, y, width, height );
+	case wxPageOutputDevice::FIXED: 
+		m_font.SetFamily( wxFONTFAMILY_MODERN ); 
+		if (!m_font.SetFaceName("Courier New") )
+			if (!m_font.SetFaceName("Courier"))
+				m_font.SetFaceName("Consolas");
+		break;
+	case wxPageOutputDevice::SERIF:
+		m_font.SetFamily( wxFONTFAMILY_ROMAN );
+		if (!m_font.SetFaceName("Times New Roman"))
+			if (!m_font.SetFaceName("Times"))
+				m_font.SetFaceName("Century Schoolbook");
+		break;
+	case wxPageOutputDevice::SANSERIF:
+		m_font.SetFamily( wxFONTFAMILY_SWISS );
+		if (!m_font.SetFaceName("Helvetica"))
+			if (!m_font.SetFaceName("Arial"))
+				m_font.SetFaceName("Verdana");
+		break;
+	default: m_font = *wxNORMAL_FONT; break;
 	}
 
-	virtual void Unclip()
+	m_font.SetWeight( bold ? wxFONTWEIGHT_BOLD : wxFONTWEIGHT_NORMAL );
+	m_font.SetStyle( italic ? wxFONTSTYLE_ITALIC : wxFONTSTYLE_NORMAL );
+	if (points < 1) points = 1;
+	m_font.SetPointSize( points );
+	m_dc.SetFont( m_font );
+}
+
+void wxScreenOutputDevice::Text( float x, float y, const wxString &text, float angle )
+{
+	wxPoint topleft;
+	m_lc->PageToScreen( x, y, &topleft.x, &topleft.y );
+	wxFont f = m_font;
+	f.SetPointSize( ScalePointSizeToScreen( m_font.GetPointSize() ) );
+	m_dc.SetFont( f );
+	if ( angle == 0.0f )
+		m_dc.DrawText( text, topleft.x, topleft.y );
+	else
+		m_dc.DrawRotatedText( text, topleft.x, topleft.y, angle );
+}
+
+void wxScreenOutputDevice::Measure( const wxString &text, float *width, float *height )
+{
+	wxFont f = m_font;
+	f.SetPointSize( ScalePointSizeToScreen( m_font.GetPointSize() ) );
+	m_dc.SetFont( f );
+	wxSize sz = m_dc.GetTextExtent( text );
+	sz.y = m_dc.GetCharHeight();
+
+	if (width) *width = sz.x/m_lc->GetPPI();
+	if (height) *height = sz.y/m_lc->GetPPI();
+}
+
+void wxScreenOutputDevice::Image( const wxImage &img, float top, float left, float width, float height )
+{
+	wxPoint topleft;
+	m_lc->PageToScreen( top, left, &topleft.x, &topleft.y );
+
+	float img_width_inches = width < 1 ? img.GetWidth() / 72.0f : width;
+	float img_height_inches = height < 1 ? img.GetHeight() / 72.0f : height;
+				
+	float scale = m_lc->GetPPI() / DevicePPI();
+
+	int pix_width = (int)( scale * img_width_inches * DevicePPI() );
+	int pix_height = (int)( scale * img_height_inches * DevicePPI() );
+
+	m_dc.DrawBitmap( img.Scale( pix_width, pix_height, ::wxIMAGE_QUALITY_NORMAL ),
+		topleft.x, topleft.y );
+}
+
+float wxScreenOutputDevice::DevicePPI()
+{
+	wxSize sz = m_dc.GetPPI();
+	if (sz.x != sz.y) return (float) (sz.x>sz.y)?sz.x:sz.y;
+	else return (float)sz.x;
+}
+
+int wxScreenOutputDevice::ScalePointSizeToScreen( int requested )
+{
+	int points = (int)(requested * m_lc->GetPPI() / DevicePPI());
+	if (points < 1) points = 1;
+	return points;
+}
+
+
+wxPdfOutputDevice::wxPdfOutputDevice( wxPdfDocument &pdf )
+	: m_pdf(pdf) { }
+
+void wxPdfOutputDevice::Clip( float x, float y, float width, float height )
+{
+	m_pdf.ClippingRect( x, y, width, height );
+}
+
+void wxPdfOutputDevice::Unclip()
+{
+	m_pdf.UnsetClipping();
+}
+
+void wxPdfOutputDevice::Color( const wxColour &c )
+{
+	m_pdf.SetDrawColour( c );
+	m_pdf.SetFillColour( c );
+	m_pdf.SetTextColour( c );
+}
+
+void wxPdfOutputDevice::LineStyle( float thick, int style )
+{
+	wxPdfArrayDouble dash;
+	if (style == DOTTED ) dash.Add( 0.05 );
+	m_pdf.SetLineStyle( wxPdfLineStyle( thick, wxPDF_LINECAP_NONE, wxPDF_LINEJOIN_NONE, dash, -1, m_pdf.GetDrawColour() ) );
+}
+
+void wxPdfOutputDevice::Line( float x1, float y1, float x2, float y2 )
+{
+	m_pdf.Line( x1, y1, x2, y2 );
+}
+
+void wxPdfOutputDevice::Rect( float x, float y, float width, float height, bool fill, float radius  ) 
+{
+	int style = fill ? wxPDF_STYLE_FILLDRAW : wxPDF_STYLE_DRAW;
+	if (radius > 0.0f)
+		m_pdf.RoundedRect( x, y, width, height, radius, wxPDF_CORNER_ALL, style );
+	else
+		m_pdf.Rect( x, y, width, height,  style );
+}
+
+void wxPdfOutputDevice::Circle( float x, float y, float radius, bool fill )
+{
+	m_pdf.Circle( x, y, radius, 0, 360, fill ? wxPDF_STYLE_FILLDRAW : wxPDF_STYLE_DRAW );
+}
+
+void wxPdfOutputDevice::Arc( float x, float y, float width, float height, float angle1, float angle2, bool fill )
+{
+	m_pdf.Ellipse( x, y, width/2, height/2, 0, angle1, angle2, fill ? wxPDF_STYLE_FILLDRAW : wxPDF_STYLE_DRAW );
+}
+
+void wxPdfOutputDevice::Font( int face, int points, bool bold, bool italic )
+{
+	wxString name = "Courier";
+	if ( face == SERIF ) name = "Times";
+	if ( face == SANSERIF ) name = "Helvetica";
+
+	int style = 0;
+	if (bold) style |= wxPDF_FONTSTYLE_BOLD;
+	if (italic) style |= wxPDF_FONTSTYLE_ITALIC;
+
+	m_pdf.SetFont( name, style, points );
+}
+
+void wxPdfOutputDevice::Text( float x, float y, const wxString &text, float angle )
+{
+	if (angle == 0.0f)
+		m_pdf.Text( x, y + m_pdf.GetFontSize()/72.0f, text );
+	else
 	{
-		m_pdf.UnsetClipping();
+		double fh = m_pdf.GetFontSize()/72.0f;
+		double xx = x + fh*sin( angle*M_PI/180 );
+		double yy = y + fh*cos( angle*M_PI/180 );
+		m_pdf.RotatedText( xx, yy, text, angle );
 	}
+}
 
-	virtual void Color( const wxColour &c )
-	{
-		m_pdf.SetDrawColour( c );
-		m_pdf.SetFillColour( c );
-		m_pdf.SetTextColour( c );
-	}
+void wxPdfOutputDevice::Measure( const wxString &text, float *width, float *height )
+{
+	if (width) *width = (float) m_pdf.GetStringWidth( text );
+	if (height) *height = (float)( m_pdf.GetFontSize() / 72.0f );
+}
 
-	virtual void LineStyle( float thick, int style )
-	{
-		wxPdfArrayDouble dash;
-		if (style == DOTTED ) dash.Add( 0.05 );
-		m_pdf.SetLineStyle( wxPdfLineStyle( thick, wxPDF_LINECAP_NONE, wxPDF_LINEJOIN_NONE, dash, -1, m_pdf.GetDrawColour() ) );
-	}
-
-	virtual void Line( float x1, float y1, float x2, float y2 )
-	{
-		m_pdf.Line( x1, y1, x2, y2 );
-	}
-
-	virtual void Rect( float x, float y, float width, float height, bool fill = false, float radius = 0.0f  ) 
-	{
-		int style = fill ? wxPDF_STYLE_FILLDRAW : wxPDF_STYLE_DRAW;
-		if (radius > 0.0f)
-			m_pdf.RoundedRect( x, y, width, height, radius, wxPDF_CORNER_ALL, style );
-		else
-			m_pdf.Rect( x, y, width, height,  style );
-	}
-
-	virtual void Circle( float x, float y, float radius, bool fill = false )
-	{
-		m_pdf.Circle( x, y, radius, 0, 360, fill ? wxPDF_STYLE_FILLDRAW : wxPDF_STYLE_DRAW );
-	}
-
-	virtual void Arc( float x, float y, float width, float height, float angle1, float angle2, bool fill = false )
-	{
-		m_pdf.Ellipse( x, y, width/2, height/2, 0, angle1, angle2, fill ? wxPDF_STYLE_FILLDRAW : wxPDF_STYLE_DRAW );
-	}
-
-	virtual void Font( int face, int points, bool bold, bool italic )
-	{
-		wxString name = "Courier";
-		if ( face == SERIF ) name = "Times";
-		if ( face == SANSERIF ) name = "Helvetica";
-
-		int style = 0;
-		if (bold) style |= wxPDF_FONTSTYLE_BOLD;
-		if (italic) style |= wxPDF_FONTSTYLE_ITALIC;
-
-		m_pdf.SetFont( name, style, points );
-	}
-
-	virtual void Text( float x, float y, const wxString &text, float angle )
-	{
-		if (angle == 0.0f)
-			m_pdf.Text( x, y + m_pdf.GetFontSize()/72.0f, text );
-		else
-		{
-			double fh = m_pdf.GetFontSize()/72.0f;
-			double xx = x + fh*sin( angle*M_PI/180 );
-			double yy = y + fh*cos( angle*M_PI/180 );
-			m_pdf.RotatedText( xx, yy, text, angle );
-		}
-	}
-
-	virtual void Measure( const wxString &text, float *width, float *height )
-	{
-		if (width) *width = (float) m_pdf.GetStringWidth( text );
-		if (height) *height = (float)( m_pdf.GetFontSize() / 72.0f );
-	}
-
-	virtual void Image( const wxImage &img, float top, float left, float width = 0.0f, float height = 0.0f )
-	{
-		m_pdf.Image( wxString::Format("img_%d", ++m_imageIndex), img, top, left, width, height );
-	}
-};
+void wxPdfOutputDevice::Image( const wxImage &img, float top, float left, float width, float height )
+{
+	m_pdf.Image( wxString::Format("img_%d", ++m_imageIndex), img, top, left, width, height );
+}
 
 int wxPdfOutputDevice::m_imageIndex = 0;
 

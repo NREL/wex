@@ -2420,8 +2420,8 @@ wxJSONValue::GetInfo() const
             data->m_comments.GetCount() );
 #else
     s.Printf( wxT("Object: Type=%s Size=%d comments=%d\n"),
-            wxJSONValue::TypeToString( data->m_type ).c_str(),
-            Size(), data->m_comments.GetCount() );
+            (const char*)wxJSONValue::TypeToString( data->m_type ).c_str(),
+            (int) Size(), (int) data->m_comments.GetCount() );
 #endif
     if ( data->m_type == wxJSONTYPE_OBJECT ) {
         wxArrayString arr = GetMemberNames();
