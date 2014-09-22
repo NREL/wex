@@ -198,7 +198,8 @@ void wxSnapLayout::Place( size_t icur, int cwidth )
 					placed = true;
 				}
 			}
-
+			
+			/*
 			wxPoint try2( m_list[i]->active.x, m_list[i]->active.y+m_list[i]->active.height );
 			if( CanPlace( icur, l.active.width, l.active.height, try2.x, try2.y, cwidth ) )
 			{
@@ -208,7 +209,8 @@ void wxSnapLayout::Place( size_t icur, int cwidth )
 					placed = true;
 				}
 			}
-
+			*/
+			/*
 			wxPoint try3( m_list[i]->active.x+m_list[i]->active.width-l.active.width, m_list[i]->active.y+m_list[i]->active.height );
 			if ( CanPlace( icur, l.active.width, l.active.height, try3.x, try3.y, cwidth ) )
 			{
@@ -218,6 +220,7 @@ void wxSnapLayout::Place( size_t icur, int cwidth )
 					placed = true;
 				}
 			}
+			*/
 		}
 
 

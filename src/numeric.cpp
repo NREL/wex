@@ -60,7 +60,10 @@ void wxNumericCtrl::OnLoseFocus( wxFocusEvent &evt )
 void wxNumericCtrl::SetupValidator()
 {
 	wxArrayString excludes;
-	excludes.Add(",");
+	
+	wxChar thousep = ','; // default thousands separator
+	wxNumberFormatter::GetThousandsSeparatorIfUsed(&thousep);
+	excludes.Add( wxString(thousep) );
 
 	if ( m_mode == INTEGER )
 	{

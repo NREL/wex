@@ -244,7 +244,7 @@ void wxPdfOutputDevice::Circle( float x, float y, float radius, bool fill )
 
 void wxPdfOutputDevice::Arc( float x, float y, float width, float height, float angle1, float angle2, bool fill )
 {
-	m_pdf.Ellipse( x, y, width/2, height/2, 0, angle1, angle2, fill ? wxPDF_STYLE_FILLDRAW : wxPDF_STYLE_DRAW );
+	m_pdf.Ellipse( x+width/2, y+height/2, width/2, height/2, 0, angle1, angle2, fill ? wxPDF_STYLE_FILLDRAW : wxPDF_STYLE_DRAW );
 }
 
 void wxPdfOutputDevice::Font( int face, int points, bool bold, bool italic )

@@ -497,19 +497,20 @@ public:
 		wxLog::SetActiveTarget(log);
 		log->Show();
 
-		wxFrame *frame = new NumericTest();
-		frame->Show();
+		//wxFrame *frame = new NumericTest();
+		//frame->Show();
 		
 
 		//TestPLPlot( 0 );
 
 		TestSnapLayout( 0 );
+		return true;
 
 		//TestDVSelectionCtrl();
 
 		//TestPLPolarPlot(0);
 
-		TestWindRose(0);
+		//TestWindRose(0);
 
 
 		/*
