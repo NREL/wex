@@ -55,10 +55,13 @@ public:
 	void ReplaceNext();
 	void ReplaceAll();
 	
+	bool IsTextSelected( const wxString &text, bool match_case );
+
 	int	FindNext( const wxString &text, int fr_text_len = -1, /* used internally by replace - typically -1 is OK */ 
-			bool match_case = true, bool whole_word = false );
+			bool match_case = true, bool whole_word = false, 
+			bool wrap_around = true, int start_pos = -1 );
 	int ReplaceNext( const wxString &text, const wxString &replace, bool stop_at_find = false, 
-			bool match_case = true, bool whole_word = false  );	
+			bool match_case = true, bool whole_word = false, bool wrap_around = true );	
 	int ReplaceAll( const wxString &text, const wxString &replace, 
 			bool match_case = true, bool whole_word = false, bool show_message = true );
 	

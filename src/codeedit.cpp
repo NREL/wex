@@ -71,7 +71,9 @@ public:
 
 	void ReplaceNext()
 	{
-		m_editor->ReplaceNext( m_findText->GetValue(), m_replaceText->GetValue(), false,
+		bool stop_at_find = ! m_editor->IsTextSelected( m_findText->GetValue(), m_matchCase->GetValue() );
+
+		m_editor->ReplaceNext( m_findText->GetValue(), m_replaceText->GetValue(), stop_at_find,
 			m_matchCase->GetValue(), m_wholeWord->GetValue() );	
 		m_editor->SetFocus();	
 	}
@@ -745,13 +747,16 @@ void wxCodeEditCtrl::ReplaceAll()
 	m_frDialog->ReplaceAll();
 }
 
-int	wxCodeEditCtrl::FindNext( const wxString &text, int frtxt_len, bool match_case, bool whole_word )
+int	wxCodeEditCtrl::FindNext( const wxString &text, int frtxt_len, bool match_case, bool whole_word, bool wrap_around, int start_pos )
 {
 	if (frtxt_len < 0) frtxt_len = text.Len();
 
 	int start = m_lastFindPos >= 0 ? m_lastFindPos+frtxt_len : GetCurrentPos();
 	if (start > GetLength())
 		start = 0;
+
+	if ( start_pos >= 0 && start_pos < GetLength() )
+		start = start_pos;
 
 	int flags = 0;
 	
@@ -767,7 +772,7 @@ int	wxCodeEditCtrl::FindNext( const wxString &text, int frtxt_len, bool match_ca
 		SetSelection(m_lastFindPos, m_lastFindPos+text.Len());
 		EnsureCaretVisible();
 	}
-	else
+	else if ( wrap_around )
 	{
 		m_lastFindPos = FindText(0, GetLength(), text, flags);
 		if (m_lastFindPos >= 0)
@@ -780,18 +785,22 @@ int	wxCodeEditCtrl::FindNext( const wxString &text, int frtxt_len, bool match_ca
 	return m_lastFindPos;
 }
 
-int wxCodeEditCtrl::ReplaceNext( const wxString &text, const wxString &replace, bool stop_at_find, 
-			bool match_case, bool whole_word )
+bool wxCodeEditCtrl::IsTextSelected( const wxString &text, bool match_case )
 {
-	bool cur_selected = false;
 	if ( match_case )
-		cur_selected = (GetSelectedText() == text );
+		return (GetSelectedText() == text );
 	else
-		cur_selected = (GetSelectedText().Lower() == text.Lower());
+		return (GetSelectedText().Lower() == text.Lower());
+}
+
+int wxCodeEditCtrl::ReplaceNext( const wxString &text, const wxString &replace, bool stop_at_find, 
+			bool match_case, bool whole_word, bool wrap_around )
+{
+	bool cur_selected = IsTextSelected( text, match_case );
 
 	if (!cur_selected)
 	{
-		cur_selected = (FindNext( text, -1, match_case, whole_word ) >= 0);
+		cur_selected = (FindNext( text, -1, match_case, whole_word, wrap_around ) >= 0);
 		if ( stop_at_find )
 			return cur_selected ? m_lastFindPos : -1;
 	}
@@ -802,14 +811,23 @@ int wxCodeEditCtrl::ReplaceNext( const wxString &text, const wxString &replace, 
 	}
 
 	ReplaceSelection( replace );
-	return FindNext( text, replace.Len(), match_case, whole_word );
+	return FindNext( text, replace.Len(), match_case, whole_word, wrap_around );
 }
 
 int wxCodeEditCtrl::ReplaceAll( const wxString &text, const wxString &replace, 
 			bool match_case, bool whole_word, bool show_message )
 {
 	int count = 0;
-	while ( ReplaceNext( text, replace, false, match_case, whole_word ) >= 0 )
+
+	// start replace all at beginning of document
+	int pos = FindNext( text, -1, match_case, whole_word, false, 0 ); 
+	if ( pos < 0 )
+	{
+		if ( show_message ) wxMessageBox("That text could not be found.");
+		return 0;
+	}
+
+	while ( ReplaceNext( text, replace, false, match_case, whole_word, false ) >= 0 )
 		count++;
 
 	if (show_message) wxMessageBox( wxString::Format( "%d instances replaced.", count ) );
