@@ -5,6 +5,7 @@
 #include <wx/statbmp.h>
 #include <wx/numformatter.h>
 #include <wx/grid.h>
+#include <wx/zstream.h>
 
 #include "wex/icons/time.cpng"
 #include "wex/icons/dmap.cpng"
@@ -490,7 +491,15 @@ public:
 			return false;
 		
 		wxInitAllImageHandlers();
+
+		//wxMessageBox(wxString::Format("Can handle gzip? %d", wxZlibInputStream::CanHandleGZip() ? 1 : 0 ) );
 		
+		//bool ok = wxGunzipFile( "c:/users/adobos/desktop/geostellar/weather/weather_074654025.tm2.gz",
+		//	"c:/users/adobos/desktop/geostellar/weather/unzipped.tm2" );
+
+		//if (ok) wxMessageBox("unzipped ok" );
+		//else wxMessageBox("error");
+
 		m_locale.Init();
 	
 		wxLogWindow *log = new wxLogWindow( 0 , "Log");

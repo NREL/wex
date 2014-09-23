@@ -562,16 +562,20 @@ bool wxGunzipFile(const wxString &archive, const wxString &target)
 	wxFFileInputStream in( archive );
 	if (!in.IsOk()) return false;
 
-	wxZlibInputStream gzp( in );
+	wxZlibInputStream gzp( in, wxZLIB_AUTO );
 	if (!gzp.IsOk()) return false;
 
 	wxFFileOutputStream out( target );
 	if (!out.IsOk()) return false;
 
-	while (!gzp.Eof())
+	while ( !gzp.Eof() )
 	{
 		gzp.Read( rwbuf, NRWBUFBYTES );
-		out.Write( rwbuf, gzp.LastRead() );
+		size_t nread = gzp.LastRead();		
+		if ( nread == 0 )
+			return false; // error since couldn't read even though not at end of file.  sometimes happens in corrupt gzipped files
+
+		out.Write( rwbuf, nread );
 	}
 
 	return true;
