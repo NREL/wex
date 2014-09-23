@@ -457,9 +457,9 @@ public:
 		: wxMetroNotebook( parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxMT_LIGHTTHEME )
 	{		
 		AddPage(  new wxDVTimeSeriesCtrl(this, wxID_ANY, wxDV_RAW, wxDV_AVERAGE), "Time series", true );
-		AddPage(new wxDVTimeSeriesCtrl(this, wxID_ANY, wxDV_HOURLY, wxDV_AVERAGE), "Hourly");
-		AddPage(new wxDVTimeSeriesCtrl(this, wxID_ANY, wxDV_DAILY, wxDV_AVERAGE), "Daily");
-		AddPage(new wxDVTimeSeriesCtrl(this, wxID_ANY, wxDV_MONTHLY, wxDV_AVERAGE), "Monthly");
+		AddPage(  new wxDVTimeSeriesCtrl(this, wxID_ANY, wxDV_HOURLY, wxDV_AVERAGE), "Hourly");
+		AddPage(  new wxDVTimeSeriesCtrl(this, wxID_ANY, wxDV_DAILY, wxDV_AVERAGE), "Daily");
+		AddPage(  new wxDVTimeSeriesCtrl(this, wxID_ANY, wxDV_MONTHLY, wxDV_AVERAGE), "Monthly");
 		AddPage(  new wxDVDMapCtrl(this, wxID_ANY), "Heat map" );
 		AddPage(  new wxDVProfileCtrl(this, wxID_ANY), "Profile" );
 		AddPage(  new wxDVStatisticsTableCtrl(this, wxID_ANY), "Statistics" );

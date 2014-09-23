@@ -742,7 +742,8 @@ void wxMetroTabList::OnLeftDown(wxMouseEvent &evt)
 	{
 		wxMetroPopupMenu menu( m_style&wxMT_LIGHTTHEME ? wxMT_LIGHTTHEME : 0 );			
 		for ( size_t i=0;i< m_items.size();i++)
-			menu.AppendCheckItem( ID_TAB0+i, m_items[i].label, i == (int)m_selection );
+			if ( m_items[i].shown )
+				menu.AppendCheckItem( ID_TAB0+i, m_items[i].label, i == (int)m_selection );
 		
 		wxPoint pos( cwidth-m_dotdotWidth, cheight );
 		pos = ClientToScreen(pos);		
