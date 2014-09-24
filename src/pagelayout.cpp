@@ -154,14 +154,11 @@ void wxScreenOutputDevice::Text( float x, float y, const wxString &text, float a
 
 void wxScreenOutputDevice::Measure( const wxString &text, float *width, float *height )
 {
-	wxFont f = m_font;
-	f.SetPointSize( ScalePointSizeToScreen( m_font.GetPointSize() ) );
-	m_dc.SetFont( f );
-	wxSize sz = m_dc.GetTextExtent( text );
-	sz.y = m_dc.GetCharHeight();
-
-	if (width) *width = sz.x/m_lc->GetPPI();
-	if (height) *height = sz.y/m_lc->GetPPI();
+	m_dc.SetFont( m_font );
+	wxSize size( m_dc.GetTextExtent( text ) );
+	float devppi = DevicePPI();
+	if (width) *width = size.x/devppi;
+	if (height) *height = m_dc.GetCharHeight()/devppi;
 }
 
 void wxScreenOutputDevice::Image( const wxImage &img, float top, float left, float width, float height )
@@ -190,7 +187,7 @@ float wxScreenOutputDevice::DevicePPI()
 
 int wxScreenOutputDevice::ScalePointSizeToScreen( int requested )
 {
-	int points = (int)(requested * m_lc->GetPPI() / DevicePPI());
+	int points = (int)( ((float)requested) * m_lc->GetPPI() / DevicePPI());
 	if (points < 1) points = 1;
 	return points;
 }
@@ -263,7 +260,10 @@ void wxPdfOutputDevice::Font( int face, int points, bool bold, bool italic )
 void wxPdfOutputDevice::Text( float x, float y, const wxString &text, float angle )
 {
 	if (angle == 0.0f)
-		m_pdf.Text( x, y + m_pdf.GetFontSize()/72.0f, text );
+	{
+		 // the .95 factor pushes the text up a little off baseline, looks better
+		m_pdf.Text( x, y + m_pdf.GetFontSize()/72.0f*0.95f, text );
+	}
 	else
 	{
 		double fh = m_pdf.GetFontSize()/72.0f;
@@ -276,7 +276,9 @@ void wxPdfOutputDevice::Text( float x, float y, const wxString &text, float angl
 void wxPdfOutputDevice::Measure( const wxString &text, float *width, float *height )
 {
 	if (width) *width = (float) m_pdf.GetStringWidth( text );
-	if (height) *height = (float)( m_pdf.GetFontSize() / 72.0f );
+
+	// note: 1.15 factor is kludge to make text height appear more accurately on win32
+	if (height) *height = (float)( m_pdf.GetFontSize() / 72.0f )*1.15f;
 }
 
 void wxPdfOutputDevice::Image( const wxImage &img, float top, float left, float width, float height )
