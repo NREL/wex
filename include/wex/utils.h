@@ -54,6 +54,9 @@ int wxShowTextMessageDialog(const wxString &text,
 // number of days in each month
 extern int wxNDay[12];
 
+// returns 3 letter name of month, for 1 <= mo <= 12
+wxString wxMonthName( int mo );
+
 /* month: 1-12 time: hours, starting 0=jan 1st 12am, returns 1..nday*/
 int wxDayOfMonth(int month, double time);
 

@@ -969,19 +969,30 @@ double wxMDHMToTime( int mo, int dy, int hr, int min )
 	return time + min/60.0;
 }
 
+static const char *sg_months[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+
+
+wxString wxMonthName( int mo )
+{
+	if ( mo >= 1 && mo <= 12 )
+		return wxString( sg_months[mo-1] );
+	else
+		return wxEmptyString;
+}
+
 wxString wxFormatMDHM( int mo, int dy, int hr, int min, bool use_12_hr )
 {
-	static const char *months[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+	
 	if ( mo < 1 ) mo = 1;
 	if ( mo > 12 ) mo = 12;
 
 	if ( use_12_hr )
-		return wxString::Format( "%s %d, %02d:%02d %s", months[mo-1], dy, 
+		return wxString::Format( "%s %d, %02d:%02d %s", sg_months[mo-1], dy, 
 			 ( hr == 0 ? 12 : (hr > 12 ? hr-12 : hr) ),
 			 min,
 			 hr < 12 ? "am" : "pm" );
 	else
-		return wxString::Format( "%s %d, %d:%d", months[mo-1], dy, hr, min );
+		return wxString::Format( "%s %d, %d:%d", sg_months[mo-1], dy, hr, min );
 }
 
 wxString wxFormatTime( double time, bool use_12_hr )
