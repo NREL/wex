@@ -215,11 +215,15 @@ void wxDVColourMap::Render(wxDC &dc, const wxRect &geom)
 
 wxColour wxDVColourMap::ColourForValue(double val)
 {
-	if (val <= m_min) return m_colourList[0];
+	if ( m_colourList.size() == 0 ) return *wxBLACK;
+	if ( !(wxFinite(val)) || val <= m_min) return m_colourList[0];
 	if (val >= m_max) return m_colourList[m_colourList.size()-1];
 
-	int position = m_colourList.size() * (val - m_min) / (m_max - m_min);
-	return m_colourList[position];
+	size_t position = (size_t)( ((double)m_colourList.size()) * (val - m_min) / (m_max - m_min) );
+	if ( position >= 0 && position < m_colourList.size() )
+		return m_colourList[position];
+	else
+		return m_colourList[0];
 }
 
 
