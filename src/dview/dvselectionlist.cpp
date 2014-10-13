@@ -193,6 +193,14 @@ wxString wxDVSelectionListCtrl::GetRowLabel(int row)
 	return m_itemList[row]->label;
 }
 
+wxString wxDVSelectionListCtrl::GetRowLabelWithGroup( int row )
+{
+	if ( row < 0 || row >= m_itemList.size() ) return wxEmptyString;
+	wxString grp( m_itemList[row]->group );
+	if ( grp.IsEmpty() ) return m_itemList[row]->label;
+	else return grp + " - " + m_itemList[row]->label;
+}
+
 wxString wxDVSelectionListCtrl::GetSelectedNamesInCol(int col)
 {
 	//Return list of names from col that are selected.

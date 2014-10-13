@@ -48,6 +48,7 @@ public:
 	bool IsRowSelected(int row, int start_col = 0);
 	bool IsSelected(int row, int col);
 	wxString GetRowLabel(int row);
+	wxString GetRowLabelWithGroup( int row );
 	wxString GetSelectedNamesInCol(int col = 0);
 	std::vector<int> GetSelectionsInCol( int col = 0 );
 	int GetNumSelected( int col = 0 );

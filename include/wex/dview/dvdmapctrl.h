@@ -23,6 +23,7 @@ class wxCheckBox;
 class wxDVTimeSeriesDataSet;
 class wxDVColourMap;
 class wxDVDMapPlot;
+class wxDVSelectionListCtrl;
 
 class wxDVDMapCtrl : public wxPanel
 {
@@ -63,10 +64,7 @@ public:
 	void SetViewWindow(double xMin, double yMin, double xMax, double yMax);
 	void PanXByPercent(double p);
 	void PanYByPercent(double p);
-
-	bool GetSyncWithTimeSeries();
-	void SetSyncWithTimeSeries(bool b);
-
+	
 	//These functions will move the bounds if they need to be moved.
 	void KeepXBoundsWithinLimits(double* xMin, double* xMax);
 	void KeepYBoundsWithinLimits(double* yMin, double* yMax);
@@ -86,7 +84,8 @@ public:
 
 
 	/*Event Handlers*/
-	void OnDataComboBox(wxCommandEvent& e);
+	void OnDataChannelSelection(wxCommandEvent& e);
+
 	void OnColourMapSelection(wxCommandEvent& e);
 	void OnColourMapMinChanged(wxCommandEvent& e);
 	void OnColourMapMaxChanged(wxCommandEvent& e);
@@ -110,10 +109,7 @@ public:
 
 	void Invalidate(); // recalculate and rerender plot
 private:
-	wxCheckBox *m_syncCheck;
-
-	std::vector<wxString> m_indexedDataNames;
-	wxChoice *m_dataSelector;
+	wxDVSelectionListCtrl *m_selector;
 	wxChoice *m_colourMapSelector;
 
 	wxTextCtrl *m_minTextBox;

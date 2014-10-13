@@ -457,7 +457,6 @@ wxDVTimeSeriesSettingsDialog::wxDVTimeSeriesSettingsDialog( wxWindow *parent, co
 	bool isTopRightYVisible, bool isBottomGraphVisible )
 	: wxDialog( parent, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxRESIZE_BORDER|wxDEFAULT_DIALOG_STYLE)
 {
-	mSyncCheck = new wxCheckBox(this, wxID_ANY, "Synchronize view with heat map" );
 	mStatTypeCheck = new wxCheckBox(this, ID_StatCheckbox, "Show total sum over time step, not average value" );
 		
 	mStyleChoice = new wxRadioChoice( this, wxID_ANY );
@@ -497,7 +496,6 @@ wxDVTimeSeriesSettingsDialog::wxDVTimeSeriesSettingsDialog( wxWindow *parent, co
 	yBottomBoundSizer->Add(mBottomYMaxCtrl, 0, wxLEFT|wxRIGHT|wxBOTTOM, 2);
 		
 	wxBoxSizer *boxmain = new wxBoxSizer(wxVERTICAL);
-	boxmain->Add( mSyncCheck, 0, wxALL|wxEXPAND, 10 );
 	boxmain->Add( mStatTypeCheck, 0, wxALL|wxEXPAND, 10 );
 	boxmain->Add( mStyleChoice, 0, wxALL|wxEXPAND, 10 );
 	boxmain->Add( mStackedArea, 0, wxALL|wxEXPAND, 10 );
@@ -590,9 +588,6 @@ bool wxDVTimeSeriesSettingsDialog::GetStacked() { return mStackedArea->GetValue(
 void wxDVTimeSeriesSettingsDialog::SetStyle( wxDVTimeSeriesStyle id ) { mStyleChoice->SetSelection( (int) id); }
 wxDVTimeSeriesStyle wxDVTimeSeriesSettingsDialog::GetStyle() { return (wxDVTimeSeriesStyle)mStyleChoice->GetSelection(); }
 
-void wxDVTimeSeriesSettingsDialog::SetSync( bool b ) { mSyncCheck->SetValue( b ); }
-bool wxDVTimeSeriesSettingsDialog::GetSync() { return mSyncCheck->GetValue(); }
-
 void wxDVTimeSeriesSettingsDialog::SetStatType( wxDVStatType statType ) { mStatTypeCheck->SetValue( statType == wxDV_SUM ? true : false ); }
 wxDVStatType wxDVTimeSeriesSettingsDialog::GetStatType() { return mStatTypeCheck->GetValue() ? wxDV_SUM : wxDV_AVERAGE; }
 
@@ -681,7 +676,6 @@ wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, wxDVTime
 	m_topAutoScale = true;
 	m_top2AutoScale = true;
 	m_bottomAutoScale = true;
-	m_syncToHeatMap = false;
 	m_style = ((seriesType == wxDV_RAW || seriesType == wxDV_HOURLY) ? wxDV_NORMAL : wxDV_STEPPED); // line, stepped, points
 	m_seriesType = seriesType;
 	m_statType = statType;
@@ -817,7 +811,6 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 		m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_TOP) != 0,
 		isBottomGraphVisible );
 	dlg.CentreOnParent();
-	dlg.SetSync( m_syncToHeatMap );
 	dlg.SetStatType( m_statType );
 	dlg.SetStyle( m_style );
 	dlg.SetStacked( m_stackingOnYLeft );
@@ -831,7 +824,6 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 	if (wxID_OK == dlg.ShowModal())
 	{
 		m_stackingOnYLeft = dlg.GetStacked();
-		m_syncToHeatMap = dlg.GetSync();
 		m_style = dlg.GetStyle();
 		for (size_t i=0; i<m_plots.size(); i++)
 			m_plots[i]->SetStyle( m_style );
@@ -2106,16 +2098,6 @@ void wxDVTimeSeriesCtrl::SelectDataSetAtIndex(int index)
 {
 	m_dataSelector->SelectRowInCol(index, 0);
 	AddGraphAfterChannelSelection(wxPLPlotCtrl::PLOT_TOP, index);
-}
-
-bool wxDVTimeSeriesCtrl::GetSyncWithHeatMap()
-{
-	return m_syncToHeatMap;
-}
-
-void wxDVTimeSeriesCtrl::SetSyncWithHeatMap(bool b)
-{
-	m_syncToHeatMap = b;
 }
 
 wxDVStatType wxDVTimeSeriesCtrl::GetStatType()

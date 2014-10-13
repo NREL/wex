@@ -7,9 +7,10 @@
 #include "wex/plot/plhistplot.h"
 #include "wex/plot/pllineplot.h"
 
+#include "wex/dview/dvselectionlist.h"
 #include "wex/dview/dvpncdfctrl.h"
 
-enum { wxID_DATA_SELECTOR_CHOICE = wxID_HIGHEST + 1, 
+enum { ID_DATA_SELECTOR = wxID_HIGHEST + 1, 
 	wxID_BIN_COMBO, 
 	wxID_NORMALIZE_CHOICE, 
 	wxID_Y_MAX_TB,
@@ -18,14 +19,14 @@ enum { wxID_DATA_SELECTOR_CHOICE = wxID_HIGHEST + 1,
 
 
 BEGIN_EVENT_TABLE(wxDVPnCdfCtrl, wxPanel)
-	EVT_CHOICE(wxID_DATA_SELECTOR_CHOICE, wxDVPnCdfCtrl::OnDataSelection)
+	EVT_DVSELECTIONLIST(ID_DATA_SELECTOR, wxDVPnCdfCtrl::OnDataChannelSelection)
 	EVT_TEXT_ENTER(wxID_Y_MAX_TB, wxDVPnCdfCtrl::OnEnterYMax)
 	EVT_CHOICE(wxID_NORMALIZE_CHOICE, wxDVPnCdfCtrl::OnNormalizeChoice)
 	EVT_COMBOBOX(wxID_BIN_COMBO, wxDVPnCdfCtrl::OnBinComboSelection)
 	EVT_TEXT_ENTER(wxID_BIN_COMBO, wxDVPnCdfCtrl::OnBinTextEnter)
 	EVT_CHECKBOX(wxID_ANY, wxDVPnCdfCtrl::OnShowZerosClick)
-	EVT_COMBOBOX(wxID_PLOT_TYPE, wxDVPnCdfCtrl::OnPlotTypeSelection)
-	END_EVENT_TABLE()
+	EVT_CHOICE(wxID_PLOT_TYPE, wxDVPnCdfCtrl::OnPlotTypeSelection)
+END_EVENT_TABLE()
 
 wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos, 
 	const wxSize& size, long style, const wxString& name)
@@ -40,15 +41,11 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos
 	m_plotSurface->AddPlot( m_pdfPlot );
 	m_plotSurface->AddPlot( m_cdfPlot, wxPLPlotCtrl::X_BOTTOM, wxPLPlotCtrl::Y_RIGHT );
 	m_plotSurface->ShowTitle( false );
-
-	wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
-	this->SetSizer(topSizer);
-
 	
 	m_maxTextBox = new wxTextCtrl(this, wxID_Y_MAX_TB, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
 
-	m_dataSelector = new wxChoice(this, wxID_DATA_SELECTOR_CHOICE, wxDefaultPosition, wxDefaultSize, 0, NULL, wxCB_SORT);
-
+	m_selector = new wxDVSelectionListCtrl(this, ID_DATA_SELECTOR, 1, wxDefaultPosition, wxDefaultSize, wxDVSEL_RADIO_FIRST_COL|wxDVSEL_NO_COLOURS); 
+	
 	m_hideZeros = new wxCheckBox(this, wxID_ANY, "Exclude Zero Values", wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
 
 	m_PlotTypeDisplayed = new wxChoice(this, wxID_PLOT_TYPE);
@@ -58,20 +55,20 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos
 	m_PlotTypeDisplayed->SetSelection(0);
 
 	wxBoxSizer *optionsSizer = new wxBoxSizer(wxHORIZONTAL);
-	optionsSizer->Add(m_dataSelector, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxALIGN_CENTER, 2);
-	optionsSizer->Add(new wxStaticText(this, wxID_ANY, wxT("  Y Max:")), 0, wxALIGN_CENTER|wxALL|wxALIGN_CENTER_VERTICAL, 2);
+		
+	optionsSizer->Add(new wxStaticText(this, wxID_ANY, wxT("  Y max:")), 0, wxALIGN_CENTER|wxALL|wxALIGN_CENTER_VERTICAL, 2);
 	optionsSizer->Add(m_maxTextBox, 0, wxALL|wxALIGN_CENTER_VERTICAL, 2);
 	optionsSizer->Add(m_hideZeros, 0, wxALL|wxALIGN_CENTER_VERTICAL, 2);
-	optionsSizer->Add(new wxStaticText(this, wxID_ANY, wxT("  Show:")), 0, wxALIGN_CENTER | wxALL | wxALIGN_CENTER_VERTICAL, 2);
-	optionsSizer->Add(m_PlotTypeDisplayed, 0, wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL | wxALL, 2);
 	optionsSizer->AddStretchSpacer();
-	
+
+	optionsSizer->Add(m_PlotTypeDisplayed, 0, wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL | wxALL, 2);
 	m_normalizeChoice = new wxChoice(this, wxID_NORMALIZE_CHOICE);
 	m_normalizeChoice->Append(wxT("Histogram"));
 	m_normalizeChoice->Append(wxT("Scaled Histogram"));
 	m_normalizeChoice->Append(wxT("Scale by Bin Width (Match PDF)"));
 	m_normalizeChoice->SetSelection(1);
 	optionsSizer->Add(m_normalizeChoice, 0, wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL|wxALL, 2);
+	optionsSizer->AddSpacer(5);
 
 	wxStaticText *binsLabel = new wxStaticText(this, wxID_ANY, wxT("# Bins:"));
 	optionsSizer->Add(binsLabel, 0, wxALIGN_CENTER, 0);
@@ -85,9 +82,16 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos
 	m_binsCombo->SetSelection(0);
 	optionsSizer->Add(m_binsCombo, 0, wxALL|wxALIGN_CENTER_VERTICAL, 2);
 
-	topSizer->Add(optionsSizer, 0, wxEXPAND, 0);
 	
-	topSizer->Add(m_plotSurface, 1, wxEXPAND|wxALL, 10);
+	wxBoxSizer *leftSizer = new wxBoxSizer(wxVERTICAL);
+	leftSizer->Add(optionsSizer, 0, wxEXPAND, 0);	
+	leftSizer->Add(m_plotSurface, 1, wxEXPAND|wxALL, 10);
+
+	
+	wxBoxSizer *mainSizer = new wxBoxSizer( wxHORIZONTAL );
+	mainSizer->Add( leftSizer, 1, wxALL|wxEXPAND, 0 );
+	mainSizer->Add( m_selector, 0, wxALL|wxEXPAND, 0 );
+	SetSizer( mainSizer );
 
 	m_plotSurface->SetYAxis1( new wxPLLinearAxis(0, 100, "% of Data Points"));
 	m_plotSurface->SetYAxis2( new wxPLLinearAxis(0, 100, "CDF %"));
@@ -109,26 +113,20 @@ wxDVPnCdfCtrl::~wxDVPnCdfCtrl()
 void wxDVPnCdfCtrl::AddDataSet(wxDVTimeSeriesDataSet* d, const wxString& group, bool update_ui)
 {
 	m_dataSets.push_back(d);
-
+	m_selector->Append( d->GetTitleWithUnits(), group );
+	
 	//Add new plot data array, but leave it empty until we use it.  We'll fill it with sorted values then.
 	m_cdfPlotData.push_back( new std::vector<wxRealPoint>() );
 
-	wxString displayedName;
-	if (group != wxEmptyString)
-		displayedName = "-" + group + "- " + d->GetSeriesTitle() + " (" + d->GetUnits() + ")";
-	else
-		displayedName = d->GetSeriesTitle() + " (" + d->GetUnits() + ")";
-
-	m_indexedDataNames.push_back(displayedName);
-	m_dataSelector->Append(displayedName);
-
 	if (update_ui)
-		Layout(); //Resize dataSelector if needed.
+		Layout();
 }
 
 void wxDVPnCdfCtrl::RemoveDataSet(wxDVTimeSeriesDataSet* d)
 {
-	if (m_dataSets[m_selectedDataSetIndex] == d)
+
+	if ( m_selectedDataSetIndex >= 0 && m_selectedDataSetIndex < m_dataSets.size() 
+		&& m_dataSets[m_selectedDataSetIndex] == d )
 	{
 		ChangePlotDataTo(NULL);
 		m_selectedDataSetIndex = -1;
@@ -145,8 +143,7 @@ void wxDVPnCdfCtrl::RemoveDataSet(wxDVTimeSeriesDataSet* d)
 	delete m_cdfPlotData[index];
 	m_cdfPlotData.erase( m_cdfPlotData.begin() + index );
 
-	m_dataSelector->Delete(m_dataSelector->FindString(m_indexedDataNames[index]));
-	m_indexedDataNames.erase( m_indexedDataNames.begin() + index );
+	m_selector->RemoveAt( index );
 
 	InvalidatePlot();
 }
@@ -160,28 +157,29 @@ void wxDVPnCdfCtrl::RemoveAllDataSets()
 	for (int i=0; i<m_cdfPlotData.size(); i++)
 		delete m_cdfPlotData[i];
 	m_cdfPlotData.clear();
-
-	m_indexedDataNames.clear();
-	m_dataSelector->Clear();
+	m_selector->RemoveAll();
 
 	InvalidatePlot();
 }
 
 wxString wxDVPnCdfCtrl::GetCurrentDataName()
 {
-	return m_dataSelector->GetStringSelection();
+	if ( m_selectedDataSetIndex >= 0 && m_selectedDataSetIndex < m_dataSets.size() )
+		return m_selector->GetRowLabelWithGroup( m_selectedDataSetIndex );
+	else
+		return wxEmptyString;
 }
 
 bool wxDVPnCdfCtrl::SetCurrentDataName(const wxString& name, bool restrictToSmallDataSet)
 {
 	for (int i=0; i < m_dataSets.size(); i++)
 	{
-		if (m_dataSets[i]->GetTitleWithUnits() == name)
+		if (m_selector->GetRowLabelWithGroup(i) == name)
 		{
 			if (restrictToSmallDataSet && m_dataSets[i]->Length() > 8760*2) return false;
 			m_selectedDataSetIndex = i;
 			ChangePlotDataTo(m_dataSets[i]);
-			m_dataSelector->SetStringSelection(name);
+			m_selector->SelectRowInCol( i );
 			InvalidatePlot();
 			return true;
 		}
@@ -196,7 +194,7 @@ void wxDVPnCdfCtrl::SelectDataSetAtIndex(int index)
 
 	m_selectedDataSetIndex = index;
 	ChangePlotDataTo(m_dataSets[index]);
-	m_dataSelector->SetStringSelection(m_indexedDataNames[index]);
+	m_selector->SelectRowInCol( index );
 }
 
 void wxDVPnCdfCtrl::SetNumberOfBins(int n)
@@ -279,15 +277,12 @@ void wxDVPnCdfCtrl::ChangePlotDataTo(wxDVTimeSeriesDataSet* d, bool forceDataRef
 			m_pdfPlot->SetNumberOfBins(m_pdfPlot->GetSturgesBinsFor(d->Length()));
 		else if (m_binsCombo->GetSelection() == 1) //SQRT
 			m_pdfPlot->SetNumberOfBins(m_pdfPlot->GetSqrtBinsFor(d->Length()));
-		//Else it is just a number and we dont need to change it.
-	}
+	
 
-	if (d)
-	{
 		m_pdfPlot->SetData( d->GetDataVector() ); //inefficient?
 		m_pdfPlot->SetLabel( d->GetSeriesTitle() );
 		m_pdfPlot->SetXDataLabel( m_plotSurface->GetXAxis1()->GetLabel() );
-		m_pdfPlot->SetYDataLabel( d->GetSeriesTitle() );
+		m_pdfPlot->SetYDataLabel( d->GetSeriesTitle() );		
 	}
 	else
 	{
@@ -382,14 +377,12 @@ void wxDVPnCdfCtrl::UpdateYAxisLabel()
 }
 
 // *** EVENT HANDLERS ***
-void wxDVPnCdfCtrl::OnDataSelection(wxCommandEvent& e)
+void wxDVPnCdfCtrl::OnDataChannelSelection(wxCommandEvent &)
 {
-	//Assume same indexing.
 	m_selectedDataSetIndex = -1;
-	for ( size_t i=0;i<m_indexedDataNames.size();i++)
-		if ( m_indexedDataNames[i] == m_dataSelector->GetStringSelection() )
-			m_selectedDataSetIndex = i;
-
+	bool isChecked;
+	m_selector->GetLastEventInfo( &m_selectedDataSetIndex, 0, &isChecked );
+	
 	if ( m_selectedDataSetIndex < 0 ) return;
 
 	ChangePlotDataTo(m_dataSets[m_selectedDataSetIndex], true);

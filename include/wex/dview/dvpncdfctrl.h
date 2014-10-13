@@ -14,6 +14,7 @@ class wxComboBox;
 class wxChoice;
 class wxTextCtrl;
 class wxCheckBox;
+class wxDVSelectionListCtrl;
 
 class wxDVPnCdfCtrl : public wxPanel
 {
@@ -44,7 +45,8 @@ public:
 	void RebuildPlotSurface( double maxYPercent );
 
 	// Event Handlers
-	void OnDataSelection( wxCommandEvent & );
+	void OnDataChannelSelection(wxCommandEvent& e);
+
 	void OnEnterYMax( wxCommandEvent & );
 	void OnBinComboSelection( wxCommandEvent & );
 	void OnBinTextEnter( wxCommandEvent & );
@@ -59,9 +61,8 @@ private:
 
 	wxTextCtrl *m_minTextBox;
 	wxTextCtrl *m_maxTextBox;
-
-	std::vector<wxString> m_indexedDataNames;
-	wxChoice *m_dataSelector;
+	
+	wxDVSelectionListCtrl *m_selector;
 	wxComboBox *m_binsCombo;
 	wxChoice *m_normalizeChoice;
 	wxCheckBox *m_hideZeros;

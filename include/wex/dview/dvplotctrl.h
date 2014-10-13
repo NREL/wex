@@ -57,7 +57,6 @@ public:
 	
 	void DisplayTabs();
 	double GetMinTimeStep();
-	void OnPageChanging( wxNotebookEvent& e );
 	
 private:
 	std::vector<wxDVTimeSeriesDataSet*> m_dataSets;

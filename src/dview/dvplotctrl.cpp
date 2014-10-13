@@ -31,7 +31,7 @@ enum {	TAB_TIME_SERIES = 0,
 };
 
 BEGIN_EVENT_TABLE(wxDVPlotCtrl, wxMetroNotebook)
-	EVT_NOTEBOOK_PAGE_CHANGING( wxID_ANY, wxDVPlotCtrl::OnPageChanging )
+	// no events
 END_EVENT_TABLE()
 
 /* Constructors and Destructors */
@@ -441,40 +441,6 @@ void wxDVPlotCtrl::SelectDataIndexOnTab(size_t index, int tab)
 	}
 
 	//NOTE:  Statistics Table does not allow selection of an individual dataset
-}
-
-void wxDVPlotCtrl::OnPageChanging(wxNotebookEvent& e)
-{
-//	wxMessageBox("page changing");
-	//if (!mSynchAxesCheckBox->IsChecked()) return; //Only using it for this right now.
-	
-	if ( !m_timeSeries || !m_dMap ) return;
-
-	if (e.GetOldSelection() == TAB_DMAP)
-	{
-		if (m_dMap->GetSyncWithTimeSeries())
-		{
-			m_timeSeries->SetViewMin(m_dMap->GetXMin());
-			m_timeSeries->SetViewMax(m_dMap->GetXMax());
-			m_timeSeries->SetSyncWithHeatMap(true);
-		}
-		else
-			m_timeSeries->SetSyncWithHeatMap(false);
-	}
-	else if (e.GetOldSelection() == TAB_TIME_SERIES)
-	{
-		if (m_timeSeries->GetSyncWithHeatMap())
-		{
-			double newXMin = m_timeSeries->GetViewMin();
-			double newXMax = m_timeSeries->GetViewMax();
-			m_dMap->KeepXBoundsWithinLimits(&newXMin, &newXMax);
-			m_dMap->SetXMin(newXMin);
-			m_dMap->SetXMax(newXMax);
-			m_dMap->SetSyncWithTimeSeries(true);
-		}
-		else
-			m_dMap->SetSyncWithTimeSeries(false);
-	}
 }
 
 void wxDVPlotCtrl::SelectDataOnBlankTabs()

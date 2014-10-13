@@ -48,8 +48,6 @@ public:
 
 	void SetStyle( wxDVTimeSeriesStyle id );
 	wxDVTimeSeriesStyle GetStyle();
-	void SetSync( bool b );
-	bool GetSync();
 	void SetStatType( wxDVStatType statType );
 	wxDVStatType GetStatType();
 	void SetAutoscale( bool b );
@@ -67,7 +65,6 @@ protected:
 	void OnClickStatHandler(wxCommandEvent& event);
 
 private:
-	wxCheckBox *mSyncCheck;
 	wxCheckBox *mStatTypeCheck;
 	wxCheckBox *mTopAutoscaleCheck;
 	wxCheckBox *mTop2AutoscaleCheck;
@@ -121,8 +118,6 @@ public:
 	void KeepNewBoundsWithinLowerLimit(double* newMin, double* newMax);
 	void MakeXBoundsNice(double* xMin, double* xMax);
 
-	bool GetSyncWithHeatMap();
-	void SetSyncWithHeatMap(bool b);
 	wxDVTimeSeriesType GetTimeSeriesType();
 	wxDVStatType GetStatType();
 	void SetStatType(wxDVStatType statType);
@@ -194,7 +189,7 @@ private:
 	wxDVSelectionListCtrl *m_dataSelector;
 
 	bool m_topLockYAxes;
-	bool m_topAutoScale,  m_top2AutoScale, m_bottomAutoScale, m_syncToHeatMap;
+	bool m_topAutoScale,  m_top2AutoScale, m_bottomAutoScale;
 	wxDVTimeSeriesStyle m_style; // line, stepped
 	bool m_stackingOnYLeft;
 	wxDVTimeSeriesType m_seriesType;
