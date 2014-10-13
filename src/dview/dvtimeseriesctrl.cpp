@@ -155,20 +155,44 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 			if ( m_stacked )
 			{
 				len = m_data->Length();
-				points.reserve( len*2 );
+
+				size_t reserve_len = len;
+				if ( m_style == wxDV_STEPPED )
+					reserve_len *= 2;
+
+				// reserve double the baseline need since will
+				// use this array to create the wraparound polygon
+				// for the stacked area
+				points.reserve( reserve_len*2 ); 
+				
+				double timeStep = m_data->GetTimeStep();
+				double lowX;
+				double highX;
 
 				if ( m_stackedOnTopOf != 0 )
 				{
 					std::vector<wxRealPoint> base;
-					base.reserve( len );
+					base.reserve( reserve_len );
 					for( size_t i=0;i<len;i++ )
 					{
 						double yb = 0;
 						wxRealPoint p( StackedAt(i, &yb) );					
 						if ( p.x < wmin.x || p.x > wmax.x ) continue;
 
-						base.push_back( wxRealPoint( p.x, yb ) );
-						points.push_back( map.ToDevice( p ) );
+						if ( m_style == wxDV_STEPPED )
+						{
+							lowX = GetPeriodLowerBoundary( p.x, timeStep );
+							highX = GetPeriodUpperBoundary( p.x, timeStep );
+							points.push_back( map.ToDevice( lowX, p.y ) );
+							points.push_back( map.ToDevice( highX, p.y ) );
+							base.push_back( wxRealPoint(lowX, yb) );
+							base.push_back( wxRealPoint( highX, yb ) );
+						}
+						else
+						{
+							base.push_back( wxRealPoint( p.x, yb ) );
+							points.push_back( map.ToDevice( p ) );
+						}
 					}
 
 					for( size_t i=0;i<base.size();i++ )
@@ -180,7 +204,15 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 					{
 						wxRealPoint p( At(i) );					
 						if ( p.x < wmin.x || p.x > wmax.x ) continue;
-						points.push_back( map.ToDevice( p ) );
+						if ( m_style == wxDV_STEPPED )
+						{
+							lowX = GetPeriodLowerBoundary( p.x, timeStep );
+							highX = GetPeriodUpperBoundary( p.x, timeStep );
+							points.push_back( map.ToDevice( lowX, p.y ) );
+							points.push_back( map.ToDevice( highX, p.y ) );
+						}
+						else
+							points.push_back( map.ToDevice( p ) );
 					}
 
 					points.push_back( wxPoint( points[ points.size()-1 ].x,  map.ToDevice( wxRealPoint(0,0) ).y ) );
@@ -1414,11 +1446,7 @@ void wxDVTimeSeriesCtrl::GetVisibleDataMinAndMax(double* min, double* max, const
 				if (tempMax > *max)
 					*max = tempMax;		
 			}
-		}	
-
-		double range = (*max-*min);
-		*min -= 0.025*range;
-		*max += 0.025*range;
+		}
 	}
 }
 

@@ -428,9 +428,6 @@ static bool ReadWeatherFileLine(FILE *fp, int type,
 		return false;
 }
 
-const int PROBABLE_SIZE = 8760;
-
-
 bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, int prealloc_data, int prealloc_lnchars)
 {
 	wxString fExtension = filename.Right(3);
@@ -459,6 +456,14 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 
 	wxString firstLine;
 	AllocReadLine(inFile, firstLine, lnchars); //Read a line from inFile preallocating lnchars length.
+
+	// if the string with header names is really long,
+	// make sure the line reading buffer is plenty long
+	// assuming here that the text length of a data line
+	// is no more than twice the text length of the header line
+	if ( firstLine.Len() > lnchars )
+		lnchars = firstLine.Len()*2;
+
 	if (firstLine.Left(19) == wxT("wxDVFileHeaderVer.1"))
 	{
 		wxString titleStr, offsetStr, tStepStr, unitStr;
@@ -624,10 +629,6 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 			dataSets[i]->Alloc(prealloc_data);
     }
 
-#define FAST_READ 1
-
-#ifdef FAST_READ
-    // data lines
 
     int line = 0, ncol, ndbuf;
     char dblbuf[128], *p, *bp; //Position, buffer position
@@ -659,30 +660,6 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 
     delete [] buf;
 
-#else
-
-	//Slower, but potentially more accurate.
-    int line = 0, idx;
-    wxString buf;
-    wxString sval;
-    wxStringTokenizer tkz(wxT(""), wxT(" \t\r\n,"));
-    double val;
-    while (AllocReadLine(inFile, buf, 256))
-    {
-            tkz.SetString(buf);
-            idx = 0;
-            while (tkz.HasMoreTokens() && idx < columns)
-            {
-                    sval = tkz.GetNextToken();
-                    sscanf(sval.c_str(), "%lg", &val);
-					dataSets[idx]->GetData()->append(wxRealPoint(timeCounters[idx], val));
-					timeCounters[idx] += dataSets[idx]->GetTimeStep();
-                    idx++;
-            }
-            line++;
-    }
-
-#endif
 
     fclose(inFile);
 
@@ -858,9 +835,13 @@ bool wxDVFileReader::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& file
 	ds->SetUnits("cm");
 	dataSets.push_back(ds);
 
+
+
 	for (int i=0; i<dataSets.size(); i++)
+	{
+		dataSets.at(i)->SetOffset( 1.0 );
 		dataSets.at(i)->SetTimeStep(1.0); //All have 1 hr tstep.
-	// Done setting up data sets array.
+	}
 
 
 	//int year, month, day, hour;
