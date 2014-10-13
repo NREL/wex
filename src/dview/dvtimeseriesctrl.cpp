@@ -490,10 +490,8 @@ wxDVTimeSeriesSettingsDialog::wxDVTimeSeriesSettingsDialog( wxWindow *parent, co
 	: wxDialog( parent, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxRESIZE_BORDER|wxDEFAULT_DIALOG_STYLE)
 {
 	mStatTypeCheck = new wxCheckBox(this, ID_StatCheckbox, "Show total sum over time step, not average value" );
-		
-	mStyleChoice = new wxRadioChoice( this, wxID_ANY );
-	mStyleChoice->Add( "Line graph" );
-	mStyleChoice->Add( "Stepped line graph" );
+	
+	mSteppedLines = new wxCheckBox( this, wxID_ANY, "Stepped lines" );
 
 	mStackedArea = new wxCheckBox( this, wxID_ANY, "Stacked area on left Y axis");
 	mLockYAxes = new wxCheckBox( this, wxID_ANY, "Lock Y axes on top plot");
@@ -529,7 +527,7 @@ wxDVTimeSeriesSettingsDialog::wxDVTimeSeriesSettingsDialog( wxWindow *parent, co
 		
 	wxBoxSizer *boxmain = new wxBoxSizer(wxVERTICAL);
 	boxmain->Add( mStatTypeCheck, 0, wxALL|wxEXPAND, 10 );
-	boxmain->Add( mStyleChoice, 0, wxALL|wxEXPAND, 10 );
+	boxmain->Add( mSteppedLines, 0, wxALL|wxEXPAND, 10 );
 	boxmain->Add( mStackedArea, 0, wxALL|wxEXPAND, 10 );
 	boxmain->Add( mLockYAxes, 0, wxALL|wxEXPAND, 10 );
 	boxmain->Add( new wxStaticLine( this ), 0, wxALL|wxEXPAND, 0 );
@@ -617,8 +615,8 @@ bool wxDVTimeSeriesSettingsDialog::GetLockY2ToY1()
 void wxDVTimeSeriesSettingsDialog::SetStacked( bool b ) { mStackedArea->SetValue( b ); }
 bool wxDVTimeSeriesSettingsDialog::GetStacked() { return mStackedArea->GetValue(); }
 
-void wxDVTimeSeriesSettingsDialog::SetStyle( wxDVTimeSeriesStyle id ) { mStyleChoice->SetSelection( (int) id); }
-wxDVTimeSeriesStyle wxDVTimeSeriesSettingsDialog::GetStyle() { return (wxDVTimeSeriesStyle)mStyleChoice->GetSelection(); }
+void wxDVTimeSeriesSettingsDialog::SetStyle( wxDVTimeSeriesStyle id ) { mSteppedLines->SetValue( id == wxDV_STEPPED ); }
+wxDVTimeSeriesStyle wxDVTimeSeriesSettingsDialog::GetStyle() { return mSteppedLines->GetValue() ? wxDV_STEPPED : wxDV_NORMAL; }
 
 void wxDVTimeSeriesSettingsDialog::SetStatType( wxDVStatType statType ) { mStatTypeCheck->SetValue( statType == wxDV_SUM ? true : false ); }
 wxDVStatType wxDVTimeSeriesSettingsDialog::GetStatType() { return mStatTypeCheck->GetValue() ? wxDV_SUM : wxDV_AVERAGE; }

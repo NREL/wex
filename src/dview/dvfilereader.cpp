@@ -834,15 +834,9 @@ bool wxDVFileReader::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& file
 	ds->SetSeriesTitle("Snow Depth");
 	ds->SetUnits("cm");
 	dataSets.push_back(ds);
-
-
-
+	
 	for (int i=0; i<dataSets.size(); i++)
-	{
-		dataSets.at(i)->SetOffset( 1.0 );
 		dataSets.at(i)->SetTimeStep(1.0); //All have 1 hr tstep.
-	}
-
 
 	//int year, month, day, hour;
 	//double gh, dn, df, wind, drytemp, wettemp, relhum, pressure, winddir, snowdepth;

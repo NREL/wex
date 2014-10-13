@@ -66,6 +66,7 @@ protected:
 
 private:
 	wxCheckBox *mStatTypeCheck;
+	wxCheckBox *mSteppedLines;
 	wxCheckBox *mTopAutoscaleCheck;
 	wxCheckBox *mTop2AutoscaleCheck;
 	wxCheckBox *mBottomTopAutoscaleCheck;
@@ -75,7 +76,6 @@ private:
 	wxNumericCtrl *mTopY2MinCtrl;
 	wxNumericCtrl *mBottomYMaxCtrl;
 	wxNumericCtrl *mBottomYMinCtrl;
-	wxRadioChoice *mStyleChoice;
 	wxCheckBox *mStackedArea;
 	wxCheckBox *mLockYAxes;
 
