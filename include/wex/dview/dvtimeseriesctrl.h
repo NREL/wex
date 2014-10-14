@@ -35,14 +35,17 @@ class wxDVTimeSeriesSettingsDialog : public wxDialog
 {
 public:
 	wxDVTimeSeriesSettingsDialog( wxWindow *parent, const wxString &title, 
-		bool isTopRightYVisible = true, bool isBottomGraphVisible = true );
+		bool isTopRightYVisible = true, bool isBottomGraphVisible = true,
+		bool isBottomRightGraphVisible = true );
 
 	void SetTopYBounds( double y1min, double y1max );
 	void SetTopY2Bounds( double ymin, double ymax );
 	void SetBottomYBounds( double y2min, double y2max );
+	void SetBottomY2Bounds( double y2min, double y2max );
 	void GetTopYBounds( double *y1min, double *y1max );
 	void GetTopY2Bounds( double *ymin, double *ymax );
 	void GetBottomYBounds( double *y2min, double *y2max );
+	void GetBottomY2Bounds( double *y2min, double *y2max );
 	void SetLockY2ToY1( bool b );
 	bool GetLockY2ToY1();
 
@@ -56,6 +59,8 @@ public:
 	bool GetAutoscale2();
 	void SetBottomAutoscale( bool b );
 	bool GetBottomAutoscale();
+	void SetBottomAutoscale2( bool b );
+	bool GetBottomAutoscale2();
 	void SetStacked( bool b );
 	bool GetStacked();
 
@@ -69,13 +74,16 @@ private:
 	wxCheckBox *mSteppedLines;
 	wxCheckBox *mTopAutoscaleCheck;
 	wxCheckBox *mTop2AutoscaleCheck;
-	wxCheckBox *mBottomTopAutoscaleCheck;
+	wxCheckBox *mBottomAutoscaleCheck;
+	wxCheckBox *mBottom2AutoscaleCheck;
 	wxNumericCtrl *mTopYMaxCtrl;
 	wxNumericCtrl *mTopYMinCtrl;
 	wxNumericCtrl *mTopY2MaxCtrl;
 	wxNumericCtrl *mTopY2MinCtrl;
 	wxNumericCtrl *mBottomYMaxCtrl;
 	wxNumericCtrl *mBottomYMinCtrl;
+	wxNumericCtrl *mBottomY2MaxCtrl;
+	wxNumericCtrl *mBottomY2MinCtrl;
 	wxCheckBox *mStackedArea;
 	wxCheckBox *mLockYAxes;
 
@@ -189,7 +197,7 @@ private:
 	wxDVSelectionListCtrl *m_dataSelector;
 
 	bool m_topLockYAxes;
-	bool m_topAutoScale,  m_top2AutoScale, m_bottomAutoScale;
+	bool m_topAutoScale,  m_top2AutoScale, m_bottomAutoScale, m_bottom2AutoScale;
 	wxDVTimeSeriesStyle m_style; // line, stepped
 	bool m_stackingOnYLeft;
 	wxDVTimeSeriesType m_seriesType;
