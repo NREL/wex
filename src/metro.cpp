@@ -392,16 +392,16 @@ wxMetroTabList::wxMetroTabList( wxWindow *parent, int id,
 	SetFont( wxMetroTheme::Font( wxMT_LIGHT, 16 ) );
 }
 
-void wxMetroTabList::Append( const wxString &label, bool button, bool visible )
+void wxMetroTabList::Append( const wxString &label, bool button, bool shown )
 {
 	if ( m_style & wxMT_MENUBUTTONS ) button = true;
-	m_items.push_back( item(label, button, visible) );
+	m_items.push_back( item(label, button, shown) );
 }
 
-void wxMetroTabList::Insert( const wxString &label, size_t pos, bool button, bool visible )
+void wxMetroTabList::Insert( const wxString &label, size_t pos, bool button, bool shown )
 {
 	if ( m_style & wxMT_MENUBUTTONS ) button = true;
-	m_items.insert( m_items.begin()+pos, item(label, button, visible) );
+	m_items.insert( m_items.begin()+pos, item(label, button, shown) );
 }
 
 void wxMetroTabList::Remove( const wxString &label )
@@ -505,12 +505,12 @@ void wxMetroTabList::SetSelection( size_t i )
 
 void wxMetroTabList::HideItem(size_t idx)
 {
-	if (m_items[idx].visible) { m_items[idx].visible = false; }
+	if (m_items[idx].shown) { m_items[idx].shown = false; }
 }
 
 void wxMetroTabList::ShowItem(size_t idx)
 {
-	if (!m_items[idx].visible) { m_items[idx].visible = true; }
+	if (!m_items[idx].shown) { m_items[idx].shown = true; }
 }
 
 size_t wxMetroTabList::GetSelection()
@@ -578,7 +578,7 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 	for (size_t i=0;i<m_items.size();i++)
 	{
 		int txtw, txth;
-		if (m_items[i].visible)
+		if (m_items[i].shown)
 		{
 			dc.GetTextExtent( m_items[i].label, &txtw, &txth );
 			m_items[i].x_start = x;
@@ -589,11 +589,11 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 			if ( i > 0 && x > cwidth - 25 ) // 25 approximates width of '...'	
 				m_dotdotWidth = 1;
 
-			m_items[i].shown = ( m_dotdotWidth == 0 );
+			m_items[i].visible = ( m_dotdotWidth == 0 );
 		}
 		else
 		{
-			if (m_items[i].shown) { m_items[i].shown = false; }
+			if (m_items[i].visible) { m_items[i].visible = false; }
 		}
 	}
 
@@ -613,19 +613,19 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 	if ( m_dotdotWidth > 0 
 		&& m_selection >= 0 
 		&& m_selection < (int) m_items.size()
-		&& !m_items[m_selection].shown )
+		&& !m_items[m_selection].visible )
 	{
 		int shifted_x = cwidth - m_dotdotWidth - m_items[m_selection].width;
 
 		for ( int i = (int)m_items.size()-1; i >= 0; i-- )
 		{
 			if ( m_items[i].x_start + m_items[i].width >= shifted_x )
-				m_items[i].shown = false;
+				m_items[i].visible = false;
 			else
 				break;
 		}
 
-		m_items[m_selection].shown = true;
+		m_items[m_selection].visible = true;
 		m_items[m_selection].x_start = shifted_x;
 	}
 	
@@ -633,7 +633,7 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 	// now draw all the items that have been determined to be visible
 	for ( size_t i=0; i<m_items.size(); i++ )
 	{
-		if ( !m_items[i].shown || !m_items[i].visible ) continue;
+		if ( !m_items[i].visible || !m_items[i].shown ) continue;
 
 		if ( !light )
 		{
@@ -712,7 +712,7 @@ void wxMetroTabList::OnLeftDown(wxMouseEvent &evt)
 	int mouse_x = evt.GetX();
 	for (size_t i=0;i<m_items.size();i++)
 	{
-		if ( m_items[i].shown
+		if ( m_items[i].visible
 			&& mouse_x >= m_items[i].x_start 
 			&& mouse_x < m_items[i].x_start + m_items[i].width)
 		{
@@ -742,12 +742,13 @@ void wxMetroTabList::OnLeftDown(wxMouseEvent &evt)
 	{
 		wxMetroPopupMenu menu( m_style&wxMT_LIGHTTHEME ? wxMT_LIGHTTHEME : 0 );			
 		for ( size_t i=0;i< m_items.size();i++)
-			if ( m_items[i].shown )
-				menu.AppendCheckItem( ID_TAB0+i, m_items[i].label, i == (int)m_selection );
+			if ( m_items[i].shown && !m_items[i].visible )
+				menu.Append( ID_TAB0+i, m_items[i].label /*, i == (int)m_selection*/ );
 		
-		wxPoint pos( cwidth-m_dotdotWidth, cheight );
+		//wxPoint pos( cwidth-m_dotdotWidth, cheight );
+		wxPoint pos( cwidth, cheight );
 		pos = ClientToScreen(pos);		
-		menu.Popup( this, pos, wxTOP|wxLEFT );
+		menu.Popup( this, pos, wxTOP|wxRIGHT );
 	}
 }
 
@@ -764,7 +765,7 @@ void wxMetroTabList::OnMouseMove(wxMouseEvent &evt)
 
 	for (size_t i=0;i<m_items.size();i++)
 	{
-		if ( m_items[i].shown 
+		if ( m_items[i].visible 
 			&& mouse_x >= m_items[i].x_start 
 			&& mouse_x < m_items[i].x_start + m_items[i].width)
 		{
@@ -802,7 +803,7 @@ void wxMetroTabList::OnLeftUp(wxMouseEvent &evt)
 	int mouse_x = evt.GetX();
 	for (size_t i=0;i<m_items.size();i++)
 	{
-		if ( m_items[i].shown 
+		if ( m_items[i].visible 
 			&& mouse_x >= m_items[i].x_start 
 			&& mouse_x < m_items[i].x_start + m_items[i].width)
 		{

@@ -120,8 +120,8 @@ public:
 		const wxSize &size = wxDefaultSize,
 		long style = 0 );
 
-	void Append( const wxString &label, bool button = false, bool visible=true );
-	void Insert( const wxString &label, size_t pos, bool button = false, bool visible=true );
+	void Append( const wxString &label, bool button = false, bool shown=true );
+	void Insert( const wxString &label, size_t pos, bool button = false, bool shown=true );
 	void Remove( const wxString &label );
 	void RemoveAt( size_t n );
 	int Find( const wxString &label );
@@ -145,8 +145,8 @@ public:
 protected:
 	struct item
 	{
-		item( const wxString &l, bool bb, bool vis) : label(l), x_start(0), width(0), shown(true), button(bb), visible(vis) { }
-		item(const item &x, bool vis) : label(x.label), x_start(x.x_start), width(x.width), shown(x.shown), button(x.button), visible(vis) { }
+		item( const wxString &l, bool bb, bool shw) : label(l), x_start(0), width(0), shown(shw), button(bb), visible(true) { }
+		item(const item &x, bool shw) : label(x.label), x_start(x.x_start), width(x.width), shown(x.shown), button(x.button), visible(true) { }
 		wxString label;
 		int x_start;
 		int width;
