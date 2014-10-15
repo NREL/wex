@@ -1431,7 +1431,7 @@ void wxDVTimeSeriesCtrl::SetViewRange(double min, double max)
 {
 	wxDVPlotHelper::SetRangeEndpointsToDays(&min, &max);
 	m_xAxis->SetWorld(min, max);
-	AutoscaleYAxis();
+	AutoscaleYAxis(true);
 	UpdateScrollbarPosition();
 	Invalidate();
 }
