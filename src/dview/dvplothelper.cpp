@@ -110,8 +110,27 @@ namespace wxDVPlotHelper
 			rangeExp = (int)(floor(log10(range)));
 		}
 
-		*upperBoundToExtend = ceil(*upperBoundToExtend / pow(double(10), rangeExp)) * pow(double(10), rangeExp);
-		*lowerBoundToExtend = floor(*lowerBoundToExtend / pow(double(10), rangeExp)) * pow(double(10), rangeExp);
+		rangeExp--;	//Gives us an order of magnitude less white space
+
+		if (*upperBoundToExtend <= 0.0)
+		{
+			*upperBoundToExtend = (ceil(*upperBoundToExtend / pow(double(10), rangeExp)) + 1.0) * pow(double(10), rangeExp);
+			if (*upperBoundToExtend > 0.0) { *upperBoundToExtend = 0.0; }
+		}
+		else
+		{
+			*upperBoundToExtend = (ceil(*upperBoundToExtend / pow(double(10), rangeExp)) + 1.0) * pow(double(10), rangeExp);
+		}
+
+		if (*lowerBoundToExtend >= 0.0)
+		{
+			*lowerBoundToExtend = (floor(*lowerBoundToExtend / pow(double(10), rangeExp)) - 1.0) * pow(double(10), rangeExp);
+			if (*lowerBoundToExtend < 0.0) { *lowerBoundToExtend = 0.0; }
+		}
+		else
+		{
+			*lowerBoundToExtend = (floor(*lowerBoundToExtend / pow(double(10), rangeExp)) - 1.0) * pow(double(10), rangeExp);
+		}
 	}
 	
 }

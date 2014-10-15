@@ -290,7 +290,6 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 						rpt = m_data->At(i);
 						lowX = GetPeriodLowerBoundary(rpt.x, timeStep);
 						highX = GetPeriodUpperBoundary(rpt.x, timeStep);
-
 					
 						if(lowX >= wmin.x && highX <= wmax.x)	//Draw points for the lower and upper X boundaries of the point's horizontal range for each range that fits in the boundaries of the plot
 						{
@@ -1037,7 +1036,7 @@ void wxDVTimeSeriesCtrl::OnGraphScroll(wxScrollEvent &e)
 	double max = min + dataRange;
 	wxDVPlotHelper::SetRangeEndpointsToDays( &min, &max );
 	m_xAxis->SetWorld( min, max );
-	AutoscaleYAxis();
+	AutoscaleYAxis(true);
 	Invalidate();
 }
 
@@ -1651,7 +1650,7 @@ void wxDVTimeSeriesCtrl::ZoomFactorAndUpdate(double factor, double shiftPercent)
 	wxDVPlotHelper::ZoomFactor(&min, &max, factor, shiftPercent);
 	MakeXBoundsNice(&min, &max);
 	m_xAxis->SetWorld(min, max);
-	AutoscaleYAxis();
+	AutoscaleYAxis(true);
 	UpdateScrollbarPosition();
 	Invalidate();
 }
@@ -1696,6 +1695,8 @@ void wxDVTimeSeriesCtrl::PanByPercent(double p)
 	}
 
 	SetViewRange(newMin, newMax);
+	AutoscaleYAxis(true);
+	Invalidate();
 }
 
 void wxDVTimeSeriesCtrl::UpdateScrollbarPosition()
@@ -1995,13 +1996,16 @@ void wxDVTimeSeriesCtrl::RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos 
 				m_selectedChannelIndices[graphIndex] = m_selectedChannelIndices[otherAxisIndex];
 				m_selectedChannelIndices[otherAxisIndex] = temp;
 
-				//Set the y axis to the left side (instead of the right)
+				//Set the y axis to the left side (instead of the right), making sure that we preserve any zoom factor
+				double wmin, wmax;
+				m_xAxis->GetWorld(&wmin, &wmax);
 				for (size_t i=0; i<m_selectedChannelIndices[graphIndex]->size(); i++)
 				{
 					m_plotSurface->RemovePlot(m_plots[(*m_selectedChannelIndices[graphIndex])[i]], pPos);
 					m_plotSurface->AddPlot( m_plots[(*m_selectedChannelIndices[graphIndex])[i]], 
 						wxPLPlotCtrl::X_BOTTOM, wxPLPlotCtrl::Y_LEFT, pPos);
 				}
+				SetViewRange(wmin, wmax);
 
 				m_plotSurface->GetYAxis1(pPos)->SetUnits( m_plots[(*m_selectedChannelIndices[graphIndex])[0]]->GetDataSet()->GetUnits() );
 				SetYAxisLabelText();
