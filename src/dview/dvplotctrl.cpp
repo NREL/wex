@@ -78,13 +78,16 @@ void wxDVPlotCtrl::DisplayTabs()
 	double MinTimeStep = GetMinTimeStep();
 
 	if (MinTimeStep >= 1.0) { HidePage( TAB_HOURLY ); }	//hourly is the second tab
-	else { this->ShowPage( TAB_HOURLY ); }
+	else { ShowPage( TAB_HOURLY ); }
 	
 	if (MinTimeStep >= 24.0) { HidePage( TAB_DAILY ); }	//daily is the third tab
-	else { this->ShowPage( TAB_DAILY ); }
+	else { ShowPage( TAB_DAILY ); }
 	
 	if (MinTimeStep >= 672.0) { HidePage( TAB_MONTHLY ); }	//monthly is the fourth tab
 	else { ShowPage( TAB_MONTHLY ); }
+
+	if (MinTimeStep == 1.0) { SetText(TAB_TIME_SERIES, "Hourly"); }	//hourly is the second tab
+	else { SetText(TAB_TIME_SERIES, "Time series"); }
 
 	Refresh();
 }
