@@ -836,7 +836,7 @@ bool wxDVFileReader::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& file
 	dataSets.push_back(ds);
 	
 	for (int i=0; i<dataSets.size(); i++)
-		dataSets.at(i)->SetTimeStep(1.0); //All have 1 hr tstep.
+		dataSets.at(i)->SetTimeStep( 1.0 ); //All have 1 hr tstep.
 
 	//int year, month, day, hour;
 	//double gh, dn, df, wind, drytemp, wettemp, relhum, pressure, winddir, snowdepth;
@@ -884,7 +884,6 @@ bool wxDVFileReader::Read8760WFLines(std::vector<wxDVArrayDataSet*> &dataSets, F
 	int year, month, day, hour;
 	double gh, dn, df, wind, drytemp, wettemp, relhum, pressure, winddir, snowdepth;
 
-	int hour_offset = 0;
 	for(int i=0; i<8760; i++)
 	{
 		if(!ReadWeatherFileLine(infile, wfType, year, month, day, hour, gh, dn, df, wind, drytemp, wettemp, 
@@ -893,19 +892,18 @@ bool wxDVFileReader::Read8760WFLines(std::vector<wxDVArrayDataSet*> &dataSets, F
 			return false;
 		}
 
-		if (i == 0) hour_offset = hour;
+		double hr = ((double)i) + 0.5;
 
-		int currentHour = i + hour_offset;
-		dataSets[0]->Append(wxRealPoint(currentHour, gh));
-		dataSets[1]->Append(wxRealPoint(currentHour, dn));
-		dataSets[2]->Append(wxRealPoint(currentHour, df));
-		dataSets[3]->Append(wxRealPoint(currentHour, wind));
-		dataSets[4]->Append(wxRealPoint(currentHour, drytemp));
-		dataSets[5]->Append(wxRealPoint(currentHour, wettemp));
-		dataSets[6]->Append(wxRealPoint(currentHour, relhum));
-		dataSets[7]->Append(wxRealPoint(currentHour, pressure));
-		dataSets[8]->Append(wxRealPoint(currentHour, winddir));
-		dataSets[9]->Append(wxRealPoint(currentHour, snowdepth));
+		dataSets[0]->Append(wxRealPoint( hr, gh));
+		dataSets[1]->Append(wxRealPoint( hr, dn));
+		dataSets[2]->Append(wxRealPoint( hr, df));
+		dataSets[3]->Append(wxRealPoint( hr, wind));
+		dataSets[4]->Append(wxRealPoint( hr, drytemp));
+		dataSets[5]->Append(wxRealPoint( hr, wettemp));
+		dataSets[6]->Append(wxRealPoint( hr, relhum));
+		dataSets[7]->Append(wxRealPoint( hr, pressure));
+		dataSets[8]->Append(wxRealPoint( hr, winddir));
+		dataSets[9]->Append(wxRealPoint( hr, snowdepth));
 	}
 
 	return true;

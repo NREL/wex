@@ -489,93 +489,74 @@ wxDVTimeSeriesSettingsDialog::wxDVTimeSeriesSettingsDialog( wxWindow *parent, co
 	bool isTopRightYVisible, bool isBottomGraphVisible, bool isBottomRightGraphVisible )
 	: wxDialog( parent, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxRESIZE_BORDER|wxDEFAULT_DIALOG_STYLE)
 {
-	mStatTypeCheck = new wxCheckBox(this, ID_StatCheckbox, "Show total sum over time step, not average value" );
 	
 	mSteppedLines = new wxCheckBox( this, wxID_ANY, "Stepped lines" );
-
 	mStackedArea = new wxCheckBox( this, wxID_ANY, "Stacked area on left Y axis");
 	mLockYAxes = new wxCheckBox( this, wxID_ANY, "Lock Y axes on top plot");
+	mStatTypeCheck = new wxCheckBox(this, ID_StatCheckbox, "Show sum over time step" );
 				
-	mTopAutoscaleCheck = new wxCheckBox(this, ID_TopCheckbox, "Autoscale left Y axis on top plot");
-	mTop2AutoscaleCheck = new wxCheckBox(this, ID_TopCheckbox, "Autoscale right Y axis on top plot");
-	mBottomAutoscaleCheck = new wxCheckBox(this, ID_BottomCheckbox, "Autoscale left Y axis on bottom plot");
-	mBottom2AutoscaleCheck = new wxCheckBox(this, ID_BottomCheckbox, "Autoscale right Y axis on bottom plot");
 		
-	wxFlexGridSizer *yTopBoundSizer = new wxFlexGridSizer(2, 2, 0);
-	yTopBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Left Y Min:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
-	mTopYMinCtrl = new wxNumericCtrl(this);
-	yTopBoundSizer->Add(mTopYMinCtrl, 0, wxLEFT|wxRIGHT, 2);
-	yTopBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Left Y Max:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
-	mTopYMaxCtrl = new wxNumericCtrl(this);
-	yTopBoundSizer->Add(mTopYMaxCtrl, 0, wxLEFT|wxRIGHT, 2);
+	wxFlexGridSizer *yBoundSizer = new wxFlexGridSizer(4, 2, 2);
+	yBoundSizer->AddSpacer(1);
+	yBoundSizer->Add( new wxStaticText( this, wxID_ANY, "Autoscale" ), 0, wxLEFT|wxRIGHT|wxALIGN_CENTER|wxALIGN_CENTER_VERTICAL, 2 );
+	yBoundSizer->Add( new wxStaticText( this, wxID_ANY, "Y Min" ), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 2 );
+	yBoundSizer->Add( new wxStaticText( this, wxID_ANY, "Y Max" ), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 2 );
 
+	yBoundSizer->Add( new wxStaticText( this, wxID_ANY, "Top left axis:" ), 0, wxLEFT|wxRIGHT|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 3 );
+	yBoundSizer->Add( mTopAutoscaleCheck = new wxCheckBox(this, ID_TopCheckbox, wxEmptyString), 0, wxLEFT|wxRIGHT|wxALIGN_CENTER|wxALIGN_CENTER_VERTICAL,  2);	
+	yBoundSizer->Add( mTopYMinCtrl = new wxNumericCtrl(this), 0, wxLEFT|wxRIGHT, 2);	
+	yBoundSizer->Add( mTopYMaxCtrl = new wxNumericCtrl(this), 0, wxLEFT|wxRIGHT, 2);
+
+	if ( isTopRightYVisible )
+	{
+		yBoundSizer->Add( new wxStaticText( this, wxID_ANY, "Top right axis:" ), 0, wxLEFT|wxRIGHT|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 3 );
+		yBoundSizer->Add( mTop2AutoscaleCheck = new wxCheckBox(this, ID_TopCheckbox, wxEmptyString), 0, wxLEFT|wxRIGHT|wxALIGN_CENTER|wxALIGN_CENTER_VERTICAL,  2);	
+		yBoundSizer->Add( mTopY2MinCtrl = new wxNumericCtrl(this), 0, wxLEFT|wxRIGHT, 2);	
+		yBoundSizer->Add( mTopY2MaxCtrl = new wxNumericCtrl(this), 0, wxLEFT|wxRIGHT, 2);
+	}
+	else
+	{
+		mTopY2MinCtrl = mTopY2MaxCtrl = 0;
+		mTop2AutoscaleCheck = 0;
+	}
 	
-	wxFlexGridSizer *y2TopBoundSizer = new wxFlexGridSizer(2, 2, 0);
-	if(isTopRightYVisible) y2TopBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Right Y Min:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
-	mTopY2MinCtrl = new wxNumericCtrl(this);
-	y2TopBoundSizer->Add(mTopY2MinCtrl, 0, wxLEFT|wxRIGHT, 2);
-	if(isTopRightYVisible) y2TopBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Right Y Max:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
-	mTopY2MaxCtrl = new wxNumericCtrl(this);
-	y2TopBoundSizer->Add(mTopY2MaxCtrl, 0, wxLEFT|wxRIGHT, 2);
-		
-	wxFlexGridSizer *yBottomBoundSizer = new wxFlexGridSizer(2, 2, 0);
-	if(isBottomGraphVisible) { yBottomBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Bottom Y Min:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2); }
-	mBottomYMinCtrl = new wxNumericCtrl(this);
-	yBottomBoundSizer->Add(mBottomYMinCtrl, 0, wxLEFT|wxRIGHT|wxBOTTOM, 2);
-	if(isBottomGraphVisible) { yBottomBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Bottom Y Max:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2); }
-	mBottomYMaxCtrl = new wxNumericCtrl(this);
-	yBottomBoundSizer->Add(mBottomYMaxCtrl, 0, wxLEFT|wxRIGHT|wxBOTTOM, 2);
+	if ( isBottomGraphVisible )
+	{
+		yBoundSizer->Add( new wxStaticText( this, wxID_ANY, "Bottom left axis:" ), 0, wxLEFT|wxRIGHT|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 3 );
+		yBoundSizer->Add( mBottomAutoscaleCheck = new wxCheckBox(this, ID_BottomCheckbox, wxEmptyString), 0, wxLEFT|wxRIGHT|wxALIGN_CENTER|wxALIGN_CENTER_VERTICAL,  2);	
+		yBoundSizer->Add( mBottomYMinCtrl = new wxNumericCtrl(this), 0, wxLEFT|wxRIGHT, 2);	
+		yBoundSizer->Add( mBottomYMaxCtrl = new wxNumericCtrl(this), 0, wxLEFT|wxRIGHT, 2);
+	}
+	else
+	{
+		mBottomYMinCtrl = mBottomYMaxCtrl = 0;
+		mBottomAutoscaleCheck = 0;
+	}
 	
-	wxFlexGridSizer *y2BottomBoundSizer = new wxFlexGridSizer(2, 2, 0);
-	if(isBottomGraphVisible) { y2BottomBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Bottom Y Min:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2); }
-	mBottomY2MinCtrl = new wxNumericCtrl(this);
-	y2BottomBoundSizer->Add(mBottomY2MinCtrl, 0, wxLEFT|wxRIGHT|wxBOTTOM, 2);
-	if(isBottomGraphVisible) { y2BottomBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Bottom Y Max:"), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2); }
-	mBottomY2MaxCtrl = new wxNumericCtrl(this);
-	y2BottomBoundSizer->Add(mBottomY2MaxCtrl, 0, wxLEFT|wxRIGHT|wxBOTTOM, 2);
-		
+	
+	if ( isBottomRightGraphVisible )
+	{
+		yBoundSizer->Add( new wxStaticText( this, wxID_ANY, "Bottom right axis:" ), 0, wxLEFT|wxRIGHT|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 3 );
+		yBoundSizer->Add( mBottom2AutoscaleCheck = new wxCheckBox(this, ID_BottomCheckbox, wxEmptyString), 0, wxLEFT|wxRIGHT|wxALIGN_CENTER|wxALIGN_CENTER_VERTICAL,  2);	
+		yBoundSizer->Add( mBottomY2MinCtrl = new wxNumericCtrl(this), 0, wxLEFT|wxRIGHT, 2);	
+		yBoundSizer->Add( mBottomY2MaxCtrl = new wxNumericCtrl(this), 0, wxLEFT|wxRIGHT, 2);
+	}
+	else
+	{
+		mBottomY2MinCtrl = mBottomY2MaxCtrl = 0;
+		mBottom2AutoscaleCheck = 0;
+	}
+			
 	wxBoxSizer *boxmain = new wxBoxSizer(wxVERTICAL);
-	boxmain->Add( mStatTypeCheck, 0, wxALL|wxEXPAND, 10 );
 	boxmain->Add( mSteppedLines, 0, wxALL|wxEXPAND, 10 );
 	boxmain->Add( mStackedArea, 0, wxALL|wxEXPAND, 10 );
 	boxmain->Add( mLockYAxes, 0, wxALL|wxEXPAND, 10 );
+	boxmain->Add( mStatTypeCheck, 0, wxALL|wxEXPAND, 10 );
 	boxmain->Add( new wxStaticLine( this ), 0, wxALL|wxEXPAND, 0 );
-
-	boxmain->Add( mTopAutoscaleCheck, 0, wxALL|wxEXPAND, 10 );
-	boxmain->Add( yTopBoundSizer, 1, wxALL|wxEXPAND, 10 );
-
-	boxmain->Add( mTop2AutoscaleCheck, 0, wxALL|wxEXPAND, 10 );
-	boxmain->Add( y2TopBoundSizer, 1, wxALL|wxEXPAND, 10 );
-
-	if(isBottomGraphVisible) { boxmain->Add( new wxStaticLine( this ), 0, wxALL|wxEXPAND, 0 ); }
-	boxmain->Add( mBottomAutoscaleCheck, 0, wxALL|wxEXPAND, 10 );
-	boxmain->Add( yBottomBoundSizer, 1, wxALL|wxEXPAND, 10 );
-	boxmain->Add( mBottom2AutoscaleCheck, 0, wxALL|wxEXPAND, 10 );
-	boxmain->Add( y2BottomBoundSizer, 1, wxALL|wxEXPAND, 10 );
+	boxmain->Add( yBoundSizer, 1, wxALL|wxEXPAND, 10 );
 	boxmain->Add( new wxStaticLine( this ), 0, wxALL|wxEXPAND, 0 );
 	boxmain->Add( CreateButtonSizer( wxOK|wxCANCEL ), 0, wxALL|wxEXPAND, 20 );
-
-	if (!isTopRightYVisible)
-	{
-		mTop2AutoscaleCheck->Hide();
-		mTopY2MinCtrl->Hide();
-		mTopY2MaxCtrl->Hide();
-	}
-
-	if(!isBottomGraphVisible)
-	{
-		mBottomAutoscaleCheck->Hide();
-		mBottomYMaxCtrl->Hide();
-		mBottomYMinCtrl->Hide();
-	}
-
-	if(!isBottomRightGraphVisible)
-	{
-		mBottom2AutoscaleCheck->Hide();
-		mBottomY2MaxCtrl->Hide();
-		mBottomY2MinCtrl->Hide();
-	}
-	
+		
 	SetSizer(boxmain);
 	Fit();
 }
@@ -589,45 +570,45 @@ void wxDVTimeSeriesSettingsDialog::SetTopYBounds( double y1min, double y1max )
 
 void wxDVTimeSeriesSettingsDialog::SetTopY2Bounds( double y1min, double y1max )
 {
-	mTopY2MinCtrl->SetValue( y1min );
-	mTopY2MaxCtrl->SetValue( y1max );
+	if ( mTopY2MinCtrl ) mTopY2MinCtrl->SetValue( y1min );
+	if ( mTopY2MaxCtrl ) mTopY2MaxCtrl->SetValue( y1max );
 }
 
 void wxDVTimeSeriesSettingsDialog::SetBottomYBounds( double y2min, double y2max )
 {
-	mBottomYMinCtrl->SetValue( y2min );
-	mBottomYMaxCtrl->SetValue( y2max );
+	if ( mBottomYMinCtrl ) mBottomYMinCtrl->SetValue( y2min );
+	if ( mBottomYMaxCtrl ) mBottomYMaxCtrl->SetValue( y2max );
 }
 
 void wxDVTimeSeriesSettingsDialog::SetBottomY2Bounds( double y2min, double y2max )
 {
-	mBottomY2MinCtrl->SetValue( y2min );
-	mBottomY2MaxCtrl->SetValue( y2max );
+	if ( mBottomY2MinCtrl ) mBottomY2MinCtrl->SetValue( y2min );
+	if ( mBottomY2MaxCtrl ) mBottomY2MaxCtrl->SetValue( y2max );
 }
 
 void wxDVTimeSeriesSettingsDialog::GetTopYBounds( double *y1min, double *y1max )
 {
-	*y1min = mTopYMinCtrl->Value();
-	*y1max = mTopYMaxCtrl->Value();
+	if ( mTopYMinCtrl ) *y1min = mTopYMinCtrl->Value();
+	if ( mTopYMaxCtrl ) *y1max = mTopYMaxCtrl->Value();
 }
 
 void wxDVTimeSeriesSettingsDialog::GetTopY2Bounds( double *y1min, double *y1max )
 {
-	*y1min = mTopY2MinCtrl->Value();
-	*y1max = mTopY2MaxCtrl->Value();
+	if ( mTopY2MinCtrl ) *y1min = mTopY2MinCtrl->Value();
+	if ( mTopY2MaxCtrl ) *y1max = mTopY2MaxCtrl->Value();
 }
 
 
 void wxDVTimeSeriesSettingsDialog::GetBottomYBounds( double *y2min, double *y2max )
 {
-	*y2min = mBottomYMinCtrl->Value();
-	*y2max = mBottomYMaxCtrl->Value();
+	if ( mBottomYMinCtrl ) *y2min = mBottomYMinCtrl->Value();
+	if ( mBottomYMaxCtrl ) *y2max = mBottomYMaxCtrl->Value();
 }
 
 void wxDVTimeSeriesSettingsDialog::GetBottomY2Bounds( double *y2min, double *y2max )
 {
-	*y2min = mBottomY2MinCtrl->Value();
-	*y2max = mBottomY2MaxCtrl->Value();
+	if ( mBottomY2MinCtrl ) *y2min = mBottomY2MinCtrl->Value();
+	if ( mBottomY2MaxCtrl ) *y2max = mBottomY2MaxCtrl->Value();
 }
 
 void wxDVTimeSeriesSettingsDialog::SetLockY2ToY1( bool b )
@@ -660,41 +641,48 @@ void wxDVTimeSeriesSettingsDialog::SetAutoscale( bool b )
 
 void wxDVTimeSeriesSettingsDialog::SetAutoscale2( bool b ) 
 { 
-	mTop2AutoscaleCheck->SetValue( b ); 
-	mTopY2MaxCtrl->Enable(!b);
-	mTopY2MinCtrl->Enable(!b);
+	if ( mTop2AutoscaleCheck )
+	{
+		mTop2AutoscaleCheck->SetValue( b ); 
+		mTopY2MaxCtrl->Enable(!b);
+		mTopY2MinCtrl->Enable(!b);
+	}
 }
 
 bool wxDVTimeSeriesSettingsDialog::GetAutoscale() { return mTopAutoscaleCheck->GetValue(); }
-bool wxDVTimeSeriesSettingsDialog::GetAutoscale2() { return mTop2AutoscaleCheck->GetValue(); }
+bool wxDVTimeSeriesSettingsDialog::GetAutoscale2() { return mTop2AutoscaleCheck ? mTop2AutoscaleCheck->GetValue() : false; }
 
 void wxDVTimeSeriesSettingsDialog::SetBottomAutoscale( bool b ) 
 { 
-	mBottomAutoscaleCheck->SetValue( b ); 
-	mBottomYMaxCtrl->Enable(!b);
-	mBottomYMinCtrl->Enable(!b);
+	if ( mBottomAutoscaleCheck ) {
+		mBottomAutoscaleCheck->SetValue( b ); 
+		mBottomYMaxCtrl->Enable(!b);
+		mBottomYMinCtrl->Enable(!b);
+	}
 }
-bool wxDVTimeSeriesSettingsDialog::GetBottomAutoscale() { return mBottomAutoscaleCheck->GetValue(); }
+bool wxDVTimeSeriesSettingsDialog::GetBottomAutoscale() { return mBottomAutoscaleCheck ? mBottomAutoscaleCheck->GetValue() : false; }
 
 void wxDVTimeSeriesSettingsDialog::SetBottomAutoscale2( bool b ) 
 { 
-	mBottom2AutoscaleCheck->SetValue( b ); 
-	mBottomY2MaxCtrl->Enable(!b);
-	mBottomY2MinCtrl->Enable(!b);
+	if ( mBottom2AutoscaleCheck ) {
+		mBottom2AutoscaleCheck->SetValue( b ); 
+		mBottomY2MaxCtrl->Enable(!b);
+		mBottomY2MinCtrl->Enable(!b);
+	}
 }
-bool wxDVTimeSeriesSettingsDialog::GetBottomAutoscale2() { return mBottom2AutoscaleCheck->GetValue(); }
+bool wxDVTimeSeriesSettingsDialog::GetBottomAutoscale2() { return mBottom2AutoscaleCheck ? mBottom2AutoscaleCheck->GetValue() : false; }
 
 
 void wxDVTimeSeriesSettingsDialog::OnClickTopHandler(wxCommandEvent& event)
 {
 	SetAutoscale( mTopAutoscaleCheck->IsChecked() );
-	SetAutoscale2( mTop2AutoscaleCheck->IsChecked() );
+	if ( mTop2AutoscaleCheck ) SetAutoscale2( mTop2AutoscaleCheck->IsChecked() );
 }
 
 void wxDVTimeSeriesSettingsDialog::OnClickBottomHandler(wxCommandEvent& event)
 {
-	SetBottomAutoscale( mBottomAutoscaleCheck->IsChecked() );
-	SetBottomAutoscale2( mBottom2AutoscaleCheck->IsChecked() );
+	if ( mBottomAutoscaleCheck ) SetBottomAutoscale( mBottomAutoscaleCheck->IsChecked() );
+	if ( mBottom2AutoscaleCheck ) SetBottomAutoscale2( mBottom2AutoscaleCheck->IsChecked() );
 }
 
 void wxDVTimeSeriesSettingsDialog::OnClickStatHandler(wxCommandEvent& event)
