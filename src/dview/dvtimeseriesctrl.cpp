@@ -394,7 +394,7 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 			}
 			else
 			{
-				hourNumber = hourNumber - timeStep/2.0;
+				hourNumber = hourNumber - 0.5;
 			}
 
 			return hourNumber;
@@ -428,7 +428,7 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 			}
 			else
 			{
-				hourNumber = hourNumber + timeStep/2.0;
+				hourNumber = hourNumber + 0.5;
 			}
 
 			return hourNumber;
@@ -920,14 +920,26 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 		m_bottomAutoScale = dlg.GetBottomAutoscale();
 		m_bottom2AutoScale = dlg.GetBottomAutoscale2();
 
-		if ( m_topAutoScale ) SetupTopYLeft();
+		if (m_topAutoScale)
+		{ 
+			SetupTopYLeft();
+			AutoscaleYAxis(m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP),
+				*m_selectedChannelIndices[TOP_LEFT_AXIS],
+				true);
+		}
 		else {
 			double min, max;
 			dlg.GetTopYBounds(&min,&max);
 			SetupTopYLeft( min, max );
 		}
 		
-		if ( m_top2AutoScale ) SetupTopYRight( m_topLockYAxes, 0.0, 0.0 );
+		if (m_top2AutoScale) 
+		{ 
+			SetupTopYRight(m_topLockYAxes, 0.0, 0.0);
+			AutoscaleYAxis(m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_TOP),
+				m_selectedChannelIndices[TOP_RIGHT_AXIS]->size() > 0 ? *m_selectedChannelIndices[TOP_RIGHT_AXIS] : *m_selectedChannelIndices[TOP_LEFT_AXIS],
+				true);
+		}
 		else {
 			double min, max;
 			dlg.GetTopY2Bounds(&min,&max);
