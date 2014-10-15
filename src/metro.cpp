@@ -666,8 +666,11 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 					: wxMetroTheme::Colour( wxMT_TEXT ) ) );
 		}
 
-		dc.SetTextForeground( text );			
-		dc.DrawText( m_items[i].label, m_items[i].x_start + TB_XPADDING, cheight/2-CharHeight/2-1 );
+		dc.SetTextForeground( text );	
+		wxFont font(GetFont());
+		font.SetWeight(i == (int)m_selection ? wxFONTWEIGHT_BOLD : wxFONTWEIGHT_NORMAL);
+		dc.SetFont(font);
+		dc.DrawText(m_items[i].label, m_items[i].x_start + TB_XPADDING, cheight / 2 - CharHeight / 2 - 1);
 
 		if ( m_items[i].button )
 		{	
