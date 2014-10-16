@@ -394,7 +394,7 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 			}
 			else
 			{
-				hourNumber = hourNumber - 0.5;
+				hourNumber = hourNumber - timeStep/2.0;
 			}
 
 			return hourNumber;
@@ -428,7 +428,7 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 			}
 			else
 			{
-				hourNumber = hourNumber + 0.5;
+				hourNumber = hourNumber + timeStep/2.0;
 			}
 
 			return hourNumber;
