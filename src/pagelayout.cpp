@@ -101,9 +101,10 @@ void wxScreenOutputDevice::Arc( float x, float y, float width, float height, flo
 	m_brush.SetStyle( fill ? wxSOLID : wxTRANSPARENT );
 	m_dc.SetPen( m_pen );
 	m_dc.SetBrush( m_brush );
+
+	wxPoint size( width*m_lc->GetPPI(), height*m_lc->GetPPI() );
 	m_dc.DrawEllipticArc( topleft.x, topleft.y,
-		width * m_lc->GetPPI(),
-		height * m_lc->GetPPI(),
+		size.x, size.y, 
 		angle1, angle2 );
 }
 
