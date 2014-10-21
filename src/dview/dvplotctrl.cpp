@@ -36,8 +36,8 @@ END_EVENT_TABLE()
 
 /* Constructors and Destructors */
 wxDVPlotCtrl::wxDVPlotCtrl(wxWindow* parent, wxWindowID id, 
-	const wxPoint& pos, const wxSize& size)
-	: wxMetroNotebook(parent, id, pos, size, wxMT_LIGHTTHEME)
+	const wxPoint& pos, const wxSize& size, long style )
+	: wxMetroNotebook(parent, id, pos, size, style)
 {
 
 	AddPage( m_timeSeries = new wxDVTimeSeriesCtrl(this, wxID_ANY, wxDV_RAW, wxDV_AVERAGE), "Time series", true );

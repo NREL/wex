@@ -81,7 +81,7 @@ public:
 
 		SetMenuBar( menubar );
 		
-		mPlotCtrl = new wxDVPlotCtrl(this, wxID_ANY);
+		mPlotCtrl = new wxDVPlotCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0 );
 		mPlotCtrl->DisplayTabs();
 	
 		wxConfig cfg( "DView", "NREL" );

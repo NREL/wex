@@ -25,7 +25,8 @@ class wxDVPlotCtrl : public wxMetroNotebook
 public:
 	wxDVPlotCtrl(wxWindow* parent, wxWindowID id = wxID_ANY, 
 		const wxPoint& pos = wxDefaultPosition, 
-		const wxSize& size = wxDefaultSize );
+		const wxSize& size = wxDefaultSize,
+		long style = wxMT_LIGHTTHEME );
 	virtual ~wxDVPlotCtrl();
 
 	//When a data set is added, wxDVTimeSeriesCtrl takes ownership and will delete it upon destruction.
