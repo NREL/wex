@@ -67,7 +67,7 @@ namespace wxDVPlotHelper
 			intMin += interval;
 		intMin -= intMin % interval;
 
-		if (intMax % interval > interval / 2 || oldIntMin / interval == intMax / interval)
+		if (intMax % interval >= interval / 2 || oldIntMin / interval == intMax / interval)
 			intMax += interval;
 		intMax -= intMax % interval;
 
