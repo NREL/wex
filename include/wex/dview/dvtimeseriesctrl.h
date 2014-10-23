@@ -119,6 +119,7 @@ public:
 	void SetStyle( wxDVTimeSeriesStyle sty );
 
 	void GetVisibleDataMinAndMax(double* min, double* max, const std::vector<int>& selectedChannelIndices);
+	void GetAllDataMinAndMax(double* min, double* max, const std::vector<int>& selectedChannelIndices);
 	double GetMinPossibleTimeForVisibleChannels();
 	double GetMaxPossibleTimeForVisibleChannels();
 
@@ -137,7 +138,7 @@ public:
 	void ZoomToFit();
 	void PanByPercent(double p); //Negative goes left.
 	void UpdateScrollbarPosition(void);
-	void AutoscaleYAxis(bool forceUpdate = false);
+	void AutoscaleYAxis(bool forceUpdate = false, bool ScaleOverAllData = false);
 
 	void SetupTopYLeft( double min=0, double max=0 );
 	void SetupTopYRight( bool lock=false, double min=0, double max=0 );
@@ -174,7 +175,7 @@ protected:
 
 	
 	void AutoscaleYAxis(wxPLAxis* axisToScale, 
-		const std::vector<int>& selectedChannelIndices, bool forceUpdate = false);
+		const std::vector<int>& selectedChannelIndices, bool forceUpdate = false, bool ScaleOverAllData = false);
 	
 private:
 	std::vector<wxDVTimeSeriesPlot*> m_plots;

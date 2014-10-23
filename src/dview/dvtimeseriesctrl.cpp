@@ -730,10 +730,10 @@ wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, wxDVTime
 	SetBackgroundColour( *wxWHITE );
 	m_stackingOnYLeft = false;
 	m_topLockYAxes = false;
-	m_topAutoScale = true;
-	m_top2AutoScale = true;
-	m_bottomAutoScale = true;
-	m_bottom2AutoScale = true;
+	m_topAutoScale = false;
+	m_top2AutoScale = false;
+	m_bottomAutoScale = false;
+	m_bottom2AutoScale = false;
 	m_style = ((seriesType == wxDV_RAW || seriesType == wxDV_HOURLY) ? wxDV_NORMAL : wxDV_STEPPED); // line, stepped, points
 	m_seriesType = seriesType;
 	m_statType = statType;
@@ -1048,7 +1048,7 @@ void wxDVTimeSeriesCtrl::OnGraphScroll(wxScrollEvent &e)
 	double max = min + dataRange;
 	wxDVPlotHelper::SetRangeEndpointsToDays( &min, &max );
 	m_xAxis->SetWorld( min, max );
-	AutoscaleYAxis(true);
+	if (m_top2AutoScale || m_top2AutoScale || m_bottomAutoScale || m_bottom2AutoScale) { AutoscaleYAxis(true); }
 	Invalidate();
 }
 
@@ -1431,7 +1431,7 @@ void wxDVTimeSeriesCtrl::SetViewRange(double min, double max)
 {
 	wxDVPlotHelper::SetRangeEndpointsToDays(&min, &max);
 	m_xAxis->SetWorld(min, max);
-	AutoscaleYAxis(true);
+	if (m_top2AutoScale || m_top2AutoScale || m_bottomAutoScale || m_bottom2AutoScale) { AutoscaleYAxis(true); }
 	UpdateScrollbarPosition();
 	Invalidate();
 }
@@ -1507,6 +1507,50 @@ void wxDVTimeSeriesCtrl::GetVisibleDataMinAndMax(double* min, double* max, const
 				if (tempMax > *max)
 					*max = tempMax;		
 			}
+		}
+	}
+}
+
+void wxDVTimeSeriesCtrl::GetAllDataMinAndMax(double* min, double* max, const std::vector<int>& selectedChannelIndices)
+{
+	*min = 1000000000;
+	*max = 0;
+
+	bool has_stacking = false;
+
+	for (size_t i = 0; i<selectedChannelIndices.size(); i++)
+	if (m_plots[selectedChannelIndices[i]]->GetStackingMode())
+		has_stacking = true;
+
+	if (has_stacking)
+	{
+		for (size_t i = 0; i<selectedChannelIndices.size(); i++)
+		{
+			wxDVTimeSeriesPlot *plot = m_plots[selectedChannelIndices[i]];
+			for (size_t j = 0; j<plot->Len(); j++)
+			{
+				wxRealPoint p(plot->StackedAt(j));
+				if (p.y > *max)
+					*max = p.y;
+				if (p.y < *min)
+					*min = p.y;
+			}
+		}
+
+		if (*min > 0) *min = 0;
+		if (*max < 0) *max = 0;
+	}
+	else
+	{
+		double tempMin = 0;
+		double tempMax = 0;
+		for (size_t i = 0; i<selectedChannelIndices.size(); i++)
+		{
+			m_plots[selectedChannelIndices[i]]->GetDataSet()->GetDataMinAndMax(&tempMin, &tempMax);
+			if (tempMin < *min)
+				*min = tempMin;
+			if (tempMax > *max)
+				*max = tempMax;
 		}
 	}
 }
@@ -1662,7 +1706,7 @@ void wxDVTimeSeriesCtrl::ZoomFactorAndUpdate(double factor, double shiftPercent)
 	wxDVPlotHelper::ZoomFactor(&min, &max, factor, shiftPercent);
 	MakeXBoundsNice(&min, &max);
 	m_xAxis->SetWorld(min, max);
-	AutoscaleYAxis(true);
+	if (m_top2AutoScale || m_top2AutoScale || m_bottomAutoScale || m_bottom2AutoScale) { AutoscaleYAxis(true); }
 	UpdateScrollbarPosition();
 	Invalidate();
 }
@@ -1707,7 +1751,7 @@ void wxDVTimeSeriesCtrl::PanByPercent(double p)
 	}
 
 	SetViewRange(newMin, newMax);
-	AutoscaleYAxis(true);
+	if (m_top2AutoScale || m_top2AutoScale || m_bottomAutoScale || m_bottom2AutoScale) { AutoscaleYAxis(true); }
 	Invalidate();
 }
 
@@ -1778,11 +1822,11 @@ void wxDVTimeSeriesCtrl::SetupTopYRight( bool lock, double min, double max )
 	}
 }
 
-void wxDVTimeSeriesCtrl::AutoscaleYAxis(bool forceUpdate)
+void wxDVTimeSeriesCtrl::AutoscaleYAxis(bool forceUpdate, bool ScaleOverAllData)
 {
 	//It is probably best to avoid this function and use the more specific version where possible.
 	if (m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP))
-		AutoscaleYAxis(m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP), *m_selectedChannelIndices[TOP_LEFT_AXIS], forceUpdate);
+		AutoscaleYAxis(m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP), *m_selectedChannelIndices[TOP_LEFT_AXIS], forceUpdate, ScaleOverAllData);
 
 	if (wxPLAxis *axis = m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_TOP))
 	{
@@ -1796,18 +1840,18 @@ void wxDVTimeSeriesCtrl::AutoscaleYAxis(bool forceUpdate)
 		else
 			AutoscaleYAxis(axis,
 				m_selectedChannelIndices[TOP_RIGHT_AXIS]->size() > 0 ? *m_selectedChannelIndices[TOP_RIGHT_AXIS] : *m_selectedChannelIndices[TOP_LEFT_AXIS], 
-				forceUpdate);
+				forceUpdate, ScaleOverAllData);
 	}
 
 	if (m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM))
-		AutoscaleYAxis(m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM), *m_selectedChannelIndices[BOTTOM_LEFT_AXIS], forceUpdate);
+		AutoscaleYAxis(m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM), *m_selectedChannelIndices[BOTTOM_LEFT_AXIS], forceUpdate, ScaleOverAllData);
 	if (m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_BOTTOM))
 		AutoscaleYAxis(m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_BOTTOM), 
 		m_selectedChannelIndices[BOTTOM_RIGHT_AXIS]->size() > 0 ? *m_selectedChannelIndices[BOTTOM_RIGHT_AXIS] : *m_selectedChannelIndices[BOTTOM_LEFT_AXIS], 
-		forceUpdate);	
+		forceUpdate, ScaleOverAllData);
 }
 
-void wxDVTimeSeriesCtrl::AutoscaleYAxis( wxPLAxis *axisToScale, const std::vector<int>& selectedChannelIndices, bool forceUpdate)
+void wxDVTimeSeriesCtrl::AutoscaleYAxis( wxPLAxis *axisToScale, const std::vector<int>& selectedChannelIndices, bool forceUpdate, bool ScaleOverAllData)
 {
 	//If autoscaling is off don't scale y1 axis
 	// But do scale y2 axis (since we don't allow manual scaling there for UI simplicity).
@@ -1822,7 +1866,14 @@ void wxDVTimeSeriesCtrl::AutoscaleYAxis( wxPLAxis *axisToScale, const std::vecto
 	double dataMin; 
 	double timestep = 1.0;
 
-	GetVisibleDataMinAndMax(&dataMin, &dataMax, selectedChannelIndices);
+	if (ScaleOverAllData)
+	{
+		GetAllDataMinAndMax(&dataMin, &dataMax, selectedChannelIndices);
+	}
+	else
+	{
+		GetVisibleDataMinAndMax(&dataMin, &dataMax, selectedChannelIndices);
+	}
 
 	//If the maximum of the visible data is outside the acceptable range
 	if(forceUpdate || (dataMax > 0 && (dataMax >= axisToScale->GetWorldMax() || dataMax < axisToScale->GetWorldMax()/2.0)))
@@ -1850,7 +1901,6 @@ void wxDVTimeSeriesCtrl::AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPo
 	
 	wxPLPlotCtrl::AxisPos yap = wxPLPlotCtrl::Y_LEFT;
 	wxString units = m_plots[idx]->GetDataSet()->GetUnits();
-
 		
 	wxString y1Units = NO_UNITS, y2Units = NO_UNITS;
 
@@ -1911,14 +1961,58 @@ void wxDVTimeSeriesCtrl::AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPo
 	}
 	m_plotSurface->GetAxis(yap, pPos)->SetLabel(YLabelText);
 
-	switch(yap)
+	//In each of 4 sections below for m_xxxAutoScale = false we must set the y axis min & max to the dataset min & max before the AutoscalYAxis call and set them back to their original values after it.
+	if (yap == wxPLPlotCtrl::Y_LEFT && pPos == wxPLPlotCtrl::PLOT_TOP)
 	{
-	case wxPLPlotCtrl::Y_LEFT:
-		AutoscaleYAxis(m_plotSurface->GetYAxis1(pPos), *m_selectedChannelIndices[graphIndex], true);
-		break;
-	case wxPLPlotCtrl::Y_RIGHT:
-		AutoscaleYAxis(m_plotSurface->GetYAxis2(pPos), *m_selectedChannelIndices[graphIndex], true);
-		break;
+		if (m_topAutoScale == false)
+		{
+			m_topAutoScale = true;
+			AutoscaleYAxis(m_plotSurface->GetYAxis1(pPos), *m_selectedChannelIndices[graphIndex], true, true);
+			m_topAutoScale = false;
+		}
+		else
+		{
+			AutoscaleYAxis(m_plotSurface->GetYAxis1(pPos), *m_selectedChannelIndices[graphIndex], true, false);
+		}
+	}
+	else if (yap == wxPLPlotCtrl::Y_LEFT && pPos == wxPLPlotCtrl::PLOT_BOTTOM)
+	{
+		if (m_bottomAutoScale == false)
+		{
+			m_bottomAutoScale = true;
+			AutoscaleYAxis(m_plotSurface->GetYAxis1(pPos), *m_selectedChannelIndices[graphIndex], true, true);
+			m_bottomAutoScale = false;
+		}
+		else
+		{
+			AutoscaleYAxis(m_plotSurface->GetYAxis1(pPos), *m_selectedChannelIndices[graphIndex], true, false);
+		}
+	}
+	else if (yap == wxPLPlotCtrl::Y_RIGHT && pPos == wxPLPlotCtrl::PLOT_TOP)
+	{
+		if (m_top2AutoScale == false)
+		{
+			m_top2AutoScale = true;
+			AutoscaleYAxis(m_plotSurface->GetYAxis2(pPos), *m_selectedChannelIndices[graphIndex], true, true);
+			m_top2AutoScale = false;
+		}
+		else
+		{
+			AutoscaleYAxis(m_plotSurface->GetYAxis2(pPos), *m_selectedChannelIndices[graphIndex], true, false);
+		}
+	}
+	else if (yap == wxPLPlotCtrl::Y_RIGHT && pPos == wxPLPlotCtrl::PLOT_BOTTOM)
+	{
+		if (m_bottom2AutoScale == false)
+		{
+			m_bottom2AutoScale = true;
+			AutoscaleYAxis(m_plotSurface->GetYAxis2(pPos), *m_selectedChannelIndices[graphIndex], true, true);
+			m_bottom2AutoScale = false;
+		}
+		else
+		{
+			AutoscaleYAxis(m_plotSurface->GetYAxis2(pPos), *m_selectedChannelIndices[graphIndex], true, false);
+		}
 	}
 
 	UpdateScrollbarPosition();
@@ -2021,14 +2115,95 @@ void wxDVTimeSeriesCtrl::RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos 
 
 				m_plotSurface->GetYAxis1(pPos)->SetUnits( m_plots[(*m_selectedChannelIndices[graphIndex])[0]]->GetDataSet()->GetUnits() );
 				SetYAxisLabelText();
-				AutoscaleYAxis(m_plotSurface->GetYAxis1(pPos), *m_selectedChannelIndices[graphIndex], true);
+
+				//In each of 4 sections below for m_xxxAutoScale = false we must set the y axis min & max to the dataset min & max before the AutoscalYAxis call and set them back to their original values after it.
+				if (pPos == wxPLPlotCtrl::PLOT_TOP)
+				{
+					if (m_topAutoScale == false)
+					{
+						m_topAutoScale = true;
+						AutoscaleYAxis(m_plotSurface->GetYAxis1(pPos), *m_selectedChannelIndices[graphIndex], true, true);
+						m_topAutoScale = false;
+					}
+					else
+					{
+						AutoscaleYAxis(m_plotSurface->GetYAxis1(pPos), *m_selectedChannelIndices[graphIndex], true, false);
+					}
+				}
+				else
+				{
+					if (m_bottomAutoScale == false)
+					{
+						m_bottomAutoScale = true;
+						AutoscaleYAxis(m_plotSurface->GetYAxis1(pPos), *m_selectedChannelIndices[graphIndex], true, true);
+						m_bottomAutoScale = false;
+					}
+					else
+					{
+						AutoscaleYAxis(m_plotSurface->GetYAxis1(pPos), *m_selectedChannelIndices[graphIndex], true, false);
+					}
+				}
 			}
 			m_plotSurface->SetYAxis2(NULL, pPos);
 		}
 	}
 	else
 	{
-		AutoscaleYAxis(axisThatWasUsed, *m_selectedChannelIndices[graphIndex], true); //Pass true in case we removed a tall graph from a shorter one.
+		//In each of 4 sections below for m_xxxAutoScale = false we must set the y axis min & max to the dataset min & max before the AutoscalYAxis call and set them back to their original values after it.
+		//Pass true for ForceUpdate in case we removed a tall graph from a shorter one.
+		if (graphIndex % 2 == 0 && pPos == wxPLPlotCtrl::PLOT_TOP)
+		{
+			if (m_topAutoScale == false)
+			{
+				m_topAutoScale = true;
+				AutoscaleYAxis(axisThatWasUsed, *m_selectedChannelIndices[graphIndex], true, true);
+				m_topAutoScale = false;
+			}
+			else
+			{
+				AutoscaleYAxis(axisThatWasUsed, *m_selectedChannelIndices[graphIndex], true, false);
+			}
+		}
+		else if (graphIndex % 2 == 0 && pPos == wxPLPlotCtrl::PLOT_BOTTOM)
+		{
+			if (m_bottomAutoScale == false)
+			{
+				m_bottomAutoScale = true;
+				AutoscaleYAxis(axisThatWasUsed, *m_selectedChannelIndices[graphIndex], true, true);
+				m_bottomAutoScale = false;
+			}
+			else
+			{
+				AutoscaleYAxis(axisThatWasUsed, *m_selectedChannelIndices[graphIndex], true, false);
+			}
+		}
+		else if (graphIndex % 2 != 0 && pPos == wxPLPlotCtrl::PLOT_TOP)
+		{
+			if (m_top2AutoScale == false)
+			{
+				m_top2AutoScale = true;
+				AutoscaleYAxis(axisThatWasUsed, *m_selectedChannelIndices[graphIndex], true, true);
+				m_top2AutoScale = false;
+			}
+			else
+			{
+				AutoscaleYAxis(axisThatWasUsed, *m_selectedChannelIndices[graphIndex], true, false);
+			}
+		}
+		else if (graphIndex % 2 != 0 && pPos == wxPLPlotCtrl::PLOT_BOTTOM)
+		{
+			if (m_bottom2AutoScale == false)
+			{
+				m_bottom2AutoScale = true;
+				AutoscaleYAxis(axisThatWasUsed, *m_selectedChannelIndices[graphIndex], true, true);
+				m_bottom2AutoScale = false;
+			}
+			else
+			{
+				AutoscaleYAxis(axisThatWasUsed, *m_selectedChannelIndices[graphIndex], true, false);
+			}
+		}
+
 		SetYAxisLabelText();
 	}
 
