@@ -1046,6 +1046,8 @@ void wxDVTimeSeriesCtrl::OnGraphScroll(wxScrollEvent &e)
 	double dataRange = m_xAxis->GetWorldLength();
 	double min = e.GetPosition() + GetMinPossibleTimeForVisibleChannels();
 	double max = min + dataRange;
+	double tempMax = GetMaxPossibleTimeForVisibleChannels();
+	if (max > tempMax) { max = tempMax; }
 	wxDVPlotHelper::SetRangeEndpointsToDays( &min, &max );
 	m_xAxis->SetWorld( min, max );
 	if (m_topAutoScale || m_top2AutoScale || m_bottomAutoScale || m_bottom2AutoScale) { AutoscaleYAxis(true); }
@@ -1557,7 +1559,7 @@ void wxDVTimeSeriesCtrl::GetAllDataMinAndMax(double* min, double* max, const std
 
 double wxDVTimeSeriesCtrl::GetMinPossibleTimeForVisibleChannels()
 {
-	double min = 8760;
+	double min = 1000000000;
 	for(size_t i=0; i<m_plots.size(); i++)
 	{
 		if (m_dataSelector->IsRowSelected(i))
@@ -1739,14 +1741,28 @@ void wxDVTimeSeriesCtrl::PanByPercent(double p)
 	double highestTimeValue = GetMaxPossibleTimeForVisibleChannels();
 	if (newMax > highestTimeValue)
 	{
-		newMin -= newMax - highestTimeValue;
+		if (max > highestTimeValue)
+		{
+			newMin -= newMax - max;
+		}
+		else
+		{
+			newMin -= newMax - highestTimeValue;
+		}
 		newMax = highestTimeValue;
 	}
 
 	double timeMin = GetMinPossibleTimeForVisibleChannels();
 	if (newMin < timeMin)
 	{
-		newMax += timeMin - newMin;
+		if (min < timeMin)
+		{
+			newMax += min - newMin;
+		}
+		else
+		{
+			newMax += timeMin - newMin;
+		}
 		newMin = timeMin;
 	}
 
