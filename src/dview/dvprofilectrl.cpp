@@ -9,6 +9,7 @@
 #include "wex/dview/dvtimeseriesdataset.h"
 #include "wex/dview/dvselectionlist.h"
 #include "wex/dview/dvprofilectrl.h"
+#include "wex/dview/dvplothelper.h"
 
 static const wxString NO_UNITS("ThereAreNoUnitsForThisAxis.");
 

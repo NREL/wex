@@ -139,6 +139,7 @@ public:
 	void PanByPercent(double p); //Negative goes left.
 	void UpdateScrollbarPosition(void);
 	void AutoscaleYAxis(bool forceUpdate = false, bool ScaleOverAllData = false);
+	void AutoscaleYAxisByPlot(bool IsLeftAxis, bool IsTopPlot, int SelectedChannelIndex);
 
 	void SetupTopYLeft( double min=0, double max=0 );
 	void SetupTopYRight( bool lock=false, double min=0, double max=0 );

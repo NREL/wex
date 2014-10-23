@@ -75,27 +75,6 @@ namespace wxDVPlotHelper
 		*max = double(intMax);
 	}
 
-	void RoundToNearest(double* numToRound, const double interval)
-	{	
-		//This is just a helper function.  For example, we use it to round to nearest 6th hour
-		if (fmod(*numToRound, interval) <= interval/2)
-		{
-			*numToRound -= fmod(*numToRound, interval);
-		}
-		else
-		{
-			*numToRound += interval - fmod(*numToRound, interval);
-		}
-	}
-	void RoundUpToNearest(double* numToRound, const double interval)
-	{
-		*numToRound += interval - fmod(*numToRound, interval);
-	}
-	void RoundDownToNearest(double* numToRound, const double interval)
-	{
-		*numToRound -= fmod(*numToRound, interval);
-	}
-
 	void ExtendBoundsToNiceNumber(double* upperBoundToExtend, double* lowerBoundToExtend)
 	{
 		int rangeExp;
