@@ -778,7 +778,7 @@ void wxDVProfileCtrl::HideAllPlots(bool update)
 void wxDVProfileCtrl::AutoScaleYAxes()
 {
 	std::vector<int> currently_shown = m_dataSelector->GetSelectionsInCol();
-	double leftYAxisMax=0, leftYAxisMin=0, rightYAxisMin=0, rightYAxisMax=0;
+	double leftYAxisMax = 0, leftYAxisMin = 1000000000, rightYAxisMin = 1000000000, rightYAxisMax = 0;
 
 	for(int i=0; i<13; i++)
 	{

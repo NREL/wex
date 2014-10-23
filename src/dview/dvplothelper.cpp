@@ -80,7 +80,7 @@ namespace wxDVPlotHelper
 		int rangeExp;
 		double range = abs(*upperBoundToExtend - *lowerBoundToExtend);
 
-		if (range == 0)
+		if (range < abs(*upperBoundToExtend) / 10.0)	//If the range is too narrow we must base calculations on the upper bound instead
 		{
 			rangeExp = (int)(floor(log10(abs(*upperBoundToExtend))));
 		}
@@ -88,7 +88,6 @@ namespace wxDVPlotHelper
 		{
 			rangeExp = (int)(floor(log10(range)));
 		}
-
 		rangeExp--;	//Gives us an order of magnitude less white space
 
 		if (*upperBoundToExtend <= 0.0)
