@@ -312,17 +312,7 @@ void wxDVDMapCtrl::MakeXBoundsNice(double* xMin, double* xMax)
 
 void wxDVDMapCtrl::MakeYBoundsNice(double* yMin, double* yMax)
 {
-	if (*yMax - *yMin >= 2)
-	{
-		wxDVPlotHelper::RoundToNearest(yMin, 1.0);
-		wxDVPlotHelper::RoundToNearest(yMax, 1.0);
-	}
-	else
-	{
-		wxDVPlotHelper::RoundUpToNearest(yMax, 1.0);
-		wxDVPlotHelper::RoundDownToNearest(yMin, 1.0);
-	}
-
+	wxDVPlotHelper::ExtendBoundsToNiceNumber(yMax, yMin);
 	KeepYBoundsWithinLimits(yMin, yMax);
 }
 
