@@ -61,7 +61,7 @@ wxDVPlotCtrl::~wxDVPlotCtrl()
 
 double wxDVPlotCtrl::GetMinTimeStep()
 {
-	double MinTimeStep = 1000000000.0;	//Rediculously high time step - no real data file would ever use a time step this big.
+	double MinTimeStep = 1000000000.0;
 	double TimeStep;
 
 	for (int i = 0; i < m_dataSets.size(); i++)

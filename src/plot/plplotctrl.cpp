@@ -39,6 +39,7 @@ static const wxSize legend_item_box(13, 13);
 class wxPLAxisDeviceMapping : public wxPLDeviceMapping
 {
 private:
+	wxPLPlotCtrl *m_plotCtrl;
 	wxPLAxis *m_xAxis;
 	wxCoord m_xPhysMin, m_xPhysMax;
 	wxPLAxis *m_yAxis;
@@ -47,9 +48,9 @@ private:
 	wxPoint m_ptCenter;
 
 public:
-	wxPLAxisDeviceMapping( wxPLAxis *x, wxCoord xmin, wxCoord xmax,
+	wxPLAxisDeviceMapping( wxPLPlotCtrl *ctrl, wxPLAxis *x, wxCoord xmin, wxCoord xmax,
 		wxPLAxis *y, wxCoord ymin, wxCoord ymax )
-		: m_xAxis(x), m_xPhysMin(xmin), m_xPhysMax(xmax), 
+		: m_plotCtrl(ctrl), m_xAxis(x), m_xPhysMin(xmin), m_xPhysMax(xmax), 
 		m_yAxis(y), m_yPhysMin(ymin), m_yPhysMax(ymax)
 	{
 		wxRect box = GetDeviceExtents();
@@ -107,6 +108,10 @@ public:
 
 	virtual wxPLAxis *GetYAxis() const {
 		return m_yAxis;
+	}
+
+	virtual wxPLPlotCtrl *GetPlotCtrl() const {
+		return m_plotCtrl;
 	}
 };
 
@@ -2028,7 +2033,7 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 		wxPLAxis *yaxis = GetAxis( m_plots[i].yap, m_plots[i].ppos );
 		if ( xaxis == 0 || yaxis == 0 ) continue; // this should never be encountered
 		wxRect &bb = m_plotRects[ m_plots[i].ppos ];
-		wxPLAxisDeviceMapping map( xaxis, bb.x, bb.x+bb.width,
+		wxPLAxisDeviceMapping map( this, xaxis, bb.x, bb.x+bb.width,
 			yaxis, bb.y+bb.height, bb.y );
 
 		if ( m_plots[i].plot->GetAntiAliasing() )

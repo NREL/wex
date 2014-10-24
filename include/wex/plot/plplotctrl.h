@@ -13,6 +13,8 @@
 
 #include "wex/plot/plaxis.h"
 
+class wxPLPlotCtrl;
+
 class wxPLDeviceMapping
 {
 public:
@@ -24,6 +26,7 @@ public:
 	virtual wxRealPoint GetWorldMaximum() const = 0;
 	virtual wxPLAxis* GetXAxis() const = 0;
 	virtual wxPLAxis* GetYAxis() const = 0;
+	virtual wxPLPlotCtrl *GetPlotCtrl() const = 0;
 	
 	inline wxPoint ToDevice( const wxRealPoint &p ) const { return ToDevice(p.x, p.y); }
 };

@@ -115,10 +115,13 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 		
 		virtual wxRealPoint StackedAt( size_t i, double *ybase = 0 ) const
 		{
+			if ( m_stackedOnTopOf == this )
+				wxMessageBox("Error - how did a plot get stacked on itself??" );
+
 			if ( i >= m_data->Length() ) 
 				return wxRealPoint( std::numeric_limits<double>::quiet_NaN(),std::numeric_limits<double>::quiet_NaN() );
-
-			if ( m_stackedOnTopOf != 0 )
+			
+			if ( m_stackedOnTopOf != 0 && m_stackedOnTopOf != this )
 			{
 				wxRealPoint base( m_stackedOnTopOf->StackedAt(i, ybase ) );
 				if ( ybase ) *ybase = base.y;
@@ -152,7 +155,14 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 		
 			dc.SetPen( wxPen( m_colour, 2, wxPENSTYLE_SOLID ) );
 
-			if ( m_stacked )
+			// check that Y axis is a left axis, so as to
+			// only allow stacking on the left axis.
+			// otherwise, this could result in problems
+			// if a plot is checked for both left and right Y axes,
+			// since this wxDVTimeSeriesPlot instance is the same for both
+			if ( m_stacked && 
+				(map.GetYAxis() == map.GetPlotCtrl()->GetYAxis1( wxPLPlotCtrl::PLOT_TOP )
+				|| map.GetYAxis() == map.GetPlotCtrl()->GetYAxis1( wxPLPlotCtrl::PLOT_BOTTOM )) )
 			{
 				len = m_data->Length();
 
@@ -1521,8 +1531,8 @@ void wxDVTimeSeriesCtrl::GetAllDataMinAndMax(double* min, double* max, const std
 	bool has_stacking = false;
 
 	for (size_t i = 0; i<selectedChannelIndices.size(); i++)
-	if (m_plots[selectedChannelIndices[i]]->GetStackingMode())
-		has_stacking = true;
+		if (m_plots[selectedChannelIndices[i]]->GetStackingMode())
+			has_stacking = true;
 
 	if (has_stacking)
 	{
@@ -1950,8 +1960,7 @@ void wxDVTimeSeriesCtrl::AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPo
 	m_plotSurface->AddPlot( m_plots[index], wxPLPlotCtrl::X_BOTTOM, yap, pPos, false );
 	m_plotSurface->GetAxis(yap, pPos)->SetUnits(units);
 		
-	if ( m_stackingOnYLeft && yap == wxPLPlotCtrl::Y_LEFT )
-		StackUp( yap, pPos );
+	UpdateStacking();
 
 	//Calculate index from 0-3.  0,1 are top graph L,R axis.  2,3 are L,R axis on bottom graph.
 	int graphIndex = TOP_LEFT_AXIS;
@@ -2022,11 +2031,10 @@ void wxDVTimeSeriesCtrl::RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos 
 
 	// if there was another plot stacked on top of this one, reset that plot's stacking
 	// pointer to the previous plot in the list that is on the same axis
-	if ( m_stackingOnYLeft && ryap == wxPLPlotCtrl::Y_LEFT )
-		StackUp( ryap, rppos );
+	UpdateStacking();
 
 	//See if axis is still in use or not, and to some cleanup.
-	wxPLLinearAxis *axisThatWasUsed;
+	wxPLLinearAxis *axisThatWasUsed = 0;
 	if (graphIndex % 2 == 0)
 		axisThatWasUsed = dynamic_cast<wxPLLinearAxis*>( m_plotSurface->GetYAxis1(pPos) );
 	else
@@ -2078,6 +2086,8 @@ void wxDVTimeSeriesCtrl::RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos 
 				}
 				SetViewRange(wmin, wmax);
 
+				UpdateStacking();
+
 				m_plotSurface->GetYAxis1(pPos)->SetUnits( m_plots[(*m_selectedChannelIndices[graphIndex])[0]]->GetDataSet()->GetUnits() );
 				SetYAxisLabelText();
 				AutoscaleYAxisByPlot(graphIndex % 2 == 0, pPos == wxPLPlotCtrl::PLOT_TOP, graphIndex);
@@ -2099,18 +2109,19 @@ void wxDVTimeSeriesCtrl::StackUp( wxPLPlotCtrl::AxisPos yap, wxPLPlotCtrl::PlotP
 {
 	wxPLPlotCtrl::AxisPos tyap;
 	wxPLPlotCtrl::PlotPos tppos;
-	wxDVTimeSeriesPlot *prev = 0;
+	std::vector<wxDVTimeSeriesPlot*> stack;
 
 	for( size_t i=0;i<m_plotSurface->GetPlotCount();i++ )
 	{
 		if ( wxDVTimeSeriesPlot *cur = dynamic_cast<wxDVTimeSeriesPlot*>( m_plotSurface->GetPlot(i) ) )
 		{
-			if ( m_plotSurface->GetPlotPosition( cur, 0, &tyap, &tppos )
+			if ( std::find( stack.begin(), stack.end(), cur ) == stack.end() 
+				&& m_plotSurface->GetPlotPosition( cur, 0, &tyap, &tppos )
 				&& tyap == yap && tppos == ppos )
 			{
 				cur->SetStackingMode( true );
-				cur->StackOnTopOf( prev );
-				prev = cur;
+				cur->StackOnTopOf( stack.size() > 0 ? stack.back() : NULL );
+				stack.push_back( cur );
 			}
 		}
 	}
