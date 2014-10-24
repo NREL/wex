@@ -147,9 +147,9 @@ void wxDVPlotCtrl::SetupTopYLeft( double min, double max )
 	m_timeSeries->SetupTopYLeft( min, max );
 }
 
-void wxDVPlotCtrl::SetupTopYRight( bool lock, double min, double max )
+void wxDVPlotCtrl::SetupTopYRight( double min, double max )
 {
-	m_timeSeries->SetupTopYRight( lock, min, max );
+	m_timeSeries->SetupTopYRight( min, max );
 }
 
 void wxDVPlotCtrl::SetTimeSeriesRange( double start, double end )

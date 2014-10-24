@@ -493,7 +493,6 @@ private:
 	long m_lineMode;
 	double m_ylmin, m_ylmax;
 	double m_yrmin, m_yrmax;
-	bool m_yrlock;
 
 public:
 	bool OnInit()
@@ -528,10 +527,8 @@ public:
 		if ( m_ylmin < m_ylmax )
 			frame->GetPlot()->SetupTopYLeft( m_ylmin, m_ylmax );
 
-		if ( m_yrlock || m_yrmin < m_yrmax )
-		{
-			frame->GetPlot()->SetupTopYRight( m_yrlock, m_yrmin, m_yrmax );
-		}
+		if ( m_yrmin < m_yrmax )
+			frame->GetPlot()->SetupTopYRight( m_yrmin, m_yrmax );
 
 		frame->Show();
 
@@ -602,18 +599,11 @@ public:
 			m_ylmax = wxAtof( ss.Mid( ss.Find(',')+1 ) );
 		}
 
-		m_yrlock = false;
 		m_yrmin = m_yrmax = 0;
 		if ( parser.Found("y2", &ss) )
 		{
-			if ( ss.Trim().Lower() == "lock" )
-				m_yrlock = true;
-			else
-			{
-				m_yrmin = wxAtof( ss );
-				m_yrmax = wxAtof( ss.Mid( ss.Find(',')+1 ) );
-				//wxMessageBox(wxString::Format("Y2= %lg to %lg", m_yrmin, m_yrmax));
-			}
+			m_yrmin = wxAtof( ss );
+			m_yrmax = wxAtof( ss.Mid( ss.Find(',')+1 ) );
 		}
 
 		return true;

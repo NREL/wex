@@ -501,7 +501,6 @@ wxDVTimeSeriesSettingsDialog::wxDVTimeSeriesSettingsDialog( wxWindow *parent, co
 	
 	mSteppedLines = new wxCheckBox( this, wxID_ANY, "Stepped lines" );
 	mStackedArea = new wxCheckBox( this, wxID_ANY, "Stacked area on left Y axis");
-	mLockYAxes = new wxCheckBox( this, wxID_ANY, "Lock Y axes on top plot");
 	mStatTypeCheck = new wxCheckBox(this, ID_StatCheckbox, "Show sum over time step" );
 				
 		
@@ -559,7 +558,6 @@ wxDVTimeSeriesSettingsDialog::wxDVTimeSeriesSettingsDialog( wxWindow *parent, co
 	wxBoxSizer *boxmain = new wxBoxSizer(wxVERTICAL);
 	boxmain->Add( mSteppedLines, 0, wxALL|wxEXPAND, 10 );
 	boxmain->Add( mStackedArea, 0, wxALL|wxEXPAND, 10 );
-	boxmain->Add( mLockYAxes, 0, wxALL|wxEXPAND, 10 );
 	boxmain->Add( mStatTypeCheck, 0, wxALL|wxEXPAND, 10 );
 	boxmain->Add( new wxStaticLine( this ), 0, wxALL|wxEXPAND, 0 );
 	boxmain->Add( yBoundSizer, 1, wxALL|wxEXPAND, 10 );
@@ -619,17 +617,6 @@ void wxDVTimeSeriesSettingsDialog::GetBottomY2Bounds( double *y2min, double *y2m
 	if ( mBottomY2MinCtrl ) *y2min = mBottomY2MinCtrl->Value();
 	if ( mBottomY2MaxCtrl ) *y2max = mBottomY2MaxCtrl->Value();
 }
-
-void wxDVTimeSeriesSettingsDialog::SetLockY2ToY1( bool b )
-{
-	mLockYAxes->SetValue( b );
-}
-
-bool wxDVTimeSeriesSettingsDialog::GetLockY2ToY1()
-{
-	return mLockYAxes->GetValue();
-}
-
 
 
 void wxDVTimeSeriesSettingsDialog::SetStacked( bool b ) { mStackedArea->SetValue( b ); }
@@ -739,7 +726,6 @@ wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, wxDVTime
 {	
 	SetBackgroundColour( *wxWHITE );
 	m_stackingOnYLeft = false;
-	m_topLockYAxes = false;
 	m_topAutoScale = false;
 	m_top2AutoScale = false;
 	m_bottomAutoScale = false;
@@ -888,7 +874,6 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 	dlg.SetStatType( m_statType );
 	dlg.SetStyle( m_style );
 	dlg.SetStacked( m_stackingOnYLeft );
-	dlg.SetLockY2ToY1( m_topLockYAxes );
 	dlg.SetAutoscale( m_topAutoScale );
 	dlg.SetAutoscale2( m_top2AutoScale );
 	dlg.SetBottomAutoscale( m_bottomAutoScale );
@@ -924,7 +909,6 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 	
 		UpdateStacking();
 
-		m_topLockYAxes = dlg.GetLockY2ToY1();
 		m_topAutoScale = dlg.GetAutoscale();
 		m_top2AutoScale = dlg.GetAutoscale2();
 		m_bottomAutoScale = dlg.GetBottomAutoscale();
@@ -945,7 +929,7 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 		
 		if (m_top2AutoScale) 
 		{ 
-			SetupTopYRight(m_topLockYAxes, 0.0, 0.0);
+			SetupTopYRight(0.0, 0.0);
 			AutoscaleYAxis(m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_TOP),
 				m_selectedChannelIndices[TOP_RIGHT_AXIS]->size() > 0 ? *m_selectedChannelIndices[TOP_RIGHT_AXIS] : *m_selectedChannelIndices[TOP_LEFT_AXIS],
 				true);
@@ -953,7 +937,7 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 		else {
 			double min, max;
 			dlg.GetTopY2Bounds(&min,&max);
-			SetupTopYRight( m_topLockYAxes, min, max );
+			SetupTopYRight( min, max );
 		}
 
 		if ( m_bottomAutoScale )
@@ -1820,24 +1804,13 @@ void wxDVTimeSeriesCtrl::SetupTopYLeft( double min, double max )
 
 }
 
-void wxDVTimeSeriesCtrl::SetupTopYRight( bool lock, double min, double max )
+void wxDVTimeSeriesCtrl::SetupTopYRight( double min, double max )
 {
-	m_topLockYAxes = lock;
 	m_top2AutoScale = false;
 
 	wxPLAxis *axis = m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_TOP);
 	if ( !axis ) return;	
 	
-	wxPLAxis *axy1 = m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP);
-	if( m_topLockYAxes && axy1 )
-	{
-		double min, max;
-		axy1->GetWorld( &min, &max );
-		axis->SetWorld( min, max );
-		m_plotSurface->Invalidate();
-		return;
-	}
-
 	m_top2AutoScale = ( !wxIsNaN(min) && !wxIsNaN(max) &&  min >= max );
 	if ( m_top2AutoScale )
 		AutoscaleYAxis( axis, *m_selectedChannelIndices[TOP_RIGHT_AXIS], true);
@@ -1855,26 +1828,17 @@ void wxDVTimeSeriesCtrl::AutoscaleYAxis(bool forceUpdate, bool ScaleOverAllData)
 		AutoscaleYAxis(m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP), *m_selectedChannelIndices[TOP_LEFT_AXIS], forceUpdate, ScaleOverAllData);
 
 	if (wxPLAxis *axis = m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_TOP))
-	{
-		wxPLAxis *axy1 = m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP);
-		if ( m_topLockYAxes && axy1 != 0)
-		{
-			double min, max;
-			axy1->GetWorld( &min, &max );
-			axis->SetWorld( min, max );
-		}
-		else
-			AutoscaleYAxis(axis,
-				m_selectedChannelIndices[TOP_RIGHT_AXIS]->size() > 0 ? *m_selectedChannelIndices[TOP_RIGHT_AXIS] : *m_selectedChannelIndices[TOP_LEFT_AXIS], 
+		AutoscaleYAxis(axis, m_selectedChannelIndices[TOP_RIGHT_AXIS]->size() > 0 ? *m_selectedChannelIndices[TOP_RIGHT_AXIS] : *m_selectedChannelIndices[TOP_LEFT_AXIS], 
 				forceUpdate, ScaleOverAllData);
-	}
+	
 
 	if (m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM))
 		AutoscaleYAxis(m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM), *m_selectedChannelIndices[BOTTOM_LEFT_AXIS], forceUpdate, ScaleOverAllData);
+	
 	if (m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_BOTTOM))
 		AutoscaleYAxis(m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_BOTTOM), 
-		m_selectedChannelIndices[BOTTOM_RIGHT_AXIS]->size() > 0 ? *m_selectedChannelIndices[BOTTOM_RIGHT_AXIS] : *m_selectedChannelIndices[BOTTOM_LEFT_AXIS], 
-		forceUpdate, ScaleOverAllData);
+			m_selectedChannelIndices[BOTTOM_RIGHT_AXIS]->size() > 0 ? *m_selectedChannelIndices[BOTTOM_RIGHT_AXIS] : *m_selectedChannelIndices[BOTTOM_LEFT_AXIS], 
+			forceUpdate, ScaleOverAllData);
 }
 
 void wxDVTimeSeriesCtrl::AutoscaleYAxis( wxPLAxis *axisToScale, const std::vector<int>& selectedChannelIndices, bool forceUpdate, bool ScaleOverAllData)
