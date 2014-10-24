@@ -1011,11 +1011,6 @@ wxMetroNotebook::wxMetroNotebook(wxWindow *parent, int id, const wxPoint &pos, c
 	m_list = new wxMetroTabList(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, style );
 }
 
-wxMetroNotebook::~wxMetroNotebook()
-{
-	// nothing to do
-}
-
 void wxMetroNotebook::AddPage(wxWindow *win, const wxString &text, bool active, bool button)
 {
 	win->Show( false );

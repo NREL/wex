@@ -218,7 +218,6 @@ class wxMetroNotebook : public wxWindow
 public:
 	wxMetroNotebook(wxWindow *parent, int id=-1, 
 		const wxPoint &pos=wxDefaultPosition, const wxSize &sz=wxDefaultSize, long style = 0 );
-	virtual ~wxMetroNotebook();
 
 	void AddPage(wxWindow *win, const wxString &text, bool active=false, bool button=false);
 	void AddScrolledPage(wxWindow *win, const wxString &text, bool active=false, bool button=false);
