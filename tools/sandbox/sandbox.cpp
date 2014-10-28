@@ -86,6 +86,7 @@ void TestSnapLayout( wxWindow *parent )
 	wxSnapLayout *lay = new wxSnapLayout(frame, wxID_ANY);
 	lay->SetShowSizing( true );
 
+	lay->SetBackgroundText( "Click on the button to create a new graph" );
 	
 	wxPLPlotCtrl *plot = new wxPLPlotCtrl(lay, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 	//plot->SetBackgroundColour( *wxWHITE );

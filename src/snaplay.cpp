@@ -118,6 +118,12 @@ void wxSnapLayout::Delete( wxWindow *w )
 	}
 }
 
+void wxSnapLayout::SetBackgroundText( const wxString &text )
+{
+	m_backgroundText = text;
+	Refresh();
+}
+
 int wxSnapLayout::Find( wxWindow *w )
 {
 	for( size_t i=0;i<m_list.size();i++ )
@@ -652,8 +658,19 @@ void wxSnapLayout::OnPaint( wxPaintEvent & )
 	wxAutoBufferedPaintDC dc( this );
 	DoPrepareDC(dc);
 
+	wxSize client(GetClientSize());
+
 	dc.SetBackground( *wxWHITE_BRUSH );
 	dc.Clear();
+
+	if ( !m_backgroundText.IsEmpty() )
+	{
+		dc.SetFont( wxMetroTheme::Font( wxMT_LIGHT, 22 ) );
+		wxSize size( dc.GetTextExtent( m_backgroundText ) );
+		dc.SetTextForeground( *wxLIGHT_GREY );
+		dc.DrawText( m_backgroundText, client.x/2-size.x/2, client.y/2-size.y/2 );
+	}
+
 
 	/*
 		

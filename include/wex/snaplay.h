@@ -26,6 +26,7 @@ public:
 	void ClearHighlights();
 	void Highlight( wxWindow * );
 	void SetShowSizing( bool b ) { m_showSizing = b; }
+	void SetBackgroundText( const wxString & );
 
 private:
 	
@@ -79,6 +80,8 @@ private:
 
 	int m_sizeHover;
 	int m_moveHover;
+
+	wxString m_backgroundText;
 	
 	static const int m_space = 15;
 	static const int m_scrollRate = 1;
