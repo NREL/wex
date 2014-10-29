@@ -746,14 +746,30 @@ std::vector<int> wxCodeEditCtrl::GetBreakpoints()
 
 void wxCodeEditCtrl::ShowFindReplaceDialog()
 {
+	bool reposition = false;
 	if ( m_frDialog == 0 )
+	{
 		m_frDialog = new FRDialog( this, m_showFindInFilesButton );
+		reposition = true;
+	}
 
 	m_lastFindPos = -1;
 	wxSize client(GetClientSize());
 	wxPoint p( ClientToScreen( GetPosition() ) );
-	wxSize frsize( m_frDialog->GetSize() );
-	m_frDialog->SetPosition( wxPoint( p.x + client.x - frsize.x - 20, p.y + 20 ) );
+	
+	// if the find dialog isn't somewhere over on the code edit control,
+	// reposition it to the 'standard' place
+	wxRect cerect( p.x, p.y, client.x, client.y );
+	wxRect frrect( m_frDialog->GetPosition(), m_frDialog->GetSize() );
+	if ( !cerect.Intersects( frrect ) )
+		reposition = true;
+
+	if( reposition )
+	{
+		wxSize frsize( m_frDialog->GetSize() );
+		m_frDialog->SetPosition( wxPoint( p.x + client.x - frsize.x - 20, p.y + 20 ) );
+	}
+
 	m_frDialog->Show();
 	m_frDialog->SetFindText( GetSelectedText() );
 	m_frDialog->SetFocus();
