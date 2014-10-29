@@ -8,7 +8,7 @@
 #include "wex/utils.h"
 
 enum { ID_FIND_TEXT = wxID_HIGHEST+1, ID_FIND_NEXT,
-	ID_REPLACE_TEXT, ID_REPLACE_NEXT, ID_REPLACE_ALL };
+	ID_REPLACE_TEXT, ID_REPLACE_NEXT, ID_REPLACE_ALL, ID_FIND_IN_FILES };
 
 class FRDialog : public wxFrame
 {
@@ -16,10 +16,10 @@ class FRDialog : public wxFrame
 	wxTextCtrl *m_findText, *m_replaceText;
 	wxCheckBox *m_matchCase, *m_wholeWord;
 	wxStaticText *m_replaceLabel;
-	wxButton *m_findButton, *m_replaceNextButton, *m_replaceAllButton;
+	wxButton *m_findButton, *m_replaceNextButton, *m_replaceAllButton, *m_findInFilesButton;
 
 public:
-	FRDialog( wxCodeEditCtrl *parent )
+	FRDialog( wxCodeEditCtrl *parent, bool with_find_in_files = false)
 		: wxFrame( parent, wxID_ANY, "Find & Replace", wxDefaultPosition, wxDefaultSize,
 			wxFRAME_FLOAT_ON_PARENT|wxRESIZE_BORDER|wxFRAME_TOOL_WINDOW|wxCLOSE_BOX|wxCAPTION|wxSYSTEM_MENU )
 	{
@@ -29,24 +29,39 @@ public:
 		wxPanel *panel = new wxPanel( this ); // build it on a panel to handle tab traversal
 
 		m_findText = new wxTextCtrl( panel, ID_FIND_TEXT, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER  );
+		wxSize best( m_findText->GetBestSize() );
+		m_findText->SetInitialSize( wxSize( best.x + 50, best.y ) );
+
 		m_replaceText = new wxTextCtrl( panel, ID_REPLACE_TEXT, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER   );
 		m_matchCase = new wxCheckBox( panel, wxID_ANY, "Match case" );
 		m_wholeWord = new wxCheckBox( panel, wxID_ANY, "Whole word" );
 		
 		
-		wxFlexGridSizer *find_sizer = new wxFlexGridSizer( 3, 0, 0 );
+		wxFlexGridSizer *find_sizer = new wxFlexGridSizer( with_find_in_files ? 4 : 3, 0, 0 );
 		find_sizer->AddGrowableCol(1);
 		find_sizer->Add( new wxStaticText( panel, wxID_ANY, "   Search for:"), 0, wxALL|wxALIGN_CENTER_VERTICAL, 3 );
 		find_sizer->Add( m_findText, 0, wxALL|wxEXPAND, 3 );
-		find_sizer->Add( m_findButton = new wxButton( panel, ID_FIND_NEXT, "Find next" ), 0, wxALL|wxEXPAND, 3 );
-				
+		find_sizer->Add( m_findButton = new wxButton( panel, ID_FIND_NEXT, "Find next", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT ), 0, wxALL|wxEXPAND, 3 );
+		
+		m_findInFilesButton = 0;
+		if ( with_find_in_files )
+			find_sizer->Add( m_findInFilesButton = new wxButton( panel, ID_FIND_IN_FILES, "Find in files...", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT ) , 0, wxALL|wxEXPAND, 3 );
+		
 		find_sizer->Add( m_replaceLabel = new wxStaticText( panel, wxID_ANY, "   Replace with:"), 0, wxALL|wxALIGN_CENTER_VERTICAL, 3 );
 		find_sizer->Add( m_replaceText, 0, wxALL|wxEXPAND, 3 );
-		find_sizer->Add( m_replaceNextButton = new wxButton( panel, ID_REPLACE_NEXT, "Replace next" ), 0, wxALL|wxEXPAND, 3 );
+		find_sizer->Add( m_replaceNextButton = new wxButton( panel, ID_REPLACE_NEXT, "Replace next", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT ), 0, wxALL|wxEXPAND, 3 );
+		
+		m_replaceAllButton = new wxButton( panel, ID_REPLACE_ALL, "Replace all", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT );
+
+		if ( with_find_in_files )
+			find_sizer->Add( m_replaceAllButton, 0, wxALL|wxEXPAND, 3 );
 		
 		find_sizer->Add( m_matchCase, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
 		find_sizer->Add( m_wholeWord, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
-		find_sizer->Add( m_replaceAllButton = new wxButton( panel, ID_REPLACE_ALL, "Replace all" ), 0, wxALL|wxEXPAND, 3 );
+		
+		if ( !with_find_in_files )
+			find_sizer->Add( m_replaceAllButton, 0, wxALL|wxEXPAND, 3 );
+		
 
 		panel->SetSizerAndFit( find_sizer );
 		Fit();
@@ -112,6 +127,10 @@ public:
 		case ID_REPLACE_ALL:
 			ReplaceAll();
 			break;
+
+		case ID_FIND_IN_FILES:
+			m_editor->OnFindInFiles( m_findText->GetValue(), m_matchCase->GetValue(), m_wholeWord->GetValue() );
+			break;
 		}
 	}
 
@@ -132,6 +151,7 @@ BEGIN_EVENT_TABLE( FRDialog, wxFrame )
 	EVT_BUTTON( ID_FIND_NEXT, FRDialog::OnCommand )
 	EVT_BUTTON( ID_REPLACE_NEXT, FRDialog::OnCommand )
 	EVT_BUTTON( ID_REPLACE_ALL, FRDialog::OnCommand )
+	EVT_BUTTON( ID_FIND_IN_FILES, FRDialog::OnCommand )
 END_EVENT_TABLE()
 
 
@@ -211,7 +231,8 @@ wxCodeEditCtrl::wxCodeEditCtrl( wxWindow *parent, int id,
 		const wxPoint &pos, const wxSize &size )
 		: wxStyledTextCtrl( parent, id, pos, size, wxBORDER_NONE )
 {
-	m_frDialog = new FRDialog( this );
+	m_showFindInFilesButton = false;
+	m_frDialog = 0;
 	m_lastFindPos = m_lastReplacePos = -1;
 
 	m_callTipsEnabled = false;
@@ -725,7 +746,14 @@ std::vector<int> wxCodeEditCtrl::GetBreakpoints()
 
 void wxCodeEditCtrl::ShowFindReplaceDialog()
 {
+	if ( m_frDialog == 0 )
+		m_frDialog = new FRDialog( this, m_showFindInFilesButton );
+
 	m_lastFindPos = -1;
+	wxSize client(GetClientSize());
+	wxPoint p( ClientToScreen( GetPosition() ) );
+	wxSize frsize( m_frDialog->GetSize() );
+	m_frDialog->SetPosition( wxPoint( p.x + client.x - frsize.x - 20, p.y + 20 ) );
 	m_frDialog->Show();
 	m_frDialog->SetFindText( GetSelectedText() );
 	m_frDialog->SetFocus();
@@ -734,17 +762,17 @@ void wxCodeEditCtrl::ShowFindReplaceDialog()
 
 void wxCodeEditCtrl::FindNext()
 {
-	m_frDialog->FindNext();
+	if ( m_frDialog ) m_frDialog->FindNext();
 }
 
 void wxCodeEditCtrl::ReplaceNext()
 {
-	m_frDialog->ReplaceNext();
+	if ( m_frDialog ) m_frDialog->ReplaceNext();
 }
 
 void wxCodeEditCtrl::ReplaceAll()
 {
-	m_frDialog->ReplaceAll();
+	if ( m_frDialog ) m_frDialog->ReplaceAll();
 }
 
 int	wxCodeEditCtrl::FindNext( const wxString &text, int frtxt_len, bool match_case, bool whole_word, bool wrap_around, int start_pos )
@@ -819,6 +847,8 @@ int wxCodeEditCtrl::ReplaceAll( const wxString &text, const wxString &replace,
 {
 	int count = 0;
 
+	if ( text.IsEmpty() || GetLength() == 0 ) return 0;
+
 	// start replace all at beginning of document
 	int pos = FindNext( text, -1, match_case, whole_word, false, 0 ); 
 	if ( pos < 0 )
@@ -830,7 +860,7 @@ int wxCodeEditCtrl::ReplaceAll( const wxString &text, const wxString &replace,
 	while ( ReplaceNext( text, replace, false, match_case, whole_word, false ) >= 0 )
 		count++;
 
-	if (show_message) wxMessageBox( wxString::Format( "%d instances replaced.", count ) );
+	if ( show_message ) wxMessageBox( wxString::Format( "%d instances replaced.", count ) );
 	return count;
 }
 
@@ -1030,4 +1060,9 @@ bool wxCodeEditCtrl::FindMatchingBracePosition( int &braceAtCaret, int &braceOpp
 	}
 
 	return isInside;
+}
+
+bool wxCodeEditCtrl::OnFindInFiles( const wxString &text, bool match_case, bool whole_world )
+{
+	return false;
 }

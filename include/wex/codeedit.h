@@ -54,6 +54,11 @@ public:
 	void FindNext();
 	void ReplaceNext();
 	void ReplaceAll();
+
+	// note: this function must be called in advance of
+	// 'ShowFindReplaceDialog()' to have the button show up
+	void ShowFindInFilesButton( bool b ) { m_showFindInFilesButton = b; }
+	virtual bool OnFindInFiles( const wxString &text, bool match_case, bool whole_world );
 	
 	bool IsTextSelected( const wxString &text, bool match_case );
 
@@ -86,6 +91,7 @@ private:
 	static const int m_breakpointMarginId = 1;
 	static const int m_foldingMarginId = 2;
 
+	bool m_showFindInFilesButton;
 	FRDialog *m_frDialog;
 	Language m_lang;
 	bool m_callTipsEnabled;
