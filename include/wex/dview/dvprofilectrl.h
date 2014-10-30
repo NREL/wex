@@ -37,6 +37,7 @@ public:
 	wxDVSelectionListCtrl* GetDataSelectionList();
 	void SetSelectedNames(const wxString& names);
 	void SelectDataSetAtIndex(int index);
+	int GetNumberOfSelections();
 
 	class VerticalLabelCtrl;
 private:

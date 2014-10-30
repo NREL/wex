@@ -876,7 +876,14 @@ void wxDVProfileCtrl::SetSelectedNames(const wxString& names)
 
 void wxDVProfileCtrl::SelectDataSetAtIndex(int index)
 {
-	m_dataSelector->SelectRowInCol(index);
-	ShowPlotAtIndex(index);
+	if ( index >= 0 && index < (int) m_plots.size() )
+	{
+		m_dataSelector->SelectRowInCol(index);
+		ShowPlotAtIndex(index);
+	}
 }
 
+int wxDVProfileCtrl::GetNumberOfSelections()
+{
+	return m_dataSelector->GetNumberOfSelections();
+}

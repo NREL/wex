@@ -25,6 +25,7 @@
 
 class wxDVTimeSeriesDataSet
 {
+	wxString m_metaData;
 protected:
 	/*Constructors and Destructors*/
 	wxDVTimeSeriesDataSet();
@@ -51,6 +52,9 @@ public:
 	void GetMinAndMaxInRange(double* min, double* max, double startHour, double endHour);
 	void GetDataMinAndMax(double* min, double* max);
 	std::vector<wxRealPoint> GetDataVector();
+
+	void SetMetaData( const wxString &meta ) { m_metaData = meta; }
+	wxString GetMetaData() { return m_metaData; }
 };
 
 class wxDVArrayDataSet : public wxDVTimeSeriesDataSet

@@ -31,6 +31,7 @@ public:
 	wxString GetCurrentDataName();
 	bool SetCurrentDataName(const wxString& name, bool restrictNoSmallDataSet = false);
 	void SelectDataSetAtIndex(int index);
+	int GetNumberOfSelections();
 	void SetNumberOfBins(int n);
 	int GetNumberOfBins();
 	int GetBinSelectionIndex();

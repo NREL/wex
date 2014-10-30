@@ -240,6 +240,15 @@ int wxDVSelectionListCtrl::GetNumSelected( int col )
 	return count;
 }
 
+
+int wxDVSelectionListCtrl::GetNumberOfSelections()
+{
+	int count = 0;
+	for( int c=0;c<m_numCols;c++ )	
+		count += GetNumSelected( c );
+	return count;
+}	
+
 int wxDVSelectionListCtrl::GetUnsortedRowIndex(int SortedIndex)
 {
 	int Ctr = 0;

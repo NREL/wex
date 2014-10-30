@@ -105,6 +105,7 @@ public:
 	void SetBottomSelectedNames(const wxString& names);
 	void SetSelectedNamesForColIndex(const wxString& names, int index);
 	void SelectDataSetAtIndex(int index);
+	int GetNumberOfSelections();
 
 	//View Setters/Getters
 	void SetViewMin(double min);

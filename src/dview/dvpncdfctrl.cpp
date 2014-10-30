@@ -122,6 +122,11 @@ void wxDVPnCdfCtrl::AddDataSet(wxDVTimeSeriesDataSet* d, const wxString& group, 
 		Layout();
 }
 
+int wxDVPnCdfCtrl::GetNumberOfSelections()
+{
+	return m_selector->GetNumberOfSelections();
+}
+
 void wxDVPnCdfCtrl::RemoveDataSet(wxDVTimeSeriesDataSet* d)
 {
 

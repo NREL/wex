@@ -149,6 +149,12 @@ void wxDVScatterPlotCtrl::AddYAxisChannel(int index)
 	RefreshDisabledCheckBoxes();
 }
 
+
+bool wxDVScatterPlotCtrl::IsAnythingSelected()
+{
+	return m_dataSelectionList->GetNumberOfSelections() > 0;
+}
+
 void wxDVScatterPlotCtrl::RemoveYAxisChannel(int index)
 {
 	m_yDataIndices.erase( std::find( m_yDataIndices.begin(), m_yDataIndices.end(), index ) );

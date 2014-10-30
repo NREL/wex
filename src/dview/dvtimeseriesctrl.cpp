@@ -2230,6 +2230,11 @@ void wxDVTimeSeriesCtrl::SelectDataSetAtIndex(int index)
 	AddGraphAfterChannelSelection(wxPLPlotCtrl::PLOT_TOP, index);
 }
 
+int wxDVTimeSeriesCtrl::GetNumberOfSelections()
+{
+	return m_dataSelector->GetNumberOfSelections();
+}
+
 wxDVStatType wxDVTimeSeriesCtrl::GetStatType()
 {
 	return m_statType;

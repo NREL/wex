@@ -28,6 +28,7 @@ public:
 	wxDVSelectionListCtrl* GetDataSelectionList();
 	void SetSelectedNames(const wxString& names, bool restrictToSmallDataSets = false);
 	void SelectDataSetAtIndex(int index);
+	int GetNumberOfSelections();
 
 	//Event Handlers
 	void OnDataChannelSelection(wxCommandEvent& e);

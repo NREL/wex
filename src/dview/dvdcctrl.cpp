@@ -363,6 +363,11 @@ void wxDVDCCtrl::SelectDataSetAtIndex(int index)
 	ShowPlotAtIndex(index);
 }
 
+int wxDVDCCtrl::GetNumberOfSelections()
+{
+	return m_dataSelector->GetNumberOfSelections();
+}
+
 // *** EVENT HANDLERS ***
 void wxDVDCCtrl::OnDataChannelSelection(wxCommandEvent& e)
 {

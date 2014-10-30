@@ -23,6 +23,7 @@ public:
 	void SetYSelectedNames(const wxString& names);
 	void SelectXDataAtIndex(int index);
 	void SelectYDataAtIndex(int index);
+	bool IsAnythingSelected();
 
 	//EVENT HANDLERS
 	void OnChannelSelection( wxCommandEvent & );

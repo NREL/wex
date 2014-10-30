@@ -42,6 +42,7 @@ public:
 	wxDVColourMap* GetCurrentColourMap();
 	void SetColourMapName(const wxString& name);
 	void SelectDataSetAtIndex(int index);
+	int GetNumberOfSelections();
 
 	void ChangePlotDataTo(wxDVTimeSeriesDataSet* d);
 

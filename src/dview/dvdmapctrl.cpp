@@ -456,6 +456,11 @@ void wxDVDMapCtrl::SelectDataSetAtIndex(int index)
 	m_selector->SelectRowInCol( index );
 }
 
+int wxDVDMapCtrl::GetNumberOfSelections()
+{
+	return m_selector->GetNumberOfSelections();
+}
+
 void wxDVDMapCtrl::SetZMin(double min)
 {
 	m_colourMap->SetScaleMin( min );
@@ -570,20 +575,24 @@ void wxDVDMapCtrl::Invalidate()
 void wxDVDMapCtrl::ChangePlotDataTo(wxDVTimeSeriesDataSet* d)
 {
 	m_currentlyShownDataSet = d;
+	
 	m_dmap->SetData(d);
-
+	
+	double min, max;
 	if ( d )
 	{
-		double min, max;
 		d->GetDataMinAndMax( &min, &max );
 		m_colourMap->SetScaleMinMax( min, max );
 		m_colourMap->ExtendScaleToNiceNumbers();		
 		m_dmap->SetColourMap( m_colourMap );
 	}
 
+	min = m_colourMap->GetScaleMin();
+	max = m_colourMap->GetScaleMax();
+
 	//Update our text boxes to reflect the auto-scaled min/max.
-	m_minTextBox->ChangeValue( wxString::Format("%lg", m_colourMap->GetScaleMin()) );
-	m_maxTextBox->ChangeValue( wxString::Format("%lg", m_colourMap->GetScaleMax()) );
+	m_minTextBox->ChangeValue( wxString::Format("%lg", min) );
+	m_maxTextBox->ChangeValue( wxString::Format("%lg", max) );
 
 	UpdateScrollbarPosition();	
 	Invalidate();
@@ -806,8 +815,8 @@ void wxDVDMapCtrl::OnResetColourMapMinMax(wxCommandEvent &)
 	m_colourMap->ExtendScaleToNiceNumbers();
 
 	//Update our text boxes to reflect the auto-scaled min/max.
-	m_minTextBox->SetValue(wxString::Format("%g", m_colourMap->GetScaleMin()));
-	m_maxTextBox->SetValue(wxString::Format("%g", m_colourMap->GetScaleMax()));
+	m_minTextBox->ChangeValue(wxString::Format("%lg", m_colourMap->GetScaleMin()));
+	m_maxTextBox->ChangeValue(wxString::Format("%lg", m_colourMap->GetScaleMax()));
 
 	Invalidate();
 }
