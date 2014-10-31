@@ -116,6 +116,10 @@ public:
 			&& cfg.Read("FrameHeight", &height)
 			&& cfg.Read("FrameMaximized", &maximized))
 		{
+
+			if ( width < 700 ) width = 700;
+			if ( height < 450 ) height = 450;
+
 			SetPosition( wxPoint(x, y) );
 			SetClientSize( width, height );
 			if (maximized)
