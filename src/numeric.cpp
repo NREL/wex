@@ -1,8 +1,6 @@
 #include "wex/numeric.h"
 
 #include <wx/wx.h>
-
-#include <wx/numformatter.h>
 #include <wx/valtext.h>
 
 BEGIN_EVENT_TABLE( wxNumericCtrl, wxTextCtrl )
@@ -60,10 +58,7 @@ void wxNumericCtrl::OnLoseFocus( wxFocusEvent &evt )
 void wxNumericCtrl::SetupValidator()
 {
 	wxArrayString excludes;
-	
-	wxChar thousep = ','; // default thousands separator
-	wxNumberFormatter::GetThousandsSeparatorIfUsed(&thousep);
-	excludes.Add( wxString(thousep) );
+	excludes.Add( wxString(wxChar(',')) ); // thousands separator
 
 	if ( m_mode == INTEGER )
 	{
@@ -91,7 +86,7 @@ void wxNumericCtrl::Translate()
 	int len = strval.Len();
 	int i;
 	
-	wxUniChar decimsep = wxNumberFormatter::GetDecimalSeparator();
+	wxUniChar decimsep('.');
 
 	// find start of number (all numbers start like integers or a dot)
 	i=0;
@@ -99,8 +94,7 @@ void wxNumericCtrl::Translate()
 		i++;
 
 
-	wxChar thousep = ','; // default thousands separator
-	wxNumberFormatter::GetThousandsSeparatorIfUsed(&thousep);
+	wxUniChar thousep(','); // default thousands separator
 
 	// get all valid number characters
 	while(i<len && is_valid_char( m_mode==INTEGER, strval[i], true, thousep ))
@@ -112,6 +106,35 @@ void wxNumericCtrl::Translate()
 	SetValue( wxAtof( buf ) );
 }
 
+static void AddThousandsSeparators(wxString& s)
+{
+    wxChar thousandsSep(',');
+
+    size_t pos = s.find( wxChar('.') );
+    if ( pos == wxString::npos )
+    {
+        // Start grouping at the end of an integer number.
+        pos = s.length();
+    }
+
+    // End grouping at the beginning of the digits -- there could be at a sign
+    // before their start.
+    const size_t start = s.find_first_of("0123456789");
+
+    // We currently group digits by 3 independently of the locale. This is not
+    // the right thing to do and we should use lconv::grouping (under POSIX)
+    // and GetLocaleInfo(LOCALE_SGROUPING) (under MSW) to get information about
+    // the correct grouping to use. This is something that needs to be done at
+    // wxLocale level first and then used here in the future (TODO).
+    const size_t GROUP_LEN = 3;
+
+    while ( pos > start + GROUP_LEN )
+    {
+        pos -= GROUP_LEN;
+        s.insert(pos, thousandsSep);
+    }
+}
+
 wxString wxNumericCtrl::Format( double val, Mode mode, int deci, bool thousep, const wxString &pre, const wxString &post )
 {
 	wxString buf;
@@ -121,8 +144,8 @@ wxString wxNumericCtrl::Format( double val, Mode mode, int deci, bool thousep, c
 		if ( deci == HEXADECIMAL ) buf.Printf( "0x%x", (int)val );
 		else
 		{
-			if ( thousep ) buf = wxNumberFormatter::ToString( (long)val, wxNumberFormatter::Style_WithThousandsSep );
-			else buf.Printf( "%d", (int)val );
+			buf.Printf( "%d", (int)val );
+			if ( thousep ) AddThousandsSeparators( buf );
 		}
 	}
 	else
@@ -131,23 +154,10 @@ wxString wxNumericCtrl::Format( double val, Mode mode, int deci, bool thousep, c
 		else if ( deci == EXPONENTIAL ) buf.Printf( "%le", val );
 		else
 		{
-			/*
-			if ( deci <= 0 )
-			{
-				if ( thousep ) buf = wxNumberFormatter::ToString( (long)val, wxNumberFormatter::Style_WithThousandsSep );
-				else buf.Printf( "%d", (int)val );
-			}
-			else
-			{*/
-				if ( thousep )
-					buf = wxNumberFormatter::ToString( val, deci, wxNumberFormatter::Style_WithThousandsSep );
-				else
-				{
-					wxString fmt;
-					fmt.Printf( "%%.%dlf", deci );
-					buf.Printf( fmt, val );
-				}
-			//}
+			wxString fmt;
+			fmt.Printf( "%%.%dlf", deci );
+			buf.Printf( fmt, val );
+			if ( thousep ) AddThousandsSeparators( buf );
 		}
 	}
 
