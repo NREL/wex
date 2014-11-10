@@ -7,6 +7,7 @@
 #include "wex/mtrand.h"
 #include "wex/utils.h"
 #include "wex/jsonreader.h"
+#include "wex/csv.h"
 
 #include <lk_lex.h>
 #include <lk_absyn.h>
@@ -540,6 +541,132 @@ void fcall_axis( lk::invoke_t &cxt )
 	}
 }
 
+void fcall_csvread( lk::invoke_t &cxt )
+{
+	LK_DOC( "csvread", "Read a CSV file into a 2D array (default) or a table. Options: "
+		"'skip' (header lines to skip), "
+		"'numeric' (t/f to return numbers), "
+		"'table' (t/f to return a table assuming 1 header line with names)",
+		"(string:file[, table:options]):array or table" );
+	
+	lk::vardata_t &out = cxt.result();
+	wxCSVData csv;
+	if ( !csv.ReadFile( cxt.arg(0).as_string() ) 
+		|| csv.NumRows() == 0
+		|| csv.NumCols() == 0 )
+	{
+		out.nullify();
+		return;
+	}
+
+	size_t nr = csv.NumRows();
+	size_t nc = csv.NumCols();
+
+	size_t nskip = 0;
+	bool tonum = false;
+	bool astable = false;
+
+	if ( cxt.arg_count() > 1 && cxt.arg(1).deref().type() == lk::vardata_t::HASH )
+	{
+		lk::vardata_t &opts = cxt.arg(1).deref();
+
+		if (lk::vardata_t *item = opts.lookup("skip"))
+			nskip = item->as_unsigned();
+
+		if ( lk::vardata_t *item = opts.lookup("numeric"))
+			tonum = item->as_boolean();
+
+		if ( lk::vardata_t *item = opts.lookup("table"))
+			astable = item->as_boolean();
+	}
+
+	if ( nskip >= nr ) nskip = 0;
+
+	if ( astable )
+	{
+		out.empty_hash();
+		for( size_t c=0;c<nc;c++ )
+		{
+			wxString name( csv(0,c) );
+			if ( name.IsEmpty() ) continue;
+
+			lk::vardata_t &it = out.hash_item(name);
+			it.empty_vector();
+			it.resize( nr-1 );
+			for( size_t i=1;i<nr;i++ )
+			{
+				if ( tonum ) it.index(i-1)->assign( wxAtof( csv(i,c) ) );
+				else it.index(i-1)->assign( csv(i,c) );
+			}
+		}
+	}
+	else
+	{
+		out.empty_vector();
+		out.vec()->resize( nr-nskip );
+		for( size_t i=0;i<nr-nskip;i++ )
+		{
+			lk::vardata_t *row = out.index(i);
+			row->empty_vector();
+			row->vec()->resize( nc );
+
+			for( size_t j=0;j<nc;j++ )
+			{
+				if ( tonum ) row->index(j)->assign( wxAtof( csv(i+nskip,j) ) );
+				else row->index(j)->assign( csv(i+nskip,j) );
+			}
+		}
+	}
+}
+
+void fcall_csvwrite( lk::invoke_t &cxt )
+{
+	LK_DOC( "csvwrite", "Write a CSV file from a 2D array or table of arrays.", "(string:file, array or table:data):boolean" );
+
+	wxCSVData csv;
+
+	lk::vardata_t &data = cxt.arg(1).deref();
+	if ( data.type() == lk::vardata_t::HASH )
+	{
+		size_t col = 0;
+		for( lk::varhash_t::iterator it = data.hash()->begin();
+			it != data.hash()->end();
+			++it )
+		{
+			csv(0,col) = it->first;
+
+			lk::vardata_t &dd = it->second->deref();
+			if ( dd.type() == lk::vardata_t::VECTOR )
+			{
+				for( size_t row=0;row<dd.length();row++ )
+					csv(1+row,col) = dd.index(row)->as_string();
+			}
+			else
+				csv(1,col) = dd.as_string();
+
+			col++;			
+		}
+	}
+	else if (data.type() == lk::vardata_t::VECTOR )
+	{
+		for( size_t r=0;r<data.length();r++ )
+		{
+			lk::vardata_t &row = data.index(r)->deref();
+			if( row.type() == lk::vardata_t::VECTOR )
+			{
+				for( size_t c=0;c<row.length();c++ )
+					csv(r,c) = row.index(c)->as_string();
+			}
+			else
+				csv(r,0) = row.as_string();
+		}
+	}
+	else
+		csv(0,0) = data.as_string();
+
+	cxt.result().assign( csv.WriteFile( cxt.arg(0).as_string() ) ? 1.0 : 0.0 );
+}
+
 void fcall_rand( lk::invoke_t &cxt )
 {
 	LK_DOC("rand", "Generate a random number between 0 and 1.", "(none):number");
@@ -701,6 +828,8 @@ lk::fcall_t* wxLKMiscFunctions()
 		fcall_decompress, 
 		fcall_rand,
 		fcall_jsonparse,
+		fcall_csvread,
+		fcall_csvwrite,
 		0 };
 		
 	return (lk::fcall_t*)vec;
