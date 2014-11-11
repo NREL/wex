@@ -1040,8 +1040,8 @@ void wxDVTimeSeriesCtrl::OnGraphScroll(wxScrollEvent &e)
 	double dataRange = m_xAxis->GetWorldLength();
 	double min = e.GetPosition() + GetMinPossibleTimeForVisibleChannels();
 	double max = min + dataRange;
-	double tempMax = GetMaxPossibleTimeForVisibleChannels();
-	if (max > tempMax) { max = tempMax; }
+	//double tempMax = GetMaxPossibleTimeForVisibleChannels();
+	//if (max > tempMax) { max = tempMax; }
 	wxDVPlotHelper::SetRangeEndpointsToDays( &min, &max );
 	m_xAxis->SetWorld( min, max );
 	if (m_topAutoScale || m_top2AutoScale || m_bottomAutoScale || m_bottom2AutoScale) { AutoscaleYAxis(true); }
