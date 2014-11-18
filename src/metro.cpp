@@ -66,12 +66,17 @@ wxFont wxMetroThemeProvider::Font( int style, int size )
 	if ( size > 1 )
 		font.SetPointSize( size );
 
+#ifdef __WXMSW__
 	wxString face = "Segoe UI";
 	if ( style == wxMT_LIGHT ) face = "Segoe UI Light";
 	else if ( style == wxMT_SEMIBOLD ) face = "Segoe UI Semibold";
 
 	if ( wxFontEnumerator::IsValidFacename( face ) )
 		font.SetFaceName( face );
+#else
+	if ( style == wxMT_SEMIBOLD )
+		font.SetWeight( wxFONTWEIGHT_BOLD );
+#endif
 
 	return font;
 }
