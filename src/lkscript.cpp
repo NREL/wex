@@ -1081,15 +1081,16 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 	m_topLevelWindow = toplevel;
 	s_curToplevelParent = toplevel;
 
+	wxString backupfile;
 	wxString script = GetText();
 	if (!run_dir.IsEmpty())
 	{
-		wxString fn = run_dir + "/~script";
-		FILE *fp = fopen( (const char*)fn.c_str(), "w" );
+		backupfile = run_dir + "/~script";
+		FILE *fp = fopen( (const char*)backupfile.c_str(), "w" );
 		if (fp)
 		{
-			for (size_t i=0;i<script.Len();i++)
-				fputc( (char)script[i], fp );
+			fprintf( fp, "// backup script written by SAM at %s\n\n", (const char*)wxNow().c_str() );
+			fputs( (const char*)script.c_str(), fp );
 			fclose(fp);
 		}
 	}
@@ -1152,6 +1153,9 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 	m_scriptRunning = false;
 	m_stopScriptFlag = false;
 	m_topLevelWindow = 0;
+
+	if ( !backupfile.IsEmpty() && wxFileExists( backupfile ) )
+		wxRemoveFile( backupfile );
 
 	return success;
 }
