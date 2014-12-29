@@ -139,6 +139,8 @@ wxString wxNumericCtrl::Format( double val, Mode mode, int deci, bool thousep, c
 {
 	wxString buf;
 
+	if (isnan(val)) return "NaN";
+
 	if ( mode == INTEGER )
 	{
 		if ( deci == HEXADECIMAL ) buf.Printf( "0x%x", (int)val );
