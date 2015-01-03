@@ -2,6 +2,7 @@
 #include <cmath>
 #include <numeric>
 #include <wx/datetime.h>
+#include <wx/time.h>
 
 #include "wex/plot/plaxis.h"
 
@@ -688,7 +689,7 @@ void wxPLTimeAxis::RecalculateTicksAndLabel()
 	m_tickList.clear();
 
 	//We need to figure out whether we are looking at hours, days, or months, and label the graph appropriately.
-	wxDateTime timeKeeper( 1, wxDateTime::Jan, 1970, 0, 0, 0 );
+	wxDateTime timeKeeper(1, wxDateTime::Jan, 1971, 0, 0, 0); // works all time zones 
 
 	double world_len = m_max-m_min;
 	double time = m_min;
