@@ -139,7 +139,7 @@ wxString wxNumericCtrl::Format( double val, Mode mode, int deci, bool thousep, c
 {
 	wxString buf;
 
-	if (isnan(val)) return "NaN";
+	if (std::isnan(val)) return "NaN";
 
 	if ( mode == INTEGER )
 	{
