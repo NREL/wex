@@ -182,7 +182,7 @@ bool wxPLPlottable::ExtendMinMax(double *pxmin, double *pxmax, double *pymin, do
 	double xmin, xmax, ymin, ymax;
 	if (!GetMinMax(&xmin, &xmax, &ymin, &ymax)) return false;
 	double yminNice = ymin, ymaxNice = ymax;
-	wxDVPlotHelper::ExtendBoundsToNiceNumber(&ymaxNice, &yminNice);
+	if (extendToNice) wxDVPlotHelper::ExtendBoundsToNiceNumber(&ymaxNice, &yminNice);
 	if (pxmin && xmin < *pxmin) *pxmin = xmin;
 	if (pxmax && xmax > *pxmax) *pxmax = xmax;
 	if (pymin && yminNice < *pymin) *pymin = yminNice;
