@@ -1,5 +1,5 @@
 #include "wex/numeric.h"
-
+#include <cmath>
 #include <wx/wx.h>
 #include <wx/valtext.h>
 
@@ -139,7 +139,7 @@ wxString wxNumericCtrl::Format( double val, Mode mode, int deci, bool thousep, c
 {
 	wxString buf;
 
-	if (std::isnan(val)) return "NaN";
+	if ( std::isnan(val) ) return "NaN";
 
 	if ( mode == INTEGER )
 	{
