@@ -1,6 +1,7 @@
 #include <wx/app.h>
 #include <wx/thread.h>
 #include <wx/html/htmlwin.h>
+#include <wx/htmllbox.h>
 #include <wx/fontenum.h>
 
 #include "wex/lkscript.h" // defines LK_USE_WXWIDGETS
@@ -8,6 +9,7 @@
 #include "wex/utils.h"
 #include "wex/jsonreader.h"
 #include "wex/csv.h"
+#include "wex/metro.h"
 
 #include <lk_lex.h>
 #include <lk_absyn.h>
@@ -942,11 +944,135 @@ wxString wxLKScriptCtrl::GetHtmlDocs()
 	return data;
 }
 
+class LKDocListBox : public wxHtmlListBox
+{
+	wxArrayString m_htmlData;
+	std::vector<size_t> m_indices;
+public:
+	LKDocListBox( wxWindow *parent, int id, std::vector< wxLKScriptCtrl::libdata > &ll )
+		: wxHtmlListBox( parent, id, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE )
+	{
+		for( size_t i=0;i<ll.size();i++ )
+		{
+			int j=0;
+			while( ll[i].library[j] )
+			{
+				m_htmlData.Add( lk::html_doc( ll[i].library[j] ) );
+				j++;
+			}
+		}
+
+		Filter( wxEmptyString );
+	}
+
+	void Filter( const wxString &filter )
+	{
+		if ( m_htmlData.size() == 0 ) return;
+
+		if (filter.IsEmpty())
+		{
+			m_indices.resize( m_htmlData.size(), 0 );
+			for( size_t i=0;i<m_indices.size();i++ )
+				m_indices[i] = i;		
+		}
+		else
+		{
+			m_indices.clear();
+			m_indices.reserve( m_htmlData.size() );
+			for (size_t i=0;i<m_htmlData.size();i++)
+			{
+				wxString &html = m_htmlData[i];
+				if (filter.Len() <= 2 && html.Left( filter.Len() ).Lower() == filter)
+				{
+					m_indices.push_back( i );
+				}
+				else if (html.Lower().Find( filter ) >= 0)
+				{
+					m_indices.push_back( i );
+				}
+				else if (html.Lower().Find( filter ) == 0)
+				{
+					m_indices.push_back( i );
+				}
+			}
+		}
+
+		SetItemCount( m_indices.size() );
+		Refresh();
+	}
+
+	virtual wxString OnGetItem( size_t n ) const
+	{
+		return m_htmlData[ m_indices[n] ];
+	}
+
+	void OnDClick( wxMouseEvent & )
+	{
+		/* nothing to do */
+	}
+
+	DECLARE_EVENT_TABLE();
+};
+
+BEGIN_EVENT_TABLE( LKDocListBox, wxHtmlListBox )
+	EVT_LEFT_DCLICK( LKDocListBox::OnDClick )
+	EVT_MIDDLE_DCLICK( LKDocListBox::OnDClick )
+	EVT_RIGHT_DCLICK( LKDocListBox::OnDClick )
+END_EVENT_TABLE()
+
+enum{ ID_FILTER = wxID_HIGHEST + 857 };
+
+class LKDocWindow : public wxFrame
+{
+	LKDocListBox *m_list;
+	wxTextCtrl *m_filter;
+public:
+	LKDocWindow( wxWindow *parent, 
+		std::vector<wxLKScriptCtrl::libdata> &ll,
+		const wxString &title = "Scripting Reference" )
+		: wxFrame( parent, wxID_ANY, title,
+			wxDefaultPosition, wxSize(900, 800),
+			wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN | wxRESIZE_BORDER | wxFRAME_TOOL_WINDOW | wxFRAME_FLOAT_ON_PARENT)
+	{
+		SetBackgroundColour( wxMetroTheme::Colour( wxMT_FOREGROUND ) );
+
+		m_filter = new wxTextCtrl( this, ID_FILTER );
+		m_list = new LKDocListBox( this, wxID_ANY, ll );
+
+		wxStaticText *label = new wxStaticText( this, wxID_ANY, "Search:");
+		label->SetForegroundColour( *wxWHITE );
+		wxBoxSizer *tools = new wxBoxSizer( wxHORIZONTAL );
+		tools->Add( label, 0, wxLEFT|wxALIGN_CENTER_VERTICAL, 4 );
+		tools->Add( m_filter, 0, wxALL|wxALIGN_CENTER_VERTICAL, 3 );
+		tools->AddStretchSpacer();
+
+		wxBoxSizer *main = new wxBoxSizer( wxVERTICAL );
+		main->Add( tools, 0, wxALL|wxEXPAND, 0 );
+		main->Add( m_list, 1, wxALL|wxEXPAND, 0 );
+		SetSizer( main );
+	}
+
+	void OnFilter( wxCommandEvent & )
+	{
+		m_list->Filter( m_filter->GetValue() );
+	}
+
+	DECLARE_EVENT_TABLE();
+};
+
+BEGIN_EVENT_TABLE( LKDocWindow, wxFrame )
+	EVT_TEXT( ID_FILTER, LKDocWindow::OnFilter )
+END_EVENT_TABLE()
+
+
 void wxLKScriptCtrl::ShowHelpDialog( wxWindow *custom_parent )
 {
 	if (custom_parent == 0)
 		custom_parent = this;
 
+	(new LKDocWindow( custom_parent, m_libs ))->Show();
+
+	/*
 	wxFrame *frm = new wxFrame( custom_parent, wxID_ANY, 
 		"Scripting Reference", wxDefaultPosition, wxSize(900, 800),
 		wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN | wxRESIZE_BORDER | wxFRAME_TOOL_WINDOW | wxFRAME_FLOAT_ON_PARENT);
@@ -954,7 +1080,9 @@ void wxLKScriptCtrl::ShowHelpDialog( wxWindow *custom_parent )
 		wxDefaultPosition, wxDefaultSize, 
 		wxHW_DEFAULT_STYLE | wxBORDER_NONE );
 	html->SetPage( GetHtmlDocs() );
+	
 	frm->Show();
+	*/
 }
 
 

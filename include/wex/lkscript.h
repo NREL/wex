@@ -66,18 +66,19 @@ public:
 
 	lk::env_t *GetEnvironment() { return m_env; }
 	wxWindow *GetTopLevelWindowForScript() { return m_topLevelWindow; }
-private:
-
-	void OnScriptTextChanged( wxStyledTextEvent & );
-	void OnTimer( wxTimerEvent & );
-
-	wxTimer m_timer;
+	
 	
 	struct libdata
 	{
 		lk::fcall_t *library;
 		wxString name;
 	};
+private:
+
+	void OnScriptTextChanged( wxStyledTextEvent & );
+	void OnTimer( wxTimerEvent & );
+
+	wxTimer m_timer;
 
 	std::vector<libdata> m_libs;
 	lk::env_t *m_env;
