@@ -1029,7 +1029,7 @@ class LKDocWindow : public wxFrame
 public:
 	LKDocWindow( wxWindow *parent, 
 		std::vector<wxLKScriptCtrl::libdata> &ll,
-		const wxString &title = "Scripting Reference" )
+		const wxString &title = "Function Reference" )
 		: wxFrame( parent, wxID_ANY, title,
 			wxDefaultPosition, wxSize(900, 800),
 			wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN | wxRESIZE_BORDER | wxFRAME_TOOL_WINDOW | wxFRAME_FLOAT_ON_PARENT)
