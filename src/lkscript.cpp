@@ -1162,13 +1162,13 @@ void wxLKScriptCtrl::OnMarginClick( wxStyledTextEvent &evt )
 
 		while( i < m_syntaxErrorLines.size() )
 		{
-			if ( line == abs(m_syntaxErrorLines[i]) )
+			if ( line == abs(m_syntaxErrorLines[i])-1 )
 			{
 				int ifirst = i;
 
 				wxString text;
 				while( i < m_syntaxErrorLines.size()
-					&& line == abs(m_syntaxErrorLines[i]) )
+					&& line == abs(m_syntaxErrorLines[i])-1 )
 					text += m_syntaxErrorMessages[i++] + "\n";
 
 				text.Trim();
@@ -1226,7 +1226,7 @@ void wxLKScriptCtrl::OnTimer( wxTimerEvent & )
 			output += msg + "\n";
 
 			m_syntaxErrorMessages.Add( msg );
-			m_syntaxErrorLines.push_back( -(line-1) );
+			m_syntaxErrorLines.push_back( -line );
 
 			if (i == 0)
 				first_error_line = line;

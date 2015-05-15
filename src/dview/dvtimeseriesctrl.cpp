@@ -228,6 +228,11 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 					points.push_back( wxPoint( points[ points.size()-1 ].x,  map.ToDevice( wxRealPoint(0,0) ).y ) );
 					points.push_back( wxPoint( points[ 0 ].x, map.ToDevice( wxRealPoint(0,0) ).y ) );
 				}
+
+				if ( points.size() > 3 * map.GetDeviceExtents().GetWidth() ) {
+					dc.DrawText( "too many data points: please zoom in", map.GetDeviceExtents().GetTopLeft() );
+					return; // quit if 3x more x coord points than pixels
+				}
 				
 				dc.SetPen( *wxTRANSPARENT_PEN );
 				dc.SetBrush( wxBrush( m_colour, wxSOLID ) );
@@ -399,8 +404,13 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 				}
 
 				if ( points.size() < 2 ) return;
+				if ( points.size() > 3 * map.GetDeviceExtents().GetWidth() ) {
+					dc.DrawText( "too many data points: please zoom in", map.GetDeviceExtents().GetTopLeft() );
+					return; // quit if 3x more x coord points than pixels
+				}
 				
 				dc.DrawLines( points.size(), &points[0] );
+
 			}
 		}
 
