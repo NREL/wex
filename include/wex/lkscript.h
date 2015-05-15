@@ -48,9 +48,12 @@ public:
 		unsigned long libs = wxLK_STDLIB_ALL );
 
 	virtual ~wxLKScriptCtrl();
+	
+	void SetSyntaxCheck( bool on );
 
 	virtual bool OnEval( int line );
 	virtual void OnOutput( const wxString & );
+	virtual void OnSyntaxCheck( int line = -1, const wxString &error = wxEmptyString );
 	
 	void RegisterLibrary( lk::fcall_t *funcs, const wxString &group = "Miscellaneous", void *user_data = 0);
 
@@ -75,7 +78,12 @@ public:
 	};
 private:
 
+	bool m_syntaxCheck;
+	std::vector<int> m_syntaxErrorLines;
+	wxArrayString m_syntaxErrorMessages;
+
 	void OnScriptTextChanged( wxStyledTextEvent & );
+	void OnMarginClick( wxStyledTextEvent & );
 	void OnTimer( wxTimerEvent & );
 
 	wxTimer m_timer;

@@ -142,6 +142,13 @@ public:
 	{
 		m_scriptwin->AddOutput( out );
 	}
+	
+	virtual void OnSyntaxCheck( int line, const wxString &err )
+	{
+		m_scriptwin->ClearOutput();
+		m_scriptwin->AddOutput( err );
+	}
+	
 };
 
 enum { ID_SCRIPT = wxID_HIGHEST+494 ,

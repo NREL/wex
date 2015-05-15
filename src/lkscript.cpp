@@ -853,6 +853,7 @@ enum { IDT_TIMER = wxID_HIGHEST+213 };
 
 BEGIN_EVENT_TABLE( wxLKScriptCtrl, wxCodeEditCtrl )	
 	EVT_STC_MODIFIED( wxID_ANY, wxLKScriptCtrl::OnScriptTextChanged )
+	EVT_STC_MARGINCLICK( wxID_ANY, wxLKScriptCtrl::OnMarginClick )
 	EVT_TIMER( IDT_TIMER, wxLKScriptCtrl::OnTimer )
 END_EVENT_TABLE()
 
@@ -861,6 +862,7 @@ wxLKScriptCtrl::wxLKScriptCtrl( wxWindow *parent, int id,
 	: wxCodeEditCtrl( parent, id, pos, size ),
 		m_timer( this, IDT_TIMER )
 {
+	m_syntaxCheck = true;
 	m_tree = 0;
 	m_env = new lk::env_t;	
 	m_scriptRunning = false;
@@ -883,6 +885,12 @@ wxLKScriptCtrl::wxLKScriptCtrl( wxWindow *parent, int id,
 	StyleSetFont( 512, font );
 	StyleSetForeground( 512, *wxBLACK );
 	StyleSetBackground( 512, wxColour(255,187,187) );
+
+	MarkerDefine( m_markLeftBox, wxSTC_MARK_LEFTRECT );
+	MarkerSetBackground( m_markLeftBox, *wxRED );
+	SetMarginWidth( m_syntaxCheckMarginId, 5 );
+	SetMarginSensitive( m_syntaxCheckMarginId, true );
+	SetMarginType( m_syntaxCheckMarginId, wxSTC_MARGIN_SYMBOL );
 	
 	m_topLevelWindow = 0;
 }
@@ -1085,25 +1093,114 @@ void wxLKScriptCtrl::ShowHelpDialog( wxWindow *custom_parent )
 	*/
 }
 
+void wxLKScriptCtrl::SetSyntaxCheck( bool on )
+{
+	m_syntaxCheck = on;
+	
+	SetMouseDwellTime( on ? 500 : wxSTC_TIME_FOREVER );
+	SetMarginWidth( m_syntaxCheckMarginId, on ? 5 : 0 );
+	SetMarginSensitive( m_syntaxCheckMarginId, on );
+	
+	if ( !on )
+		m_timer.Stop();
+}
+
+void wxLKScriptCtrl::OnSyntaxCheck( int line, const wxString &err )
+{	
+	if ( line < 0 ) 
+	{
+		AnnotationClearLine( GetCurrentLine() );
+		return;
+	}
+	
+
+	if ( !err.IsEmpty() )
+	{	
+		AnnotationSetText( line, err );
+		AnnotationSetStyle( line, 0 );
+	
+		int curline = GetCurrentLine();
+		if ( curline < 0 )
+			curline = GetFirstVisibleLine();
+
+		if ( line != curline
+			&& ( line < GetFirstVisibleLine() 
+				|| line > GetFirstVisibleLine()+LinesOnScreen()) )
+		{
+			AnnotationSetText( curline, err );
+			AnnotationSetStyle( curline, 0 );
+		}
+
+		AnnotationSetVisible( wxSTC_ANNOTATION_STANDARD );
+	}
+}
 
 void wxLKScriptCtrl::OnScriptTextChanged( wxStyledTextEvent &evt )
 {
 	if ( evt.GetModificationType() & wxSTC_MOD_INSERTTEXT 
 		|| evt.GetModificationType() & wxSTC_MOD_DELETETEXT )
 	{
-		AnnotationClearLine( GetCurrentLine() );
+		MarkerDeleteAll( m_markLeftBox );
+		OnSyntaxCheck();
 
-		m_timer.Stop();
-		m_timer.Start( 1700, true );
+		if ( m_syntaxCheck )
+		{
+			m_timer.Stop();
+			m_timer.Start( 1000, true );
+		}
+	}
+	
+	evt.Skip();
+}
+
+void wxLKScriptCtrl::OnMarginClick( wxStyledTextEvent &evt )
+{
+	if (evt.GetMargin() == m_syntaxCheckMarginId )
+	{
+		int line = LineFromPosition(evt.GetPosition());
+		size_t i=0;
+
+		while( i < m_syntaxErrorLines.size() )
+		{
+			if ( line == abs(m_syntaxErrorLines[i]) )
+			{
+				int ifirst = i;
+
+				wxString text;
+				while( i < m_syntaxErrorLines.size()
+					&& line == abs(m_syntaxErrorLines[i]) )
+					text += m_syntaxErrorMessages[i++] + "\n";
+
+				text.Trim();
+
+				if ( m_syntaxErrorLines[ifirst] > 0 )
+					AnnotationClearLine( line );
+				else
+				{
+					AnnotationSetText( line, text );
+					AnnotationSetStyle( line, 0 );
+					AnnotationSetVisible( wxSTC_ANNOTATION_STANDARD );
+				}
+
+				m_syntaxErrorLines[ifirst] = -m_syntaxErrorLines[ifirst];
+				break;
+			}
+
+			i++;
+		}
 	}
 	
 	evt.Skip();
 }
 
 void wxLKScriptCtrl::OnTimer( wxTimerEvent & )
-{
+{	
+	m_syntaxErrorLines.clear();
+	m_syntaxErrorMessages.clear();
+	
+	MarkerDeleteAll( m_markLeftBox );
 	AnnotationClearAll();
-			
+
 	int first_error_line = 0;
 	wxString output;
 
@@ -1116,6 +1213,7 @@ void wxLKScriptCtrl::OnTimer( wxTimerEvent & )
 	if ( parse.error_count() == 0 
 		&& parse.token() == lk::lexer::END)
 	{
+		AnnotationClearAll();
 		return;
 	}
 	else
@@ -1124,9 +1222,16 @@ void wxLKScriptCtrl::OnTimer( wxTimerEvent & )
 		while ( i < parse.error_count() )
 		{
 			int line;
-			output += parse.error(i, &line) + '\n';
+			wxString msg = parse.error(i, &line);
+			output += msg + "\n";
+
+			m_syntaxErrorMessages.Add( msg );
+			m_syntaxErrorLines.push_back( -(line-1) );
+
 			if (i == 0)
-				first_error_line = line; // adjust for 0 based line in scintilla
+				first_error_line = line;
+			
+			MarkerAdd( line-1, m_markLeftBox );
 
 			i++;
 		}
@@ -1139,23 +1244,9 @@ void wxLKScriptCtrl::OnTimer( wxTimerEvent & )
 
 	first_error_line--;
 	if ( first_error_line < 0 ) first_error_line = 0;
-
-	AnnotationSetText( first_error_line, output );
-	AnnotationSetStyle( first_error_line, 0 );
 	
-	int curline = GetCurrentLine();
-	if ( curline < 0 )
-		curline = GetFirstVisibleLine();
+	OnSyntaxCheck( first_error_line, output );
 
-	if ( first_error_line != curline
-		&& ( first_error_line < GetFirstVisibleLine() 
-			|| first_error_line > GetFirstVisibleLine()+LinesOnScreen()) )
-	{
-		AnnotationSetText( curline, output );
-		AnnotationSetStyle( curline, 0 );
-	}
-
-	AnnotationSetVisible( wxSTC_ANNOTATION_BOXED );
 }
 
 bool wxLKScriptCtrl::IsScriptRunning()

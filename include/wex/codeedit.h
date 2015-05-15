@@ -74,6 +74,16 @@ public:
 	void YankLine();
 	void PutLine();
 
+protected:
+	
+	static const int m_markCircle = 0;
+	static const int m_markArrow = 1;
+	static const int m_markLeftBox = 2;
+	static const int m_lineNumMarginId = 0;
+	static const int m_syntaxCheckMarginId = 1;
+	static const int m_breakpointMarginId = 2;
+	static const int m_foldingMarginId = 3;
+
 private:	
 	void OnMarginClick( wxStyledTextEvent &evt );
     void OnCharAdded( wxStyledTextEvent &evt );
@@ -85,11 +95,6 @@ private:
 	int m_lastFindPos;
 	int m_lastReplacePos;
 	
-	static const int m_markCircle = 0;
-	static const int m_markArrow = 1;
-	static const int m_lineNumMarginId = 0;
-	static const int m_breakpointMarginId = 1;
-	static const int m_foldingMarginId = 2;
 
 	bool m_showFindInFilesButton;
 	FRDialog *m_frDialog;
