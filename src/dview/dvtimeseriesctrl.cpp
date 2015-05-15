@@ -260,12 +260,52 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 							}
 						}
 					}
-
-					for ( size_t i = 0; i < m_data->Length(); i++ )
+					
+					// cull data points that get mapped to the same X coordinate on the device
+					// this is a required rendering optimization for large datasets
+					size_t i = 0;
+					size_t len = m_data->Length();
+					while( i < len )
 					{
 						rpt = m_data->At(i);
-						if ( rpt.x < wmin.x || rpt.x > wmax.x ) continue;
-						points.push_back( map.ToDevice( m_data->At(i) ) );
+						if ( rpt.x < wmin.x || rpt.x > wmax.x ) {
+							i++;
+							continue;
+						}
+						
+						wxPoint cur( map.ToDevice( rpt ) );
+
+						size_t jmin=i, jmax=i;
+						double min=cur.y, max = cur.y;
+						// scan ahead in the points array to find all values with the same X
+						// coordinate, and the associated min/max values
+						size_t j=i;
+						while( j < len )
+						{
+							wxPoint cur2( map.ToDevice( m_data->At(j) ) );
+
+							if ( cur.x != cur2.x )
+								break;
+
+							if ( cur2.y > max ) { max = cur2.y; jmax = j;}
+							if ( cur2.y < min ) { min = cur2.y; jmin = j;}
+
+							j++;
+						}
+
+						if ( j > i ) // duplicate points found for same x coordinate
+						{
+							// replace with just two points
+							points.push_back( wxPoint( cur.x,  jmax < jmin ? max : min ) );
+							points.push_back( wxPoint( cur.x,  jmax < jmin ? min : max ) );
+						}
+						else
+						{
+							// no duplicate points, just keep this point where it is.
+							points.push_back( cur );
+						}
+
+						i=j+1;
 					}
 
 					//If this is a line plot then add a point at the right edge of the graph if there isn't one there in the data
@@ -359,7 +399,7 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 				}
 
 				if ( points.size() < 2 ) return;
-
+				
 				dc.DrawLines( points.size(), &points[0] );
 			}
 		}
