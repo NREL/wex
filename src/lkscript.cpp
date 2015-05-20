@@ -586,19 +586,21 @@ void fcall_csvread( lk::invoke_t &cxt )
 
 	if ( astable )
 	{
+		if ( nskip >= nr-1 ) nskip = 0;
+
 		out.empty_hash();
 		for( size_t c=0;c<nc;c++ )
 		{
-			wxString name( csv(0,c) );
+			wxString name( csv(nskip,c) );
 			if ( name.IsEmpty() ) continue;
 
 			lk::vardata_t &it = out.hash_item(name);
 			it.empty_vector();
-			it.resize( nr-1 );
-			for( size_t i=1;i<nr;i++ )
+			it.resize( nr-1-nskip );
+			for( size_t i=1+nskip;i<nr;i++ )
 			{
-				if ( tonum ) it.index(i-1)->assign( wxAtof( csv(i,c) ) );
-				else it.index(i-1)->assign( csv(i,c) );
+				if ( tonum ) it.index(i-1-nskip)->assign( wxAtof( csv(i,c) ) );
+				else it.index(i-1-nskip)->assign( csv(i,c) );
 			}
 		}
 	}
