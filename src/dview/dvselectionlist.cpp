@@ -63,7 +63,31 @@ void wxDVSelectionListCtrl::FreeRowItems()
 	m_groups.clear();
 }
 
-int wxDVSelectionListCtrl::Append(const wxString& name, const wxString& group)
+void wxDVSelectionListCtrl::Filter( const wxString &filter )
+{
+	if (filter.IsEmpty())
+	{
+		for (size_t i=0;i<m_itemList.size();i++)
+			m_itemList[i]->shown = true;
+	}
+	else
+	{
+		for (size_t i=0;i<m_itemList.size();i++)
+		{
+			row_item *ri = m_itemList[i];
+			if (filter.Len() <= 2 && ri->label.Left( filter.Len() ).Lower() == filter)
+				ri->shown = true;
+			else if (ri->label.Lower().Find( filter ) >= 0)
+				ri->shown = true;
+			else
+				ri->shown = false;
+		}
+	}
+
+	Invalidate();
+}
+
+int wxDVSelectionListCtrl::AppendNoUpdate( const wxString &name, const wxString &group )
 {
 	row_item *x = new row_item;
 	x->label = name;
@@ -73,13 +97,31 @@ int wxDVSelectionListCtrl::Append(const wxString& name, const wxString& group)
 		x->value[i] = false;
 		x->enable[i] = true;
 	}
+	x->shown = true;
 
 	m_itemList.push_back( x );
 	x->row_index = m_itemList.size() - 1;
 
+	return m_itemList.size() - 1;
+}
+
+int wxDVSelectionListCtrl::Append(const wxString& name, const wxString& group)
+{
+	int idx = AppendNoUpdate( name, group );
+	
 	Organize();
 	Invalidate();
-	return m_itemList.size()-1;
+
+	return idx;
+}
+
+void wxDVSelectionListCtrl::Append( const wxArrayString &names, const wxString &group )
+{
+	for( size_t i=0;i<names.size();i++ )
+		AppendNoUpdate( names[i], group );
+
+	Organize();
+	Invalidate();
 }
 
 void wxDVSelectionListCtrl::RemoveAt(int row)
@@ -247,7 +289,7 @@ int wxDVSelectionListCtrl::GetNumberOfSelections()
 	for( int c=0;c<m_numCols;c++ )	
 		count += GetNumSelected( c );
 	return count;
-}	
+}
 
 int wxDVSelectionListCtrl::GetUnsortedRowIndex(int SortedIndex)
 {
@@ -359,8 +401,13 @@ void wxDVSelectionListCtrl::RecalculateBestSize()
 		{
 			for( size_t i=0;i<m_groups[g].items.size();i++ )
 			{
+				row_item *ri = m_groups[g].items[i];
+
+				if ( ! ri->shown )
+					continue;
+
 				height += m_itemHeight; // reserve height for each item in the group
-				wxSize sz = dc.GetTextExtent( m_groups[g].items[i]->label );
+				wxSize sz = dc.GetTextExtent( ri->label );
 				if (sz.GetWidth() > width)
 					width = sz.GetWidth();
 			}
@@ -459,6 +506,9 @@ static wxBitmap s_cirMinus, s_cirPlus;
 		std::vector<row_item*> &items = m_groups[g].items;
 		for (size_t i=0;i<items.size();i++)
 		{
+			if ( ! items[i]->shown )
+				continue;
+
 			int x = m_xOffset;
 			int yoff = (m_itemHeight-m_boxSize)/2;
 			int radius = m_boxSize / 2;
@@ -552,7 +602,7 @@ void wxDVSelectionListCtrl::OnLeftDown(wxMouseEvent &evt)
 		{
 			for (size_t c=0;c<m_numCols;c++)
 			{
-				if ( items[i]->geom[c].Contains( mx, my ) )
+				if ( items[i]->shown && items[i]->geom[c].Contains( mx, my ) )
 				{
 					if ( ! items[i]->enable[c] ) return;
 

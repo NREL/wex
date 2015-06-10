@@ -37,6 +37,9 @@ public:
 	virtual ~wxDVSelectionListCtrl();
 
 	int Append(const wxString &name, const wxString &group = wxEmptyString ); // returns row index
+	int AppendNoUpdate( const wxString &name, const wxString &group );
+	void Append( const wxArrayString &names, const wxString &group = wxEmptyString );  // add a whole list with the same group	
+	
 	void RemoveAt(int row);
 	void RemoveAll();
 	int Length(); //This is number of rows.
@@ -55,6 +58,8 @@ public:
 	int GetNumSelected( int col = 0 );
 	int GetUnsortedRowIndex(int SortedIndex = 0);	//Returns the raw index of a row (index of the underlying data element) when passed the sorted index (the displayed position)
 
+	void Filter( const wxString &search );
+
 	void ExpandAll();
 	void ExpandSelections();
 	void CollapseAll();
@@ -62,9 +67,12 @@ public:
 	void SetUngroupedLabel( const wxString &l );
 
 	void GetLastEventInfo(int* row, int* col, bool* isNowChecked);
-
+	
+	void Organize();
+	void Invalidate();
 protected:	
 	virtual wxSize DoGetBestSize() const;
+
 
 private:
 	static const int NMAXCOLS  = 4;
@@ -85,6 +93,7 @@ private:
 		bool enable[NMAXCOLS];
 		wxRect geom[NMAXCOLS]; // filled in by renderer
 		int row_index;
+		bool shown;
 	};
 
 	std::vector<row_item*> m_itemList;
@@ -111,10 +120,8 @@ private:
 
 	void FreeRowItems();
 
-	void Organize();
 	void RecalculateBestSize();
 	void ResetScrollbars();
-	void Invalidate();
 	void OnResize(wxSizeEvent &evt);
 	void OnPaint(wxPaintEvent &evt);
 	void OnErase(wxEraseEvent &evt);
