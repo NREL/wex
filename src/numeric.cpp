@@ -47,6 +47,7 @@ void wxNumericCtrl::OnLoseFocus( wxFocusEvent &evt )
 {
 	if ( m_focusStrVal != GetValue() )
 	{
+		Translate();
 		wxCommandEvent enterpress(wxEVT_COMMAND_TEXT_ENTER, this->GetId() );
 		enterpress.SetEventObject( this );
 		enterpress.SetString( GetValue() );
