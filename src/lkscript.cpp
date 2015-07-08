@@ -16,7 +16,7 @@
 #include <lk_eval.h>
 #include <lk_stdlib.h>
 #include <lk_invoke.h>
-#include <lk_math.h>
+//#include <lk_math.h>
 #include <lk_env.h>
 #include <lk_parse.h>
 
