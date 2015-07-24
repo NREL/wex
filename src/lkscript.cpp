@@ -548,25 +548,16 @@ void fcall_csvread( lk::invoke_t &cxt )
 	LK_DOC( "csvread", "Read a CSV file into a 2D array (default) or a table. Options: "
 		"'skip' (header lines to skip), "
 		"'numeric' (t/f to return numbers), "
+		"'delim' (character(s) to use as delimiters, default is comma), "
 		"'table' (t/f to return a table assuming 1 header line with names)",
 		"(string:file[, table:options]):array or table" );
 	
 	lk::vardata_t &out = cxt.result();
-	wxCSVData csv;
-	if ( !csv.ReadFile( cxt.arg(0).as_string() ) 
-		|| csv.NumRows() == 0
-		|| csv.NumCols() == 0 )
-	{
-		out.nullify();
-		return;
-	}
-
-	size_t nr = csv.NumRows();
-	size_t nc = csv.NumCols();
-
+	
 	size_t nskip = 0;
 	bool tonum = false;
 	bool astable = false;
+	wxUniChar sep(',');
 
 	if ( cxt.arg_count() > 1 && cxt.arg(1).deref().type() == lk::vardata_t::HASH )
 	{
@@ -580,7 +571,28 @@ void fcall_csvread( lk::invoke_t &cxt )
 
 		if ( lk::vardata_t *item = opts.lookup("table"))
 			astable = item->as_boolean();
+
+		if ( lk::vardata_t *item = opts.lookup("delim"))
+		{
+			wxString s( item->as_string() );
+			if ( s.Len() > 0 )
+				sep = s.at(0);
+		}
 	}
+	
+	wxCSVData csv;
+	csv.SetSeparator( sep );
+	if ( !csv.ReadFile( cxt.arg(0).as_string() ) 
+		|| csv.NumRows() == 0
+		|| csv.NumCols() == 0 )
+	{
+		out.nullify();
+		return;
+	}
+
+	size_t nr = csv.NumRows();
+	size_t nc = csv.NumCols();
+
 
 	if ( nskip >= nr ) nskip = 0;
 
