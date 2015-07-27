@@ -267,7 +267,7 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 					}
 					
 					// cull data points that get mapped to the same X coordinate on the device
-					// this is a required rendering optimization for large datasets
+					// this is a much needed rendering optimization for large datasets
 					size_t i = 0;
 					size_t len = m_data->Length();
 					while( i < len )
@@ -279,38 +279,42 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 						}
 						
 						wxPoint cur( map.ToDevice( rpt ) );
-
+						
 						size_t jmin=i, jmax=i;
-						double min=cur.y, max = cur.y;
+						double min=rpt.y, max=rpt.y;
 						// scan ahead in the points array to find all values with the same X
-						// coordinate, and the associated min/max values
-						size_t j=i;
+						// coordinate, and the associated min/max Y values
+						size_t j=i+1;
+						size_t npscan = 0;
+						wxRealPoint rpt2;
 						while( j < len )
 						{
-							wxPoint cur2( map.ToDevice( m_data->At(j) ) );
+							rpt2 = m_data->At(j);
+							wxPoint cur2( map.ToDevice( rpt2 ) );
 
 							if ( cur.x != cur2.x )
 								break;
 
-							if ( cur2.y > max ) { max = cur2.y; jmax = j;}
-							if ( cur2.y < min ) { min = cur2.y; jmin = j;}
+							if ( rpt2.y > max ) { max = rpt2.y; jmax = j;}
+							if ( rpt2.y < min ) { min = rpt2.y; jmin = j;}
 
+							npscan++;
 							j++;
 						}
 
-						if ( j > i ) // duplicate points found for same x coordinate
+						if ( npscan > 0 ) // duplicate points found for same x coordinate
 						{
-							// replace with just two points
-							points.push_back( wxPoint( cur.x,  jmax < jmin ? max : min ) );
-							points.push_back( wxPoint( cur.x,  jmax < jmin ? min : max ) );
+							// replace with just two points						
+							points.push_back( map.ToDevice( wxRealPoint( rpt.x, jmax < jmin ? max : min ) ) );
+							points.push_back( map.ToDevice( wxRealPoint( rpt.x, jmax < jmin ? min : max ) ) );
 						}
 						else
 						{
-							// no duplicate points, just keep this point where it is.
+							// no multiple points with same x coordinate, just keep this point where it is.
 							points.push_back( cur );
 						}
 
-						i=j+1;
+						i=j;
 					}
 
 					//If this is a line plot then add a point at the right edge of the graph if there isn't one there in the data
@@ -404,7 +408,7 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 				}
 
 				if ( points.size() < 2 ) return;
-				if ( points.size() > 3 * map.GetDeviceExtents().GetWidth() ) {
+				if ( points.size() > 4 * map.GetDeviceExtents().GetWidth() ) {
 					dc.DrawText( "too many data points: please zoom in", map.GetDeviceExtents().GetTopLeft() );
 					return; // quit if 3x more x coord points than pixels
 				}
