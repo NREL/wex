@@ -78,11 +78,11 @@ namespace wxDVPlotHelper
 	void ExtendBoundsToNiceNumber(double* upperBoundToExtend, double* lowerBoundToExtend)
 	{
 		int rangeExp;
-		double range = abs(*upperBoundToExtend - *lowerBoundToExtend);
+		double range = fabs(*upperBoundToExtend - *lowerBoundToExtend);
 
-		if (range < abs(*upperBoundToExtend) / 10.0)	//If the range is too narrow we must base calculations on the upper bound instead
+		if (range < fabs(*upperBoundToExtend) / 10.0)	//If the range is too narrow we must base calculations on the upper bound instead
 		{
-			rangeExp = (int)(floor(log10(abs(*upperBoundToExtend))));
+			rangeExp = (int)(floor(log10(fabs(*upperBoundToExtend))));
 		}
 		else
 		{
