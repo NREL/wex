@@ -46,11 +46,13 @@ public:
 	
 	void SetStackedOn( wxPLBarPlot *bp ) { m_stackedOn = bp; }
 	void SetGroup( const std::vector<wxPLBarPlot*> &grp ) { m_group = grp; }
+	
+	virtual wxPLAxis *SuggestYAxis() const;
 
 protected:
 
-	double CalcYStart(double x);
-	double CalcXStart(double x, const wxPLDeviceMapping &map, int dispwidth);
+	double CalcYPos(double x) const;
+	double CalcXPos(double x, const wxPLDeviceMapping &map, int dispwidth);
 	int CalcDispBarWidth( const wxPLDeviceMapping &map );
 	
 	wxPLBarPlot *m_stackedOn;
@@ -69,8 +71,9 @@ public:
 	void SetStackedOn( wxPLHBarPlot *bp ) { m_stackedOn = bp; }
 	virtual void Draw( wxDC &dc, const wxPLDeviceMapping &map );
 	
+	virtual wxPLAxis *SuggestXAxis() const;
 protected:
-	double CalcXStart(double y);
+	double CalcXPos(double y) const;
 	int CalcDispBarWidth( const wxPLDeviceMapping &map );
 
 	wxPLHBarPlot *m_stackedOn;

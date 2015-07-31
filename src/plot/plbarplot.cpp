@@ -68,12 +68,32 @@ wxPLBarPlot::~wxPLBarPlot()
 	// nothing to do
 }
 
-double wxPLBarPlot::CalcYStart(double x)
+wxPLAxis *wxPLBarPlot::SuggestYAxis() const
+{
+	if ( Len() < 1 ) return new wxPLLinearAxis( 0, 1 );
+
+	double ymin = CalcYPos( At(0).x );
+	double ymax = ymin;
+
+	for (size_t i=1; i<Len(); i++)
+	{
+		double y = CalcYPos( At(i).x );
+		if ( y < ymin ) ymin = y;
+		if ( y > ymax ) ymax = y;
+	}
+
+	if ( ymin > 0 ) ymin = 0;
+	if ( ymax < 0 ) ymax = 0;
+
+	return new wxPLLinearAxis( ymin, ymax );
+}
+
+double wxPLBarPlot::CalcYPos(double x) const
 {
 	double y_start = 0;
 
 	if (m_stackedOn && m_stackedOn != this)
-		y_start += m_stackedOn->CalcYStart(x);
+		y_start += m_stackedOn->CalcYPos(x);
 
 	for (size_t i=0; i<Len(); i++)
 	{
@@ -87,10 +107,10 @@ double wxPLBarPlot::CalcYStart(double x)
 	return y_start;
 }
 
-double wxPLBarPlot::CalcXStart(double x, const wxPLDeviceMapping &map, int dispwidth)
+double wxPLBarPlot::CalcXPos(double x, const wxPLDeviceMapping &map, int dispwidth)
 {
 	if (m_stackedOn && m_stackedOn != this)
-		return m_stackedOn->CalcXStart(x, map, dispwidth);
+		return m_stackedOn->CalcXPos(x, map, dispwidth);
 
 	double x_start = map.ToDevice( x, 0 ).x;
 
@@ -156,12 +176,12 @@ void wxPLBarPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 		wxRealPoint pt = At(i);
 		int pbottom=0, ptop=0;
 		double y_start=0;
-		double x_start = CalcXStart( pt.x, map, dispbar_w );
+		double x_start = CalcXPos( pt.x, map, dispbar_w );
 
 		if (m_stackedOn != NULL && m_stackedOn != this)
 		{
-			y_start = m_stackedOn->CalcYStart( pt.x );	
-			x_start = m_stackedOn->CalcXStart( pt.x, map, dispbar_w);
+			y_start = m_stackedOn->CalcYPos( pt.x );	
+			x_start = m_stackedOn->CalcXPos( pt.x, map, dispbar_w);
 		}
 
 		wxRect prct;
@@ -212,25 +232,17 @@ void wxPLHBarPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 		double x_start=m_baselineX;
 			
 		if ( m_stackedOn != NULL && m_stackedOn != this )
-			x_start = m_stackedOn->CalcXStart( pt.y );	
-
-		wxRect prct;
+			x_start = m_stackedOn->CalcXPos( pt.y );	
+		
+	
 
 		pleft = map.ToDevice( x_start, 0 ).x;
-		pright = map.ToDevice( pt.x, 0 ).x;
-
-		if (pleft < pright)
-		{
-			prct.x = pleft;
-			prct.width = pright-pleft;
-		}
-		else
-		{
-			prct.x = pright;
-			prct.width = pleft-pright;
-		}
-						
+		pright = map.ToDevice( pt.x + x_start, 0 ).x;
+			
+		wxRect prct;			
+		prct.x = pleft < pright ? pleft : pright;
 		prct.y = map.ToDevice( 0, pt.y ).y - bar_width/2;
+		prct.width = abs(pleft - pright);
 		prct.height = bar_width;
 
 		dc.DrawRectangle(prct.x, prct.y, prct.width, prct.height);
@@ -245,12 +257,12 @@ void wxPLHBarPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 }
 
 	
-double wxPLHBarPlot::CalcXStart(double y)
+double wxPLHBarPlot::CalcXPos(double y) const
 {
 	double x_start = m_baselineX;
 
 	if (m_stackedOn && m_stackedOn != this)
-		x_start += m_stackedOn->CalcXStart(y);
+		x_start += m_stackedOn->CalcXPos(y);
 
 	for (size_t i=0; i<Len(); i++)
 	{
@@ -285,4 +297,24 @@ int wxPLHBarPlot::CalcDispBarWidth( const wxPLDeviceMapping &map )
 		return (int)( ((double)rct.GetHeight()) / ((double)( bars_in_view + 4 )) );
 	}
 	else return m_thickness;
+}
+
+wxPLAxis *wxPLHBarPlot::SuggestXAxis() const
+{
+	if ( Len() < 1 ) return new wxPLLinearAxis( 0, 1 );
+
+	double xmin = CalcXPos( At(0).y );
+	double xmax = xmin;
+
+	for (size_t i=1; i<Len(); i++)
+	{
+		double x = CalcXPos( At(i).y );
+		if ( x < xmin ) xmin = x;
+		if ( x > xmax ) xmax = x;
+	}
+
+	if ( xmin > m_baselineX ) xmin = m_baselineX;
+	if ( xmax < m_baselineX ) xmax = m_baselineX;
+
+	return new wxPLLinearAxis( xmin, xmax );
 }
