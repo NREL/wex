@@ -995,6 +995,16 @@ wxString wxFormatMDHM( int mo, int dy, int hr, int min, bool use_12_hr )
 		return wxString::Format( "%s %d, %d:%d", sg_months[mo-1], dy, hr, min );
 }
 
+wxString wxFormatTime( size_t istep, size_t steps_per_hour, bool use_12_hr )
+{
+	// M(1..12), D(1..N), H(0..23), M(0..59)	
+	int hr = (int)( istep / steps_per_hour );
+	int mo = wxMonthOf( (double)hr );
+	int dy = wxDayOfMonth( mo, (int) hr );
+	int min = (int)( ((double)(istep - hr*steps_per_hour)) / steps_per_hour * 60.0 );	
+	return wxFormatMDHM( mo, dy, hr % 24, min, use_12_hr );
+}
+
 wxString wxFormatTime( double time, bool use_12_hr )
 {
 	int mo, dy, hr, min;

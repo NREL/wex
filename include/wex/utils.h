@@ -73,6 +73,7 @@ double wxMDHMToTime( int mo, int dy, int hr, int min = 0);
 /* format a MDHM time into a pretty string */
 wxString wxFormatMDHM( int mo, int dy, int hr, int min = 0, bool use_12_hr = true );
 wxString wxFormatTime( double time, bool use_12_hr = true );
+wxString wxFormatTime( size_t istep, size_t steps_per_hour, bool use_12_hr = true );
 
 
 // sort (n^2) names and labels together
