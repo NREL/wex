@@ -114,7 +114,7 @@ public:
 	virtual ~wxDVStatisticsTableCtrl();
 
 	void RebuildDataViewCtrl();
-	void AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group);
+	void AddDataSet(wxDVTimeSeriesDataSet *d );
 	bool RemoveDataSet(wxDVTimeSeriesDataSet *d); //Releases ownership, does not delete. //true if found & removed.
 	void RemoveAllDataSets(); //Clears all data sets from graphs and memory.
 	void WriteDataAsText(wxUniChar sep, wxOutputStream &os, bool visible_only = true, bool include_x = true);

@@ -33,7 +33,7 @@ public:
 	virtual ~wxDVDMapCtrl();
 
 	//Does not take ownership.
-	void AddDataSet(wxDVTimeSeriesDataSet* d, const wxString& group, bool update_ui );
+	void AddDataSet(wxDVTimeSeriesDataSet* d, bool update_ui );
 	void RemoveDataSet(wxDVTimeSeriesDataSet* d); //releases ownership, does not delete.
 	void RemoveAllDataSets(); //clear all data sets from graphs and memory. (delete plottables.  Never took ownership.
 

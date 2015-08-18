@@ -51,9 +51,9 @@ END_EVENT_TABLE()
 
 
 // *** DATA SET FUNCTIONS ***
-void wxDVDCCtrl::AddDataSet(wxDVTimeSeriesDataSet* d, const wxString& group, bool update_ui)
+void wxDVDCCtrl::AddDataSet(wxDVTimeSeriesDataSet* d, bool update_ui)
 {
-	m_dataSelector->Append(d->GetTitleWithUnits(), group);
+	m_dataSelector->Append(d->GetTitleWithUnits(), d->GetGroupName() );
 	m_plots.push_back( new PlotSet( d ) );
 
 	if (update_ui)

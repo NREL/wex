@@ -30,7 +30,7 @@ public:
 	virtual ~wxDVPlotCtrl();
 
 	//When a data set is added, wxDVTimeSeriesCtrl takes ownership and will delete it upon destruction.
-	void AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group = wxEmptyString, bool update_ui = true);
+	void AddDataSet(wxDVTimeSeriesDataSet *d, bool update_ui = true);
 	//RemoveDataSet releases ownership.
 	void RemoveDataSet(wxDVTimeSeriesDataSet *d);
 	//RemoveAll deletes data sets.

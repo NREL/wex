@@ -667,11 +667,8 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 	plotWin->Freeze();
 	for (int i=0; i<dataSets.size(); i++)
 	{
-		bool update_ui = (i==dataSets.size()-1);
-		if (groupNames[i].size() > 1)
-			plotWin->AddDataSet(dataSets[i], groupNames[i], update_ui);
-		else
-			plotWin->AddDataSet(dataSets[i], wxFileNameFromPath( filename ) ,update_ui );
+		dataSets[i]->SetGroupName( groupNames[i].size() > 1 ? groupNames[i] : wxFileNameFromPath( filename ));		
+		plotWin->AddDataSet(dataSets[i] , (i==dataSets.size()-1) /* update_ui ? */ );
 	}
 	plotWin->SelectDataOnBlankTabs();
 	plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
@@ -773,7 +770,8 @@ void wxDVFileReader::ReadDataFromCSV(wxDVPlotCtrl *plotWin, const wxString& file
 	//Done reading data; add it to the plotCtrl.
 	for (int i=0; i<dataSets.size(); i++)
 	{
-		plotWin->AddDataSet(dataSets[i], wxFileNameFromPath( filename ), (i==dataSets.size()-1) );
+		dataSets[i]->SetGroupName( wxFileNameFromPath( filename ) );
+		plotWin->AddDataSet(dataSets[i], (i==dataSets.size()-1) );
 	}
 	plotWin->SelectDataOnBlankTabs();
 	plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
@@ -871,7 +869,8 @@ bool wxDVFileReader::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& file
 	//Done reading data; add it to the plotCtrl.
 	for (int i=0; i<dataSets.size(); i++)
 	{
-		plotWin->AddDataSet(dataSets[i], wxFileNameFromPath(filename), (i==dataSets.size()-1) );
+		dataSets[i]->SetGroupName( wxFileNameFromPath(filename) );
+		plotWin->AddDataSet(dataSets[i], (i==dataSets.size()-1) );
 	}
 	plotWin->SelectDataOnBlankTabs();
 	plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added

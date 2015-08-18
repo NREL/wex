@@ -14,7 +14,7 @@ public:
 	wxDVScatterPlotCtrl(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, 
 		const wxSize& size = wxDefaultSize, long style = wxTAB_TRAVERSAL, const wxString& name = "panel");
 	
-	void AddDataSet(wxDVTimeSeriesDataSet* d, const wxString& group, bool update_ui);
+	void AddDataSet(wxDVTimeSeriesDataSet* d, bool update_ui);
 	void RemoveDataSet(wxDVTimeSeriesDataSet* d);
 	void RemoveAllDataSets();
 

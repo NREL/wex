@@ -17,7 +17,7 @@ public:
 	virtual ~wxDVDCCtrl();
 
 	//Data Set Functions - do not take ownership.
-	void AddDataSet(wxDVTimeSeriesDataSet* d, const wxString& group, bool update_ui);
+	void AddDataSet(wxDVTimeSeriesDataSet* d, bool update_ui);
 	void RemoveDataSet(wxDVTimeSeriesDataSet* d);
 	void RemoveAllDataSets();
 

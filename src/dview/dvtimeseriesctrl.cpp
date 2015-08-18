@@ -100,9 +100,16 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 
 		virtual wxString GetYDataLabel() const
 		{
-			wxString label = m_data->GetSeriesTitle();
+			if ( !m_data ) return wxEmptyString;
+
+			wxString label( 
+				m_data->GetGroupName().Len() > 0 
+					? m_data->GetGroupName() + ": " + m_data->GetSeriesTitle() 
+					: m_data->GetSeriesTitle() );
+
 			if ( !m_data->GetUnits().IsEmpty() )
 				label += " (" + m_data->GetUnits() + ")";
+
 			return label;
 		}
 		
@@ -420,8 +427,9 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 
 		virtual wxString GetLabel() const
 		{
-			if ( !m_data ) return wxEmptyString;
-			else return m_data->GetTitleWithUnits();
+			return GetYDataLabel();
+			//if ( !m_data ) return wxEmptyString;
+			//else return m_data->GetTitleWithUnits();
 		}
 
 		virtual void DrawInLegend( wxDC &dc, const wxRect &rct )
@@ -1168,7 +1176,7 @@ void wxDVTimeSeriesCtrl::OnPlotDragEnd(wxCommandEvent& e)
 */
 
 
-void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, bool refresh_ui)
+void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, bool refresh_ui)
 {
 	wxDVTimeSeriesPlot *p = 0;
 
@@ -1196,6 +1204,7 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 		double currentHour = 0.0;
 
 		d2 = new wxDVArrayDataSet(d->GetSeriesTitle(), d->GetUnits(), 1.0 / timestep);
+		d2->SetGroupName( d->GetGroupName() );
 
 		while (nextHour <= MinHrs)
 		{
@@ -1240,6 +1249,7 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 		double currentDay = 0.0;
 
 		d2 = new wxDVArrayDataSet(d->GetSeriesTitle(), d->GetUnits(), 24.0 / timestep);
+		d2->SetGroupName( d->GetGroupName() );
 
 		while (nextDay <= MinHrs)
 		{
@@ -1285,6 +1295,7 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 		double year = 0.0;
 
 		d2 = new wxDVArrayDataSet(d->GetSeriesTitle(), d->GetUnits(), 744.0 / timestep);
+		d2->SetGroupName( d->GetGroupName() );
 
 		while(MinHrs > 8760.0)
 		{
@@ -1364,7 +1375,7 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& gr
 
 		p->SetStyle( m_style );
 		m_plots.push_back(p); //Add to data sets list.
-		m_dataSelector->Append( d->GetTitleWithUnits(), group );
+		m_dataSelector->Append( d->GetTitleWithUnits(), d->GetGroupName() );
 
 		if ( refresh_ui )
 		{

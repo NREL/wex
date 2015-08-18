@@ -236,10 +236,10 @@ wxDVDMapCtrl::~wxDVDMapCtrl()
 }
 
 /*Member Functions*/
-void wxDVDMapCtrl::AddDataSet(wxDVTimeSeriesDataSet* d, const wxString& group, bool update_ui )
+void wxDVDMapCtrl::AddDataSet(wxDVTimeSeriesDataSet* d, bool update_ui )
 {
 	m_dataSets.push_back(d);
-	m_selector->Append( d->GetTitleWithUnits(), group );
+	m_selector->Append( d->GetTitleWithUnits(), d->GetGroupName() );
 
 	if (update_ui)
 		Layout(); //Resize dataSelector.

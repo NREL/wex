@@ -20,7 +20,7 @@ public:
 	virtual ~wxDVProfileCtrl();
 
 	//Does not take ownership.
-	void AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, bool update_ui);
+	void AddDataSet(wxDVTimeSeriesDataSet *d, bool update_ui);
 	bool RemoveDataSet(wxDVTimeSeriesDataSet *d); //true if found & removed.
 	//RemoveAllDataSets does not delete original datasets since we never took ownership.
 	void RemoveAllDataSets();

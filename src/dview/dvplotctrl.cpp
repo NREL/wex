@@ -94,21 +94,21 @@ void wxDVPlotCtrl::DisplayTabs()
 //This function is used to add a data set to Dview.  
 //It adds that data set to all of the tabs.
 //The group is optional, it is the name of the group that the data set belongs to if grouping is desired.
-void wxDVPlotCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, bool update_ui)
+void wxDVPlotCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, bool update_ui)
 {
 	//Take ownership of the data Set.  We will delete it on destruction.
 	m_dataSets.push_back(d);
-
-	m_timeSeries->AddDataSet(d, group, update_ui);
-	m_hourlyTimeSeries->AddDataSet(d, group, update_ui);
-	m_dailyTimeSeries->AddDataSet(d, group, update_ui);
-	m_monthlyTimeSeries->AddDataSet(d, group, update_ui);
-	m_dMap->AddDataSet(d, group, update_ui);
-	m_profilePlots->AddDataSet(d, group, update_ui);
-	m_statisticsTable->AddDataSet(d, group);
-	m_pnCdf->AddDataSet(d, group, update_ui);
-	m_durationCurve->AddDataSet(d, group, update_ui);
-	m_scatterPlot->AddDataSet(d, group, update_ui);
+	
+	m_timeSeries->AddDataSet(d, update_ui);
+	m_hourlyTimeSeries->AddDataSet(d, update_ui);
+	m_dailyTimeSeries->AddDataSet(d, update_ui);
+	m_monthlyTimeSeries->AddDataSet(d, update_ui);
+	m_dMap->AddDataSet(d, update_ui);
+	m_profilePlots->AddDataSet(d, update_ui);
+	m_statisticsTable->AddDataSet(d);
+	m_pnCdf->AddDataSet(d, update_ui);
+	m_durationCurve->AddDataSet(d, update_ui);
+	m_scatterPlot->AddDataSet(d, update_ui);
 }
 
 void wxDVPlotCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)

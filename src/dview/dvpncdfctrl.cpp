@@ -110,10 +110,10 @@ wxDVPnCdfCtrl::~wxDVPnCdfCtrl()
 
 
 // *** DATA SET FUNCTIONS ***
-void wxDVPnCdfCtrl::AddDataSet(wxDVTimeSeriesDataSet* d, const wxString& group, bool update_ui)
+void wxDVPnCdfCtrl::AddDataSet(wxDVTimeSeriesDataSet* d, bool update_ui)
 {
 	m_dataSets.push_back(d);
-	m_selector->Append( d->GetTitleWithUnits(), group );
+	m_selector->Append( d->GetTitleWithUnits(), d->GetGroupName() );
 	
 	//Add new plot data array, but leave it empty until we use it.  We'll fill it with sorted values then.
 	m_cdfPlotData.push_back( new std::vector<wxRealPoint>() );

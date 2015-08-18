@@ -201,6 +201,7 @@ wxDVProfileCtrl::wxDVProfileCtrl(wxWindow* parent, wxWindowID id, const wxPoint&
 	for( int i=0; i<12; i++ )
 	{
 		m_plotSurfaces[i] = new wxPLPlotCtrl( this, wxID_ANY );
+		m_plotSurfaces[i]->SetIncludeLegendOnExport( true );
 		m_plotSurfaces[i]->SetBackgroundColour( *wxWHITE );
 		m_plotSurfaces[i]->SetTitle( wxDateTime::GetMonthName(wxDateTime::Month(i)) );
 		m_plotSurfaces[i]->ShowGrid( true, false );
@@ -257,11 +258,11 @@ wxDVProfileCtrl::~wxDVProfileCtrl()
 }
 
 
-void wxDVProfileCtrl::AddDataSet( wxDVTimeSeriesDataSet* d, const wxString& group, bool update_ui )
+void wxDVProfileCtrl::AddDataSet( wxDVTimeSeriesDataSet* d, bool update_ui )
 {
 	PlotSet *p = new PlotSet( d );
 	m_plots.push_back( p );	
-	m_dataSelector->Append( d->GetTitleWithUnits(), group );
+	m_dataSelector->Append( d->GetTitleWithUnits(), d->GetGroupName() );
 
 	if (update_ui)
 	{
@@ -403,15 +404,19 @@ void wxDVProfileCtrl::PlotSet::CalculateProfileData( )
 		if ( plots[i] == 0 ) plots[i] = new wxPLLinePlot;
 		plots[i]->SetThickness( 2 );
 		plots[i]->SetData( plotData[i] );
-		wxString text = month + " " + dataset->GetSeriesTitle();
-		plots[i]->SetLabel( text );
-		plots[i]->SetXDataLabel( _("Time of day") 
-			+  " (" + month + " " + _("average") + wxString(")") );
 
-		text = dataset->GetSeriesTitle();
+
+		wxString text( dataset->GetGroupName().Len() > 0 
+			? dataset->GetGroupName() + ": " + dataset->GetSeriesTitle() 
+			: dataset->GetSeriesTitle() );
+
 		if ( !dataset->GetUnits().IsEmpty() )
 			text += " (" + dataset->GetUnits() + ")";
+
+		plots[i]->SetLabel( text );
 		plots[i]->SetYDataLabel( text );
+		plots[i]->SetXDataLabel( _("Time of day") 
+			+  " (" + month + " " + _("average") + wxString(")") );
 	}
 }
 

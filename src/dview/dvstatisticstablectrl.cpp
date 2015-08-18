@@ -510,14 +510,10 @@ void wxDVStatisticsTableCtrl::RebuildDataViewCtrl()
 
 }
 
-void wxDVStatisticsTableCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group)
+void wxDVStatisticsTableCtrl::AddDataSet(wxDVTimeSeriesDataSet *d)
 {
-	wxDVStatisticsDataSet *s;
-	wxDVVariableStatistics *p;
-
-	s = new wxDVStatisticsDataSet(d);
-	p = new wxDVVariableStatistics(s, group, true);
-
+	wxDVStatisticsDataSet *s = new wxDVStatisticsDataSet(d);
+	wxDVVariableStatistics *p = new wxDVVariableStatistics(s, d->GetGroupName(), true);
 	m_variableStatistics.push_back(p); //Add to data sets list.
 }
 

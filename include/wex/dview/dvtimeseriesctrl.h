@@ -95,7 +95,7 @@ public:
 	virtual ~wxDVTimeSeriesCtrl();
 
 	//When a data set is added, wxDVTimeSeriesCtrl creates a plottable with a pointer to that data.  Does not take ownership.
-	void AddDataSet(wxDVTimeSeriesDataSet *d, const wxString& group, bool refresh_ui);
+	void AddDataSet(wxDVTimeSeriesDataSet *d, bool refresh_ui);
 	bool RemoveDataSet(wxDVTimeSeriesDataSet *d); //Releases ownership, does not delete. //true if found & removed.
 	void RemoveAllDataSets(); //Clears all data sets from graphs and memory.
 

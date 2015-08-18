@@ -87,10 +87,10 @@ wxDVScatterPlotCtrl::wxDVScatterPlotCtrl(wxWindow* parent, wxWindowID id, const 
 }
 
 //*** DATA SET HANDLING ***
-void wxDVScatterPlotCtrl::AddDataSet(wxDVTimeSeriesDataSet* d, const wxString& group, bool update_ui)
+void wxDVScatterPlotCtrl::AddDataSet(wxDVTimeSeriesDataSet* d, bool update_ui)
 {
 	m_dataSets.push_back( d );
-	m_dataSelectionList->Append( d->GetTitleWithUnits(), group );
+	m_dataSelectionList->Append( d->GetTitleWithUnits(), d->GetGroupName() );
 
 	if (update_ui)
 		Layout();
