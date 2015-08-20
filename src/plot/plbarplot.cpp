@@ -233,16 +233,24 @@ void wxPLHBarPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 			
 		if ( m_stackedOn != NULL && m_stackedOn != this )
 			x_start = m_stackedOn->CalcXPos( pt.y );	
-		
-	
+
+		wxRect prct;
 
 		pleft = map.ToDevice( x_start, 0 ).x;
-		pright = map.ToDevice( pt.x + x_start, 0 ).x;
-			
-		wxRect prct;			
-		prct.x = pleft < pright ? pleft : pright;
+		pright = map.ToDevice( pt.x, 0 ).x;
+
+		if (pleft < pright)
+		{
+			prct.x = pleft;
+			prct.width = pright-pleft;
+		}
+		else
+		{
+			prct.x = pright;
+			prct.width = pleft-pright;
+		}
+						
 		prct.y = map.ToDevice( 0, pt.y ).y - bar_width/2;
-		prct.width = abs(pleft - pright);
 		prct.height = bar_width;
 
 		dc.DrawRectangle(prct.x, prct.y, prct.width, prct.height);
