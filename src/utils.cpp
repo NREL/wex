@@ -1061,7 +1061,7 @@ void wxDevicePPIToScale( const wxSize &ppi, double *xs, double *ys )
 void wxGetScreenHDScale( double *xs, double *ys )
 {
 	wxSize dpi( DPI_NOMINAL, DPI_NOMINAL );
-	if ( wxWindowListNode *first = wxTopLevelWindows.GetFirst() )
+	if ( wxWindowList::compatibility_iterator first = wxTopLevelWindows.GetFirst() )
 	{
 		dpi = wxClientDC( first->GetData() ).GetPPI();
 	}
