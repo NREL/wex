@@ -70,6 +70,7 @@ wxFont wxMetroThemeProvider::Font( int style, int size )
 	wxString face = "Segoe UI";
 	if ( style == wxMT_LIGHT ) face = "Segoe UI Light";
 	else if ( style == wxMT_SEMIBOLD ) face = "Segoe UI Semibold";
+	else if ( style == wxMT_SEMILIGHT ) face = "Segoe UI Semilight";
 
 	if ( wxFontEnumerator::IsValidFacename( face ) )
 		font.SetFaceName( face );

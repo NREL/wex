@@ -28,6 +28,7 @@ enum {
 	wxMT_NORMAL,
 	wxMT_LIGHT, 
 	wxMT_SEMIBOLD,
+	wxMT_SEMILIGHT,
 
 	// colors
 	wxMT_FOREGROUND,

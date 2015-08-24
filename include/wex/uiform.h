@@ -303,6 +303,10 @@ public:
 	int Snap( int p, int spacing = -1 );
 
 	void SetViewMode( bool b );
+	
+	void GetScale( double *x, double *y );
+	wxSize ScaleSize( const wxSize &s );
+	wxRect ScaleRect( const wxRect &r );
 
 private:	
 
@@ -311,6 +315,7 @@ private:
 	int IsOverResizeBox(int x, int y, wxUIObject *obj);
 	void SetResizeCursor(int pos = -1);
 
+	double m_scaleX, m_scaleY;
 	bool m_moveMode;
 	bool m_moveModeErase;
 	bool m_multiSelMode;
@@ -329,6 +334,7 @@ private:
 	
 	void OnMouseMove(wxMouseEvent &evt);
 	void OnLeftUp(wxMouseEvent &evt);
+	void OnDoubleClick(wxMouseEvent &evt);
 	void OnLeftDown(wxMouseEvent &evt);
 	void OnRightDown(wxMouseEvent &evt);
 	void OnSize(wxSizeEvent &evt);
@@ -347,6 +353,8 @@ private:
 	wxUIFormData *m_form;
 
 	bool m_viewMode;
+
+	bool m_enableScaling;
 
 	DECLARE_EVENT_TABLE()
 };

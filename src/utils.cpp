@@ -1037,3 +1037,57 @@ void wxSortByLabels(wxArrayString &names, wxArrayString &labels)
 
 	}
 }
+
+double wxGetScreenHDScale()
+{
+	double xs, ys;
+	wxGetScreenHDScale( &xs, &ys );
+	return xs < ys ? xs : ys;
+}
+
+
+#if defined(__WXMSW__)
+#define DPI_NOMINAL 96.0
+#else
+#define DPI_NOMINAL 72.0
+#endif
+
+void wxDevicePPIToScale( const wxSize &ppi, double *xs, double *ys )
+{
+	*xs = ppi.x/DPI_NOMINAL;
+	*ys = ppi.y/DPI_NOMINAL;
+}
+
+void wxGetScreenHDScale( double *xs, double *ys )
+{
+	wxSize dpi( DPI_NOMINAL, DPI_NOMINAL );
+	if ( wxWindowListNode *first = wxTopLevelWindows.GetFirst() )
+	{
+		dpi = wxClientDC( first->GetData() ).GetPPI();
+	}
+	else
+	{
+		wxFrame *frm = new wxFrame( 0, wxID_ANY, "no title" );
+		dpi = wxClientDC(frm).GetPPI();
+		frm->Destroy();
+	}
+
+	wxDevicePPIToScale( dpi, xs, ys );
+}
+
+
+wxPoint wxScalePoint( const wxPoint &p, double xs, double ys )
+{
+	return wxPoint( (int)(p.x*xs), (int)(p.y*ys) );
+}
+
+wxSize wxScaleSize( const wxSize &s, double xs, double ys )
+{
+	return wxSize( (int)(s.x*xs), (int)(s.y*ys) );
+}
+
+wxRect wxScaleRect( const wxRect &r, double xs, double ys )
+{
+	return wxRect( (int)(r.x*xs), (int)(r.y*ys),
+		(int)(r.width*xs), (int)(r.height*ys));
+}

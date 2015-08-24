@@ -482,6 +482,25 @@ BEGIN_EVENT_TABLE( MyNoteTest, wxMetroNotebook )
 	EVT_NOTEBOOK_PAGE_CHANGING( wxID_ANY, MyNoteTest::OnPageChanging )
 END_EVENT_TABLE()
 
+
+void TestFormDesigner()
+{
+	wxUIObjectTypeProvider::RegisterBuiltinTypes();
+	wxUIFormData *form = new wxUIFormData;
+	wxFrame *frm = new wxFrame( 0, wxID_ANY, "Form Editor", wxDefaultPosition, wxSize(900, 600) );
+	wxUIFormDesigner *fd = new wxUIFormDesigner( frm, wxID_ANY );
+
+	wxUIPropertyEditor *pe = new wxUIPropertyEditor(frm, wxID_ANY );
+	wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add( pe, 1, wxALL|wxEXPAND, 0 );
+	sizer->Add( fd, 5, wxALL|wxEXPAND, 0 );
+	frm->SetSizer(sizer);
+
+	fd->SetFormData( form );
+	fd->SetPropertyEditor( pe );
+	frm->Show();
+}
+
 class MyApp : public wxApp
 {
 	wxLocale m_locale;
@@ -492,6 +511,9 @@ public:
 			return false;
 		
 		wxInitAllImageHandlers();
+
+		TestFormDesigner();
+		return true;
 
 		//wxMessageBox(wxString::Format("Can handle gzip? %d", wxZlibInputStream::CanHandleGZip() ? 1 : 0 ) );
 		
@@ -587,20 +609,7 @@ public:
 
 
 /*		
-		wxUIObjectTypeProvider::RegisterBuiltinTypes();
-		wxUIFormData *form = new wxUIFormData;
-		wxFrame *frm = new wxFrame( 0, wxID_ANY, "Form Editor", wxDefaultPosition, wxSize(900, 600) );
-		wxUIFormDesigner *fd = new wxUIFormDesigner( frm, wxID_ANY );
 
-		wxUIPropertyEditor *pe = new wxUIPropertyEditor(frm, wxID_ANY );
-		wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add( pe, 1, wxALL|wxEXPAND, 0 );
-		sizer->Add( fd, 5, wxALL|wxEXPAND, 0 );
-		frm->SetSizer(sizer);
-
-		fd->SetFormData( form );
-		fd->SetPropertyEditor( pe );
-		frm->Show();*/
 
 		
 	//	TestPLPlot( 0 );

@@ -76,6 +76,19 @@ wxString wxFormatTime( double time, bool use_12_hr = true );
 wxString wxFormatTime( size_t istep, size_t steps_per_hour, bool use_12_hr = true );
 
 
+// return the scaling level for the current display
+double wxGetScreenHDScale();
+void wxGetScreenHDScale( double *xs, double *ys );
+void wxDevicePPIToScale( const wxSize &ppi, double *xs, double *ys );
+
+wxPoint wxScalePoint( const wxPoint &p, double xs, double ys );
+wxSize wxScaleSize( const wxSize &s, double xs, double ys );
+inline wxSize wxScaleSize( const wxSize &s, double sf ) { return wxScaleSize( s, sf, sf ); }
+inline wxSize wxScaleSize( const wxSize &s ) { return wxScaleSize( s, wxGetScreenHDScale() ); }
+wxRect wxScaleRect( const wxRect &r, double xs, double ys );
+inline wxRect wxScaleRect( const wxRect &r, double sf ) { return wxScaleRect( r, sf, sf ); }
+
+
 // sort (n^2) names and labels together
 void wxSortByLabels(wxArrayString &names, wxArrayString &labels);
 
