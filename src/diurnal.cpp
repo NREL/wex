@@ -281,10 +281,9 @@ void wxDiurnalPeriodCtrl::UpdateLayout()
 	double xScale, yScale;
 	wxDevicePPIToScale( dc.GetPPI(), &xScale, &yScale );
 
-	wxSize csz( dc.GetTextExtent( "12" ) );	
-	m_cellSize = (int)( std::max( (csz.x+1)*xScale, (csz.y+1)*yScale ) );
-	m_rowHeaderSize += (int)(4*yScale);
-	m_colHeaderSize += (int)(4*xScale);
+	m_cellSize = (int)( 19*std::max( xScale, yScale ) );
+	m_rowHeaderSize += (int)(6*yScale);
+	m_colHeaderSize += (int)(6*xScale);
 }
 
 wxSize wxDiurnalPeriodCtrl::DoGetBestSize() const
