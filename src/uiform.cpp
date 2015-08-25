@@ -738,8 +738,8 @@ class wxUITOUScheduleObject : public wxUIObject
 public:
 	wxUITOUScheduleObject() {
 		AddProperty( "TabOrder", new wxUIProperty( -1 ) );
-		Property("Width").Set( 444 );
-		Property("Height").Set( 246 );
+		Property("Width").Set( 514 );
+		Property("Height").Set( 272 );
 	}
 	virtual wxString GetTypeName() { return "TOUSchedule"; }
 	virtual wxUIObject *Duplicate() { wxUIObject *o = new wxUITOUScheduleObject; o->Copy( this ); return o; }
@@ -771,8 +771,8 @@ public:
 		AddProperty("Max", new wxUIProperty((int)9));
 		AddProperty("Min", new wxUIProperty((int)1));
 
-		Property("Width").Set(444);
-		Property("Height").Set(246);
+		Property("Width").Set( 514 );
+		Property("Height").Set( 272 );
 	}
 	virtual wxString GetTypeName() { return "DiurnalPeriod"; }
 	virtual wxUIObject *Duplicate() { wxUIObject *o = new wxUIDiurnalPeriodObject; o->Copy(this); return o; }
