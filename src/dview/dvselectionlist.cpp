@@ -1,5 +1,7 @@
 #include <wx/dcbuffer.h>
 
+#include "wex/utils.h"
+
 #include "wex/dview/dvselectionlist.h"
 
 #include "wex/icons/cirplus_12.cpng"
@@ -43,6 +45,14 @@ wxDVSelectionListCtrl::wxDVSelectionListCtrl( wxWindow* parent, wxWindowID id,
 	m_lastEventRow = 0;
 	m_lastEventCol = 0;
 	m_lastEventValue = false;
+
+	double xS, yS;
+	wxDevicePPIToScale( wxClientDC(this).GetPPI(), &xS, &yS );
+
+	m_itemHeight = (int)(18*yS);
+	m_groupHeight = (int)(20*yS);
+	m_boxSize = (int)(11*xS);
+	m_xOffset = 6;
 
 	m_bestSize = wxSize(150, 500); // updated by Invalidate()
 }

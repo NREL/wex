@@ -79,10 +79,10 @@ private:
 
 	unsigned long m_style;
 	int m_numCols;
-	static const int m_itemHeight = 18;
-	static const int m_groupHeight = 20;
-	static const int m_boxSize = 11;
-	static const int m_xOffset = 6;
+	int m_itemHeight;
+	int m_groupHeight;
+	int m_boxSize;
+	int m_xOffset;
 	
 	struct row_item
 	{

@@ -8,10 +8,8 @@
 
 // Diurnal Period control from sched control in wex
 
-
-
 BEGIN_DECLARE_EVENT_TYPES()
-DECLARE_EVENT_TYPE(wxEVT_DIURNALPERIODCTRL_CHANGE, 0)
+	DECLARE_EVENT_TYPE(wxEVT_DIURNALPERIODCTRL_CHANGE, 0)
 END_DECLARE_EVENT_TYPES()
 
 #define EVT_DIURNALPERIODCTRL(id, func) EVT_COMMAND(id, wxEVT_DIURNALPERIODCTRL_CHANGE, func)
@@ -53,7 +51,6 @@ public:
 	
 	virtual wxSize DoGetBestSize() const;
 
-	void AutosizeHeaders();
 private:
 
 
@@ -89,8 +86,9 @@ private:
 	wxArrayString m_rowLabels;
 	wxArrayString m_colLabels;
 	bool m_colLabelsVertical;
-	bool m_autosizeHeaders;
 	int m_min, m_max;
+
+	void UpdateLayout();
 
 	DECLARE_EVENT_TABLE()
 };

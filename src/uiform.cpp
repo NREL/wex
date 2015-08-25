@@ -249,7 +249,7 @@ public:
 			dc.DrawText( items[i], geom.x+3, y );
 			y += dc.GetCharHeight() + 2;
 		}
-		dc.SetBrush( wxBrush(wxColour(235,235,235) ) );
+		dc.SetBrush( wxBrush(wxColour(235,235,235) ) );		
 		dc.DrawRectangle( geom.x+geom.width-10, geom.y+1, 9, geom.height-2 );
 	}
 	virtual void OnNativeEvent()

@@ -1,14 +1,15 @@
+#include <algorithm>
 
 #include <wx/clipbrd.h>
 #include <wx/dcbuffer.h>
 #include <wx/dcclient.h>
 #include <wx/tokenzr.h>
 
-
 #ifdef __WXMSW__
 #include <wx/msw/private.h>
 #endif
 
+#include "wex/utils.h"
 #include "wex/diurnal.h"
 
 
@@ -43,8 +44,6 @@ wxDiurnalPeriodCtrl::wxDiurnalPeriodCtrl(wxWindow *parent, int id, const wxPoint
 	SetBackgroundColour(*wxWHITE);
 	SetBackgroundStyle(wxBG_STYLE_CUSTOM);
 
-	m_colLabelsVertical = true;
-	m_autosizeHeaders = true;
 	m_mouseDown = false;
 	m_rowHeaderSize = 30;
 	m_colHeaderSize = 21;
@@ -164,40 +163,6 @@ void wxDiurnalPeriodCtrl::ClearColLabels()
 	m_colLabels.Clear();
 }
 
-
-void wxDiurnalPeriodCtrl::AutosizeHeaders()
-{
-	if (!m_autosizeHeaders) return;
-
-	wxClientDC dc(this);
-	dc.SetFont(SCHED_FONT);
-
-
-	int r, c;
-	int rows = m_nrows;
-	int cols = m_ncols;
-	int s;
-	m_rowHeaderSize = 0;
-	for (r = 0; r<rows&&r<(int)m_rowLabels.Count(); r++)
-	{
-		dc.GetTextExtent(m_rowLabels[r], &s, NULL);
-		if (s > m_rowHeaderSize)
-			m_rowHeaderSize = s;
-	}
-
-	m_colHeaderSize = 0;
-	for (c = 0; c<cols&&c<(int)m_colLabels.Count(); c++)
-	{
-		int textW, textH;
-		dc.GetTextExtent(m_colLabels[c], &textW, &textH);
-		if ((s = m_colLabelsVertical ? textW : textH) > m_colHeaderSize)
-			m_colHeaderSize = s;
-	}
-
-	m_rowHeaderSize += 6;
-	m_colHeaderSize += 4;
-}
-
 void wxDiurnalPeriodCtrl::OnErase(wxEraseEvent &)
 {
 	/* nothing to do */
@@ -239,7 +204,7 @@ void wxDiurnalPeriodCtrl::OnPaint(wxPaintEvent &)
 			int val = VALUE(r,c);
 			if (val >= 1 && val - 1 < (int)m_colours.size() || sel)
 			{
-				dc.SetBrush(wxBrush(sel ? *wxBLUE : m_colours[val - 1]));
+				dc.SetBrush(wxBrush(sel ? wxColour( 0, 114, 198 ) : m_colours[val - 1]));
 				dc.DrawRectangle(geom.x + x, geom.y + y, m_cellSize, m_cellSize);
 			}
 
@@ -255,10 +220,9 @@ void wxDiurnalPeriodCtrl::OnPaint(wxPaintEvent &)
 		}
 	}
 
-
-	dc.SetPen(wxPen(wxColour(120, 120, 120)));
-	dc.SetTextForeground(wxColour(120, 120, 120));
-
+	dc.SetPen( *wxWHITE_PEN );
+	dc.SetTextForeground(wxColour(160, 160, 160));
+	
 	for (r = 0; r <= rows; r++)
 	{
 		dc.DrawLine(geom.x, geom.y + m_colHeaderSize + r*m_cellSize,
@@ -278,18 +242,8 @@ void wxDiurnalPeriodCtrl::OnPaint(wxPaintEvent &)
 
 		if (c < (int)m_colLabels.Count() && c < cols)
 		{
-			if (m_colLabelsVertical)
-			{
-				int xoff = m_cellSize / 2 - dc.GetCharHeight() / 2;
-				dc.DrawRotatedText(m_colLabels[c], geom.x + m_rowHeaderSize + c*m_cellSize + xoff, geom.y + m_colHeaderSize - 2, 90);
-			}
-			else
-			{
-				int textW;
-				dc.GetTextExtent(m_colLabels[c], &textW, NULL);
-				int xoff = m_cellSize / 2 - textW / 2;
-				dc.DrawText(m_colLabels[c], geom.x + m_rowHeaderSize + c*m_cellSize + xoff, geom.y + 2);
-			}
+			int xoff = m_cellSize / 2 - dc.GetCharHeight() / 2;
+			dc.DrawRotatedText(m_colLabels[c], geom.x + m_rowHeaderSize + c*m_cellSize + xoff, geom.y + m_colHeaderSize - 2, 90);
 		}
 	}
 
@@ -299,11 +253,43 @@ void wxDiurnalPeriodCtrl::OnResize(wxSizeEvent &)
 {
 	Refresh();
 }
+void wxDiurnalPeriodCtrl::UpdateLayout()
+{	
+	wxClientDC dc( const_cast<wxDiurnalPeriodCtrl*>(this) );
+	dc.SetFont( SCHED_FONT );
+	
+	int r, c;
+	int rows = m_nrows;
+	int cols = m_ncols;
+
+	m_rowHeaderSize = 0;
+	for (r = 0; r<rows&&r<(int)m_rowLabels.Count(); r++)
+	{
+		wxSize tsz( dc.GetTextExtent(m_rowLabels[r]));
+		if (tsz.x > m_rowHeaderSize)
+			m_rowHeaderSize = tsz.x;
+	}
+
+	m_colHeaderSize = 0;
+	for (c = 0; c<cols&&c<(int)m_colLabels.Count(); c++)
+	{
+		wxSize tsz( dc.GetTextExtent(m_colLabels[c]));
+		if ( tsz.x > m_colHeaderSize )
+			m_colHeaderSize = tsz.x;
+	}
+	
+	double xScale, yScale;
+	wxDevicePPIToScale( dc.GetPPI(), &xScale, &yScale );
+
+	wxSize csz( dc.GetTextExtent( "12" ) );	
+	m_cellSize = (int)( std::max( (csz.x+1)*xScale, (csz.y+1)*yScale ) );
+	m_rowHeaderSize += (int)(4*yScale);
+	m_colHeaderSize += (int)(4*xScale);
+}
 
 wxSize wxDiurnalPeriodCtrl::DoGetBestSize() const
 {
-	const_cast<wxDiurnalPeriodCtrl*>(this)->AutosizeHeaders();
-
+	const_cast<wxDiurnalPeriodCtrl*>(this)->UpdateLayout();	
 	return wxSize(m_rowHeaderSize + m_ncols*m_cellSize,
 		m_colHeaderSize + m_nrows*m_cellSize);
 }
@@ -638,19 +624,18 @@ void wxDiurnalPeriodCtrl::SetupTOUGrid()
 	SetMinMax(1, 9, true);
 
 	m_colours.clear();
-	AddColour("AQUAMARINE");
-	AddColour("CADET BLUE");
-	AddColour("SIENNA");
-	AddColour("SEA GREEN");
-	AddColour("GOLDENROD");
-	AddColour("FIREBRICK");
-	AddColour("DARK GREEN");
-	AddColour("ORCHID");
-	AddColour("ORANGE RED");
-	AddColour("SKY BLUE");
-	AddColour("TAN");
-	AddColour("YELLOW");
-	AddColour("VIOLET");
+	AddColour( wxColour( 143, 226, 170 ) );
+	AddColour( wxColour( 128, 179, 179 ) );
+	AddColour( wxColour( 196, 148, 49 ) );
+	AddColour( wxColour( 44, 175, 133 ) );
+	AddColour( wxColour( 219, 219, 112 ) );
+	AddColour( wxColour( 206, 57, 57 ) );
+	AddColour( wxColour( 94, 136, 81 ) );
+	AddColour( wxColour( 225, 136, 225 ) );
+	AddColour( wxColour( 255, 60, 157 ) );
+	AddColour( wxColour( 86, 172, 214 ) );
+	AddColour( wxColour( 226, 169, 141 ) );
+	AddColour( wxColour( 254, 235, 97 ) );
 
 	m_rowLabels.clear();
 	AddRowLabel("Jan");
@@ -692,6 +677,6 @@ void wxDiurnalPeriodCtrl::SetupTOUGrid()
 	AddColLabel("10pm");
 	AddColLabel("11pm");
 
-	AutosizeHeaders();
+	UpdateLayout();
 	InvalidateBestSize();
 }
