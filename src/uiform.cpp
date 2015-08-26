@@ -733,35 +733,6 @@ public:
 	}
 };
 
-class wxUITOUScheduleObject : public wxUIObject
-{
-public:
-	wxUITOUScheduleObject() {
-		AddProperty( "TabOrder", new wxUIProperty( -1 ) );
-		Property("Width").Set( 514 );
-		Property("Height").Set( 272 );
-	}
-	virtual wxString GetTypeName() { return "TOUSchedule"; }
-	virtual wxUIObject *Duplicate() { wxUIObject *o = new wxUITOUScheduleObject; o->Copy( this ); return o; }
-	virtual bool IsNativeObject() { return true; }
-	virtual bool DrawDottedOutline() { return false; }
-	virtual wxWindow *CreateNative( wxWindow *parent ) {
-		wxDiurnalPeriodCtrl *sc = new wxDiurnalPeriodCtrl( parent, wxID_ANY );
-		sc->SetupTOUGrid();
-		return AssignNative( sc );
-	}	
-	virtual void Draw( wxWindow *win, wxDC &dc, const wxRect &geom )
-	{
-		dc.SetPen( *wxBLACK_PEN );
-		dc.SetBrush(  *wxLIGHT_GREY_BRUSH );
-		dc.DrawRectangle( geom );
-		dc.SetFont(*wxNORMAL_FONT);
-		dc.SetTextForeground(*wxBLUE);
-		dc.DrawText( "Time of use schedule", geom.x + 2, geom.y + 2 );
-	}
-};
-
-
 class wxUIDiurnalPeriodObject : public wxUIObject
 {
 public:
@@ -1765,7 +1736,6 @@ void wxUIObjectTypeProvider::RegisterBuiltinTypes()
 	wxUIObjectTypeProvider::Register( new wxUISliderObject );
 	wxUIObjectTypeProvider::Register( new wxUIHyperlinkObject );
 	wxUIObjectTypeProvider::Register( new wxUIDiurnalPeriodObject );
-	wxUIObjectTypeProvider::Register( new wxUITOUScheduleObject );
 }
 
 wxUIFormData::wxUIFormData()
