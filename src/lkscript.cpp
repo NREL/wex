@@ -30,7 +30,7 @@
 enum { BAR, HBAR, LINE, SCATTER, WINDROSE };
 static void CreatePlot( wxPLPlotCtrl *plot, double *x, double *y, int len, int thick, wxColour &col, int type,
 	const wxString &xlab, const wxString &ylab, const wxString &series,
-	int xap, int yap, double base_x, const wxString &stackon, const wxString &lnsty )
+	int xap, int yap, double base_x, const wxString &stackon, const wxString &lnsty, const wxString &marker )
 {
 	if (len <= 0 ) return;
 		
@@ -41,6 +41,7 @@ static void CreatePlot( wxPLPlotCtrl *plot, double *x, double *y, int len, int t
 
 	wxPLPlottable *p = 0;
 	wxPLLinePlot::Style sty = wxPLLinePlot::SOLID;
+	wxPLLinePlot::Marker mkr = wxPLLinePlot::NONE;
 
 	switch (type )
 	{
@@ -67,11 +68,15 @@ static void CreatePlot( wxPLPlotCtrl *plot, double *x, double *y, int len, int t
 	}
 		break;
 	case LINE:
-		if ( lnsty == "dotted" || lnsty == "dot" )
-			sty = wxPLLinePlot::DOTTED;
-		else if ( lnsty == "dashed" || lnsty == "dash" )
-			sty = wxPLLinePlot::DASHED;
-		p = new wxPLLinePlot( data, series, col, sty, thick, false );
+		if ( lnsty == "dotted" || lnsty == "dot" ) sty = wxPLLinePlot::DOTTED;
+		else if ( lnsty == "dashed" || lnsty == "dash" ) sty = wxPLLinePlot::DASHED;
+		
+		if ( marker == "circle" ) mkr = wxPLLinePlot::CIRCLE;
+		else if ( marker == "square" ) mkr = wxPLLinePlot::SQUARE;
+		else if ( marker == "diamond" ) mkr = wxPLLinePlot::DIAMOND;
+		else if ( marker == "hourglass" ) mkr = wxPLLinePlot::HOURGLASS;
+
+		p = new wxPLLinePlot( data, series, col, sty, thick, mkr );
 		break;
 	case SCATTER:
 		p = new wxPLScatterPlot( data, series, col, thick, false );
@@ -214,6 +219,7 @@ void fcall_plot( lk::invoke_t &cxt )
 		wxString xlab = "x";
 		wxString ylab = "y";
 		wxString lnsty("solid");
+		wxString marker("none");
 		wxString series = wxEmptyString;
 		int xap = wxPLPlotCtrl::X_BOTTOM;
 		int yap = wxPLPlotCtrl::Y_LEFT;
@@ -284,6 +290,9 @@ void fcall_plot( lk::invoke_t &cxt )
 
 			if ( lk::vardata_t *arg = t.lookup("style"))
 				lnsty = arg->as_string().Lower();
+
+			if ( lk::vardata_t *arg = t.lookup("marker"))
+				marker = arg->as_string().Lower();
 		}
 		
 		int len = cxt.arg(0).length();
@@ -296,7 +305,7 @@ void fcall_plot( lk::invoke_t &cxt )
 			y[i] = a1.index(i)->as_number();
 		}
 
-		CreatePlot( plot, x, y, len, thick, col, type, xlab, ylab, series, xap, yap, base_x, stackon, lnsty );
+		CreatePlot( plot, x, y, len, thick, col, type, xlab, ylab, series, xap, yap, base_x, stackon, lnsty, marker );
 
 		delete [] x;
 		delete [] y;

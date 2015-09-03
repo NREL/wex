@@ -7,6 +7,7 @@ class wxPLLinePlot : public wxPLPlottable
 {
 public:
 	enum Style { SOLID, DOTTED, DASHED };
+	enum Marker { NONE, CIRCLE, SQUARE, DIAMOND, HOURGLASS };
 
 	wxPLLinePlot();
 	wxPLLinePlot( const std::vector<wxRealPoint> &data, 
@@ -14,7 +15,7 @@ public:
 		const wxColour &col = *wxBLUE,
 		Style sty = SOLID,
 		int thick = 2,
-		bool scale = false );
+		Marker mkr = NONE );
 	virtual ~wxPLLinePlot();
 
 
@@ -27,8 +28,9 @@ public:
 	void SetIgnoreZeros(bool value = true);
 
 	void SetColour( const wxColour &col ) { m_colour = col; }
-	void SetThickness( int thick, bool scale = false ) { m_thickness = thick; m_scaleThickness = scale; }
+	void SetThickness( int thick ) { m_thickness = thick; }
 	void SetStyle( Style ss ) { m_style = ss; }
+	void SetMarker( Marker mm ) { m_marker = mm; }
 	void SetData( const std::vector<wxRealPoint> &data ) { m_data = data; }
 
 protected:
@@ -36,8 +38,10 @@ protected:
 	wxColour m_colour;
 	int m_thickness;
 	Style m_style;
-	bool m_scaleThickness;
+	Marker m_marker;
 	std::vector< wxRealPoint > m_data;
+
+	void DrawMarkers( wxDC &dc, std::vector<wxPoint> &points, int size );
 
 private:	
 	bool m_ignoreZeros;

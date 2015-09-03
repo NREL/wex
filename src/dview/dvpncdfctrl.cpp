@@ -37,7 +37,7 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos
 	m_pdfPlot = new wxPLHistogramPlot();
 	m_cdfPlot = new wxPLLinePlot();
 	m_cdfPlot->SetColour( *wxBLACK );
-	m_cdfPlot->SetThickness( 2, false );
+	m_cdfPlot->SetThickness( 2 );
 	m_plotSurface->AddPlot( m_pdfPlot );
 	m_plotSurface->AddPlot( m_cdfPlot, wxPLPlotCtrl::X_BOTTOM, wxPLPlotCtrl::Y_RIGHT );
 	m_plotSurface->ShowTitle( false );

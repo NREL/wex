@@ -178,7 +178,7 @@ void TestPLPlot( wxWindow *parent )
 		wxPLPlotCtrl::Y_LEFT,
 		wxPLPlotCtrl::PLOT_TOP);
 		
-	wxPLLinePlot *lltan = new wxPLLinePlot( tangent_data, "\\beta\\dot tan(\\beta)", *wxBLUE, wxPLLinePlot::SOLID, 1, false );
+	wxPLLinePlot *lltan = new wxPLLinePlot( tangent_data, "\\beta\\dot tan(\\beta)", *wxBLUE, wxPLLinePlot::SOLID, 1, wxPLLinePlot::NONE );
 	lltan->SetAntiAliasing( true );
 	plot->AddPlot( lltan, 
 		wxPLPlotCtrl::X_BOTTOM, 
