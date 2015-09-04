@@ -2007,7 +2007,9 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 	// render grid lines
 	if ( m_showCoarseGrid )
 	{
-		dc.SetPen( wxPen( m_gridColour, 1, wxSOLID ) );
+		wxPen pen( m_gridColour, 1, wxPENSTYLE_SOLID );
+		pen.SetJoin( wxJOIN_MITER );
+		dc.SetPen( pen );
 		if (cartesion_plot)
 			DrawGrid( dc, wxPLAxis::TickData::LARGE );
 		else
@@ -2016,10 +2018,11 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 
 	if ( m_showFineGrid )
 	{
-		wxPen pen( m_gridColour, 1, wxDOT );
+		wxPen pen( m_gridColour, 1, wxPENSTYLE_DOT );
 		pen.SetCap( wxCAP_BUTT );
 		pen.SetJoin( wxJOIN_MITER );
 		dc.SetPen( pen );
+
 		if (cartesion_plot)
 			DrawGrid( dc, wxPLAxis::TickData::SMALL );
 		else
@@ -2052,6 +2055,8 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 	}
 
 	// draw some axes
+	wxPen axispen( m_axisColour, 1, wxPENSTYLE_SOLID );
+	axispen.SetJoin( wxJOIN_MITER );
 	dc.SetPen( m_axisColour );
 	dc.SetTextForeground(  m_tickTextColour );
 	
