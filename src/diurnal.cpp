@@ -61,6 +61,13 @@ wxDiurnalPeriodCtrl::~wxDiurnalPeriodCtrl()
 	/* nothing to do */
 }
 
+bool wxDiurnalPeriodCtrl::Enable(bool enable)
+{
+	bool ret_val = wxWindow::Enable(enable);
+	Refresh();
+	return ret_val;
+}
+
 void wxDiurnalPeriodCtrl::AddColour(const wxColour &c)
 {
 	m_colours.push_back(c);
@@ -204,7 +211,11 @@ void wxDiurnalPeriodCtrl::OnPaint(wxPaintEvent &)
 			int val = VALUE(r,c);
 			if (val >= 1 && val - 1 < (int)m_colours.size() || sel)
 			{
-				dc.SetBrush(wxBrush(sel ? wxColour( 0, 114, 198 ) : m_colours[val - 1]));
+				if (IsEnabled())
+					dc.SetBrush(wxBrush(sel ? wxColour(0, 114, 198) : m_colours[val - 1]));
+				else
+					dc.SetBrush(wxBrush(*wxLIGHT_GREY));
+
 				dc.DrawRectangle(geom.x + x, geom.y + y, m_cellSize, m_cellSize);
 			}
 

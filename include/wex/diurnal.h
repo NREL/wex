@@ -20,6 +20,8 @@ public:
 	wxDiurnalPeriodCtrl(wxWindow *parent, int id, const wxPoint &pos = wxDefaultPosition, const wxSize &sz = wxDefaultSize);
 	virtual ~wxDiurnalPeriodCtrl();
 
+	bool Enable(bool enable = true);
+
 	void SetupTOUGrid();
 	void SetupDefaultColours();
 
