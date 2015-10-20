@@ -1048,8 +1048,10 @@ double wxGetScreenHDScale()
 
 #if defined(__WXMSW__)
 #define DPI_NOMINAL 96.0
-#else
+#elif (__WXOSX__)
 #define DPI_NOMINAL 72.0
+#else
+#define DPI_NOMINAL 182.0
 #endif
 
 void wxDevicePPIToScale( const wxSize &ppi, double *xs, double *ys )
