@@ -5,17 +5,26 @@
 
 #include "wex/extgrid.h"
 
-wxExtGridCellAttrProvider::wxExtGridCellAttrProvider(bool highlight_r0c0, bool hide_00)
+wxExtGridCellAttrProvider::wxExtGridCellAttrProvider(bool highlight_r0, bool hide_00, bool highlight_c0)
 {
-    m_attrForOddRows = new wxGridCellAttr;
-    m_attrForOddRows->SetBackgroundColour(wxColour(240,240,240));
-	m_attrRow0Col0 = NULL;
-	if (highlight_r0c0)
+	m_attrForOddRows = new wxGridCellAttr;
+	m_attrForOddRows->SetBackgroundColour(wxColour(240, 240, 240));
+	m_attrRow0 = NULL;
+	if (highlight_r0)
 	{
-		m_attrRow0Col0 = new wxGridCellAttr;
-		m_attrRow0Col0->SetBackgroundColour(wxColour("SLATE BLUE"));
-		m_attrRow0Col0->SetTextColour(*wxWHITE);
-		m_attrRow0Col0->SetFont( *wxNORMAL_FONT );
+		m_attrRow0 = new wxGridCellAttr;
+		m_attrRow0->SetBackgroundColour(wxColour("SLATE BLUE"));
+		m_attrRow0->SetTextColour(*wxWHITE);
+		m_attrRow0->SetFont(*wxNORMAL_FONT);
+	}
+
+	m_attrCol0 = NULL;
+	if (highlight_c0)
+	{
+		m_attrCol0 = new wxGridCellAttr;
+		m_attrCol0->SetBackgroundColour(wxColour("SLATE BLUE"));
+		m_attrCol0->SetTextColour(*wxWHITE);
+		m_attrCol0->SetFont(*wxNORMAL_FONT);
 	}
 
 	m_attrCell00 = NULL;
@@ -25,15 +34,18 @@ wxExtGridCellAttrProvider::wxExtGridCellAttrProvider(bool highlight_r0c0, bool h
 		m_attrCell00->SetBackgroundColour(wxColour("SLATE BLUE"));
 		m_attrCell00->SetTextColour(wxColour("SLATE BLUE"));
 	}
+
 }
 
 wxExtGridCellAttrProvider::~wxExtGridCellAttrProvider()
 {
     m_attrForOddRows->DecRef();
-	if (m_attrRow0Col0)
-		m_attrRow0Col0->DecRef();
+	if (m_attrRow0)
+		m_attrRow0->DecRef();
 	if (m_attrCell00)
 		m_attrCell00->DecRef();
+	if (m_attrCol0)
+		m_attrCol0->DecRef();
 }
 
 wxGridCellAttr *wxExtGridCellAttrProvider::GetAttr(int row, int col,
@@ -64,11 +76,11 @@ wxGridCellAttr *wxExtGridCellAttrProvider::GetAttr(int row, int col,
     }
 
 
-	if ( m_attrRow0Col0 && (row==0||col==0) )
-    {
+	if (m_attrRow0 && row == 0 )
+		{
         if ( !attr )
         {
-            attr = m_attrRow0Col0;
+            attr = m_attrRow0;
             attr->IncRef();
         }
         else
@@ -86,6 +98,29 @@ wxGridCellAttr *wxExtGridCellAttrProvider::GetAttr(int row, int col,
 
 		return attr;
     }
+
+	if (m_attrCol0 && col == 0 )
+	{
+		if (!attr)
+		{
+			attr = m_attrCol0;
+			attr->IncRef();
+		}
+		else
+		{
+			if (!attr->HasBackgroundColour())
+			{
+				wxGridCellAttr *attrNew = attr->Clone();
+				attr->DecRef();
+				attr = attrNew;
+				attr->SetBackgroundColour(wxColour("SLATE BLUE"));
+				attr->SetTextColour(*wxWHITE);
+				attr->SetFont(*wxNORMAL_FONT);
+			}
+		}
+
+		return attr;
+	}
 
     if ( row % 2 )
     {

@@ -6,7 +6,7 @@
 class wxExtGridCellAttrProvider : public wxGridCellAttrProvider
 {
 public:
-    wxExtGridCellAttrProvider(bool highlight_r0c0=false, bool hide_00=false);
+    wxExtGridCellAttrProvider(bool highlight_r0=false, bool hide_00=false, bool highlight_c0=false);
     virtual ~wxExtGridCellAttrProvider();
 
     virtual wxGridCellAttr *GetAttr(int row, int col,
@@ -14,7 +14,8 @@ public:
 
 private:
     wxGridCellAttr *m_attrForOddRows;
-	wxGridCellAttr *m_attrRow0Col0;
+	wxGridCellAttr *m_attrRow0;
+	wxGridCellAttr *m_attrCol0;
 	wxGridCellAttr *m_attrCell00;
 };
 
