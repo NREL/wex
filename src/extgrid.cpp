@@ -13,26 +13,38 @@ wxExtGridCellAttrProvider::wxExtGridCellAttrProvider(bool highlight_r0, bool hid
 	if (highlight_r0)
 	{
 		m_attrRow0 = new wxGridCellAttr;
-		m_attrRow0->SetBackgroundColour(wxColour("SLATE BLUE"));
-		m_attrRow0->SetTextColour(*wxWHITE);
-		m_attrRow0->SetFont(*wxNORMAL_FONT);
+//		m_attrRow0->SetBackgroundColour(wxColour("SLATE BLUE"));
+//		m_attrRow0->SetTextColour(*wxWHITE);
+//		m_attrRow0->SetFont(*wxNORMAL_FONT);
+		m_attrRow0->SetBackgroundColour(wxColour(240, 240, 240));
+		m_attrRow0->SetTextColour(*wxBLACK);
+		wxFont f = wxFont(*wxNORMAL_FONT);
+		f.MakeBold();
+		m_attrRow0->SetFont(f);
 	}
 
 	m_attrCol0 = NULL;
 	if (highlight_c0)
 	{
 		m_attrCol0 = new wxGridCellAttr;
-		m_attrCol0->SetBackgroundColour(wxColour("SLATE BLUE"));
-		m_attrCol0->SetTextColour(*wxWHITE);
-		m_attrCol0->SetFont(*wxNORMAL_FONT);
+//		m_attrCol0->SetBackgroundColour(wxColour("SLATE BLUE"));
+//		m_attrCol0->SetTextColour(*wxWHITE);
+//		m_attrCol0->SetFont(*wxNORMAL_FONT);
+		m_attrCol0->SetBackgroundColour(wxColour(240, 240, 240));
+		m_attrCol0->SetTextColour(*wxBLACK);
+		wxFont f = wxFont(*wxNORMAL_FONT);
+		f.MakeBold();
+		m_attrCol0->SetFont(f);
 	}
 
 	m_attrCell00 = NULL;
 	if (hide_00)
 	{
 		m_attrCell00 = new wxGridCellAttr;
-		m_attrCell00->SetBackgroundColour(wxColour("SLATE BLUE"));
-		m_attrCell00->SetTextColour(wxColour("SLATE BLUE"));
+//		m_attrCell00->SetBackgroundColour(wxColour("SLATE BLUE"));
+//		m_attrCell00->SetTextColour(wxColour("SLATE BLUE"));
+		m_attrCell00->SetBackgroundColour(wxColour(240, 240, 240));
+		m_attrCell00->SetTextColour(wxColour(240, 240, 240));
 	}
 
 }
@@ -67,9 +79,11 @@ wxGridCellAttr *wxExtGridCellAttrProvider::GetAttr(int row, int col,
                 wxGridCellAttr *attrNew = attr->Clone();
                 attr->DecRef();
                 attr = attrNew;
-				attr->SetBackgroundColour(wxColour("SLATE BLUE"));
-				attr->SetTextColour(wxColour("SLATE BLUE"));
-            }
+				//				attr->SetBackgroundColour(wxColour("SLATE BLUE"));
+				//				attr->SetTextColour(wxColour("SLATE BLUE"));
+				attr->SetBackgroundColour(wxColour(240, 240, 240));
+				attr->SetTextColour(wxColour(240, 240, 240));
+			}
         }
 
 		return attr;
@@ -90,9 +104,14 @@ wxGridCellAttr *wxExtGridCellAttrProvider::GetAttr(int row, int col,
                 wxGridCellAttr *attrNew = attr->Clone();
                 attr->DecRef();
                 attr = attrNew;
-				attr->SetBackgroundColour(wxColour("SLATE BLUE"));
-				attr->SetTextColour(*wxWHITE);
-				attr->SetFont( *wxNORMAL_FONT );
+				//attr->SetBackgroundColour(wxColour("SLATE BLUE"));
+				//attr->SetTextColour(*wxWHITE);
+				//attr->SetFont( *wxNORMAL_FONT );
+				attr->SetBackgroundColour(wxColour(240, 240, 240));
+				attr->SetTextColour(*wxBLACK);
+				wxFont f = wxFont(*wxNORMAL_FONT);
+				f.MakeBold();
+				attr->SetFont(f);
             }
         }
 
@@ -113,9 +132,14 @@ wxGridCellAttr *wxExtGridCellAttrProvider::GetAttr(int row, int col,
 				wxGridCellAttr *attrNew = attr->Clone();
 				attr->DecRef();
 				attr = attrNew;
-				attr->SetBackgroundColour(wxColour("SLATE BLUE"));
-				attr->SetTextColour(*wxWHITE);
-				attr->SetFont(*wxNORMAL_FONT);
+				//attr->SetBackgroundColour(wxColour("SLATE BLUE"));
+				//attr->SetTextColour(*wxWHITE);
+				//attr->SetFont(*wxNORMAL_FONT);
+				attr->SetBackgroundColour(wxColour(240, 240, 240));
+				attr->SetTextColour(*wxBLACK);
+				wxFont f = wxFont(*wxNORMAL_FONT);
+				f.MakeBold();
+				attr->SetFont(f);
 			}
 		}
 
