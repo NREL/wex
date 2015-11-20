@@ -252,8 +252,9 @@ void wxPLHBarPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 						
 		prct.y = map.ToDevice( 0, pt.y ).y - bar_width/2;
 		prct.height = bar_width;
-
-		dc.DrawRectangle(prct.x, prct.y, prct.width, prct.height);
+		prct.width = abs(pleft - pright);
+		if ( prct.width > 0 && prct.height > 0 )
+			dc.DrawRectangle(prct.x, prct.y, prct.width, prct.height);
 	}
 	
 	dc.SetPen(*wxBLACK_PEN);
