@@ -999,6 +999,7 @@ void wxPLPlotCtrl::axis_data::invalidate()
 
 DEFINE_EVENT_TYPE( wxEVT_PLOT_LEGEND )
 DEFINE_EVENT_TYPE( wxEVT_PLOT_HIGHLIGHT )
+DEFINE_EVENT_TYPE( wxEVT_PLOT_ZOOM )
 DEFINE_EVENT_TYPE( wxEVT_PLOT_DRAGGING )
 DEFINE_EVENT_TYPE( wxEVT_PLOT_DRAG_START )
 DEFINE_EVENT_TYPE( wxEVT_PLOT_DRAG_END )
@@ -2576,6 +2577,10 @@ void wxPLPlotCtrl::OnLeftDClick( wxMouseEvent &evt )
 		RescaleAxes();
 		Invalidate();
 		Refresh();
+		
+		wxCommandEvent e( wxEVT_PLOT_ZOOM, GetId() );
+		e.SetEventObject( this );
+		GetEventHandler()->ProcessEvent( e );
 	}
 	else
 		evt.Skip();
@@ -2710,6 +2715,10 @@ void wxPLPlotCtrl::OnLeftUp( wxMouseEvent &evt )
 
 				Invalidate();
 				Refresh();
+				
+				wxCommandEvent e( wxEVT_PLOT_ZOOM, GetId() );
+				e.SetEventObject( this );
+				GetEventHandler()->ProcessEvent( e );
 			}
 		}
 	}

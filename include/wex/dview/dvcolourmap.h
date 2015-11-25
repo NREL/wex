@@ -22,7 +22,8 @@ public:
 	virtual void SetScaleMax(double max);
 	virtual double GetScaleMin();
 	virtual double GetScaleMax();
-	void ExtendScaleToNiceNumbers(bool useFineScale = false);
+	void ExtendScaleToNiceNumbers();
+	void SetFormat( const wxString &fmt ) { m_format = fmt; }
 
 	//If true, + dir.  If false, - dir.
 	void ExtendToNiceInPosDir(double* d, bool posDir, bool useFineScale = false);
@@ -34,6 +35,7 @@ public:
 	virtual void Render(wxDC& dc, const wxRect& geom);
 	
 protected:
+	wxString m_format;
 	double m_min;
 	double m_max;
 	std::vector<wxColour> m_colourList;

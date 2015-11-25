@@ -7,6 +7,7 @@ wxDVColourMap::wxDVColourMap(double min, double max)
 {
 	m_min = min;
 	m_max = max;
+	m_format = "%lg";
 }
 
 wxDVColourMap::~wxDVColourMap()
@@ -43,7 +44,7 @@ double wxDVColourMap::GetScaleMax()
 	return m_max;
 }
 
-void wxDVColourMap::ExtendScaleToNiceNumbers(bool useFineScale)
+void wxDVColourMap::ExtendScaleToNiceNumbers()
 {
 	wxDVPlotHelper::ExtendBoundsToNiceNumber(&m_max, &m_min);
 }
@@ -59,7 +60,7 @@ wxSize wxDVColourMap::CalculateBestSize()
 	wxCoord maxWidth = 0, temp;
 	for (int i=0; i<11; i++)
 	{
-		dc.GetTextExtent( wxString::Format("%lg", m_min + i*step), &temp, NULL);
+		dc.GetTextExtent( wxString::Format( wxFormatString(m_format), m_min + i*step), &temp, NULL);
 		if (temp > maxWidth)
 			maxWidth = temp;
 	}
@@ -98,7 +99,7 @@ void wxDVColourMap::Render(wxDC &dc, const wxRect &geom)
 	double range = m_max - m_min;
 	double step = range / 10;
 	for (size_t i=0; i<11; i++)
-		dc.DrawText( wxString::Format("%lg", m_min + i*step), xTextPos, geom.y+wxCoord((10-i)*yTextStep) );	
+		dc.DrawText( wxString::Format( wxFormatString(m_format), m_min + i*step), xTextPos, geom.y+wxCoord((10-i)*yTextStep) );	
 }
 
 wxColour wxDVColourMap::ColourForValue(double val)
