@@ -168,8 +168,13 @@ public:
 	void SetIncludeLegendOnExport( bool b ) { m_includeLegendOnExport = b; }
 	wxRealPoint GetLegendLocation() { return m_legendPosPercent; }
 
-	void SetAllowHighlighting( bool highlighting ) { m_allowHighlighting = highlighting; }
-	void GetHighlightBounds( double *left, double *right );
+	enum HighlightMode { HIGHLIGHT_DISABLE, 
+		HIGHLIGHT_RECT, 
+		HIGHLIGHT_ZOOM,
+		HIGHLIGHT_SPAN };
+
+	void SetHighlightMode( HighlightMode highlighting ) { m_highlighting = highlighting; }
+	void GetHighlightBounds( double *left, double *right, double *top=0, double *bottom=0 );
 
 	wxMenu &GetContextMenu() { return m_contextMenu; }
 
@@ -204,6 +209,7 @@ protected:
 	void OnSize( wxSizeEvent & );
 	void OnLeftDown( wxMouseEvent & );
 	void OnLeftUp( wxMouseEvent & );
+	void OnLeftDClick( wxMouseEvent & );
 	void OnRightDown( wxMouseEvent & );
 	void OnMotion( wxMouseEvent & );
 	void OnMouseCaptureLost( wxMouseCaptureLostEvent & );
@@ -237,13 +243,16 @@ private:
 	wxPoint m_currentPoint;
 	wxMenu m_contextMenu;
 	bool m_highlightMode;
+
 #ifdef PL_USE_OVERLAY
 	wxOverlay m_overlay;
 #endif
 	bool m_highlightErase;
 	double m_highlightLeftPercent;
 	double m_highlightRightPercent;
-	bool m_allowHighlighting;
+	double m_highlightTopPercent;
+	double m_highlightBottomPercent;
+	HighlightMode m_highlighting;
 	std::vector< wxRect > m_plotRects;
 
 	wxPLSideWidgetBase *m_sideWidgets[4];

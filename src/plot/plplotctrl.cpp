@@ -1015,6 +1015,7 @@ BEGIN_EVENT_TABLE( wxPLPlotCtrl, wxWindow )
 	EVT_SIZE( wxPLPlotCtrl::OnSize )
 	EVT_LEFT_DOWN( wxPLPlotCtrl::OnLeftDown )
 	EVT_LEFT_UP( wxPLPlotCtrl::OnLeftUp )
+	EVT_LEFT_DCLICK( wxPLPlotCtrl::OnLeftDClick )
 	EVT_RIGHT_DOWN( wxPLPlotCtrl::OnRightDown )
 	EVT_MOTION( wxPLPlotCtrl::OnMotion )	
 	EVT_MOUSE_CAPTURE_LOST( wxPLPlotCtrl::OnMouseCaptureLost )
@@ -1056,7 +1057,9 @@ wxPLPlotCtrl::wxPLPlotCtrl(wxWindow *parent, int id, const wxPoint &pos, const w
 	m_highlightErase = false;
 	m_highlightLeftPercent = 0.0;
 	m_highlightRightPercent = 0.0;
-	m_allowHighlighting = false;
+	m_highlightTopPercent = 0.0;
+	m_highlightBottomPercent = 0.0;
+	m_highlighting = HIGHLIGHT_DISABLE;
 	
 	m_contextMenu.Append( ID_COPY_DATA_CLIP, "Copy data to clipboard" );
 	m_contextMenu.Append( ID_SAVE_DATA_CSV, "Save data to CSV..." );
@@ -1270,10 +1273,12 @@ bool wxPLPlotCtrl::SetLegendLocation( const wxString &spos )
 	return false;
 }
 
-void wxPLPlotCtrl::GetHighlightBounds( double *left, double *right )
+void wxPLPlotCtrl::GetHighlightBounds( double *left, double *right, double *top, double *bottom )
 {
 	*left = m_highlightLeftPercent;
 	*right = m_highlightRightPercent;
+	if (top) *top = m_highlightTopPercent;
+	if (bottom) *bottom = m_highlightBottomPercent;
 }
 
 void wxPLPlotCtrl::SetSideWidget( wxPLSideWidgetBase *sw, AxisPos pos )
@@ -2513,46 +2518,67 @@ void wxPLPlotCtrl::UpdateHighlightRegion()
 
 	wxCoord highlight_x = m_currentPoint.x < m_anchorPoint.x ? m_currentPoint.x : m_anchorPoint.x;
 	wxCoord highlight_width = abs( m_currentPoint.x - m_anchorPoint.x );
-
-	const wxCoord arrow_size = 10;
 	
-	for ( std::vector<wxRect>::const_iterator it = m_plotRects.begin();
-		it != m_plotRects.end();
-		++it )
+	wxCoord highlight_y = m_currentPoint.y < m_anchorPoint.y ? m_currentPoint.y : m_anchorPoint.y;
+	wxCoord highlight_height = abs( m_currentPoint.y - m_anchorPoint.y );
+
+	int irect = 0;
+	
+	if ( m_highlighting == HIGHLIGHT_SPAN )
 	{
-		if ( highlight_x < it->x )
+		for ( std::vector<wxRect>::const_iterator it = m_plotRects.begin();
+			it != m_plotRects.end();
+			++it )
 		{
-			highlight_width -= it->x - highlight_x;
-			highlight_x = it->x;
+			if ( highlight_x < it->x )
+			{
+				highlight_width -= it->x - highlight_x;
+				highlight_x = it->x;
+			}
+			else
+			{
+				if ( highlight_x + highlight_width > it->x + it->width )
+					highlight_width -= highlight_x + highlight_width - it->x - it->width;
+			}
+		
+			dc.DrawRectangle( wxRect( highlight_x, it->y, highlight_width, it->height) );
 		}
-		else
+	}
+	else
+	{
+		// rectangular (RECT or ZOOM) highlight on current plot
+		for ( std::vector<wxRect>::const_iterator it = m_plotRects.begin();
+			it != m_plotRects.end();
+			++it )
 		{
-			if ( highlight_x + highlight_width > it->x + it->width )
-				highlight_width -= highlight_x + highlight_width - it->x - it->width;
+			if ( it->Contains( wxPoint(highlight_x, highlight_y) ) )
+			{
+				irect = it-m_plotRects.begin();
+
+				wxRect hrct( highlight_x, highlight_y, highlight_width, highlight_height );
+				dc.DrawRectangle( hrct );
+				break;
+			}
 		}
-		
-		dc.DrawRectangle( wxRect( highlight_x, it->y, highlight_width, it->height) );
-/*
-		dc.DrawLine( highlight_x, it->y, highlight_x, it->y+it->height );
-		dc.DrawLine( highlight_x+highlight_width, it->y, highlight_x+highlight_width, it->y+it->height );
-		dc.DrawLine( highlight_x, it->y+it->height/2, highlight_x+highlight_width, it->y+it->height/2 );
-		wxPoint al[3];
-		al[0] = wxPoint( highlight_x, it->y+it->height/2 );
-		al[1] = wxPoint( highlight_x+arrow_size, it->y+it->height/2-arrow_size/2 );
-		al[2] = wxPoint( highlight_x+arrow_size, it->y+it->height/2+arrow_size/2 );
-		dc.DrawPolygon( 3, al );
-		
-		wxPoint ar[3];
-		ar[0] = wxPoint( highlight_x+highlight_width, it->y+it->height/2 );
-		ar[1] = wxPoint( highlight_x+highlight_width-arrow_size, it->y+it->height/2-arrow_size/2 );
-		ar[2] = wxPoint( highlight_x+highlight_width-arrow_size, it->y+it->height/2+arrow_size/2 );
-		dc.DrawPolygon( 3, ar );
-*/
+
 	}
 
 	m_highlightLeftPercent = 100.0*( ((double)(highlight_x - m_plotRects[0].x)) / ( (double)m_plotRects[0].width ) );
 	m_highlightRightPercent = 100.0*( ((double)(highlight_x + highlight_width - m_plotRects[0].x )) / ((double)m_plotRects[0].width ) );
+	m_highlightTopPercent = 100.0*( ((double)(highlight_y - m_plotRects[irect].y)) / ( (double) m_plotRects[irect].height) );
+	m_highlightBottomPercent = 100.0*( ((double)(highlight_y + highlight_height - m_plotRects[irect].y)) / ( (double) m_plotRects[irect].height) );
+}
 
+void wxPLPlotCtrl::OnLeftDClick( wxMouseEvent &evt )
+{
+	if ( m_highlighting == HIGHLIGHT_ZOOM )
+	{
+		RescaleAxes();
+		Invalidate();
+		Refresh();
+	}
+	else
+		evt.Skip();
 }
 
 void wxPLPlotCtrl::OnLeftDown( wxMouseEvent &evt )
@@ -2565,7 +2591,7 @@ void wxPLPlotCtrl::OnLeftDown( wxMouseEvent &evt )
 		m_anchorPoint = evt.GetPosition();		
 		CaptureMouse();
 	}
-	else if ( m_allowHighlighting )
+	else if ( m_highlighting != HIGHLIGHT_DISABLE )
 	{
 		std::vector<wxRect>::const_iterator it;
 		for ( it = m_plotRects.begin();
@@ -2640,7 +2666,7 @@ void wxPLPlotCtrl::OnLeftUp( wxMouseEvent &evt )
 		e.SetEventObject( this );
 		GetEventHandler()->ProcessEvent( e );
 	}
-	else if ( m_allowHighlighting && m_highlightMode )
+	else if ( m_highlighting != HIGHLIGHT_DISABLE && m_highlightMode )
 	{
 #ifdef PL_USE_OVERLAY		
 		wxClientDC dc( this );
@@ -2654,12 +2680,37 @@ void wxPLPlotCtrl::OnLeftUp( wxMouseEvent &evt )
 
 		m_highlightMode = false;
 
-		wxCoord diff = abs( ClientToScreen(evt.GetPosition()).x - ClientToScreen(m_anchorPoint).x );
-		if ( diff > 10 )
+		wxCoord diffx = abs( ClientToScreen(evt.GetPosition()).x - ClientToScreen(m_anchorPoint).x );
+		wxCoord diffy = abs( ClientToScreen(evt.GetPosition()).y - ClientToScreen(m_anchorPoint).y );
+		if ( (m_highlighting==HIGHLIGHT_SPAN && diffx > 10)
+			|| m_highlighting==HIGHLIGHT_RECT && diffx > 1 && diffy > 1 )
 		{
 			wxCommandEvent e( wxEVT_PLOT_HIGHLIGHT, GetId() );
 			e.SetEventObject( this );
 			GetEventHandler()->ProcessEvent( e );
+		}
+		else if ( m_highlighting==HIGHLIGHT_ZOOM  && diffx > 1 && diffy > 1 )
+		{
+			wxPLAxis *ax = GetXAxis1();
+			if ( !ax ) ax = GetXAxis2();
+			wxPLAxis *ay = GetYAxis1();
+			if ( !ay ) ay = GetYAxis2();
+
+			if (ax && ay)
+			{
+				double left, right, top, bottom;
+				GetHighlightBounds( &left, &right, &top, &bottom );
+
+				double min, max;
+				ax->GetWorld( &min, &max );
+				ax->SetWorld( min+(max-min)*0.01*left, min+(max-min)*0.01*right );
+
+				ay->GetWorld( &min, &max );
+				ay->SetWorld( max-(max-min)*0.01*bottom, max-(max-min)*0.01*top );
+
+				Invalidate();
+				Refresh();
+			}
 		}
 	}
 }

@@ -478,7 +478,7 @@ void TestPLPlot( wxWindow *parent )
 	wxLog::SetActiveTarget(log);
 	log->Show();
 		
-	plot->SetAllowHighlighting( true );
+	plot->SetHighlightMode( wxPLPlotCtrl::HIGHLIGHT_SPAN );
 				
 	frame->Show();
 }

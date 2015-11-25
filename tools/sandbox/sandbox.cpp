@@ -150,7 +150,7 @@ void TestPLPlot( wxWindow *parent )
 
 	plot->ShowGrid( true, true );
 		
-	plot->SetXAxis1( new wxPLLogAxis( 0.01, 100, "\\nu  (m^3/kg)" ) );		
+//  plot->SetXAxis1( new wxPLLogAxis( 0.01, 100, "\\nu  (m^3/kg)" ) );		
 //	plot->SetXAxis1( new wxPLTimeAxis( 4, 200 ) );
 
 	std::vector< wxRealPoint > sine_data;
@@ -213,7 +213,7 @@ void TestPLPlot( wxWindow *parent )
 	wxLog::SetActiveTarget(log);
 	log->Show();
 		
-	plot->SetAllowHighlighting( true );
+	plot->SetHighlightMode( wxPLPlotCtrl::HIGHLIGHT_ZOOM );
 				
 	frame->Show();
 }
@@ -512,8 +512,8 @@ public:
 		
 		wxInitAllImageHandlers();
 
-		TestFormDesigner();
-		return true;
+		//TestFormDesigner();
+		//return true;
 
 		//wxMessageBox(wxString::Format("Can handle gzip? %d", wxZlibInputStream::CanHandleGZip() ? 1 : 0 ) );
 		
@@ -533,9 +533,9 @@ public:
 		//frame->Show();
 		
 
-		//TestPLPlot( 0 );
+		TestPLPlot( 0 );
 
-		TestSnapLayout( 0 );
+		//TestSnapLayout( 0 );
 		return true;
 
 		//TestDVSelectionCtrl();
