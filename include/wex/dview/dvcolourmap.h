@@ -53,6 +53,13 @@ public:
 	virtual wxString GetName();
 };
 
+class wxDVJetColourMap : public wxDVColourMap
+{
+public:
+	wxDVJetColourMap( double min=0, double max=1 );
+	virtual wxString GetName();
+};
+
 class wxDVGrayscaleColourMap : public wxDVColourMap
 {
 public:
