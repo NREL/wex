@@ -436,7 +436,6 @@ void ScriptWindow::OnCommand( wxCommandEvent &evt )
 	case ID_FUNCTIONS:
 		m_script->ShowHelpDialog();
 		break;
-
 	};
 }
 

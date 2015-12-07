@@ -8,6 +8,7 @@
 
 #include <lk_absyn.h>
 #include <lk_env.h>
+#include <lk_vm.h>
 
 #include "wex/codeedit.h"
 
@@ -40,9 +41,11 @@ void wxLKSetToplevelParent( wxWindow *parent );
 void wxLKSetPlotTarget( wxPLPlotCtrl *plot );
 wxPLPlotCtrl *wxLKGetPlotTarget();
 
+class wxLKDebugger;
 class wxLKScriptCtrl : public wxCodeEditCtrl
 {
 public:
+
 	wxLKScriptCtrl( wxWindow *parent, int id = wxID_ANY,
 		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize,
 		unsigned long libs = wxLK_STDLIB_ALL );
@@ -64,8 +67,12 @@ public:
 	bool IsStopFlagSet();
 	void Stop();
 	bool Execute( const wxString &run_dir = wxEmptyString, wxWindow *toplevel = 0 );
-	
+	bool CompileAndLoad();
 	void UpdateInfo();
+
+	bool StartDebugging();
+	enum { DEBUG_RUN, DEBUG_STEP };
+	bool Debug(int mode);
 
 	lk::env_t *GetEnvironment() { return m_env; }
 	wxWindow *GetTopLevelWindowForScript() { return m_topLevelWindow; }
@@ -90,10 +97,20 @@ private:
 
 	std::vector<libdata> m_libs;
 	lk::env_t *m_env;
-	lk::node_t *m_tree;
+
+	class my_vm : public lk::vm
+	{
+		wxLKScriptCtrl *m_lcs;
+	public:
+		my_vm( wxLKScriptCtrl *lcs );
+		virtual bool on_run( const lk::srcpos_t &sp );
+	};
+	my_vm m_vm;
+	
 	bool m_scriptRunning;
 	bool m_stopScriptFlag;
 	wxWindow *m_topLevelWindow;
+	wxLKDebugger *m_debugger;
 
 	DECLARE_EVENT_TABLE();
 };

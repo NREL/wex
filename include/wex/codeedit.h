@@ -46,6 +46,8 @@ public:
 	bool HasBreakpoint( int line );
 	void ClearBreakpoints();
 	std::vector<int> GetBreakpoints();
+	int NumBreakpoints();
+	int GetNextBreakpointAfter( int line );
 
 	void ShowLineArrow( int line );
 	void HideLineArrow();
@@ -79,9 +81,10 @@ protected:
 	static const int m_markCircle = 0;
 	static const int m_markArrow = 1;
 	static const int m_markLeftBox = 2;
+
 	static const int m_lineNumMarginId = 0;
-	static const int m_syntaxCheckMarginId = 1;
-	static const int m_breakpointMarginId = 2;
+	static const int m_breakpointMarginId = 1;
+	static const int m_syntaxCheckMarginId = 2;
 	static const int m_foldingMarginId = 3;
 
 private:	

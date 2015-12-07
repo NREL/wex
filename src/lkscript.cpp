@@ -3,6 +3,7 @@
 #include <wx/html/htmlwin.h>
 #include <wx/htmllbox.h>
 #include <wx/fontenum.h>
+#include <memory>
 
 #include "wex/lkscript.h" // defines LK_USE_WXWIDGETS
 #include "wex/mtrand.h"
@@ -17,6 +18,8 @@
 #include <lk_stdlib.h>
 #include <lk_invoke.h>
 //#include <lk_math.h>
+#include <lk_vm.h>
+#include <lk_codegen.h>
 #include <lk_env.h>
 #include <lk_parse.h>
 
@@ -869,6 +872,82 @@ lk::fcall_t* wxLKStdOutFunctions()
 		
 	return (lk::fcall_t*)vec;
 }
+class wxLKDebugger : public wxFrame
+{
+	wxTextCtrl *m_view;
+	wxLKScriptCtrl *m_lcs;
+	lk::vm *m_vm;
+public:
+	enum { ID_CONTINUE = wxID_HIGHEST+391, ID_STEP };
+
+	wxLKDebugger( wxLKScriptCtrl *lcs, lk::vm *vm )
+		: wxFrame( lcs, wxID_ANY, "Debugger", wxDefaultPosition, wxSize( 400, 290 ), 
+			wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN | wxRESIZE_BORDER | wxFRAME_TOOL_WINDOW | wxFRAME_FLOAT_ON_PARENT ), m_lcs(lcs), m_vm(vm)
+	{
+		wxPanel *panel = new wxPanel( this );
+		panel->SetBackgroundColour( wxMetroTheme::Colour( wxMT_FOREGROUND ) );
+
+		wxBoxSizer *button_sizer = new wxBoxSizer( wxHORIZONTAL );
+		button_sizer->Add( new wxMetroButton( panel, ID_CONTINUE, "Continue" ), 0, wxALL|wxEXPAND, 0 );
+		button_sizer->Add( new wxMetroButton( panel, ID_STEP, "Step line" ), 0, wxALL|wxEXPAND, 0 );
+		button_sizer->AddStretchSpacer();
+		
+		m_view = new wxTextCtrl( panel, wxID_ANY, "ready", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY|wxTE_DONTWRAP|wxBORDER_NONE );
+		wxBoxSizer *main_sizer = new wxBoxSizer( wxVERTICAL );
+		main_sizer->Add( button_sizer, 0, wxALL|wxEXPAND, 0 );
+		main_sizer->Add( m_view, 1, wxALL|wxEXPAND, 0 );
+		panel->SetSizer( main_sizer );	
+	}
+
+	void UpdateView()
+	{
+		wxString sout;
+		size_t nfrm = 0;
+		lk::vm::frame **frames = m_vm->get_frames( &nfrm );
+		for( size_t i=0;i<nfrm;i++ )
+		{
+			lk::vm::frame &F = *frames[nfrm-i-1];
+			if ( nfrm-i-1 == 0 ) sout += "script:\n";
+			else sout += "local:\n";
+			lk_string key;
+			lk::vardata_t *val;
+			bool has_more = F.env.first( key, val );
+			while( has_more )
+			{
+				sout += "    " + key + "  =  " + val->as_string() + "\n";
+				has_more = F.env.next( key, val );
+			}
+		}
+		m_view->ChangeValue( sout );
+	}
+
+	void OnCommand( wxCommandEvent &evt )
+	{
+		switch( evt.GetId() )
+		{
+		case ID_CONTINUE:
+			m_lcs->Debug( wxLKScriptCtrl::DEBUG_RUN );
+			break;
+		case ID_STEP:
+			m_lcs->Debug( wxLKScriptCtrl::DEBUG_STEP );
+			break;
+		}
+	}
+
+	void OnClose( wxCloseEvent &evt )
+	{
+		Hide();
+		evt.Veto();
+	}
+
+	DECLARE_EVENT_TABLE();
+};
+
+BEGIN_EVENT_TABLE( wxLKDebugger, wxFrame )
+	EVT_BUTTON( wxLKDebugger::ID_CONTINUE, wxLKDebugger::OnCommand )
+	EVT_BUTTON( wxLKDebugger::ID_STEP, wxLKDebugger::OnCommand )
+	EVT_CLOSE( wxLKDebugger::OnClose )
+END_EVENT_TABLE()
 
 
 
@@ -882,11 +961,12 @@ END_EVENT_TABLE()
 
 wxLKScriptCtrl::wxLKScriptCtrl( wxWindow *parent, int id,
 	const wxPoint &pos, const wxSize &size, unsigned long libs )
-	: wxCodeEditCtrl( parent, id, pos, size ),
+	: wxCodeEditCtrl( parent, id, pos, size ), m_vm(this),
 		m_timer( this, IDT_TIMER )
 {
+	m_debugger = new wxLKDebugger( this, &m_vm );
+	m_debugger->Hide();
 	m_syntaxCheck = true;
-	m_tree = 0;
 	m_env = new lk::env_t;	
 	m_scriptRunning = false;
 	m_stopScriptFlag = false;
@@ -909,18 +989,18 @@ wxLKScriptCtrl::wxLKScriptCtrl( wxWindow *parent, int id,
 	StyleSetForeground( 512, *wxBLACK );
 	StyleSetBackground( 512, wxColour(255,187,187) );
 
-	MarkerDefine( m_markLeftBox, wxSTC_MARK_LEFTRECT );
 	MarkerSetBackground( m_markLeftBox, *wxRED );
 	SetMarginWidth( m_syntaxCheckMarginId, 5 );
 	SetMarginSensitive( m_syntaxCheckMarginId, true );
 	SetMarginType( m_syntaxCheckMarginId, wxSTC_MARGIN_SYMBOL );
-	
+
+	ShowBreakpoints( true );
+		
 	m_topLevelWindow = 0;
 }
 
 wxLKScriptCtrl::~wxLKScriptCtrl()
 {
-	if ( m_tree ) delete m_tree;
 	delete m_env;
 }
 
@@ -1231,11 +1311,11 @@ void wxLKScriptCtrl::OnTimer( wxTimerEvent & )
 	lk::input_string p( input );
 	lk::parser parse( p );
 	lk::node_t *tree = parse.script();	
-	if (tree) delete tree;	
 	
 	if ( parse.error_count() == 0 
 		&& parse.token() == lk::lexer::END)
 	{
+		if ( tree ) delete tree;
 		AnnotationClearAll();
 		return;
 	}
@@ -1287,23 +1367,107 @@ void wxLKScriptCtrl::Stop()
 	m_stopScriptFlag = true;
 }
 
-
-class my_eval : public lk::eval
+wxLKScriptCtrl::my_vm::my_vm( wxLKScriptCtrl *lcs ) 
+	: lk::vm(), m_lcs(lcs)
 {
-	wxLKScriptCtrl *m_lcs;
-public:
-	my_eval( lk::node_t *tree, lk::env_t *env, wxLKScriptCtrl *lcs ) 
-		: lk::eval( tree, env ), m_lcs(lcs)
+}
+
+bool wxLKScriptCtrl::my_vm::on_run( const lk::srcpos_t &sp )
+{
+	return true;
+
+	//if ( !m_lcs->OnEval( sp.line ) ) return false;
+	//return !m_lcs->IsStopFlagSet();
+}
+
+bool wxLKScriptCtrl::CompileAndLoad()
+{
+	lk::input_string p( GetText() );
+	lk::parser parse( p );	
+	std::auto_ptr<lk::node_t> tree( parse.script() );
+			
+	int i=0;
+	while ( i < parse.error_count() )
+		OnOutput( parse.error(i++) );
+	
+	if ( parse.token() != lk::lexer::END)
+		OnOutput("Parsing did not reach end of input.\n");
+
+	if ( parse.error_count() > 0 )
+		return false;	
+
+	m_env->clear_vars();
+	m_env->clear_objs();
+
+	lk::code_gen cg;
+	if ( cg.emitasm( tree.get() ) )
 	{
+		std::vector<unsigned int> code;
+		std::vector<lk::vardata_t> data;
+		std::vector<lk_string> id;
+		std::vector<lk::srcpos_t> dbg;		
+
+		cg.bytecode( code, data, id, dbg );
+		m_vm.load( code, data, id, dbg );
+		m_vm.initialize( m_env );
+		return true;
+	}
+	else
+	{
+		OnOutput("Error in code generation: " + cg.error() );
+		return false;
+	}
+}
+
+bool wxLKScriptCtrl::StartDebugging()
+{
+	if ( !CompileAndLoad() )
+		return false;
+	
+	return Debug( DEBUG_RUN );
+}
+
+
+bool wxLKScriptCtrl::Debug(int mode )
+{
+	m_debugger->Show();
+	
+	if ( mode == DEBUG_RUN )
+	{
+		// update all breakpoint markers in vm
+		m_vm.clrbrk();
+		std::vector<int> brk( GetBreakpoints() );
+		for( size_t i=0;i<brk.size();i++ )
+			m_vm.setbrk( brk[i] + 1 );
 	}
 
-	virtual bool on_run( int line )
+	HideLineArrow();
+	if ( !m_vm.run( mode == DEBUG_RUN ? lk::vm::DEBUG_RUN : lk::vm::DEBUG_STEP ) )
 	{
-		if ( !m_lcs->OnEval( line ) ) return false;
-
-		return !m_lcs->IsStopFlagSet();
+		OnOutput("Error in VM: " + m_vm.error() );
+		return false;
 	}
-};
+	
+	size_t ip = m_vm.get_ip();
+	const std::vector<lk::srcpos_t> &dbg = m_vm.get_debuginfo();
+	if ( ip < (int)dbg.size() )
+	{
+		m_debugger->UpdateView();
+		ShowLineArrow( dbg[ip].line-1 );
+		
+		int line = dbg[ip].line;
+		if ( line > 0 && line <= GetNumberOfLines() )
+		{
+			int ifirst = GetFirstVisibleLine();
+			int nnl = LinesOnScreen();
+			int ln_to_scroll = line - nnl/2 - 1;
+
+			ScrollToLine( ln_to_scroll );
+		}
+	}
+
+	return true;
+}
 
 
 bool wxLKScriptCtrl::Execute( const wxString &run_dir,
@@ -1314,10 +1478,10 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 		wxMessageBox("A script is already running.");
 		return false;
 	}
-		
-	m_env->clear_objs();
-	m_env->clear_vars();
 
+	if ( NumBreakpoints() > 0 )
+		return StartDebugging();
+	
 	m_scriptRunning = true;
 	m_stopScriptFlag = false;
 	m_topLevelWindow = toplevel;
@@ -1336,59 +1500,17 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 			fclose(fp);
 		}
 	}
-
-	lk::input_string p( script );
-	lk::parser parse( p );
 	
-	if ( m_tree != 0 ) delete m_tree;
-	m_tree = parse.script();
-				
+	bool success = true;
 	wxYield();
-	bool success = false;
+	if ( !CompileAndLoad() )
+		success = false;
 
-	if ( parse.error_count() != 0 
-		|| parse.token() != lk::lexer::END)
-	{
-		OnOutput("Parsing did not reach end of input.\n");
-	}
-	else
-	{
-		m_env->clear_vars();
-		m_env->clear_objs();
+	wxStopWatch sw;
+	if ( success ) success = m_vm.run( lk::vm::DEBUG_RUN );
 
-		wxStopWatch sw;
-		my_eval e( m_tree, m_env, this );
-
-		if ( e.run() )
-		{
-			double time = sw.Time();
-			OnOutput(wxString::Format("Elapsed time: %.1lf seconds.\n", 0.001*time));
-
-			/*
-			lk_string key;
-			lk::vardata_t *value;
-			bool has_more = env.first( key, value );
-			while( has_more )
-			{
-				applog("env{%s}=%s\n", key, value->as_string().c_str());
-				has_more = env.next( key, value );
-			}
-			*/
-
-			success = true;
-		}
-		else
-		{
-			OnOutput("Script did not finish.\n");
-			for (size_t i=0;i<e.error_count();i++)
-				OnOutput( e.get_error(i) + "\n");
-
-		}
-	}
-			
-	int i=0;
-	while ( i < parse.error_count() )
-		OnOutput( parse.error(i++) );
+	if ( success ) OnOutput(wxString::Format("Elapsed time: %.1lf seconds.\n", 0.001*sw.Time()));
+	else OnOutput("Script execution error: " + m_vm.error() );
 			
 	m_env->clear_objs();
 

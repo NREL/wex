@@ -365,6 +365,12 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
 	// breakpoint margin	
 	MarkerDefine( m_markCircle, wxSTC_MARK_CIRCLE );
 	MarkerDefine( m_markArrow, wxSTC_MARK_SHORTARROW );
+	MarkerSetBackground( m_markArrow, wxColour("forest green") );
+	MarkerDefine( m_markLeftBox, wxSTC_MARK_LEFTRECT );
+
+	SetMarginMask( m_breakpointMarginId, (1<<m_markCircle)|(1<<m_markArrow) );
+	SetMarginMask( m_syntaxCheckMarginId, (1<<m_markLeftBox) );
+
 	SetMarginType( m_breakpointMarginId, wxSTC_MARGIN_SYMBOL );
 	SetMarginWidth( m_breakpointMarginId, 0 );
 	SetMarginSensitive( m_breakpointMarginId, false );
@@ -696,7 +702,7 @@ void wxCodeEditCtrl::HideLineArrow()
 
 void wxCodeEditCtrl::ShowBreakpoints( bool show )
 {
-	SetMarginWidth( m_breakpointMarginId, show ? 12 : 0 );
+	SetMarginWidth( m_breakpointMarginId, show ? 15 : 0 );
 	SetMarginSensitive( m_breakpointMarginId, show );
 }
 
@@ -742,6 +748,22 @@ void wxCodeEditCtrl::ClearBreakpoints()
 std::vector<int> wxCodeEditCtrl::GetBreakpoints()
 {
 	return m_breakPoints;
+}
+
+int wxCodeEditCtrl::GetNextBreakpointAfter( int line )
+{
+	std::stable_sort( m_breakPoints.begin(), m_breakPoints.end() );
+	for( size_t i=0;i<m_breakPoints.size();i++ )
+	{
+		if ( m_breakPoints[i] > line )
+			return m_breakPoints[i];
+	}
+	return -1;
+}
+
+int wxCodeEditCtrl::NumBreakpoints()
+{
+	return (int) m_breakPoints.size();
 }
 
 void wxCodeEditCtrl::ShowFindReplaceDialog()
