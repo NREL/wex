@@ -1506,8 +1506,9 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 	if ( !CompileAndLoad() )
 		success = false;
 
+	m_vm.clrbrk();
 	wxStopWatch sw;
-	if ( success ) success = m_vm.run( lk::vm::DEBUG_RUN );
+	if ( success ) success = m_vm.run( lk::vm::NORMAL );
 
 	if ( success ) OnOutput(wxString::Format("Elapsed time: %.1lf seconds.\n", 0.001*sw.Time()));
 	else OnOutput("Script execution error: " + m_vm.error() );
