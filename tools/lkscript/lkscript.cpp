@@ -132,12 +132,6 @@ public:
 		// register SAM-specific invoke functions here
 	}
 	
-	virtual bool OnEval( int /*line*/ )
-	{
-		wxSafeYield( 0, true );
-		return true;
-	}
-
 	virtual void OnOutput( const wxString &out )
 	{
 		m_scriptwin->AddOutput( out );

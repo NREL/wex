@@ -878,7 +878,7 @@ class wxLKDebugger : public wxFrame
 	wxLKScriptCtrl *m_lcs;
 	lk::vm *m_vm;
 public:
-	enum { ID_CONTINUE = wxID_HIGHEST+391, ID_STEP };
+	enum { ID_CONTINUE = wxID_HIGHEST+391, ID_STEP, ID_HALT };
 
 	wxLKDebugger( wxLKScriptCtrl *lcs, lk::vm *vm )
 		: wxFrame( lcs, wxID_ANY, "Debugger", wxDefaultPosition, wxSize( 400, 290 ), 
@@ -891,6 +891,7 @@ public:
 		button_sizer->Add( new wxMetroButton( panel, ID_CONTINUE, "Continue" ), 0, wxALL|wxEXPAND, 0 );
 		button_sizer->Add( new wxMetroButton( panel, ID_STEP, "Step line" ), 0, wxALL|wxEXPAND, 0 );
 		button_sizer->AddStretchSpacer();
+		button_sizer->Add( new wxMetroButton( panel, ID_HALT, "Halt" ), 0, wxALL|wxEXPAND, 0 );
 		
 		m_view = new wxTextCtrl( panel, wxID_ANY, "ready", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY|wxTE_DONTWRAP|wxBORDER_NONE );
 		wxBoxSizer *main_sizer = new wxBoxSizer( wxVERTICAL );
@@ -931,6 +932,9 @@ public:
 		case ID_STEP:
 			m_lcs->Debug( wxLKScriptCtrl::DEBUG_STEP );
 			break;
+		case ID_HALT:
+			m_lcs->Stop();
+			break;
 		}
 	}
 
@@ -946,6 +950,7 @@ public:
 BEGIN_EVENT_TABLE( wxLKDebugger, wxFrame )
 	EVT_BUTTON( wxLKDebugger::ID_CONTINUE, wxLKDebugger::OnCommand )
 	EVT_BUTTON( wxLKDebugger::ID_STEP, wxLKDebugger::OnCommand )
+	EVT_BUTTON( wxLKDebugger::ID_HALT, wxLKDebugger::OnCommand )
 	EVT_CLOSE( wxLKDebugger::OnClose )
 END_EVENT_TABLE()
 
@@ -1006,6 +1011,7 @@ wxLKScriptCtrl::~wxLKScriptCtrl()
 
 bool wxLKScriptCtrl::OnEval( int /*line*/ )
 {
+	bool ok = m_stopScriptFlag;
 	return !IsStopFlagSet();
 }
 
@@ -1370,14 +1376,19 @@ void wxLKScriptCtrl::Stop()
 wxLKScriptCtrl::my_vm::my_vm( wxLKScriptCtrl *lcs ) 
 	: lk::vm(), m_lcs(lcs)
 {
+	m_counter = 0;
 }
 
 bool wxLKScriptCtrl::my_vm::on_run( const lk::srcpos_t &sp )
 {
-	return true;
-
-	//if ( !m_lcs->OnEval( sp.line ) ) return false;
-	//return !m_lcs->IsStopFlagSet();
+	// expression & (constant-1) is equivalent to expression % constant where 
+	// constant is a power of two: so use bitwise operator for better performance
+	// see https://en.wikipedia.org/wiki/Modulo_operation#Performance_issues 
+	if ( 0 == (m_counter++ & 1023) ) {
+		wxYield();
+		return m_lcs->OnEval( sp.line );
+	}
+	else return true;
 }
 
 bool wxLKScriptCtrl::CompileAndLoad()

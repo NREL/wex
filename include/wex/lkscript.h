@@ -101,6 +101,7 @@ private:
 	class my_vm : public lk::vm
 	{
 		wxLKScriptCtrl *m_lcs;
+		size_t m_counter;
 	public:
 		my_vm( wxLKScriptCtrl *lcs );
 		virtual bool on_run( const lk::srcpos_t &sp );
