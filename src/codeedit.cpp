@@ -364,10 +364,12 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
 
 	// breakpoint margin	
 	MarkerDefine( m_markCircle, wxSTC_MARK_CIRCLE );
-	MarkerSetBackground( m_markArrow, *wxRED );
+	MarkerSetBackground( m_markCircle, *wxRED );
+	MarkerSetForeground( m_markCircle, *wxRED );
 
 	MarkerDefine( m_markArrow, wxSTC_MARK_SHORTARROW );
 	MarkerSetBackground( m_markArrow, wxColour("forest green") );
+	MarkerSetForeground( m_markArrow, wxColour("forest green") );
 	MarkerDefine( m_markLeftBox, wxSTC_MARK_LEFTRECT );
 
 	SetMarginMask( m_breakpointMarginId, (1<<m_markCircle)|(1<<m_markArrow) );

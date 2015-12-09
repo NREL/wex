@@ -878,26 +878,32 @@ class wxLKDebugger : public wxFrame
 	wxLKScriptCtrl *m_lcs;
 	lk::vm *m_vm;
 public:
-	enum { ID_CONTINUE = wxID_HIGHEST+391, ID_STEP, ID_HALT };
+	enum { ID_RESUME = wxID_HIGHEST+391, ID_STEP, ID_BREAK };
 
 	wxLKDebugger( wxLKScriptCtrl *lcs, lk::vm *vm )
-		: wxFrame( lcs, wxID_ANY, "Debugger", wxDefaultPosition, wxSize( 400, 290 ), 
+		: wxFrame( lcs, wxID_ANY, "Debugger", wxDefaultPosition, wxSize( 450, 310 ), 
 			wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN | wxRESIZE_BORDER | wxFRAME_TOOL_WINDOW | wxFRAME_FLOAT_ON_PARENT ), m_lcs(lcs), m_vm(vm)
 	{
 		wxPanel *panel = new wxPanel( this );
 		panel->SetBackgroundColour( wxMetroTheme::Colour( wxMT_FOREGROUND ) );
 
 		wxBoxSizer *button_sizer = new wxBoxSizer( wxHORIZONTAL );
-		button_sizer->Add( new wxMetroButton( panel, ID_CONTINUE, "Continue" ), 0, wxALL|wxEXPAND, 0 );
-		button_sizer->Add( new wxMetroButton( panel, ID_STEP, "Step line" ), 0, wxALL|wxEXPAND, 0 );
+		button_sizer->Add( new wxMetroButton( panel, ID_STEP, "Step" ), 0, wxALL|wxEXPAND, 0 );
+		button_sizer->Add( new wxMetroButton( panel, ID_RESUME, "Resume" ), 0, wxALL|wxEXPAND, 0 );
+		button_sizer->Add( new wxMetroButton( panel, ID_BREAK, "Break" ), 0, wxALL|wxEXPAND, 0 );
 		button_sizer->AddStretchSpacer();
-		button_sizer->Add( new wxMetroButton( panel, ID_HALT, "Halt" ), 0, wxALL|wxEXPAND, 0 );
+		button_sizer->Add( new wxMetroButton( panel, wxID_CLOSE, "Close" ), 0, wxALL|wxEXPAND, 0 );
 		
 		m_view = new wxTextCtrl( panel, wxID_ANY, "ready", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY|wxTE_DONTWRAP|wxBORDER_NONE );
 		wxBoxSizer *main_sizer = new wxBoxSizer( wxVERTICAL );
 		main_sizer->Add( button_sizer, 0, wxALL|wxEXPAND, 0 );
 		main_sizer->Add( m_view, 1, wxALL|wxEXPAND, 0 );
 		panel->SetSizer( main_sizer );	
+	}
+
+	void ClearView()
+	{
+		m_view->ChangeValue("running...\n");
 	}
 
 	void UpdateView()
@@ -908,8 +914,11 @@ public:
 		for( size_t i=0;i<nfrm;i++ )
 		{
 			lk::vm::frame &F = *frames[nfrm-i-1];
-			if ( nfrm-i-1 == 0 ) sout += "script:\n";
-			else sout += "local:\n";
+			if ( i > 0 ) sout += "\n";
+
+			if ( i==nfrm-1 ) sout += "main:\n";
+			else sout += F.id + "():\n";
+
 			lk_string key;
 			lk::vardata_t *val;
 			bool has_more = F.env.first( key, val );
@@ -926,20 +935,24 @@ public:
 	{
 		switch( evt.GetId() )
 		{
-		case ID_CONTINUE:
+		case ID_RESUME:
 			m_lcs->Debug( wxLKScriptCtrl::DEBUG_RUN );
 			break;
 		case ID_STEP:
 			m_lcs->Debug( wxLKScriptCtrl::DEBUG_STEP );
 			break;
-		case ID_HALT:
+		case ID_BREAK:
 			m_lcs->Stop();
+			break;
+		case wxID_CLOSE:
+			Close();
 			break;
 		}
 	}
 
 	void OnClose( wxCloseEvent &evt )
 	{
+		// simply hide the debugger window, owned by the LK script control widget
 		Hide();
 		evt.Veto();
 	}
@@ -948,9 +961,10 @@ public:
 };
 
 BEGIN_EVENT_TABLE( wxLKDebugger, wxFrame )
-	EVT_BUTTON( wxLKDebugger::ID_CONTINUE, wxLKDebugger::OnCommand )
+	EVT_BUTTON( wxLKDebugger::ID_RESUME, wxLKDebugger::OnCommand )
 	EVT_BUTTON( wxLKDebugger::ID_STEP, wxLKDebugger::OnCommand )
-	EVT_BUTTON( wxLKDebugger::ID_HALT, wxLKDebugger::OnCommand )
+	EVT_BUTTON( wxLKDebugger::ID_BREAK, wxLKDebugger::OnCommand )
+	EVT_BUTTON( wxID_CLOSE, wxLKDebugger::OnCommand )
 	EVT_CLOSE( wxLKDebugger::OnClose )
 END_EVENT_TABLE()
 
@@ -1011,7 +1025,6 @@ wxLKScriptCtrl::~wxLKScriptCtrl()
 
 bool wxLKScriptCtrl::OnEval( int /*line*/ )
 {
-	bool ok = m_stopScriptFlag;
 	return !IsStopFlagSet();
 }
 
@@ -1453,11 +1466,14 @@ bool wxLKScriptCtrl::Debug(int mode )
 	}
 
 	HideLineArrow();
-	if ( !m_vm.run( mode == DEBUG_RUN ? lk::vm::DEBUG_RUN : lk::vm::DEBUG_STEP ) )
-	{
-		OnOutput("Error in VM: " + m_vm.error() );
-		return false;
-	}
+
+	m_debugger->ClearView();
+
+	m_stopScriptFlag = false;
+	bool ok  = m_vm.run( mode == DEBUG_RUN ? lk::vm::DEBUG_RUN : lk::vm::DEBUG_STEP );
+
+	if ( !ok )
+		OnOutput("*** stopped by user ***\n" );
 	
 	size_t ip = m_vm.get_ip();
 	const std::vector<lk::srcpos_t> &dbg = m_vm.get_debuginfo();
@@ -1477,7 +1493,7 @@ bool wxLKScriptCtrl::Debug(int mode )
 		}
 	}
 
-	return true;
+	return ok;
 }
 
 
@@ -1522,7 +1538,7 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 	if ( success ) success = m_vm.run( lk::vm::NORMAL );
 
 	if ( success ) OnOutput(wxString::Format("Elapsed time: %.1lf seconds.\n", 0.001*sw.Time()));
-	else OnOutput("Script execution error: " + m_vm.error() );
+	else OnOutput("Script error: " + m_vm.error() );
 			
 	m_env->clear_objs();
 
