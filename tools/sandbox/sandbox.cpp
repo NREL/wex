@@ -14,6 +14,7 @@
 #include "wex/icons/curve.cpng"
 #include "wex/icons/scatter.cpng"
 
+#include "wex/radiochoice.h"
 
 class PngTestApp : public wxApp
 {
@@ -528,6 +529,18 @@ public:
 		wxLogWindow *log = new wxLogWindow( 0 , "Log");
 		wxLog::SetActiveTarget(log);
 		log->Show();
+
+		wxFrame *frame2 = new wxFrame( 0, wxID_ANY, "radiochoice" );
+		wxRadioChoice *rad = new wxRadioChoice( frame2, wxID_ANY );
+		rad->SetHorizontal( true );
+		rad->Add("Choice 1 " );
+		rad->Add("Choice 2 ----- x ");
+		wxBoxSizer *sizer2 = new wxBoxSizer( wxHORIZONTAL );
+		sizer2->Add( rad, 1, wxALL|wxEXPAND, 10 );
+		frame2->SetSizerAndFit( sizer2 );
+		frame2->Show();
+		wxSize size2( rad->GetBestSize() );
+		wxMessageBox( wxString::Format("%d %d", size2.x, size2.y) );
 
 		//wxFrame *frame = new NumericTest();
 		//frame->Show();

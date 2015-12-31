@@ -7,6 +7,8 @@ BEGIN_EVENT_TABLE(wxRadioChoice, wxPanel)
 	EVT_SIZE( wxRadioChoice::OnResize )
 END_EVENT_TABLE()
 
+#define MIN_HEIGHT 21
+
 
 wxRadioChoice::wxRadioChoice( wxWindow *parent, int id, const wxPoint &pos, const wxSize &size)
 	: wxPanel( parent, id, pos, size, wxTAB_TRAVERSAL )
@@ -14,6 +16,7 @@ wxRadioChoice::wxRadioChoice( wxWindow *parent, int id, const wxPoint &pos, cons
 	SetBackgroundColour( parent->GetBackgroundColour() );
 	m_showCaptions = true;
 	m_horizontal = false;
+	m_evenly = false;
 }
 
 bool wxRadioChoice::Enable(bool b)
@@ -60,7 +63,7 @@ void wxRadioChoice::Add(const wxString &caption, bool arrange)
 	b->SetBackgroundColour( GetParent()->GetBackgroundColour() );
 	m_buttons.push_back(b);
 	m_captions.Add(caption);
-
+	
 	if (arrange)
 		Rearrange();
 }
@@ -101,6 +104,36 @@ void wxRadioChoice::Remove(int idx)
 void wxRadioChoice::Remove(const wxString &caption)
 {
 	Remove( Find(caption) );
+}
+
+wxSize wxRadioChoice::DoGetBestSize() const
+{
+	wxSize size( 0, 0 );
+	if ( m_horizontal )
+	{
+		for( size_t i=0;i<m_buttons.size();i++ )
+		{
+			m_buttons[i]->InvalidateBestSize();
+			wxSize s( m_buttons[i]->GetBestSize() );
+			if ( s.y < MIN_HEIGHT ) s.y = MIN_HEIGHT;
+			if ( s.y > size.y ) size.y = s.y;
+			size.x += s.x;
+		}
+	}
+	else
+	{
+		// vertical layout
+		for( size_t i=0;i<m_buttons.size();i++ )
+		{
+			m_buttons[i]->InvalidateBestSize();
+			wxSize s( m_buttons[i]->GetBestSize() );
+			if ( s.y < MIN_HEIGHT ) s.y = MIN_HEIGHT;
+			if( s.x > size.x ) size.x = s.x;
+			size.y += s.y;
+		}
+	}
+
+	return size;
 }
 
 void wxRadioChoice::Clear()
@@ -145,6 +178,8 @@ void wxRadioChoice::SetSelection(int id)
 
 void wxRadioChoice::Rearrange()
 {
+	InvalidateBestSize();
+
 	int c_width, c_height;
 
 	GetClientSize(&c_width, &c_height);
@@ -163,11 +198,15 @@ void wxRadioChoice::Rearrange()
 	}
 	else
 	{
-		int b_height = 21;
+		int b_height = MIN_HEIGHT;
 		if ( m_buttons.size() > 0 )
 		{
 			int best_height = m_buttons[0]->GetBestSize().GetHeight();
-			b_height = best_height > b_height ? best_height : b_height;
+			if ( best_height > MIN_HEIGHT )
+				b_height = best_height;
+
+			if ( m_evenly );
+				b_height = c_height / m_buttons.size();
 		}
 
 		int y = 0;
@@ -213,3 +252,10 @@ bool wxRadioChoice::IsHorizontal()
 {
 	return m_horizontal;
 }
+
+void wxRadioChoice::LayoutEvenly( bool b )
+{
+	m_evenly = b;
+	Rearrange();
+}
+

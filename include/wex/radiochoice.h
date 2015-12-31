@@ -11,6 +11,8 @@ public:
 	wxRadioChoice( wxWindow *parent, int id, 
 		const wxPoint &pos = wxDefaultPosition, 
 		const wxSize &size = wxDefaultSize);
+	
+	virtual wxSize DoGetBestSize() const;
 
 	void Add( const wxString &caption, bool arrange = true);
 	void Add( const wxArrayString &list);
@@ -37,12 +39,15 @@ public:
 	void SetHorizontal(bool b);
 	bool IsHorizontal();
 
+	void LayoutEvenly(bool b);
+
 private:
 	void OnRadio(wxCommandEvent &evt);
 	void OnResize(wxSizeEvent &evt);
 
 	bool m_showCaptions;
 	bool m_horizontal;
+	bool m_evenly;
 	wxArrayString m_captions;
 	std::vector<wxRadioButton*> m_buttons;
 	int m_selection;
