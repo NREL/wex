@@ -26,6 +26,9 @@ public:
 	void Enable(int idx, bool b=true);
 	bool IsEnabled(int idx);
 
+	void SetLabel( int idx, const wxString &lbl );
+	wxString GetLabel( int idx );
+
 	int GetSelection();
 	wxString GetValue();
 	void SetValue(const wxString &sel);

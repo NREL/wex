@@ -129,7 +129,7 @@ dd,"c""dprime","Cell 2,2",,,,bacd
 		wxString buf = txt.ReadLine();
 		size_t cur_col = 0;
 		wxString::iterator it = buf.begin();
-		while( it < buf.end() && *it != wxUniChar('\n') )
+		while( it < buf.end() && *it != wxUniChar('\n') && *it != wxUniChar('\r') )
 		{
 		//	csvcell *cell = new csvcell;
 		//	cell->r = max_row;
@@ -179,7 +179,7 @@ dd,"c""dprime","Cell 2,2",,,,bacd
 			{
 				// read a normal cell
 				wxUniChar prev = 0;
-				while ( it < buf.end() && *it != m_sep && *it != '\n' )
+				while ( it < buf.end() && *it != m_sep && *it != '\n' && *it != '\r' )
 				{
 					if ( *it == '"' && prev == '"' )
 					{
@@ -199,7 +199,7 @@ dd,"c""dprime","Cell 2,2",,,,bacd
 			// store the cell
 			Set( max_row, cur_col, text );
 
-			if ( it >= buf.end() || *it == m_sep || *it == '\n')
+			if ( it >= buf.end() || *it == m_sep || *it == '\n' || *it == '\r' )
 			{
 				if ( it < buf.end() ) ++it; // skip over the comma
 				cur_col++;

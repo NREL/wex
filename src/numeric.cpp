@@ -16,6 +16,7 @@ wxNumericCtrl::wxNumericCtrl( wxWindow *parent, int id,
 	: wxTextCtrl(parent, id, wxEmptyString, pos, size, 
 			wxTE_PROCESS_ENTER|wxTE_RIGHT)
 {
+	m_min = m_max = 0.0;
 	m_mode = m;
 	m_decimals = GENERIC;
 	m_thouSep = false;
@@ -172,10 +173,36 @@ void wxNumericCtrl::DoFormat()
 	ChangeValue( Format( m_value, m_mode, m_decimals, m_thouSep, m_preText, m_postText ) );
 }
 
+void wxNumericCtrl::SetRange( double min, double max )
+{
+	m_min = min;
+	m_max = max;
+	SetValue( m_value );
+}
+
 void wxNumericCtrl::SetValue( double val )
 {
-	if ( m_mode == INTEGER ) m_value = (int)val;
-	else m_value = val;
+	if ( m_mode == INTEGER )
+	{
+		m_value = (int)val;
+
+		if ( m_min != m_max )
+		{
+			if ( m_value < (int)m_min ) m_value = (int)m_min;
+			if ( m_value > (int)m_max ) m_value = (int)m_max;
+
+		}
+	}
+	else
+	{
+		m_value = val;
+		
+		if ( m_min != m_max )
+		{
+			if ( m_value < m_min ) m_value = m_min;
+			if ( m_value > m_max ) m_value = m_max;
+		}
+	}
 
 	DoFormat();
 }

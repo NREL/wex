@@ -3,6 +3,7 @@
 #include <wx/dcbuffer.h>
 #include <wx/tokenzr.h>
 
+#include "wex/csv.h"
 #include "wex/extgrid.h"
 
 wxExtGridCellAttrProvider::wxExtGridCellAttrProvider(bool highlight_r0, bool hide_00, bool highlight_c0)
@@ -383,7 +384,7 @@ void wxExtGridCtrl::Copy(bool all, bool with_headers)
 	}
 }
 
-void wxExtGridCtrl::Paste(bool all)
+void wxExtGridCtrl::Paste( bool all, bool resize )
 {
 	wxBusyCursor bcurs;
 	if (wxTheClipboard->Open())
@@ -401,15 +402,17 @@ void wxExtGridCtrl::Paste(bool all)
 		int curcol = GetCursorColumn();
 
 		if (all) currow = curcol = 0;
-#ifdef __WXMAC__
-		wxArrayString lines = wxStringTokenize(data, "\r", ::wxTOKEN_RET_EMPTY_ALL);
-#else
-		wxArrayString lines = wxStringTokenize(data, "\n", ::wxTOKEN_RET_EMPTY_ALL);
-#endif
-		for (int i=0;i<(int)lines.Count();i++)
+
+		wxCSVData csv;
+		csv.SetSeparator( wxUniChar( '\t' ) );
+		csv.ReadString( data );
+
+		if ( all && resize )
+			ResizeGrid( csv.NumRows(), csv.NumCols() );
+
+		for (size_t i=0;i<csv.NumRows();i++)
 		{
-			wxArrayString parts = wxStringTokenize(lines[i], "\t", ::wxTOKEN_RET_EMPTY_ALL);
-			for (int p=0;p<(int)parts.Count();p++)
+			for (size_t p=0;p<csv.NumCols();p++)
 			{
 				int r = currow + i;
 				int c = curcol + p;
@@ -417,9 +420,7 @@ void wxExtGridCtrl::Paste(bool all)
 				{
 					if (!IsReadOnly( r, c ))
 					{
-						parts[p].Replace("\r", "");
-						parts[p].Replace("\n", "");
-						SetCellValue( r, c, parts[p] );
+						SetCellValue( r, c, csv(i,p) );
 					}
 				}
 			}

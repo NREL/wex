@@ -259,3 +259,17 @@ void wxRadioChoice::LayoutEvenly( bool b )
 	Rearrange();
 }
 
+void wxRadioChoice::SetLabel( int idx, const wxString &lbl )
+{
+	if ( idx < (int) m_buttons.size() )
+	{
+		m_buttons[idx]->SetLabel( lbl );
+		InvalidateBestSize();
+	}
+}
+
+wxString wxRadioChoice::GetLabel( int idx )
+{
+	if ( idx < (int) m_buttons.size() ) return m_buttons[idx]->GetLabel();
+	else return wxEmptyString;
+}

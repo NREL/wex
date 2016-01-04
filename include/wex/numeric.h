@@ -30,6 +30,11 @@ public:
 	void SetMode( Mode m );
 	Mode GetMode() const { return m_mode; }
 
+	void SetRange( double min, double max );
+	void ClearRange() { m_min = m_max = 0; }
+	double GetMin() { return m_min; }
+	double GetMax() { return m_max; }
+
 	void SetFormat( int decimals = -1 /* generic format, like %lg */,
 		bool thousands_sep = false,
 		const wxString &pre = wxEmptyString,
@@ -56,6 +61,7 @@ private:
 	bool m_thouSep;
 	wxString m_preText;
 	wxString m_postText;
+	double m_min, m_max;
 
 	double m_value;
 	wxString m_focusStrVal;
