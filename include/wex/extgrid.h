@@ -34,7 +34,9 @@ public:
 	void ResetLastSelRange();
 
 	void Copy(bool all=false, bool with_headers=false);
-	void Paste(bool all=false, bool resize=false);
+
+	enum PasteMode { PASTE_CURSOR, PASTE_ALL, PASTE_ALL_RESIZE, PASTE_ALL_RESIZE_ROWS };
+	void Paste( PasteMode mode = PASTE_CURSOR );
 
 	void ResizeGrid(int nr, int nc);
 	

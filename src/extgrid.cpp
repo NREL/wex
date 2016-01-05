@@ -384,7 +384,7 @@ void wxExtGridCtrl::Copy(bool all, bool with_headers)
 	}
 }
 
-void wxExtGridCtrl::Paste( bool all, bool resize )
+void wxExtGridCtrl::Paste( PasteMode mode )
 {
 	wxBusyCursor bcurs;
 	if (wxTheClipboard->Open())
@@ -401,14 +401,18 @@ void wxExtGridCtrl::Paste( bool all, bool resize )
 		int currow = GetCursorRow();
 		int curcol = GetCursorColumn();
 
-		if (all) currow = curcol = 0;
+		if ( mode == PASTE_ALL
+			|| mode == PASTE_ALL_RESIZE
+			|| mode == PASTE_ALL_RESIZE_ROWS ) currow = curcol = 0;
 
 		wxCSVData csv;
 		csv.SetSeparator( wxUniChar( '\t' ) );
 		csv.ReadString( data );
 
-		if ( all && resize )
+		if ( mode == PASTE_ALL_RESIZE )
 			ResizeGrid( csv.NumRows(), csv.NumCols() );
+		else if ( mode == PASTE_ALL_RESIZE_ROWS )
+			ResizeGrid( csv.NumRows(), GetNumberCols() );
 
 		for (size_t i=0;i<csv.NumRows();i++)
 		{
