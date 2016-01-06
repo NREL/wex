@@ -2,6 +2,7 @@
 #include <wx/clipbrd.h>
 #include <wx/dcbuffer.h>
 #include <wx/tokenzr.h>
+#include <wx/busyinfo.h>
 
 #include "wex/csv.h"
 #include "wex/extgrid.h"
@@ -184,43 +185,43 @@ wxExtGridCtrl::wxExtGridCtrl(wxWindow *parent, int id,
 	const wxPoint &pos, const wxSize &sz)
 	: wxGrid(parent, id, pos, sz)
 {
-	bSendPasteEvent = true;
-	bCopyPaste = true;
-	bSkipSelect = false;
+	m_sendPasteEvent = true;
+	m_enableCopyPaste = true;
+	m_skipSelect = false;
 
-	mSelTopRow = mSelBottomRow = -1;
-	mSelLeftCol = mSelRightCol = -1;
+	m_selTopRow = m_selBottomRow = -1;
+	m_selLeftCol = m_selRightCol = -1;
 
-	mLastSelTopRow = -1;
-	mLastSelBottomRow = -1;
-	mLastSelLeftCol = -1;
-	mLastSelRightCol = -1;
+	m_lastSelTopRow = -1;
+	m_lastSelBottomRow = -1;
+	m_lastSelLeftCol = -1;
+	m_lastSelRightCol = -1;
 }
 
 void wxExtGridCtrl::EnablePasteEvent(bool b)
 {
-	bSendPasteEvent = b;
+	m_sendPasteEvent = b;
 }
 
 void wxExtGridCtrl::GetSelRange(int *top, int *bottom, int *left, int *right)
 {
-	if (top) *top = mSelTopRow;
-	if (bottom) *bottom = mSelBottomRow;
-	if (left) *left = mSelLeftCol;
-	if (right) *right = mSelRightCol;
+	if (top) *top = m_selTopRow;
+	if (bottom) *bottom = m_selBottomRow;
+	if (left) *left = m_selLeftCol;
+	if (right) *right = m_selRightCol;
 }
 
 void wxExtGridCtrl::GetLastSelRange(int *top, int *bottom, int *left, int *right)
 {
-	if (top) *top = mLastSelTopRow;
-	if (bottom) *bottom = mLastSelBottomRow;
-	if (left) *left = mLastSelLeftCol;
-	if (right) *right = mLastSelRightCol;
+	if (top) *top = m_lastSelTopRow;
+	if (bottom) *bottom = m_lastSelBottomRow;
+	if (left) *left = m_lastSelLeftCol;
+	if (right) *right = m_lastSelRightCol;
 }
 
 void wxExtGridCtrl::OnGridKey(wxKeyEvent &evt)
 {
-	if (bCopyPaste && evt.CmdDown())
+	if (m_enableCopyPaste && evt.CmdDown())
 	{
 		int key = tolower(evt.GetKeyCode());
 		if (key=='c')
@@ -236,16 +237,18 @@ void wxExtGridCtrl::OnGridKey(wxKeyEvent &evt)
 
 void wxExtGridCtrl::OnGridLabelClick(wxGridEvent &evt)
 {
-	mSelLeftCol = evt.GetCol();
-	mSelRightCol = evt.GetCol();
-	mSelTopRow = 0;
-	mSelBottomRow = GetNumberRows()-1;
+	int col = evt.GetCol();
 
-	
-	if (bCopyPaste) 
+	m_selLeftCol = col;
+	m_selRightCol = col;
+	m_selTopRow = 0;
+	m_selBottomRow = GetNumberRows()-1;
+
+	if ( m_enableCopyPaste ) 
 	{
 		SetFocus();
-		SetGridCursor(0,evt.GetCol());
+		if ( col >= 0 )
+			SetGridCursor( 0, col );
 	}
 
 	evt.Skip();
@@ -253,19 +256,18 @@ void wxExtGridCtrl::OnGridLabelClick(wxGridEvent &evt)
 
 void wxExtGridCtrl::OnGridCellChange(wxGridEvent &evt)
 {	
-	mLastSelTopRow = mSelTopRow;
-	mLastSelBottomRow = mSelBottomRow;
-	mLastSelLeftCol = mSelLeftCol;
-	mLastSelRightCol = mSelRightCol;
+	m_lastSelTopRow = m_selTopRow;
+	m_lastSelBottomRow = m_selBottomRow;
+	m_lastSelLeftCol = m_selLeftCol;
+	m_lastSelRightCol = m_selRightCol;
 
-	mSelTopRow = -1;
-	mSelBottomRow = -1;
-	mSelLeftCol = -1;
-	mSelRightCol = -1;
+	m_selTopRow = -1;
+	m_selBottomRow = -1;
+	m_selLeftCol = -1;
+	m_selRightCol = -1;
 
-//	if (bCopyPaste && evt.GetRow() >= 0 && evt.GetCol() >= 0)
-	if (bCopyPaste && evt.GetRow() >= 0 && evt.GetCol() >= 0 && !IsCellEditControlShown())
-		{
+	if (m_enableCopyPaste && evt.GetRow() >= 0 && evt.GetCol() >= 0 && !m_skipSelect )
+	{
 		wxString cell = GetCellValue(evt.GetRow(),evt.GetCol());
 		cell.Replace("\n", "");
 		cell.Replace("\t", "");
@@ -276,10 +278,10 @@ void wxExtGridCtrl::OnGridCellChange(wxGridEvent &evt)
 }
 void wxExtGridCtrl::ResetLastSelRange()
 {
-	mLastSelTopRow = -1;
-	mLastSelBottomRow = -1;
-	mLastSelLeftCol = -1;
-	mLastSelRightCol = -1;
+	m_lastSelTopRow = -1;
+	m_lastSelBottomRow = -1;
+	m_lastSelLeftCol = -1;
+	m_lastSelRightCol = -1;
 }
 
 void wxExtGridCtrl::OnGridCellSelect(wxGridEvent &evt)
@@ -290,12 +292,12 @@ void wxExtGridCtrl::OnGridCellSelect(wxGridEvent &evt)
 		return;
 	}
 
-	if (!bSkipSelect)
+	if ( evt.Selecting() && !m_skipSelect )
 	{
-		mSelTopRow = evt.GetRow();
-		mSelBottomRow = mSelTopRow;
-		mSelLeftCol = evt.GetCol();
-		mSelRightCol = mSelLeftCol;
+		m_selTopRow = evt.GetRow();
+		m_selBottomRow = m_selTopRow;
+		m_selLeftCol = evt.GetCol();
+		m_selRightCol = m_selLeftCol;
 	}
 
 	evt.Skip();
@@ -303,32 +305,30 @@ void wxExtGridCtrl::OnGridCellSelect(wxGridEvent &evt)
 
 void wxExtGridCtrl::OnGridEditorHidden(wxGridEvent &evt)
 {
-	bSkipSelect = false;
+	m_skipSelect = false;
 	evt.Skip();
 }
 
 void wxExtGridCtrl::OnGridEditorShown(wxGridEvent &evt)
 {
-	bSkipSelect = true;
+	m_skipSelect = true;
 	evt.Skip();
 }
 
 void wxExtGridCtrl::OnGridRangeSelect(wxGridRangeSelectEvent &evt)
 {
-
 	if (evt.CmdDown())
 	{
 		evt.Veto();
 		return;
 	}
 
-	if (evt.Selecting() && !bSkipSelect)
+	if (evt.Selecting() && !m_skipSelect)
 	{
-
-		mSelTopRow = evt.GetTopRow();
-		mSelBottomRow = evt.GetBottomRow();
-		mSelLeftCol = evt.GetLeftCol();
-		mSelRightCol = evt.GetRightCol();
+		m_selTopRow = evt.GetTopRow();
+		m_selBottomRow = evt.GetBottomRow();
+		m_selLeftCol = evt.GetLeftCol();
+		m_selRightCol = evt.GetRightCol();
 	}
 
 	evt.Skip();
@@ -336,21 +336,35 @@ void wxExtGridCtrl::OnGridRangeSelect(wxGridRangeSelectEvent &evt)
 
 void wxExtGridCtrl::EnableCopyPaste(bool b)
 {
-	bCopyPaste = b;
+	m_enableCopyPaste = b;
 }
 
 bool wxExtGridCtrl::IsCopyPasteEnabled()
 {
-	return bCopyPaste;
+	return m_enableCopyPaste;
 }
 
-void wxExtGridCtrl::Copy(bool all, bool with_headers)
-{
-	wxBusyCursor bcurs;
-	int minrow=mSelTopRow, maxrow=mSelBottomRow;
-	int mincol=mSelLeftCol, maxcol=mSelRightCol;
+#define BUSY_DELAY_MS 100
 
-	if (all || mSelTopRow < 0 || mSelLeftCol < 0)
+void wxExtGridCtrl::Copy( bool all, bool with_headers )
+{
+	wxBusyInfo info( "Copying to clipboard...", this );
+	wxYield();
+
+	int minrow=m_selTopRow, maxrow=m_selBottomRow;
+	int mincol=m_selLeftCol, maxcol=m_selRightCol;
+
+	if ( minrow == maxrow && minrow < 0 )
+	{
+		minrow = 0;
+		maxrow = GetNumberRows()-1;
+	}
+	else if ( mincol == mincol && mincol < 0 )
+	{
+		mincol = 0;
+		maxcol = GetNumberCols()-1;
+	}
+	else if ( all || m_selTopRow < 0 || m_selLeftCol < 0 )
 	{
 		minrow = 0;
 		maxrow = GetNumberRows()-1;
@@ -381,12 +395,16 @@ void wxExtGridCtrl::Copy(bool all, bool with_headers)
 	{
 		wxTheClipboard->SetData( new wxTextDataObject(data) );
 		wxTheClipboard->Close();
+
+		wxMilliSleep( BUSY_DELAY_MS );
 	}
 }
 
 void wxExtGridCtrl::Paste( PasteMode mode )
 {
-	wxBusyCursor bcurs;
+	wxBusyInfo info( "Pasting from clipboard...", this );
+	wxYield();
+
 	if (wxTheClipboard->Open())
 	{
 		wxString data;
@@ -430,7 +448,9 @@ void wxExtGridCtrl::Paste( PasteMode mode )
 			}
 		}
 
-		if (bSendPasteEvent)
+		wxMilliSleep( BUSY_DELAY_MS );
+
+		if (m_sendPasteEvent)
 		{
 			wxGridEvent evt(this->GetId(), ::wxEVT_GRID_CELL_CHANGE, this, -1, -1);
 			this->ProcessEvent(evt);

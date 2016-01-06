@@ -49,13 +49,13 @@ private:
 	void OnGridRangeSelect(wxGridRangeSelectEvent &evt);
 	void OnGridLabelClick(wxGridEvent &evt);
 
-	int mSelTopRow, mSelBottomRow;
-	int mSelLeftCol, mSelRightCol;
-	bool bSkipSelect;
-	bool bCopyPaste;
-	bool bSendPasteEvent;
-	int mLastSelTopRow, mLastSelBottomRow;
-	int mLastSelLeftCol, mLastSelRightCol;
+	bool m_skipSelect;
+	int m_selTopRow, m_selBottomRow;
+	int m_selLeftCol, m_selRightCol;
+	bool m_enableCopyPaste;
+	bool m_sendPasteEvent;
+	int m_lastSelTopRow, m_lastSelBottomRow;
+	int m_lastSelLeftCol, m_lastSelRightCol;
 
 	DECLARE_EVENT_TABLE()
 };
