@@ -92,5 +92,8 @@ inline wxRect wxScaleRect( const wxRect &r, double sf ) { return wxScaleRect( r,
 // sort (n^2) names and labels together
 void wxSortByLabels(wxArrayString &names, wxArrayString &labels);
 
+// create a transparent overlay frame
+wxFrame *wxCreateTransparentOverlay( wxWindow *parent );
+
 #endif
 

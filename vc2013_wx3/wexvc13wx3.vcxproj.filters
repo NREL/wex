@@ -360,6 +360,9 @@
     <ClInclude Include="..\include\wex\plot\plwindrose.h">
       <Filter>plot\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\wex\tpdlg.h">
+      <Filter>wex\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
@@ -622,6 +625,9 @@
     </ClCompile>
     <ClCompile Include="..\src\plot\plwindrose.cpp">
       <Filter>plot\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tpdlg.cpp">
+      <Filter>wex\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -120,6 +120,7 @@
     <ClInclude Include="..\include\wex\plot\plscatterplot.h" />
     <ClInclude Include="..\include\wex\ribbonbook.h" />
     <ClInclude Include="..\include\wex\snaplay.h" />
+    <ClInclude Include="..\include\wex\tpdlg.h" />
     <ClInclude Include="..\include\wex\uiform.h" />
     <ClInclude Include="..\include\wex\utils.h" />
     <ClInclude Include="..\src\pdf\wxmemdbg.h" />
@@ -210,6 +211,7 @@
     <ClCompile Include="..\src\plot\plplotctrl.cpp" />
     <ClCompile Include="..\src\plot\plscatterplot.cpp" />
     <ClCompile Include="..\src\snaplay.cpp" />
+    <ClCompile Include="..\src\tpdlg.cpp" />
     <ClCompile Include="..\src\uiform.cpp" />
     <ClCompile Include="..\src\utils.cpp" />
   </ItemGroup>
