@@ -17,6 +17,7 @@ OBJECTS = \
 	pageobjects.o \
 	csv.o \
 	exttree.o \
+	tpdlg.o \
 	label.o \
 	exttext.o \
 	radiochoice.o \
