@@ -13,7 +13,8 @@ class wxThreadProgressDialog : public wxDialog
 {
 public:
 	wxThreadProgressDialog(wxWindow *parent, int nthreads, bool border=false);
-		bool IsCanceled() { return m_canceled; }
+	void Cancel() { m_canceled = true; }
+	bool IsCanceled() { return m_canceled; }
 	void Log( const wxArrayString &list );
 	void Log( const wxString &text );
 	void Update(int ThreadNum, float percent, const wxString &label = wxEmptyString );

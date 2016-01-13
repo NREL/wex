@@ -1643,9 +1643,6 @@ wxLKScriptWindow::wxLKScriptWindow( wxWindow *parent, int id, const wxPoint &pos
 {
 	m_lastFindPos = 0;
 
-#ifdef __WXMSW__
-	SetIcon( wxICON( appicon ) );
-#endif	
 	SetBackgroundColour( wxMetroTheme::Colour(wxMT_FOREGROUND) );
 	
 #ifdef __WXOSX__
@@ -1829,8 +1826,12 @@ bool wxLKScriptWindow::CloseAll()
 	bool closed = true;
 	std::vector<wxLKScriptWindow*> list = GetWindows();
 	for( size_t i=0;i<list.size();i++ )
+	{
 		if ( !list[i]->Close() )
 			closed = false;
+
+		wxYield();
+	}
 
 	return closed;
 }
