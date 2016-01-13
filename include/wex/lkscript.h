@@ -37,7 +37,7 @@ class wxPLPlotCtrl;
 // if parent=NULL and no_parent=true, then the plot will have no parent.  
 // otherwise, even if parent=NULL, LK will use the currently active 
 // toplevel window as the parent.
-void wxLKSetToplevelParent( wxWindow *parent ); 
+void wxLKSetToplevelParentForPlots( wxWindow *parent ); 
 void wxLKSetPlotTarget( wxPLPlotCtrl *plot );
 wxPLPlotCtrl *wxLKGetPlotTarget();
 
@@ -66,7 +66,7 @@ public:
 	bool IsScriptRunning();
 	bool IsStopFlagSet();
 	void Stop();
-	bool Execute( const wxString &run_dir = wxEmptyString, wxWindow *toplevel = 0 );
+	bool Execute( const wxString &run_dir = wxEmptyString );
 	bool CompileAndLoad();
 	void UpdateInfo();
 
@@ -75,7 +75,6 @@ public:
 	bool Debug(int mode);
 
 	lk::env_t *GetEnvironment() { return m_env; }
-	wxWindow *GetTopLevelWindowForScript() { return m_topLevelWindow; }
 	
 	
 	struct libdata
@@ -112,6 +111,79 @@ private:
 	bool m_stopScriptFlag;
 	wxWindow *m_topLevelWindow;
 	wxLKDebugger *m_debugger;
+
+	DECLARE_EVENT_TABLE();
+};
+
+class wxBoxSizer;
+class wxTextCtrl;
+class wxMetroButton;
+class wxLKScriptWindow;
+
+class wxLKScriptWindowFactory
+{
+public:
+	wxLKScriptWindowFactory();
+	virtual ~wxLKScriptWindowFactory();
+	virtual wxLKScriptWindow *Create() = 0;
+};
+
+class wxLKScriptWindow  : public wxFrame
+{
+public:
+	wxLKScriptWindow( wxWindow *parent, int id = wxID_ANY, 
+		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxSize( 760, 800 ) );
+	
+	static wxLKScriptWindowFactory &GetFactory();
+	static void SetFactory( wxLKScriptWindowFactory *f );
+
+	static wxLKScriptWindow *CreateNewWindow( bool show = true );
+	static void OpenFiles();
+	static std::vector<wxLKScriptWindow*> GetWindows();
+	static wxLKScriptWindow *FindOpenFile( const wxString &file );
+	static bool CloseAll();
+
+	void AddOutput( const wxString &out );
+	void ClearOutput();
+
+
+	bool Save();
+	bool SaveAs();
+	bool Load( const wxString &file );
+	bool Write( const wxString &file );
+	wxString GetFileName();
+
+	bool Find( const wxString &text, bool match_case, bool whole_word, bool at_beginning,
+		int *pos, int *line, wxString *line_text );
+
+	bool IsModified();
+	wxLKScriptCtrl *GetEditor();
+	
+	virtual void OnHelp();
+	virtual void StartScript();
+	virtual void StopScript();
+
+protected:
+	bool QueryAndCanClose();
+	static void OpenFilesInternal( wxLKScriptWindow *current = 0);
+
+	wxBoxSizer *m_toolbar;
+
+	class MyScriptCtrl;
+	MyScriptCtrl *m_script;
+	wxTextCtrl *m_output;
+	wxMetroButton *m_runBtn, *m_stopBtn;
+	wxString m_fileName;
+	wxString m_lastTitle;
+
+	int m_lastFindPos;
+
+	void UpdateWindowTitle();
+
+private:
+	void OnCommand( wxCommandEvent & );
+	void OnModified( wxStyledTextEvent & );
+	void OnClose( wxCloseEvent & );
 
 	DECLARE_EVENT_TABLE();
 };

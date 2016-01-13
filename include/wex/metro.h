@@ -147,7 +147,7 @@ protected:
 	struct item
 	{
 		item( const wxString &l, bool bb, bool shw) : label(l), x_start(0), width(0), shown(shw), button(bb), visible(true) { }
-		item(const item &x, bool shw) : label(x.label), x_start(x.x_start), width(x.width), shown(x.shown), button(x.button), visible(true) { }
+		item(const item &x) : label(x.label), x_start(x.x_start), width(x.width), shown(x.shown), button(x.button), visible(true) { }
 		wxString label;
 		int x_start;
 		int width;

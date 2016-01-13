@@ -3,6 +3,11 @@
 #include <wx/html/htmlwin.h>
 #include <wx/htmllbox.h>
 #include <wx/fontenum.h>
+#include <wx/progdlg.h>
+#include <wx/splitter.h>
+#include <wx/busyinfo.h>
+#include <wx/app.h>
+
 #include <memory>
 
 #include "wex/lkscript.h" // defines LK_USE_WXWIDGETS
@@ -169,7 +174,7 @@ static wxPLPlotCtrl *GetPlotSurface( wxWindow *parent )
 	return s_curPlot;
 }
 
-void wxLKSetToplevelParent( wxWindow *parent )
+void wxLKSetToplevelParentForPlots( wxWindow *parent )
 {
 	s_curToplevelParent = parent;
 }
@@ -1014,8 +1019,6 @@ wxLKScriptCtrl::wxLKScriptCtrl( wxWindow *parent, int id,
 	SetMarginType( m_syntaxCheckMarginId, wxSTC_MARGIN_SYMBOL );
 
 	ShowBreakpoints( true );
-		
-	m_topLevelWindow = 0;
 }
 
 wxLKScriptCtrl::~wxLKScriptCtrl()
@@ -1485,7 +1488,6 @@ bool wxLKScriptCtrl::Debug(int mode )
 		int line = dbg[ip].line;
 		if ( line > 0 && line <= GetNumberOfLines() )
 		{
-			int ifirst = GetFirstVisibleLine();
 			int nnl = LinesOnScreen();
 			int ln_to_scroll = line - nnl/2 - 1;
 
@@ -1497,8 +1499,7 @@ bool wxLKScriptCtrl::Debug(int mode )
 }
 
 
-bool wxLKScriptCtrl::Execute( const wxString &run_dir,
-							 wxWindow *toplevel )
+bool wxLKScriptCtrl::Execute( const wxString &run_dir )
 {
 	if (m_scriptRunning)
 	{
@@ -1511,8 +1512,6 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 	
 	m_scriptRunning = true;
 	m_stopScriptFlag = false;
-	m_topLevelWindow = toplevel;
-	s_curToplevelParent = toplevel;
 
 	wxString backupfile;
 	wxString script = GetText();
@@ -1544,7 +1543,6 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 
 	m_scriptRunning = false;
 	m_stopScriptFlag = false;
-	m_topLevelWindow = 0;
 
 	if ( !backupfile.IsEmpty() && wxFileExists( backupfile ) )
 		wxRemoveFile( backupfile );
@@ -1552,3 +1550,560 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir,
 	return success;
 }
 
+
+
+class wxLKScriptWindow::MyScriptCtrl : public wxLKScriptCtrl
+{
+	wxLKScriptWindow *m_scriptwin;
+public:
+	MyScriptCtrl( wxWindow *parent, int id, wxLKScriptWindow *scriptwin )
+		: wxLKScriptCtrl( parent, id, wxDefaultPosition, wxDefaultSize,
+			(wxLK_STDLIB_BASIC|wxLK_STDLIB_STRING|wxLK_STDLIB_MATH|wxLK_STDLIB_WXUI|wxLK_STDLIB_PLOT|wxLK_STDLIB_MISC|wxLK_STDLIB_SOUT) ),
+		 m_scriptwin( scriptwin )
+	{
+		ShowFindInFilesButton( true );
+	}
+
+	virtual bool OnFindInFiles( const wxString &text, bool match_case, bool whole_word )
+	{;
+		std::vector<wxLKScriptWindow*> windows = m_scriptwin->GetWindows();
+		
+		wxProgressDialog dialog( "Find in files", "Searching for " + text, (int)windows.size(), m_scriptwin,
+			wxPD_SMOOTH|wxPD_CAN_ABORT );
+		dialog.SetClientSize( wxSize(350,100) );
+		dialog.CenterOnParent();
+		dialog.Show();
+
+		m_scriptwin->ClearOutput();
+		int noccur = 0;
+		for( size_t i=0;i<windows.size();i++ )
+		{
+			wxLKScriptWindow *sw = windows[i];
+
+			int iter = 0;
+			int pos, line_num;
+			wxString line_text;
+			while( sw->Find( text, match_case, whole_word,
+				iter == 0, &pos, &line_num, &line_text ) )
+			{
+				m_scriptwin->AddOutput( sw->GetTitle() + " (" + wxString::Format("%d):  ", line_num+1) + line_text );
+				noccur++;
+				iter++;
+			}
+
+			if ( !dialog.Update( i ) )
+				break;
+		}
+
+		m_scriptwin->AddOutput( wxString::Format("\n%d files searched, %d occurences found.", (int)windows.size(), noccur) );
+
+		return true;
+	}
+	
+	virtual void OnOutput( const wxString &out )
+	{
+		m_scriptwin->AddOutput( out );
+	}
+
+	virtual void OnSyntaxCheck( int /*line*/, const wxString &errstr )
+	{
+		/* nothing to do - just disable auto showing of error annotations */
+
+		m_scriptwin->ClearOutput();
+		m_scriptwin->AddOutput( errstr );
+	}
+};
+
+BEGIN_EVENT_TABLE( wxLKScriptWindow, wxFrame )
+	EVT_BUTTON( wxID_NEW, wxLKScriptWindow::OnCommand )
+	EVT_BUTTON( wxID_OPEN, wxLKScriptWindow::OnCommand )
+	EVT_BUTTON( wxID_SAVE, wxLKScriptWindow::OnCommand )
+	EVT_BUTTON( wxID_SAVEAS, wxLKScriptWindow::OnCommand )
+	EVT_BUTTON( wxID_FIND, wxLKScriptWindow::OnCommand )
+	EVT_BUTTON( wxID_EXECUTE, wxLKScriptWindow::OnCommand )
+	EVT_BUTTON( wxID_STOP, wxLKScriptWindow::OnCommand )
+	EVT_BUTTON( wxID_HELP, wxLKScriptWindow::OnCommand )
+	EVT_BUTTON( wxID_CLOSE, wxLKScriptWindow::OnCommand )
+	EVT_BUTTON( wxID_ABOUT, wxLKScriptWindow::OnCommand )
+		
+	EVT_MENU( wxID_NEW, wxLKScriptWindow::OnCommand )
+	EVT_MENU( wxID_OPEN, wxLKScriptWindow::OnCommand )
+	EVT_MENU( wxID_SAVE, wxLKScriptWindow::OnCommand )
+	EVT_MENU( wxID_FIND, wxLKScriptWindow::OnCommand )
+	EVT_MENU( wxID_EXECUTE, wxLKScriptWindow::OnCommand )
+	EVT_MENU( wxID_HELP, wxLKScriptWindow::OnCommand )
+	EVT_MENU( wxID_CLOSE, wxLKScriptWindow::OnCommand )
+
+	EVT_STC_MODIFIED( wxID_EDIT, wxLKScriptWindow::OnModified )
+	EVT_CLOSE( wxLKScriptWindow::OnClose )
+END_EVENT_TABLE()
+
+wxLKScriptWindow::wxLKScriptWindow( wxWindow *parent, int id, const wxPoint &pos, const wxSize &size )
+	: wxFrame( parent, id, wxT("untitled"), pos, size ) 
+{
+	m_lastFindPos = 0;
+
+#ifdef __WXMSW__
+	SetIcon( wxICON( appicon ) );
+#endif	
+	SetBackgroundColour( wxMetroTheme::Colour(wxMT_FOREGROUND) );
+	
+#ifdef __WXOSX__
+	wxMenu *file = new wxMenu;
+	file->Append( wxID_NEW );
+	file->AppendSeparator();
+	file->Append( wxID_OPEN );
+	file->Append( wxID_SAVE );
+	file->Append( wxID_SAVEAS );
+	file->AppendSeparator();
+	file->Append( wxID_EXECUTE );
+	file->AppendSeparator();
+	file->Append( wxID_CLOSE );
+
+	wxMenuBar *menuBar = new wxMenuBar;
+	menuBar->Append( file, wxT("&File") );
+	SetMenuBar( menuBar );
+#endif	
+
+	m_toolbar = new wxBoxSizer( wxHORIZONTAL );
+	m_toolbar->Add( new wxMetroButton( this, wxID_NEW, "New" ), 0, wxALL|wxEXPAND, 0 );
+	m_toolbar->Add( new wxMetroButton( this, wxID_OPEN, "Open" ), 0, wxALL|wxEXPAND, 0 );
+	m_toolbar->Add( new wxMetroButton( this, wxID_SAVE, "Save" ), 0, wxALL|wxEXPAND, 0 );
+	m_toolbar->Add( new wxMetroButton( this, wxID_SAVEAS, "Save as" ), 0, wxALL|wxEXPAND, 0 );
+	m_toolbar->Add( new wxMetroButton( this, wxID_FIND, "Find" ), 0, wxALL|wxEXPAND, 0 );
+	m_toolbar->Add( m_runBtn=new wxMetroButton( this, wxID_EXECUTE, "Run", wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_RIGHTARROW ), 0, wxALL|wxEXPAND, 0 );
+	m_toolbar->Add( m_stopBtn=new wxMetroButton( this, wxID_STOP, "Stop" ), 0, wxALL|wxEXPAND, 0 );
+	m_toolbar->AddStretchSpacer();
+	
+	m_toolbar->Add( new wxMetroButton( this, wxID_ABOUT, "Functions" ), 0, wxALL|wxEXPAND, 0 );
+	m_toolbar->Add( new wxMetroButton( this, wxID_HELP, "Help" ), 0, wxALL|wxEXPAND, 0 );
+	m_toolbar->Add( new wxMetroButton( this, wxID_CLOSE, "Close" ), 0, wxALL|wxEXPAND, 0 );
+
+	m_stopBtn->Hide();
+
+	wxSplitterWindow *split = new wxSplitterWindow( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_LIVE_UPDATE|wxSP_3DSASH|wxBORDER_NONE );
+
+	m_script = new MyScriptCtrl( split, wxID_EDIT, this );
+
+	m_output = new wxTextCtrl( split, wxID_ANY, wxT("Ready."), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY|wxBORDER_NONE );
+	
+	wxBoxSizer *sizer = new wxBoxSizer( wxVERTICAL );
+	sizer->Add( m_toolbar, 0, wxALL|wxEXPAND, 0 );
+	sizer->Add( split, 1, wxALL|wxEXPAND, 0 );
+	SetSizer( sizer );
+	
+	split->SetMinimumPaneSize( 100 );
+	split->SplitHorizontally( m_script, m_output, (int)(-150*wxGetScreenHDScale()) );
+	split->SetSashGravity( 1.0 );
+		
+	std::vector<wxAcceleratorEntry> entries;
+	entries.push_back( wxAcceleratorEntry( wxACCEL_CTRL, 'n', wxID_NEW ) );
+	entries.push_back( wxAcceleratorEntry( wxACCEL_CTRL, 'o', wxID_OPEN ) );
+	entries.push_back( wxAcceleratorEntry( wxACCEL_CTRL, 's', wxID_SAVE ) );
+	entries.push_back( wxAcceleratorEntry( wxACCEL_CTRL, 'f', wxID_FIND ) );
+	entries.push_back( wxAcceleratorEntry( wxACCEL_CTRL, 'w', wxID_CLOSE ) );
+	entries.push_back( wxAcceleratorEntry( wxACCEL_NORMAL, WXK_F1, wxID_HELP ) );
+	entries.push_back( wxAcceleratorEntry( wxACCEL_NORMAL, WXK_F5, wxID_EXECUTE ) );
+	SetAcceleratorTable( wxAcceleratorTable( entries.size(), &entries[0] ) );
+
+	UpdateWindowTitle();
+
+}
+
+wxLKScriptCtrl *wxLKScriptWindow::GetEditor()
+{
+	return m_script;
+}
+
+
+wxLKScriptWindowFactory::wxLKScriptWindowFactory()
+{
+	// nothing to do
+}
+
+wxLKScriptWindowFactory::~wxLKScriptWindowFactory()
+{
+	// nothing to do
+}
+
+class DefaultScriptWindowFactory : public wxLKScriptWindowFactory
+{
+public:
+	DefaultScriptWindowFactory() {
+	}
+	virtual ~DefaultScriptWindowFactory() {
+	}
+	
+	virtual wxLKScriptWindow *Create()
+	{
+		return new wxLKScriptWindow( 0, wxID_ANY );
+	}
+	virtual wxWindow *GetParentWindowForScriptExec()
+	{
+		return 0;
+	}
+};
+
+static wxLKScriptWindowFactory *g_scriptWindowFactory = 0;
+wxLKScriptWindowFactory &wxLKScriptWindow::GetFactory()
+{
+	if ( !g_scriptWindowFactory )
+		g_scriptWindowFactory = new DefaultScriptWindowFactory();
+
+	return *g_scriptWindowFactory;
+}
+
+void wxLKScriptWindow::SetFactory( wxLKScriptWindowFactory *f )
+{
+	if ( g_scriptWindowFactory )
+		delete g_scriptWindowFactory;
+
+	g_scriptWindowFactory = f;
+}
+
+wxLKScriptWindow *wxLKScriptWindow::CreateNewWindow( bool show )
+{
+	wxLKScriptWindow *sw = wxLKScriptWindow::GetFactory().Create();
+	sw->Show( show );
+	return sw;
+}
+void wxLKScriptWindow::OpenFiles()
+{
+	OpenFilesInternal( NULL );
+}
+
+void wxLKScriptWindow::OpenFilesInternal( wxLKScriptWindow *current )
+{
+	wxFileDialog dlg( GetCurrentTopLevelWindow(), "Open script", 
+		wxEmptyString, wxEmptyString, "Script Files (*.lk)|*.lk", wxFD_OPEN|wxFD_MULTIPLE );
+	if ( wxID_OK == dlg.ShowModal() )
+	{
+		wxArrayString files;
+		dlg.GetPaths( files );
+		for( size_t i=0;i<files.size();i++ )
+		{
+			if ( wxLKScriptWindow *sw = FindOpenFile( files[i] ) )
+			{
+				sw->Raise();
+				sw->SetFocus();
+				continue;
+			}
+
+			if ( wxFileExists( files[i] ) )
+			{
+				wxLKScriptWindow *sw = 
+					( current != 0 
+						&& current->GetFileName().IsEmpty()
+						&& !current->IsModified() ) 
+					? current 
+					: CreateNewWindow( false );
+
+				if ( !sw->Load( files[i] ) )
+				{
+					wxMessageBox( "Failed to load script.\n\n" + files[i] );
+					if ( sw != current ) sw->Destroy();
+				}
+				else
+					sw->Show();
+			}
+		}
+	}
+}
+
+
+
+std::vector<wxLKScriptWindow*> wxLKScriptWindow::GetWindows()
+{
+	std::vector<wxLKScriptWindow*> list;
+	for( wxWindowList::iterator it = wxTopLevelWindows.begin();
+		it != wxTopLevelWindows.end();
+		++it )
+		if ( wxLKScriptWindow *scrip = dynamic_cast<wxLKScriptWindow*>( *it ) )
+			list.push_back( scrip );
+
+	return list;
+}
+
+bool wxLKScriptWindow::CloseAll()
+{
+	bool closed = true;
+	std::vector<wxLKScriptWindow*> list = GetWindows();
+	for( size_t i=0;i<list.size();i++ )
+		if ( !list[i]->Close() )
+			closed = false;
+
+	return closed;
+}
+
+wxLKScriptWindow *wxLKScriptWindow::FindOpenFile( const wxString &file )
+{
+	std::vector<wxLKScriptWindow*> list = GetWindows();
+	for( size_t i=0;i<list.size();i++ )
+		if ( list[i]->GetFileName() == file )
+			return list[i];
+
+	return 0;
+}
+
+void wxLKScriptWindow::AddOutput( const wxString &out )
+{
+	m_output->AppendText( out );
+}
+
+void wxLKScriptWindow::ClearOutput()
+{
+	m_output->Clear();
+}
+
+bool wxLKScriptWindow::Save()
+{
+	if ( m_fileName.IsEmpty() )
+		return SaveAs();
+	else
+		return Write( m_fileName );
+}
+
+bool wxLKScriptWindow::SaveAs()
+{
+	wxFileDialog dlg( this, "Save as...",
+		wxPathOnly(m_fileName),
+		wxFileNameFromPath(m_fileName),
+		"Script Files (*.lk)|*.lk", wxFD_SAVE|wxFD_OVERWRITE_PROMPT );
+	if (dlg.ShowModal() == wxID_OK)
+		return Write( dlg.GetPath() );
+	else
+		return false;
+}
+
+bool wxLKScriptWindow::Load( const wxString &file )
+{
+	if( m_script->ReadAscii( file ) )
+	{
+		m_fileName = file;
+		UpdateWindowTitle();
+		return true;
+	}
+	else
+		return false;
+}
+
+bool wxLKScriptWindow::Write( const wxString &file )
+{
+	wxBusyInfo info( "Saving: " + file, this );
+	wxMilliSleep( 120 );
+
+	if ( m_script->WriteAscii( file ) )
+	{
+		m_fileName = file;
+		UpdateWindowTitle();
+		return true;
+	}
+	else return false;
+}
+
+void wxLKScriptWindow::UpdateWindowTitle()
+{
+	wxString title( m_fileName );
+	if ( title.IsEmpty() ) title = "untitled";
+	if ( m_script->IsModified() ) title += " *";
+	if ( m_lastTitle != title )
+	{
+		SetTitle( title );
+		m_lastTitle = title;
+	}
+}
+
+wxString wxLKScriptWindow::GetFileName()
+{
+	return m_fileName;
+}
+
+void wxLKScriptWindow::OnCommand( wxCommandEvent &evt )
+{
+	switch( evt.GetId() )
+	{
+	case wxID_NEW:
+		CreateNewWindow();
+		break;
+
+	case wxID_OPEN:
+		OpenFilesInternal( this );
+		break;
+
+	case wxID_SAVE:
+		Save();
+		break;
+
+	case wxID_SAVEAS:
+		SaveAs();
+		break;
+
+	case wxID_FIND:
+		m_script->ShowFindReplaceDialog();
+		break;
+
+	case wxID_EXECUTE:
+		StartScript();
+		break;
+				
+	case wxID_STOP:
+		StopScript();
+		break;
+
+	case wxID_CLOSE:
+		Close();
+		break;
+
+	case wxID_HELP:
+		OnHelp();
+		break;
+		
+	case wxID_ABOUT:
+		m_script->ShowHelpDialog();
+		break;
+	};
+}
+
+void wxLKScriptWindow::OnHelp()
+{
+	wxMessageBox( "No help available for scripting." );
+}
+
+void wxLKScriptWindow::StartScript()
+{
+	m_output->Clear();
+	m_runBtn->Hide();
+	m_stopBtn->Show();
+	Layout();
+	wxYield();
+	m_script->Execute( wxPathOnly(m_fileName) );
+	m_stopBtn->Hide();
+	m_runBtn->Show();
+	Layout();
+}
+void wxLKScriptWindow::StopScript()
+{
+	m_script->Stop();
+}
+
+bool wxLKScriptWindow::Find( const wxString &text, 
+	bool match_case, bool whole_word, bool at_beginning,
+	int *pos, int *line, wxString *line_text )
+{
+	if ( text.Len() == 0 ) return false;
+
+	int flags = 0;	
+	if ( whole_word ) flags |= wxSTC_FIND_WHOLEWORD;	
+	if ( match_case ) flags |= wxSTC_FIND_MATCHCASE;
+
+	if ( at_beginning )
+		m_lastFindPos = 0;
+
+	m_lastFindPos = m_script->FindText( m_lastFindPos, 
+		m_script->GetLength(), text, flags );
+
+	if ( m_lastFindPos >= 0 )
+	{
+		*pos = m_lastFindPos;
+		*line = m_script->LineFromPosition( m_lastFindPos );
+		*line_text = m_script->GetLine( *line );
+		m_lastFindPos += text.Len();
+		return true;
+	}
+	else
+		return false;
+}
+
+void wxLKScriptWindow::OnModified( wxStyledTextEvent & )
+{
+	UpdateWindowTitle();
+}
+
+bool wxLKScriptWindow::IsModified()
+{
+	return m_script->IsModified();
+}
+
+bool wxLKScriptWindow::QueryAndCanClose()
+{
+	if ( IsModified() )
+	{
+		Raise();
+		wxString dispname( m_fileName );
+		if ( dispname.IsEmpty() ) dispname = "untitled";
+		int ret = wxMessageBox("The script '" + dispname + "' has been modified.  Save changes?", "Query", 
+			wxICON_EXCLAMATION|wxYES_NO|wxCANCEL, this );
+		if (ret == wxYES)
+		{
+			Save( );
+			if ( IsModified() ) // if failed to save, cancel
+				return false;
+		}
+		else if (ret == wxCANCEL)
+			return false;
+
+	}
+	return true;
+}
+
+void wxLKScriptWindow::OnClose( wxCloseEvent &evt )
+{	
+	if ( m_script->IsScriptRunning() )
+	{
+		if ( wxYES == wxMessageBox("The script is running.  Stop it?", "Query", wxYES_NO, this ) )
+			m_script->Stop();
+
+		evt.Veto();
+		return;
+	}
+
+	if ( !QueryAndCanClose() )
+	{
+		evt.Veto();
+		return;
+	}
+	
+	wxTheApp->ScheduleForDestruction( this );
+}
+
+
+/*
+TODO by external classes:
+X	1. allow registration of specific invoke functions	
+		// register SAM-specific invoke functions here
+		RegisterLibrary( invoke_general_funcs(), "General Functions" );
+		RegisterLibrary( invoke_ssc_funcs(), "Direct Access To SSC" );
+		RegisterLibrary( sam_functions(), "SAM Functions");
+
+X	2. Notifications like stop button pressed, etc, i.e. to handle
+		// CancelRunningSimulations();
+
+	3. add buttons to toolbar
+
+	//toolbar->Add( new wxMetroButton( this, ID_VARIABLES, "Variables" ), 0, wxALL|wxEXPAND, 0 );
+
+X	4. handle events.
+	case ID_VARIABLES:
+	{
+		VarSelectDialog dlg( this, "Browse Variables" );
+		if ( Case *c = SamApp::Window()->GetCurrentCase() )
+		{
+			wxString tech, fin;
+			c->GetConfiguration(&tech, &fin);
+			dlg.SetConfiguration( tech, fin );
+		}
+
+		dlg.CenterOnParent();
+		if ( dlg.ShowModal() == wxID_OK )
+		{
+			m_script->InsertText(
+				m_script->GetCurrentPos(), wxJoin(dlg.GetCheckedNames(),',') );
+		}
+	}
+		break;
+
+	case wxID_HELP:
+		SamApp::ShowHelp( "macros" );
+		break;
+
+		*/
