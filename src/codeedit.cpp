@@ -224,7 +224,9 @@ static char *PythonWordlist1 =
 	"raise return try while yield";
 
 static  char *LKWordlist1  =
-	"if while for return exit break continue function const enum class else elseif define this typeof common true false null import ";
+	"if while for return exit break continue "
+	"function const enum else elseif define "
+	"this typeof global true false null import";
 
 
 wxCodeEditCtrl::wxCodeEditCtrl( wxWindow *parent, int id, 
