@@ -46,7 +46,6 @@ public:
 	bool HasBreakpoint( int line );
 	void ClearBreakpoints();
 	std::vector<int> GetBreakpoints();
-	int NumBreakpoints();
 	int GetNextBreakpointAfter( int line );
 
 	void ShowLineArrow( int line );
@@ -60,7 +59,7 @@ public:
 	// note: this function must be called in advance of
 	// 'ShowFindReplaceDialog()' to have the button show up
 	void ShowFindInFilesButton( bool b ) { m_showFindInFilesButton = b; }
-	virtual bool OnFindInFiles( const wxString &text, bool match_case, bool whole_world );
+	virtual bool OnFindInFiles( const wxString &text, bool match_case, bool whole_word );
 	
 	bool IsTextSelected( const wxString &text, bool match_case );
 
@@ -107,7 +106,7 @@ private:
 	bool m_ctCaseSensitive;
 	wxArrayString m_ctStack;
 	
-	std::vector<int> m_breakPoints;
+	//std::vector<int> m_breakPoints;
 	unordered_map< wxString, wxString, wxStringHash, wxStringEqual > m_callTips;
 
 	wxString m_yankText;

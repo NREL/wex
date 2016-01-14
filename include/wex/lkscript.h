@@ -42,7 +42,9 @@ void wxLKSetPlotTarget( wxPLPlotCtrl *plot );
 wxPLPlotCtrl *wxLKGetPlotTarget();
 
 class wxLKDebugger;
-class wxLKScriptCtrl : public wxCodeEditCtrl
+class wxLKScriptCtrl : 
+	public wxCodeEditCtrl, 
+	public wxThreadHelper
 {
 public:
 
@@ -66,11 +68,10 @@ public:
 	bool IsScriptRunning();
 	bool IsStopFlagSet();
 	void Stop();
-	bool Execute( const wxString &run_dir = wxEmptyString );
-	bool CompileAndLoad();
+	bool Execute( const wxString &work_dir = wxEmptyString );
+	bool CompileAndLoad( const wxString &work_dir = wxEmptyString );
 	void UpdateInfo();
 
-	bool StartDebugging();
 	enum { DEBUG_RUN, DEBUG_STEP };
 	bool Debug(int mode);
 
@@ -85,8 +86,17 @@ public:
 private:
 
 	bool m_syntaxCheck;
+
+	unsigned int m_syntaxCheckRequestId, m_syntaxCheckThreadId;
+	wxString m_codeToSyntaxCheck;
 	std::vector<int> m_syntaxErrorLines;
 	wxArrayString m_syntaxErrorMessages;
+	wxCriticalSection m_syntaxCheckCS;
+
+
+	virtual wxThread::ExitCode Entry();
+	void OnSyntaxCheckThreadFinished(wxThreadEvent& evt);
+	void StartSyntaxCheckThread();
 
 	void OnScriptTextChanged( wxStyledTextEvent & );
 	void OnMarginClick( wxStyledTextEvent & );
@@ -160,7 +170,7 @@ public:
 	wxLKScriptCtrl *GetEditor();
 	
 	virtual void OnHelp();
-	virtual void StartScript();
+	virtual bool RunScript();
 	virtual void StopScript();
 
 protected:

@@ -134,7 +134,7 @@ public:
 		}
 	}
 
-	void OnClose( wxCloseEvent &evt )
+	void OnClose( wxCloseEvent & )
 	{
 		Hide();
 	}
@@ -711,23 +711,15 @@ void wxCodeEditCtrl::ShowBreakpoints( bool show )
 }
 
 void wxCodeEditCtrl::AddBreakpoint( int line )
-{
-	std::vector<int>::iterator it = std::find( m_breakPoints.begin(), m_breakPoints.end(), line );
-	if ( it == m_breakPoints.end() )
-	{
+{	
+	if ( !HasBreakpoint( line ) )
 		MarkerAdd( line, m_markCircle );
-		m_breakPoints.push_back( line );
-	}
 }
 
 void wxCodeEditCtrl::RemoveBreakpoint( int line )
 {
-	std::vector<int>::iterator it = std::find( m_breakPoints.begin(), m_breakPoints.end(), line );
-	if ( it != m_breakPoints.end() )
-	{
+	if ( HasBreakpoint( line ) )
 		MarkerDelete( line, m_markCircle );
-		m_breakPoints.erase( it );
-	}
 }
 
 void wxCodeEditCtrl::ToggleBreakpoint( int line )
@@ -740,34 +732,35 @@ void wxCodeEditCtrl::ToggleBreakpoint( int line )
 
 bool wxCodeEditCtrl::HasBreakpoint( int line )
 {
-	return ( std::find( m_breakPoints.begin(), m_breakPoints.end(), line ) != m_breakPoints.end() );
+	return ( MarkerGet( line ) & (1<<m_markCircle) );
 }
 
 void wxCodeEditCtrl::ClearBreakpoints()
 {
 	MarkerDeleteAll( m_markCircle );
-	m_breakPoints.clear();
 }
 
 std::vector<int> wxCodeEditCtrl::GetBreakpoints()
 {
-	return m_breakPoints;
+	std::vector<int> breakpoints;
+	int nl = GetNumberOfLines();
+	for( int i=0;i<nl;i++ )
+		if ( HasBreakpoint( i ) )
+			breakpoints.push_back( i );
+
+	return breakpoints;
 }
 
 int wxCodeEditCtrl::GetNextBreakpointAfter( int line )
 {
-	std::stable_sort( m_breakPoints.begin(), m_breakPoints.end() );
-	for( size_t i=0;i<m_breakPoints.size();i++ )
+	
+	std::vector<int> breakpoints = GetBreakpoints();
+	for( size_t i=0;i<breakpoints.size();i++ )
 	{
-		if ( m_breakPoints[i] > line )
-			return m_breakPoints[i];
+		if ( breakpoints[i] > line )
+			return breakpoints[i];
 	}
 	return -1;
-}
-
-int wxCodeEditCtrl::NumBreakpoints()
-{
-	return (int) m_breakPoints.size();
 }
 
 void wxCodeEditCtrl::ShowFindReplaceDialog()
@@ -1104,7 +1097,9 @@ bool wxCodeEditCtrl::FindMatchingBracePosition( int &braceAtCaret, int &braceOpp
 	return isInside;
 }
 
-bool wxCodeEditCtrl::OnFindInFiles( const wxString &text, bool match_case, bool whole_world )
+bool wxCodeEditCtrl::OnFindInFiles( const wxString &WXUNUSED(text), 
+	bool WXUNUSED(match_case), 
+	bool WXUNUSED(whole_word) )
 {
 	return false;
 }

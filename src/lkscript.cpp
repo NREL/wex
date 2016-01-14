@@ -906,14 +906,19 @@ public:
 		panel->SetSizer( main_sizer );	
 	}
 
-	void ClearView()
+	void SetMessage( const wxString &msg )
 	{
-		m_view->ChangeValue("running...\n");
+		m_view->ChangeValue( msg );
 	}
 
 	void UpdateView()
 	{
 		wxString sout;
+		
+		wxString err( m_vm->error() );
+		if ( !err.IsEmpty() )
+			sout += err + "\n\n";
+
 		size_t nfrm = 0;
 		lk::vm::frame **frames = m_vm->get_frames( &nfrm );
 		for( size_t i=0;i<nfrm;i++ )
@@ -957,6 +962,9 @@ public:
 
 	void OnClose( wxCloseEvent &evt )
 	{
+		// turn off current line indicator
+		m_lcs->HideLineArrow();
+
 		// simply hide the debugger window, owned by the LK script control widget
 		Hide();
 		evt.Veto();
@@ -974,7 +982,6 @@ BEGIN_EVENT_TABLE( wxLKDebugger, wxFrame )
 END_EVENT_TABLE()
 
 
-
 enum { IDT_TIMER = wxID_HIGHEST+213 };
 
 BEGIN_EVENT_TABLE( wxLKScriptCtrl, wxCodeEditCtrl )	
@@ -988,6 +995,9 @@ wxLKScriptCtrl::wxLKScriptCtrl( wxWindow *parent, int id,
 	: wxCodeEditCtrl( parent, id, pos, size ), m_vm(this),
 		m_timer( this, IDT_TIMER )
 {
+	m_syntaxCheckRequestId = m_syntaxCheckThreadId = 0;
+	Bind( wxEVT_THREAD, &wxLKScriptCtrl::OnSyntaxCheckThreadFinished, this );
+
 	m_debugger = new wxLKDebugger( this, &m_vm );
 	m_debugger->Hide();
 	m_syntaxCheck = true;
@@ -1023,6 +1033,11 @@ wxLKScriptCtrl::wxLKScriptCtrl( wxWindow *parent, int id,
 
 wxLKScriptCtrl::~wxLKScriptCtrl()
 {
+	// wait for the current parsing thread to finish
+	// if it is in progress
+	if (GetThread() && GetThread()->IsRunning())        
+		GetThread()->Wait();
+
 	delete m_env;
 }
 
@@ -1232,15 +1247,17 @@ void wxLKScriptCtrl::SetSyntaxCheck( bool on )
 
 void wxLKScriptCtrl::OnSyntaxCheck( int line, const wxString &err )
 {	
-	if ( line < 0 ) 
+	if ( line <= 0 ) 
 	{
-		AnnotationClearLine( GetCurrentLine() );
+		AnnotationClearAll();
 		return;
 	}
 	
 
 	if ( !err.IsEmpty() )
-	{	
+	{
+		line--;
+
 		AnnotationSetText( line, err );
 		AnnotationSetStyle( line, 0 );
 	
@@ -1257,6 +1274,14 @@ void wxLKScriptCtrl::OnSyntaxCheck( int line, const wxString &err )
 		}
 
 		AnnotationSetVisible( wxSTC_ANNOTATION_STANDARD );
+		
+		wxCriticalSectionLocker lock( m_syntaxCheckCS );
+		if ( m_syntaxErrorLines.size() > 0 )
+		{
+			// mark this as shown by default.
+			m_syntaxErrorLines[0] = -m_syntaxErrorLines[0];
+		}
+
 	}
 }
 
@@ -1271,7 +1296,7 @@ void wxLKScriptCtrl::OnScriptTextChanged( wxStyledTextEvent &evt )
 		if ( m_syntaxCheck )
 		{
 			m_timer.Stop();
-			m_timer.Start( 1000, true );
+			m_timer.Start( 500, true );
 		}
 	}
 	
@@ -1284,6 +1309,8 @@ void wxLKScriptCtrl::OnMarginClick( wxStyledTextEvent &evt )
 	{
 		int line = LineFromPosition(evt.GetPosition());
 		size_t i=0;
+
+		wxCriticalSectionLocker lock( m_syntaxCheckCS );
 
 		while( i < m_syntaxErrorLines.size() )
 		{
@@ -1318,28 +1345,65 @@ void wxLKScriptCtrl::OnMarginClick( wxStyledTextEvent &evt )
 	evt.Skip();
 }
 
-void wxLKScriptCtrl::OnTimer( wxTimerEvent & )
-{	
-	m_syntaxErrorLines.clear();
-	m_syntaxErrorMessages.clear();
-	
-	MarkerDeleteAll( m_markLeftBox );
-	AnnotationClearAll();
+void wxLKScriptCtrl::OnSyntaxCheckThreadFinished( wxThreadEvent & )
+{
+	if ( GetThread() )
+		GetThread()->Wait(); // clean up resources with thread (joinable)
 
-	int first_error_line = 0;
-	wxString output;
+	wxCriticalSectionLocker lock( m_syntaxCheckCS );
 
-	wxString input = GetText();
-	lk::input_string p( input );
+	if ( m_syntaxCheckRequestId != m_syntaxCheckThreadId )
+	{
+		// if a new check request from the editor/timer
+		// was issued before this thread was finished,
+		// the parse errors are not correct, so don't show them
+		// rather, start a new parse thread
+
+		// clear annotations
+		AnnotationClearAll();
+
+		// start a new parse thread
+		StartSyntaxCheckThread();
+		return;
+	}
+
+	if ( m_syntaxErrorLines.size() == 0 )
+	{
+		AnnotationClearAll();
+		return;
+	}
+
+	OnSyntaxCheck( m_syntaxErrorLines[0], wxJoin(m_syntaxErrorMessages, '\n') );
+
+	for( size_t i=0;i<m_syntaxErrorLines.size();i++ )
+	{
+		int line = m_syntaxErrorLines[i];			
+		MarkerAdd( line-1, m_markLeftBox );
+
+		// negate the error lines, to indicate
+		// that the annotations are hidden (by default)
+		// they can be toggled on/off by clicking the margin
+		m_syntaxErrorLines[i] = -m_syntaxErrorLines[i];
+	}	
+}
+
+
+wxThread::ExitCode wxLKScriptCtrl::Entry()
+{
+	m_syntaxCheckCS.Enter();
+	lk::input_string p( m_codeToSyntaxCheck );
+	m_syntaxCheckCS.Leave();
+
 	lk::parser parse( p );
 	lk::node_t *tree = parse.script();	
+	
+	wxCriticalSectionLocker lock( m_syntaxCheckCS );
 	
 	if ( parse.error_count() == 0 
 		&& parse.token() == lk::lexer::END)
 	{
-		if ( tree ) delete tree;
-		AnnotationClearAll();
-		return;
+		m_syntaxErrorMessages.Clear();
+		m_syntaxErrorLines.clear();	
 	}
 	else
 	{
@@ -1348,30 +1412,71 @@ void wxLKScriptCtrl::OnTimer( wxTimerEvent & )
 		{
 			int line;
 			wxString msg = parse.error(i, &line);
-			output += msg + "\n";
 
 			m_syntaxErrorMessages.Add( msg );
-			m_syntaxErrorLines.push_back( -line );
-
-			if (i == 0)
-				first_error_line = line;
-			
-			MarkerAdd( line-1, m_markLeftBox );
-
+			m_syntaxErrorLines.push_back( line );
 			i++;
+		}
+		
+		if ( parse.token() != lk::lexer::END )
+		{
+			m_syntaxErrorLines.push_back( 
+				m_syntaxErrorLines.size() > 0
+					? m_syntaxErrorLines.back()
+					: -1 );
+
+			m_syntaxErrorMessages.push_back( "parsing did not reach end of input" );
 		}
 	}
 
-	if (parse.token() != lk::lexer::END)
-		output += "parsing did not reach end of input";
-	else
-		output.Trim();
+	if ( tree )
+		delete tree;
 
-	first_error_line--;
-	if ( first_error_line < 0 ) first_error_line = 0;
-	
-	OnSyntaxCheck( first_error_line, output );
+	wxQueueEvent(GetEventHandler(), new wxThreadEvent());
+	return (wxThread::ExitCode)0;
+}
 
+void wxLKScriptCtrl::OnTimer( wxTimerEvent & )
+{
+	m_syntaxCheckRequestId++;
+	StartSyntaxCheckThread();
+}
+
+void wxLKScriptCtrl::StartSyntaxCheckThread()
+{
+	if ( GetThread() 
+		&& GetThread()->IsRunning() )
+	{
+		// the last syntax check is still in progress
+		// so don't start anew.  if the thread finish 
+		// handler detects that the request codes don't
+		// match, it will issue a new thread start itself
+		return;
+	}
+
+	MarkerDeleteAll( m_markLeftBox );
+	AnnotationClearAll();
+
+	wxCriticalSectionLocker lock(m_syntaxCheckCS);
+	m_codeToSyntaxCheck = GetText();
+	m_syntaxErrorLines.clear();
+	m_syntaxErrorMessages.clear();
+	m_syntaxCheckThreadId = m_syntaxCheckRequestId;
+
+	if ( wxTHREAD_NO_ERROR != CreateThread( wxTHREAD_JOINABLE ) )
+	{
+		wxLogStatus("wxLKScriptCtrl: could not create syntax checking worker thread" );
+		return;
+	}
+
+	if ( wxTHREAD_NO_ERROR != GetThread()->Run() )
+	{
+		wxLogStatus("wxLKScriptCtrl: could not start the syntax check work thread" );
+		return;
+	}
+
+	// now wait for thread to do its work
+	// when it is done, an event will be issued
 }
 
 bool wxLKScriptCtrl::IsScriptRunning()
@@ -1407,20 +1512,26 @@ bool wxLKScriptCtrl::my_vm::on_run( const lk::srcpos_t &sp )
 	else return true;
 }
 
-bool wxLKScriptCtrl::CompileAndLoad()
+bool wxLKScriptCtrl::CompileAndLoad( const wxString &work_dir )
 {
+	wxBusyInfo info( "Compiling script...", this );
+	wxYield();
+
 	lk::input_string p( GetText() );
-	lk::parser parse( p );	
+	lk::parser parse( p );
+	if ( !work_dir.IsEmpty() && wxDirExists( work_dir ) )
+		parse.add_search_path( work_dir );
+
 	std::auto_ptr<lk::node_t> tree( parse.script() );
 			
 	int i=0;
 	while ( i < parse.error_count() )
-		OnOutput( parse.error(i++) );
+		OnOutput( wxString(parse.error(i++)) + "\n" );
 	
 	if ( parse.token() != lk::lexer::END)
-		OnOutput("Parsing did not reach end of input.\n");
+		OnOutput("parsing did not reach end of input\n");
 
-	if ( parse.error_count() > 0 )
+	if ( parse.error_count() > 0 || parse.token() != lk::lexer::END )
 		return false;	
 
 	m_env->clear_vars();
@@ -1441,28 +1552,19 @@ bool wxLKScriptCtrl::CompileAndLoad()
 	}
 	else
 	{
-		OnOutput("Error in code generation: " + cg.error() );
+		OnOutput("error in code generation: " + cg.error() + "\n");
 		return false;
 	}
 }
-
-bool wxLKScriptCtrl::StartDebugging()
-{
-	if ( !CompileAndLoad() )
-		return false;
-	
-	return Debug( DEBUG_RUN );
-}
-
 
 bool wxLKScriptCtrl::Debug(int mode )
 {
 	m_debugger->Show();
 	
+	m_vm.clrbrk();
 	if ( mode == DEBUG_RUN )
 	{
 		// update all breakpoint markers in vm
-		m_vm.clrbrk();
 		std::vector<int> brk( GetBreakpoints() );
 		for( size_t i=0;i<brk.size();i++ )
 			m_vm.setbrk( brk[i] + 1 );
@@ -1470,20 +1572,25 @@ bool wxLKScriptCtrl::Debug(int mode )
 
 	HideLineArrow();
 
-	m_debugger->ClearView();
+	m_debugger->SetMessage( "running...\n" );
 
 	m_stopScriptFlag = false;
 	bool ok  = m_vm.run( mode == DEBUG_RUN ? lk::vm::DEBUG_RUN : lk::vm::DEBUG_STEP );
 
 	if ( !ok )
-		OnOutput("*** stopped by user ***\n" );
+	{
+		OnOutput("*** stopped ***\n" );
+		wxString err( m_vm.error() );
+		if ( !err.IsEmpty() )
+			OnOutput( err + "\n" );
+	}
 	
 	size_t ip = m_vm.get_ip();
 	const std::vector<lk::srcpos_t> &dbg = m_vm.get_debuginfo();
 	if ( ip < (int)dbg.size() )
 	{
-		m_debugger->UpdateView();
 		ShowLineArrow( dbg[ip].line-1 );
+		m_debugger->UpdateView();
 		
 		int line = dbg[ip].line;
 		if ( line > 0 && line <= GetNumberOfLines() )
@@ -1494,12 +1601,14 @@ bool wxLKScriptCtrl::Debug(int mode )
 			ScrollToLine( ln_to_scroll );
 		}
 	}
+	else
+		m_debugger->SetMessage( "finished.\n" );
 
 	return ok;
 }
 
 
-bool wxLKScriptCtrl::Execute( const wxString &run_dir )
+bool wxLKScriptCtrl::Execute( const wxString &work_dir )
 {
 	if (m_scriptRunning)
 	{
@@ -1507,17 +1616,22 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir )
 		return false;
 	}
 
-	if ( NumBreakpoints() > 0 )
-		return StartDebugging();
+	if ( GetBreakpoints().size() > 0 )
+	{
+		if ( !CompileAndLoad( work_dir ) )
+			return false;
+	
+		return Debug( DEBUG_RUN );
+	}
 	
 	m_scriptRunning = true;
 	m_stopScriptFlag = false;
 
 	wxString backupfile;
 	wxString script = GetText();
-	if (!run_dir.IsEmpty())
+	if ( !work_dir.IsEmpty() && wxDirExists(work_dir) )
 	{
-		backupfile = run_dir + "/~script";
+		backupfile = work_dir + "/~script";
 		FILE *fp = fopen( (const char*)backupfile.c_str(), "w" );
 		if (fp)
 		{
@@ -1529,7 +1643,7 @@ bool wxLKScriptCtrl::Execute( const wxString &run_dir )
 	
 	bool success = true;
 	wxYield();
-	if ( !CompileAndLoad() )
+	if ( !CompileAndLoad( work_dir ) )
 		success = false;
 
 	m_vm.clrbrk();
@@ -1605,10 +1719,10 @@ public:
 		m_scriptwin->AddOutput( out );
 	}
 
-	virtual void OnSyntaxCheck( int /*line*/, const wxString &errstr )
+	virtual void OnSyntaxCheck( int, const wxString &errstr )
 	{
-		/* nothing to do - just disable auto showing of error annotations */
-
+		// disable auto showing of error annotations in text
+		// and post the error in the script output window
 		m_scriptwin->ClearOutput();
 		m_scriptwin->AddOutput( errstr );
 	}
@@ -1944,7 +2058,7 @@ void wxLKScriptWindow::OnCommand( wxCommandEvent &evt )
 		break;
 
 	case wxID_EXECUTE:
-		StartScript();
+		RunScript();
 		break;
 				
 	case wxID_STOP:
@@ -1970,17 +2084,22 @@ void wxLKScriptWindow::OnHelp()
 	wxMessageBox( "No help available for scripting." );
 }
 
-void wxLKScriptWindow::StartScript()
+bool wxLKScriptWindow::RunScript()
 {
 	m_output->Clear();
 	m_runBtn->Hide();
 	m_stopBtn->Show();
 	Layout();
 	wxYield();
-	m_script->Execute( wxPathOnly(m_fileName) );
+
+	bool ok = m_script->Execute( !m_fileName.IsEmpty() 
+		? wxPathOnly(m_fileName) 
+		: wxEmptyString );
+
 	m_stopBtn->Hide();
 	m_runBtn->Show();
 	Layout();
+	return ok;
 }
 void wxLKScriptWindow::StopScript()
 {
@@ -2064,47 +2183,5 @@ void wxLKScriptWindow::OnClose( wxCloseEvent &evt )
 		return;
 	}
 	
-	wxTheApp->ScheduleForDestruction( this );
+	Destroy();
 }
-
-
-/*
-TODO by external classes:
-X	1. allow registration of specific invoke functions	
-		// register SAM-specific invoke functions here
-		RegisterLibrary( invoke_general_funcs(), "General Functions" );
-		RegisterLibrary( invoke_ssc_funcs(), "Direct Access To SSC" );
-		RegisterLibrary( sam_functions(), "SAM Functions");
-
-X	2. Notifications like stop button pressed, etc, i.e. to handle
-		// CancelRunningSimulations();
-
-	3. add buttons to toolbar
-
-	//toolbar->Add( new wxMetroButton( this, ID_VARIABLES, "Variables" ), 0, wxALL|wxEXPAND, 0 );
-
-X	4. handle events.
-	case ID_VARIABLES:
-	{
-		VarSelectDialog dlg( this, "Browse Variables" );
-		if ( Case *c = SamApp::Window()->GetCurrentCase() )
-		{
-			wxString tech, fin;
-			c->GetConfiguration(&tech, &fin);
-			dlg.SetConfiguration( tech, fin );
-		}
-
-		dlg.CenterOnParent();
-		if ( dlg.ShowModal() == wxID_OK )
-		{
-			m_script->InsertText(
-				m_script->GetCurrentPos(), wxJoin(dlg.GetCheckedNames(),',') );
-		}
-	}
-		break;
-
-	case wxID_HELP:
-		SamApp::ShowHelp( "macros" );
-		break;
-
-		*/
