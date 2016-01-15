@@ -9,7 +9,7 @@ class wxNumericCtrl : public wxTextCtrl
 {
 public:
 	// restrict to integers if desired
-	enum Mode { INTEGER, REAL };
+	enum Mode { INTEGER, UNSIGNED, REAL };
 
 	// formatting decimals
 	static const int GENERIC = -1;
@@ -21,14 +21,18 @@ public:
 		const wxPoint &pos = wxDefaultPosition,
 		const wxSize &size = wxDefaultSize );
 
-	
-	void SetValue( double val );
-	double Value() const { return m_value; }
-	double AsDouble() const { return m_value; }
-	int AsInteger() const { return (int)m_value; }
-
 	void SetMode( Mode m );
 	Mode GetMode() const { return m_mode; }
+	
+	void SetValue( int val );
+	void SetValue( size_t val );
+	void SetValue( double val );
+	
+	double Value() const;
+	double AsDouble() const;
+	int AsInteger() const;
+	size_t AsUnsigned() const;
+
 
 	void SetRange( double min, double max );
 	void ClearRange() { m_min = m_max = 0; }
@@ -63,7 +67,12 @@ private:
 	wxString m_postText;
 	double m_min, m_max;
 
-	double m_value;
+	union ValueType {
+		double Real;
+		int Int;
+		size_t Unsigned;
+	};
+	ValueType m_value;
 	wxString m_focusStrVal;
 
 	DECLARE_EVENT_TABLE()

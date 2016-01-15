@@ -62,22 +62,27 @@ void wxNumericCtrl::SetupValidator()
 	wxArrayString excludes;
 	excludes.Add( wxString(wxChar(',')) ); // thousands separator
 
-	if ( m_mode == INTEGER )
+	if ( m_mode == INTEGER || m_mode == UNSIGNED )
 	{
 		excludes.Add("+");
 		excludes.Add("e");
 		excludes.Add("E");
 		excludes.Add(".");
+		
+		if ( m_mode == UNSIGNED )
+			excludes.Add( '-' );
 	}
+
 
 	wxTextValidator val( wxFILTER_NUMERIC|wxFILTER_EXCLUDE_CHAR_LIST );
 	val.SetExcludes( excludes );
 	SetValidator( val );
 }
 
-static bool is_valid_char( bool intonly, wxUniChar c, bool additional, wxUniChar c1 )
+static bool is_valid_char( wxNumericCtrl::Mode mode, wxUniChar c, bool additional, wxUniChar c1 )
 {
-	if (intonly) return wxIsdigit(c) || c == '-' || c=='+' || (additional && c == c1);
+	if ( mode == wxNumericCtrl::INTEGER ) return wxIsdigit(c) || c == '-' || c=='+' || (additional && c == c1);
+	else if ( mode == wxNumericCtrl::UNSIGNED ) return wxIsdigit(c) || (additional && c == c1);
 	else return wxIsdigit(c) || c == '-' || c=='+' || c == '.' || c == 'e' || c == 'E' || (additional && c == c1);
 }
 
@@ -92,20 +97,28 @@ void wxNumericCtrl::Translate()
 
 	// find start of number (all numbers start like integers or a dot)
 	i=0;
-	while(i<len && !is_valid_char(true, strval[i], true, decimsep))
+	while(i<len && !is_valid_char( m_mode == UNSIGNED ? UNSIGNED : INTEGER,
+									strval[i], true, decimsep) )
 		i++;
-
-
+	
 	wxUniChar thousep(','); // default thousands separator
 
 	// get all valid number characters
-	while(i<len && is_valid_char( m_mode==INTEGER, strval[i], true, thousep ))
+	while(i<len && is_valid_char( m_mode, strval[i], true, thousep ))
 	{
 		if ( strval[i]!=thousep ) buf += strval[i];
 		i++;
 	}
 
-	SetValue( wxAtof( buf ) );
+	if ( m_mode == INTEGER ) SetValue( (int)wxAtoi(buf) );
+	else if ( m_mode == UNSIGNED )
+	{
+		char *pEnd = 0;
+		unsigned long long xval = strtoull( buf.c_str(), &pEnd, 10 );
+		SetValue( (size_t)xval );
+	}
+	else
+		SetValue( (double) wxAtof(buf) );
 }
 
 static void AddThousandsSeparators(wxString& s)
@@ -137,30 +150,40 @@ static void AddThousandsSeparators(wxString& s)
     }
 }
 
-wxString wxNumericCtrl::Format( double val, Mode mode, int deci, bool thousep, const wxString &pre, const wxString &post )
+template<typename T> static wxString format_number( T val, wxNumericCtrl::Mode mode, int deci, bool thousep, const wxString &pre, const wxString &post )
 {
 	wxString buf;
 
-	if ( std::isnan(val) ) return "NaN";
 
-	if ( mode == INTEGER )
+	if ( mode == wxNumericCtrl::INTEGER )
 	{
-		if ( deci == HEXADECIMAL ) buf.Printf( "0x%x", (int)val );
+		if ( deci == wxNumericCtrl::HEXADECIMAL ) buf.Printf( "0x%llx", (unsigned long long)val );
 		else
 		{
 			buf.Printf( "%d", (int)val );
 			if ( thousep ) AddThousandsSeparators( buf );
 		}
 	}
+	else if ( mode == wxNumericCtrl::UNSIGNED )
+	{
+		if ( deci == wxNumericCtrl::HEXADECIMAL ) buf.Printf( "0x%llx", (unsigned long long)val );
+		else
+		{
+			buf.Printf( "%llu", (unsigned long long)val );
+			if ( thousep ) AddThousandsSeparators( buf );
+		}
+	}
 	else
 	{
-		if ( deci == GENERIC ) buf.Printf( "%lg", val );
-		else if ( deci == EXPONENTIAL ) buf.Printf( "%le", val );
+		if ( std::isnan((double)val) ) return "NaN";
+		if ( std::isinf((double)val) ) return "Inf";
+		if ( deci == wxNumericCtrl::GENERIC ) buf.Printf( "%lg", (double)val );
+		else if ( deci == wxNumericCtrl::EXPONENTIAL ) buf.Printf( "%le", (double)val );
 		else
 		{
 			wxString fmt;
 			fmt.Printf( "%%.%dlf", deci );
-			buf.Printf( fmt, val );
+			buf.Printf( fmt, (double)val );
 			if ( thousep ) AddThousandsSeparators( buf );
 		}
 	}
@@ -168,52 +191,113 @@ wxString wxNumericCtrl::Format( double val, Mode mode, int deci, bool thousep, c
 	return pre + buf + post;
 }
 
+wxString wxNumericCtrl::Format( double val, Mode mode, int deci, bool thousep, const wxString &pre, const wxString &post )
+{
+	return format_number<double>( val, mode, deci, thousep, pre, post );
+}
+
 void wxNumericCtrl::DoFormat()
 {	
-	ChangeValue( Format( m_value, m_mode, m_decimals, m_thouSep, m_preText, m_postText ) );
+	wxString text;
+	if ( m_mode == INTEGER ) text = format_number<int>( m_value.Int, m_mode, m_decimals, m_thouSep, m_preText, m_postText);
+	else if ( m_mode == UNSIGNED ) text = format_number<size_t>( m_value.Unsigned, m_mode, m_decimals, m_thouSep, m_preText, m_postText );
+	else text = format_number<double>( m_value.Real, m_mode, m_decimals, m_thouSep, m_preText, m_postText );
+
+	ChangeValue( text );
 }
 
 void wxNumericCtrl::SetRange( double min, double max )
 {
 	m_min = min;
 	m_max = max;
-	SetValue( m_value );
+	if ( m_mode == INTEGER ) SetValue( m_value.Int );
+	else if ( m_mode == UNSIGNED ) SetValue( m_value.Unsigned );
+	else SetValue( m_value.Real );
+}
+
+template<typename T> static void set_clamp( T &val, T newval, double min, double max )
+{
+	val = (T)newval;
+
+	if ( min != max )
+	{
+		if ( val < (T)min ) val = (T)min;
+		if ( val > (T)max ) val = (T)max;
+	}
+}
+
+#define DO_SET_VALUE 	if ( m_mode == INTEGER ) set_clamp<int>( m_value.Int, (int)val, m_min, m_max ); \
+						else if ( m_mode == UNSIGNED ) set_clamp<size_t>( m_value.Unsigned, (size_t)val, m_min, m_max ); \
+						else set_clamp<double>( m_value.Real, (double)val, m_min, m_max ); \
+						DoFormat();
+
+void wxNumericCtrl::SetValue( int val )
+{
+	DO_SET_VALUE
+}
+
+void wxNumericCtrl::SetValue( size_t val )
+{
+	DO_SET_VALUE
 }
 
 void wxNumericCtrl::SetValue( double val )
 {
-	if ( m_mode == INTEGER )
-	{
-		m_value = (int)val;
-
-		if ( m_min != m_max )
-		{
-			if ( m_value < (int)m_min ) m_value = (int)m_min;
-			if ( m_value > (int)m_max ) m_value = (int)m_max;
-
-		}
-	}
-	else
-	{
-		m_value = val;
-		
-		if ( m_min != m_max )
-		{
-			if ( m_value < m_min ) m_value = m_min;
-			if ( m_value > m_max ) m_value = m_max;
-		}
-	}
-
-	DoFormat();
+	DO_SET_VALUE
 }
 
 
+double wxNumericCtrl::Value() const
+{
+	return AsDouble();
+}
+
+double wxNumericCtrl::AsDouble() const
+{
+	if ( m_mode == INTEGER ) return (double)m_value.Int;
+	else if ( m_mode == UNSIGNED ) return (double)m_value.Unsigned;
+	else return m_value.Real;
+}
+
+int wxNumericCtrl::AsInteger() const
+{
+	if ( m_mode == INTEGER ) return m_value.Int;
+	else if ( m_mode == UNSIGNED ) return (int)m_value.Unsigned;
+	else return (int)m_value.Real;
+}
+
+size_t wxNumericCtrl::AsUnsigned() const
+{
+	if ( m_mode == INTEGER ) return (size_t)m_value.Int;
+	else if ( m_mode == UNSIGNED ) return m_value.Unsigned;
+	else return (size_t)m_value.Real;
+}
+
 void wxNumericCtrl::SetMode( Mode m )
 {
-	m_mode = m;
-	if ( m_mode == INTEGER ) m_value = (int)m_value;
-	SetupValidator();
+	if ( m == m_mode ) return;
 
+	ValueType old = m_value;
+
+	if ( m_mode == INTEGER )
+	{
+		if ( m == UNSIGNED ) m_value.Unsigned = (size_t)old.Int;
+		else if ( m == REAL ) m_value.Real = (double)old.Int;
+	}
+	else if ( m_mode == UNSIGNED )
+	{
+		if ( m == INTEGER ) m_value.Int = (int)old.Unsigned;
+		else if ( m == REAL ) m_value.Real = (double)old.Unsigned;
+	}
+	else 
+	{
+		if ( m == INTEGER ) m_value.Int = (int)old.Real;
+		else if ( m == UNSIGNED ) m_value.Unsigned = (size_t)old.Real;
+	}
+
+	m_mode = m;
+	
+	SetupValidator();
 	DoFormat();
 }
 

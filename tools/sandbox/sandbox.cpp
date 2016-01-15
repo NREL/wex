@@ -537,6 +537,7 @@ public:
 		rad->Add("Choice 2 ----- x ");
 		wxBoxSizer *sizer2 = new wxBoxSizer( wxHORIZONTAL );
 		sizer2->Add( rad, 1, wxALL|wxEXPAND, 10 );
+		sizer2->Add( new wxNumericCtrl( frame2, wxID_ANY, 1000000, wxNumericCtrl::UNSIGNED ), 0, wxALL|wxEXPAND, 10 );
 		frame2->SetSizerAndFit( sizer2 );
 		frame2->Show();
 		wxSize size2( rad->GetBestSize() );
@@ -546,7 +547,7 @@ public:
 		//frame->Show();
 		
 
-		TestPLPlot( 0 );
+		//TestPLPlot( 0 );
 
 		//TestSnapLayout( 0 );
 		return true;
