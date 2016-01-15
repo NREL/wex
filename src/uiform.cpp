@@ -563,7 +563,8 @@ public:
 	}
 	virtual wxWindow *CreateNative( wxWindow *parent ) {		
 		wxNumericCtrl *num = new wxNumericCtrl( parent, wxID_ANY, Property("Value").GetDouble(), 
-			(wxNumericCtrl::Mode)Property("Mode").GetInteger(), GetPosition(), GetSize() );
+			Property("Mode").GetInteger() == 0 ? wxNumericCtrl::INTEGER : wxNumericCtrl::REAL,
+			GetPosition(), GetSize() );
 		UpdateFormat( num );
 		num->SetForegroundColour( Property("ForeColour").GetColour() );
 		num->SetBackgroundColour( Property("BackColour").GetColour() );
@@ -575,7 +576,7 @@ public:
 		if ( wxNumericCtrl *num = GetNative<wxNumericCtrl>() )
 		{
 			if ( id == "Value" ) num->SetValue( p->GetDouble() );
-			else if ( id == "Mode" ) num->SetMode( (wxNumericCtrl::Mode)p->GetInteger() );
+			else if ( id == "Mode" ) num->SetMode( p->GetInteger()==0 ? wxNumericCtrl::INTEGER : wxNumericCtrl::REAL );
 			else if ( id == "Format" || id == "Decimals" || id == "Prefix" || id == "Suffix" || id == "ThousandsSep" ) UpdateFormat( num );
 			else if ( id == "ForeColour" ) num->SetForegroundColour( p->GetColour() );
 			else if ( id == "BackColour" ) num->SetBackgroundColour( p->GetColour() );
@@ -590,7 +591,7 @@ public:
 		dc.SetFont( *wxNORMAL_FONT );
 		dc.SetTextForeground( Property("ForeColour").GetColour() );
 		wxString text = wxNumericCtrl::Format( Property("Value").GetDouble(),
-			(wxNumericCtrl::Mode)Property("Mode").GetInteger(),
+			Property("Mode").GetInteger() == 0 ? wxNumericCtrl::INTEGER : wxNumericCtrl::REAL,
 			GetDecimals(), Property("ThousandsSep").GetBoolean(),
 			Property("Prefix").GetString(), Property("Suffix").GetString() );
 
