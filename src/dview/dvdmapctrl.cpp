@@ -8,7 +8,7 @@
 
 #include "wex/dview/dvtimeseriesdataset.h"
 #include "wex/dview/dvselectionlist.h"
-#include "wex/dview/dvcolourmap.h"
+#include "wex/plot/plcolourmap.h"
 #include "wex/dview/dvplothelper.h"
 #include "wex/dview/dvdmapctrl.h"
 
@@ -21,7 +21,7 @@ class wxDVDMapPlot : public wxPLPlottable
 {
 private:
 	wxDVTimeSeriesDataSet *m_data;
-	wxDVColourMap *m_colourMap;
+	wxPLColourMap *m_colourMap;
 public:
 	wxDVDMapPlot() : wxPLPlottable()
 	{
@@ -31,7 +31,7 @@ public:
 	}
 
 	void SetData( wxDVTimeSeriesDataSet *d ) { m_data = d; }
-	void SetColourMap( wxDVColourMap *c ) { m_colourMap = c; }
+	void SetColourMap( wxPLColourMap *c ) { m_colourMap = c; }
 	
 	virtual wxString GetXDataLabel() const 
 	{
@@ -312,7 +312,7 @@ void wxDVDMapCtrl::MakeXBoundsNice(double* xMin, double* xMax)
 
 void wxDVDMapCtrl::MakeYBoundsNice(double* yMin, double* yMax)
 {
-	wxDVPlotHelper::ExtendBoundsToNiceNumber(yMax, yMin);
+	wxPLAxis::ExtendBoundsToNiceNumber(yMax, yMin);
 	KeepYBoundsWithinLimits(yMin, yMax);
 }
 
@@ -527,7 +527,7 @@ double wxDVDMapCtrl::GetYMax()
 	return m_yAxis->GetWorldMax();
 }
 
-wxDVColourMap* wxDVDMapCtrl::GetCurrentColourMap()
+wxPLColourMap* wxDVDMapCtrl::GetCurrentColourMap()
 {
 	return m_colourMap;
 }

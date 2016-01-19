@@ -1,55 +1,76 @@
 #include <wx/dcmemory.h>
-#include "wex/dview/dvplothelper.h"
+#include "wex/plot/plaxis.h"
+#include "wex/plot/plcolourmap.h"
 
-#include "wex/dview/dvcolourmap.h"
-
-wxDVColourMap::wxDVColourMap(double min, double max)
+wxPLColourMap::wxPLColourMap(double min, double max)
 {
 	m_min = min;
 	m_max = max;
 	m_format = "%lg";
 }
 
-wxDVColourMap::~wxDVColourMap()
+wxPLColourMap::wxPLColourMap( const wxPLColourMap &cpy )
 {
+	Copy( cpy );
+}
+
+wxPLColourMap::~wxPLColourMap()
+{
+	// nothing to do
+}
+
+wxPLColourMap &wxPLColourMap::operator=( const wxPLColourMap &cpy )
+{
+	if ( this != &cpy )
+		Copy( cpy );
+
+	return *this;
+}
+
+void wxPLColourMap::Copy( const wxPLColourMap &cpy )
+{
+	m_min = cpy.m_min;
+	m_max = cpy.m_max;
+	m_format = cpy.m_format;
+	m_colourList = cpy.m_colourList;
 }
 
 
-void wxDVColourMap::SetScaleMinMax(double min, double max)
+void wxPLColourMap::SetScaleMinMax(double min, double max)
 {
 	m_min = min;
 	m_max = max;
 	InvalidateBestSize();
 }
 
-void wxDVColourMap::SetScaleMin(double min)
+void wxPLColourMap::SetScaleMin(double min)
 {
 	m_min = min;
 	InvalidateBestSize();
 }
 
-void wxDVColourMap::SetScaleMax(double max)
+void wxPLColourMap::SetScaleMax(double max)
 {
 	m_max = max;
 	InvalidateBestSize();
 }
 
-double wxDVColourMap::GetScaleMin()
+double wxPLColourMap::GetScaleMin()
 {
 	return m_min;
 }
 
-double wxDVColourMap::GetScaleMax()
+double wxPLColourMap::GetScaleMax()
 {
 	return m_max;
 }
 
-void wxDVColourMap::ExtendScaleToNiceNumbers()
+void wxPLColourMap::ExtendScaleToNiceNumbers()
 {
-	wxDVPlotHelper::ExtendBoundsToNiceNumber(&m_max, &m_min);
+	wxPLAxis::ExtendBoundsToNiceNumber(&m_max, &m_min);
 }
 
-wxSize wxDVColourMap::CalculateBestSize()
+wxSize wxPLColourMap::CalculateBestSize()
 {
 	wxBitmap bit(100, 100);
 	wxMemoryDC dc(bit);
@@ -68,7 +89,7 @@ wxSize wxDVColourMap::CalculateBestSize()
 	return wxSize( 17+maxWidth, 300 );
 }
 
-void wxDVColourMap::Render(wxDC &dc, const wxRect &geom)
+void wxPLColourMap::Render(wxDC &dc, const wxRect &geom)
 {
 	wxCoord colourBarHeight = 240;
 	if (geom.height < 240)
@@ -102,7 +123,7 @@ void wxDVColourMap::Render(wxDC &dc, const wxRect &geom)
 		dc.DrawText( wxString::Format( wxFormatString(m_format), m_min + i*step), xTextPos, geom.y+wxCoord((10-i)*yTextStep) );	
 }
 
-wxColour wxDVColourMap::ColourForValue(double val)
+wxColour wxPLColourMap::ColourForValue(double val)
 {
 	if ( m_colourList.size() == 0 ) return *wxBLACK;
 	if ( !(wxFinite(val)) || val <= m_min) return m_colourList[0];
@@ -118,7 +139,7 @@ wxColour wxDVColourMap::ColourForValue(double val)
 
 
 wxDVCoarseRainbowColourMap::wxDVCoarseRainbowColourMap( double min, double max )
-	: wxDVColourMap( min, max )
+	: wxPLColourMap( min, max )
 {
 	m_colourList.push_back(wxColour(0, 0, 0));
 	m_colourList.push_back(wxColour(46, 44, 213));
@@ -138,7 +159,7 @@ wxString wxDVCoarseRainbowColourMap::GetName()
 }
 
 wxDVFineRainbowColourMap::wxDVFineRainbowColourMap( double min, double max )
-	: wxDVColourMap( min, max )
+	: wxPLColourMap( min, max )
 {
 	//Color Transition resolution: number of colors to use per transition.
 	//In most cases we use this number.
@@ -177,7 +198,7 @@ wxString wxDVFineRainbowColourMap::GetName()
 }
 
 wxDVJetColourMap::wxDVJetColourMap( double min, double max )
-	: wxDVColourMap( min, max )
+	: wxPLColourMap( min, max )
 {
  static double jet [] = {
 	     0,         0,  132.6000,
@@ -298,7 +319,7 @@ wxString wxDVJetColourMap::GetName()
 
 
 wxDVGrayscaleColourMap::wxDVGrayscaleColourMap( double min, double max )
-	: wxDVColourMap( min, max )
+	: wxPLColourMap( min, max )
 {
 	const size_t ncolours = 50;
 	for ( size_t i=0;i<ncolours;i++ )

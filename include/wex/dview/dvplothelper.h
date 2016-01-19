@@ -20,8 +20,6 @@ namespace wxDVPlotHelper
 	void RoundToNearest(double* numToRound, const double interval);
 	void RoundUpToNearest(double* numToRound, const double interval);
 	void RoundDownToNearest(double* numToRound, const double interval);
-	//ExtendBound will always move a number farther from 0.
-	void ExtendBoundsToNiceNumber(double* upperBoundToExtend, double* lowerBoundToExtend);
 
 	template <typename T> void Swap(T* a, T* b);
 	template <typename T> void BubbleSort(std::vector<T>* data); //Must have > defined.

@@ -9,11 +9,14 @@
 
 #include "wex/plot/plplotctrl.h"
 
-class wxDVColourMap : public wxPLSideWidgetBase
+class wxPLColourMap : public wxPLSideWidgetBase
 {
 public:
-	wxDVColourMap(double min = 0, double max = 1);
-	virtual ~wxDVColourMap();
+	wxPLColourMap(double min = 0, double max = 1);
+	wxPLColourMap( const wxPLColourMap &cpy );
+	virtual ~wxPLColourMap();
+	void Copy( const wxPLColourMap &cpy );
+	wxPLColourMap &operator=( const wxPLColourMap &cpy );
 
 	virtual wxString GetName() = 0;
 
@@ -41,28 +44,28 @@ protected:
 	std::vector<wxColour> m_colourList;
 };
 
-class wxDVCoarseRainbowColourMap : public wxDVColourMap
+class wxDVCoarseRainbowColourMap : public wxPLColourMap
 {
 public:
 	wxDVCoarseRainbowColourMap( double min=0, double max=1 );
 	virtual wxString GetName();
 };
 
-class wxDVFineRainbowColourMap : public wxDVColourMap
+class wxDVFineRainbowColourMap : public wxPLColourMap
 {
 public:
 	wxDVFineRainbowColourMap( double min=0, double max=1 );
 	virtual wxString GetName();
 };
 
-class wxDVJetColourMap : public wxDVColourMap
+class wxDVJetColourMap : public wxPLColourMap
 {
 public:
 	wxDVJetColourMap( double min=0, double max=1 );
 	virtual wxString GetName();
 };
 
-class wxDVGrayscaleColourMap : public wxDVColourMap
+class wxDVGrayscaleColourMap : public wxPLColourMap
 {
 public:
 	wxDVGrayscaleColourMap( double min=0, double max=1 );

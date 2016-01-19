@@ -3,6 +3,8 @@
 
 #include "wex/plot/plplotctrl.h"
 
+class wxPLColourMap;
+
 class wxPLScatterPlot : public wxPLPlottable
 {
 public:
@@ -14,6 +16,12 @@ public:
 		bool scale = false );
 
 	virtual ~wxPLScatterPlot();
+
+	void SetColourMap( wxPLColourMap *cmap ); // does not take ownership of colour map
+	void SetColours( const std::vector<double> &zv );
+	void ClearColours();
+	void SetSizes( const std::vector<double> &sv );
+	void ClearSizes();
 	
 	virtual wxRealPoint At( size_t i ) const;
 	virtual size_t Len() const;
@@ -21,16 +29,18 @@ public:
 	virtual void DrawInLegend( wxDC &dc, const wxRect &rct);
 
 	void SetColour( const wxColour &col ) { m_colour = col; }
-	void SetSize( int radius ) { m_size = radius; }
+	void SetSize( int radius ) { m_radius = radius; }
 	void SetLineOfPerfectAgreementFlag(bool flagValue);
 
 protected:
 	wxColour m_colour;
-	int m_size;
+	int m_radius;
 	bool m_scale;
 	bool m_drawLineOfPerfectAgreement;
 	bool m_isLineOfPerfectAgreementDrawn;
 	std::vector<wxRealPoint> m_data;
+	std::vector<double> m_colours, m_sizes;
+	wxPLColourMap *m_cmap;
 };
 
 #endif

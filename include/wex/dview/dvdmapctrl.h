@@ -21,7 +21,7 @@ class wxChoice;
 class wxTextCtrl;
 class wxCheckBox;
 class wxDVTimeSeriesDataSet;
-class wxDVColourMap;
+class wxPLColourMap;
 class wxDVDMapPlot;
 class wxDVSelectionListCtrl;
 
@@ -39,7 +39,7 @@ public:
 
 	wxString GetCurrentDataName();
 	bool SetCurrentDataName(const wxString& name);
-	wxDVColourMap* GetCurrentColourMap();
+	wxPLColourMap* GetCurrentColourMap();
 	void SetColourMapName(const wxString& name);
 	void SelectDataSetAtIndex(int index);
 	int GetNumberOfSelections();
@@ -120,7 +120,7 @@ private:
 	wxDVTimeSeriesDataSet* m_currentlyShownDataSet;
 
 	wxPLPlotCtrl *m_plotSurface;
-	wxDVColourMap *m_colourMap;
+	wxPLColourMap *m_colourMap;
 	wxDVDMapPlot *m_dmap;
 	wxPLTimeAxis *m_xAxis; // axes are owned by plot surface
 	wxPLLinearAxis *m_yAxis;

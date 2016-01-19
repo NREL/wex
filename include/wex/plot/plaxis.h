@@ -61,6 +61,10 @@ public:
 	
 	virtual void ExtendBound( wxPLAxis *a );
 
+
+	// useful helper function: ExtendBound will always move a number farther from 0.
+	static void ExtendBoundsToNiceNumber( double *upper, double *lower );
+
 protected:
 	void Init();
 	

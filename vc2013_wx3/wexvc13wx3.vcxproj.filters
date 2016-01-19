@@ -54,9 +54,6 @@
     <ClInclude Include="..\include\wex\dview\dvautocolourassigner.h">
       <Filter>dview\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\wex\dview\dvcolourmap.h">
-      <Filter>dview\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\wex\dview\dvdcctrl.h">
       <Filter>dview\Headers</Filter>
     </ClInclude>
@@ -363,12 +360,12 @@
     <ClInclude Include="..\include\wex\tpdlg.h">
       <Filter>wex\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\wex\plot\plcolourmap.h">
+      <Filter>plot\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
-      <Filter>dview\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\dview\dvcolourmap.cpp">
       <Filter>dview\Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\src\dview\dvdcctrl.cpp">
@@ -628,6 +625,9 @@
     </ClCompile>
     <ClCompile Include="..\src\tpdlg.cpp">
       <Filter>wex\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\plot\plcolourmap.cpp">
+      <Filter>plot\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

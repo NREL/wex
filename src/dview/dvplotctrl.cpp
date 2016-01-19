@@ -5,7 +5,7 @@
 
 #include "wex/dview/dvplotctrl.h"
 #include "wex/dview/dvselectionlist.h"
-#include "wex/dview/dvcolourmap.h"
+#include "wex/plot/plcolourmap.h"
 
 #include "wex/icons/time.cpng"
 #include "wex/icons/dmap.cpng"

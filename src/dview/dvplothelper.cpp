@@ -75,40 +75,5 @@ namespace wxDVPlotHelper
 		*max = double(intMax);
 	}
 
-	void ExtendBoundsToNiceNumber(double* upperBoundToExtend, double* lowerBoundToExtend)
-	{
-		int rangeExp;
-		double range = fabs(*upperBoundToExtend - *lowerBoundToExtend);
-
-		if (range < fabs(*upperBoundToExtend) / 10.0)	//If the range is too narrow we must base calculations on the upper bound instead
-		{
-			rangeExp = (int)(floor(log10(fabs(*upperBoundToExtend))));
-		}
-		else
-		{
-			rangeExp = (int)(floor(log10(range)));
-		}
-		rangeExp--;	//Gives us an order of magnitude less white space
-
-		if (*upperBoundToExtend <= 0.0)
-		{
-			*upperBoundToExtend = (ceil(*upperBoundToExtend / pow(double(10), rangeExp)) + 1.0) * pow(double(10), rangeExp);
-			if (*upperBoundToExtend > 0.0) { *upperBoundToExtend = 0.0; }
-		}
-		else
-		{
-			*upperBoundToExtend = (ceil(*upperBoundToExtend / pow(double(10), rangeExp)) + 1.0) * pow(double(10), rangeExp);
-		}
-
-		if (*lowerBoundToExtend >= 0.0)
-		{
-			*lowerBoundToExtend = (floor(*lowerBoundToExtend / pow(double(10), rangeExp)) - 1.0) * pow(double(10), rangeExp);
-			if (*lowerBoundToExtend < 0.0) { *lowerBoundToExtend = 0.0; }
-		}
-		else
-		{
-			*lowerBoundToExtend = (floor(*lowerBoundToExtend / pow(double(10), rangeExp)) - 1.0) * pow(double(10), rangeExp);
-		}
-	}
 	
 }

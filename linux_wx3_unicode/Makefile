@@ -35,7 +35,7 @@ OBJECTS = \
 	numeric.o \
 	dvstatisticstablectrl.o \
 	dvautocolourassigner.o \
-	dvcolourmap.o \
+	plcolourmap.o \
 	dvdcctrl.o \
 	dvdmapctrl.o \
 	dvplotctrl.o \

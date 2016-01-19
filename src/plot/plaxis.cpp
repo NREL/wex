@@ -128,6 +128,44 @@ void wxPLAxis::ExtendBound( wxPLAxis *a )
 	}	
 }
 
+void wxPLAxis::ExtendBoundsToNiceNumber(double *upper, double *lower)
+{
+	double L( *lower );
+	double U( *upper );
+
+	int rangeExp = 1;
+	double range = fabs(U - L);
+
+	// If the range is too narrow we must base calculations on the upper bound instead
+	if (range < fabs(U) / 10.0)
+		rangeExp = (int)(floor(log10(fabs(U))));
+	else
+		rangeExp = (int)(floor(log10(range)));
+	
+	// Gives us an order of magnitude less white space
+	rangeExp--;
+
+	if (U <= 0.0)
+	{
+		U = (ceil(U / pow(double(10), rangeExp)) + 1.0) * pow(double(10), rangeExp);
+		if (U > 0.0) { U = 0.0; }
+	}
+	else
+		U = (ceil(U / pow(double(10), rangeExp)) + 1.0) * pow(double(10), rangeExp);
+
+	if (L >= 0.0)
+	{
+		L = (floor(L / pow(double(10), rangeExp)) - 1.0) * pow(double(10), rangeExp);
+		if (L < 0.0) { L = 0.0; }
+	}
+	else
+		L = (floor(L / pow(double(10), rangeExp)) - 1.0) * pow(double(10), rangeExp);
+
+	// set outputs
+	*upper = U;
+	*lower = L;
+}
+
 wxPLLinearAxis::wxPLLinearAxis( double min, double max, const wxString &label )
 	: wxPLAxis( min, max, label )
 {

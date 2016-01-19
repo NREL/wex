@@ -1939,7 +1939,7 @@ void wxDVTimeSeriesCtrl::AutoscaleYAxis( wxPLAxis *axisToScale, const std::vecto
 	
 	if (needsRescale)
 	{
-		wxDVPlotHelper::ExtendBoundsToNiceNumber(&dataMax, &dataMin);
+		wxPLAxis::ExtendBoundsToNiceNumber(&dataMax, &dataMin);
 		axisToScale->SetWorld(dataMin, dataMax);
 	}
 }

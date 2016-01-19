@@ -22,7 +22,6 @@
     <ClInclude Include="..\include\wex\codeedit.h" />
     <ClInclude Include="..\include\wex\csv.h" />
     <ClInclude Include="..\include\wex\dview\dvautocolourassigner.h" />
-    <ClInclude Include="..\include\wex\dview\dvcolourmap.h" />
     <ClInclude Include="..\include\wex\dview\dvdcctrl.h" />
     <ClInclude Include="..\include\wex\dview\dvdmapctrl.h" />
     <ClInclude Include="..\include\wex\dview\dvfilereader.h" />
@@ -113,6 +112,7 @@
     <ClInclude Include="..\include\wex\pdf\pdfutility.h" />
     <ClInclude Include="..\include\wex\pdf\pdfxml.h" />
     <ClInclude Include="..\include\wex\plot\plaxis.h" />
+    <ClInclude Include="..\include\wex\plot\plcolourmap.h" />
     <ClInclude Include="..\include\wex\plot\plbarplot.h" />
     <ClInclude Include="..\include\wex\plot\plhistplot.h" />
     <ClInclude Include="..\include\wex\plot\pllineplot.h" />
@@ -129,7 +129,6 @@
     <ClCompile Include="..\src\codeedit.cpp" />
     <ClCompile Include="..\src\csv.cpp" />
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp" />
-    <ClCompile Include="..\src\dview\dvcolourmap.cpp" />
     <ClCompile Include="..\src\dview\dvdcctrl.cpp" />
     <ClCompile Include="..\src\dview\dvdmapctrl.cpp" />
     <ClCompile Include="..\src\dview\dvfilereader.cpp" />
@@ -205,6 +204,7 @@
     <ClCompile Include="..\src\pdf\pdfutility.cpp" />
     <ClCompile Include="..\src\pdf\pdfxml.cpp" />
     <ClCompile Include="..\src\plot\plaxis.cpp" />
+    <ClCompile Include="..\src\plot\plcolourmap.cpp" />
     <ClCompile Include="..\src\plot\plbarplot.cpp" />
     <ClCompile Include="..\src\plot\plhistplot.cpp" />
     <ClCompile Include="..\src\plot\pllineplot.cpp" />
