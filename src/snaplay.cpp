@@ -12,20 +12,17 @@ class wxSnapLayout::OverlayWindow : public wxFrame
 {
 	wxStaticText *m_label;
 public:
-	OverlayWindow( wxWindow *parent, const wxPoint &pos, const wxSize &size, bool with_label = true )
+	OverlayWindow( wxWindow *parent, const wxPoint &pos, const wxSize &size )
 		: wxFrame( parent, wxID_ANY, wxEmptyString,  pos, size, 
-			wxBORDER_NONE | wxFRAME_FLOAT_ON_PARENT | wxFRAME_NO_TASKBAR ), m_label( 0 )
+			wxBORDER_NONE | wxFRAME_FLOAT_ON_PARENT | wxFRAME_NO_TASKBAR )
 	{
 		SetBackgroundColour( *wxLIGHT_GREY );
 		SetTransparent( 200 );
 
-		if ( with_label )
-		{
-			m_label = new wxStaticText( this, wxID_ANY, wxEmptyString );
-			m_label->SetFont( wxMetroTheme::Font( wxMT_NORMAL, 16 ) );
-			m_label->SetForegroundColour( *wxWHITE );
-		}
-
+		m_label = new wxStaticText( this, wxID_ANY, wxEmptyString );
+		m_label->SetFont( wxMetroTheme::Font( wxMT_NORMAL, 16 ) );
+		m_label->SetForegroundColour( *wxWHITE );
+		
 		wxBoxSizer *sizer = new wxBoxSizer( wxHORIZONTAL );
 		sizer->AddStretchSpacer();
 		sizer->Add( m_label, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
@@ -737,14 +734,18 @@ void wxSnapLayout::ShowTransparency( wxRect r )
 
 	if ( m_transp == 0 )
 	{
-		m_transp = new OverlayWindow( this, pos, size, m_showSizing && m_handle >= 0 );		
-		m_transp->SetLabel( wxString::Format("%d x %d", size.x, size.y ) );
+		m_transp = new OverlayWindow( this, pos, size );		
+		
+		if ( m_showSizing && m_handle >= 0 )
+			m_transp->SetLabel( wxString::Format("%d x %d", size.x, size.y ) );
 	}
 	else
 	{
 		m_transp->Move( pos );
 		m_transp->SetClientSize( size );
-		m_transp->SetLabel( wxString::Format("%d x %d", size.x, size.y ) );
+
+		if ( m_showSizing && m_handle >= 0 )
+			m_transp->SetLabel( wxString::Format("%d x %d", size.x, size.y ) );
 	}
 
 
