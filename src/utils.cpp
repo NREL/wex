@@ -1048,16 +1048,19 @@ double wxGetScreenHDScale()
 
 #if defined(__WXMSW__)
 #define DPI_NOMINAL 96.0
-#elif (__WXOSX__)
-#define DPI_NOMINAL 72.0
 #else
-#define DPI_NOMINAL 182.0
+#define DPI_NOMINAL 72.0
 #endif
 
 void wxDevicePPIToScale( const wxSize &ppi, double *xs, double *ys )
 {
+// don't try to scale on linux...
+#ifdef __WXGTK__
+	*xs = *ys = 1.0;
+#else
 	*xs = ppi.x/DPI_NOMINAL;
 	*ys = ppi.y/DPI_NOMINAL;
+#endif
 }
 
 void wxGetScreenHDScale( double *xs, double *ys )
