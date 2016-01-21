@@ -44,31 +44,31 @@ protected:
 	std::vector<wxColour> m_colourList;
 };
 
-class wxDVCoarseRainbowColourMap : public wxPLColourMap
+class wxPLCoarseRainbowColourMap : public wxPLColourMap
 {
 public:
-	wxDVCoarseRainbowColourMap( double min=0, double max=1 );
+	wxPLCoarseRainbowColourMap( double min=0, double max=1 );
 	virtual wxString GetName();
 };
 
-class wxDVFineRainbowColourMap : public wxPLColourMap
+class wxPLFineRainbowColourMap : public wxPLColourMap
 {
 public:
-	wxDVFineRainbowColourMap( double min=0, double max=1 );
+	wxPLFineRainbowColourMap( double min=0, double max=1 );
 	virtual wxString GetName();
 };
 
-class wxDVJetColourMap : public wxPLColourMap
+class wxPLJetColourMap : public wxPLColourMap
 {
 public:
-	wxDVJetColourMap( double min=0, double max=1 );
+	wxPLJetColourMap( double min=0, double max=1 );
 	virtual wxString GetName();
 };
 
-class wxDVGrayscaleColourMap : public wxPLColourMap
+class wxPLGrayscaleColourMap : public wxPLColourMap
 {
 public:
-	wxDVGrayscaleColourMap( double min=0, double max=1 );
+	wxPLGrayscaleColourMap( double min=0, double max=1 );
 	virtual wxString GetName();
 };
 

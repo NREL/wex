@@ -138,7 +138,7 @@ wxColour wxPLColourMap::ColourForValue(double val)
 
 
 
-wxDVCoarseRainbowColourMap::wxDVCoarseRainbowColourMap( double min, double max )
+wxPLCoarseRainbowColourMap::wxPLCoarseRainbowColourMap( double min, double max )
 	: wxPLColourMap( min, max )
 {
 	m_colourList.push_back(wxColour(0, 0, 0));
@@ -153,12 +153,12 @@ wxDVCoarseRainbowColourMap::wxDVCoarseRainbowColourMap( double min, double max )
 	m_colourList.push_back(wxColour(255, 0, 0));
 }
 
-wxString wxDVCoarseRainbowColourMap::GetName()
+wxString wxPLCoarseRainbowColourMap::GetName()
 {
 	return _("Coarse Rainbow");
 }
 
-wxDVFineRainbowColourMap::wxDVFineRainbowColourMap( double min, double max )
+wxPLFineRainbowColourMap::wxPLFineRainbowColourMap( double min, double max )
 	: wxPLColourMap( min, max )
 {
 	//Color Transition resolution: number of colors to use per transition.
@@ -192,12 +192,12 @@ wxDVFineRainbowColourMap::wxDVFineRainbowColourMap( double min, double max )
 		m_colourList.push_back(wxColour(255, i * 255 / (2*res), 0));
 }
 
-wxString wxDVFineRainbowColourMap::GetName()
+wxString wxPLFineRainbowColourMap::GetName()
 {
 	return _("Fine Rainbow");
 }
 
-wxDVJetColourMap::wxDVJetColourMap( double min, double max )
+wxPLJetColourMap::wxPLJetColourMap( double min, double max )
 	: wxPLColourMap( min, max )
 {
  static double jet [] = {
@@ -312,13 +312,13 @@ wxDVJetColourMap::wxDVJetColourMap( double min, double max )
 	}
 }
 
-wxString wxDVJetColourMap::GetName()
+wxString wxPLJetColourMap::GetName()
 {
 	return _("Jet");
 }
 
 
-wxDVGrayscaleColourMap::wxDVGrayscaleColourMap( double min, double max )
+wxPLGrayscaleColourMap::wxPLGrayscaleColourMap( double min, double max )
 	: wxPLColourMap( min, max )
 {
 	const size_t ncolours = 50;
@@ -329,7 +329,7 @@ wxDVGrayscaleColourMap::wxDVGrayscaleColourMap( double min, double max )
 	}
 }
 
-wxString wxDVGrayscaleColourMap::GetName()
+wxString wxPLGrayscaleColourMap::GetName()
 {
 	return _("Grayscale");
 }

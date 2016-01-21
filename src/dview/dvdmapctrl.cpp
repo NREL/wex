@@ -155,7 +155,7 @@ wxDVDMapCtrl::wxDVDMapCtrl(wxWindow* parent, wxWindowID id,
 {
 	m_currentlyShownDataSet = 0;
 
-	m_colourMap = new wxDVCoarseRainbowColourMap(0, 24);
+	m_colourMap = new wxPLCoarseRainbowColourMap(0, 24);
 
 	m_plotSurface = new wxPLPlotCtrl( this, ID_DMAP_SURFACE );
 	m_plotSurface->SetBackgroundColour( *wxWHITE );
@@ -545,15 +545,9 @@ void wxDVDMapCtrl::SetColourMapName(const wxString& name)
 	int position = m_colourMapSelector->FindString(name);
 	switch(position)
 	{
-	case 1:
-		m_colourMap = new wxDVFineRainbowColourMap;
-		break;
-	case 2:
-		m_colourMap = new wxDVGrayscaleColourMap;
-		break;
-	default:
-		m_colourMap = new wxDVCoarseRainbowColourMap;
-		break;
+	case 1: m_colourMap = new wxPLFineRainbowColourMap; break;
+	case 2: m_colourMap = new wxPLGrayscaleColourMap; break;
+	default: m_colourMap = new wxPLCoarseRainbowColourMap; break;
 	}
 
 	if (position != wxNOT_FOUND)
