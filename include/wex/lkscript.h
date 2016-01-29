@@ -70,7 +70,7 @@ public:
 	bool CompileAndLoad( const wxString &work_dir = wxEmptyString );
 	void UpdateInfo();
 
-	enum { DEBUG_RUN, DEBUG_STEP };
+	enum { DEBUG_RUN, DEBUG_STEP, DEBUG_SINGLE };
 	bool Debug(int mode);
 
 	lk::env_t *GetEnvironment() { return m_env; }
@@ -120,6 +120,7 @@ private:
 	bool m_stopScriptFlag;
 	wxWindow *m_topLevelWindow;
 	wxLKDebugger *m_debugger;
+	bool m_debuggerFirstShow;
 
 	DECLARE_EVENT_TABLE();
 };

@@ -880,56 +880,71 @@ lk::fcall_t* wxLKStdOutFunctions()
 }
 class wxLKDebugger : public wxFrame
 {
-	wxSimplebook *m_notebook;
-	wxTextCtrl *m_view;
+	wxTextCtrl *m_vars;
 	wxLKScriptCtrl *m_lcs;
 	wxListBox *m_asm;
-	wxMetroButton *m_viewButton;
-
+	wxTextCtrl *m_stack;
+	wxMetroButton *m_step1;
+	wxPanel *m_panel;
 	lk::vm *m_vm;
+
 public:
-	enum { ID_RESUME = wxID_HIGHEST+391, ID_STEP, ID_BREAK, ID_VIEW };
+	enum { ID_RESUME = wxID_HIGHEST+391, ID_STEP, ID_STEP_ASM, ID_BREAK, ID_SWITCH_ADVANCED };
 
 	wxLKDebugger( wxLKScriptCtrl *lcs, lk::vm *vm )
 		: wxFrame( lcs, wxID_ANY, "Debugger", wxDefaultPosition, wxSize( 450, 310 ), 
-			wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN | wxRESIZE_BORDER | wxFRAME_TOOL_WINDOW | wxFRAME_FLOAT_ON_PARENT ), m_lcs(lcs), m_vm(vm)
+			wxRESIZE_BORDER|wxCAPTION|wxCLOSE_BOX|wxFRAME_TOOL_WINDOW|wxFRAME_FLOAT_ON_PARENT ), 
+			m_lcs(lcs), m_vm(vm)
 	{
-		wxPanel *panel = new wxPanel( this );
-		panel->SetBackgroundColour( wxMetroTheme::Colour( wxMT_FOREGROUND ) );
+		m_panel = new wxPanel(this);
+		m_panel->SetBackgroundColour( wxMetroTheme::Colour( wxMT_FOREGROUND ) );
 
 		wxBoxSizer *button_sizer = new wxBoxSizer( wxHORIZONTAL );
-		button_sizer->Add( new wxMetroButton( panel, ID_STEP, "Step" ), 0, wxALL|wxEXPAND, 0 );
-		button_sizer->Add( new wxMetroButton( panel, ID_RESUME, "Resume" ), 0, wxALL|wxEXPAND, 0 );
-		button_sizer->Add( new wxMetroButton( panel, ID_BREAK, "Break" ), 0, wxALL|wxEXPAND, 0 );
-		button_sizer->Add( m_viewButton = new wxMetroButton( panel, ID_VIEW, "Assembly" ), 0, wxALL|wxEXPAND, 0 );
-		button_sizer->AddStretchSpacer();
-		button_sizer->Add( new wxMetroButton( panel, wxID_CLOSE, "Close" ), 0, wxALL|wxEXPAND, 0 );
-		
-		m_notebook = new wxSimplebook( panel, wxID_ANY );
-		
-		m_view = new wxTextCtrl( m_notebook, wxID_ANY, "ready", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY|wxTE_DONTWRAP|wxBORDER_NONE );
-		m_notebook->AddPage( m_view, "Variables", true );
+		button_sizer->Add( new wxMetroButton( m_panel, ID_STEP, "Step" ), 0, wxALL|wxEXPAND, 0 );
 
-		m_asm = new wxListBox( m_notebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, 0, wxLB_HSCROLL );
-		m_asm->SetFont( wxFont( 11, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Consolas" ) );
+		m_step1 = new wxMetroButton( m_panel, ID_STEP_ASM, "Step 1" );
+		m_step1->Hide();
+		button_sizer->Add( m_step1, 0, wxALL|wxEXPAND, 0 );
+
+		button_sizer->Add( new wxMetroButton( m_panel, ID_RESUME, "Resume" ), 0, wxALL|wxEXPAND, 0 );
+		button_sizer->Add( new wxMetroButton( m_panel, ID_BREAK, "Break" ), 0, wxALL|wxEXPAND, 0 );
+		button_sizer->AddStretchSpacer();
+		button_sizer->Add( new wxMetroButton( m_panel, wxID_CLOSE, "Close" ), 0, wxALL|wxEXPAND, 0 );
+				
+		m_vars = new wxTextCtrl( m_panel, wxID_ANY, "ready", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY|wxTE_DONTWRAP|wxBORDER_NONE );
+	
+		m_asm = new wxListBox( m_panel, wxID_ANY, wxDefaultPosition, 
+			wxDefaultSize, 0, 0, wxLB_HSCROLL|wxBORDER_NONE );
+		m_asm->SetFont( wxFont( 10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Consolas" ) );
 		m_asm->SetForegroundColour( "Forest green" );
-		m_notebook->AddPage( m_asm, "Assembly" );
+		m_asm->Hide();
+
+		m_stack = new wxTextCtrl( m_panel, wxID_ANY, "stack", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY|wxTE_DONTWRAP|wxBORDER_NONE );
+		m_stack->SetForegroundColour( *wxRED );
+		m_stack->Hide();
+
+		wxBoxSizer *vsplit = new wxBoxSizer( wxVERTICAL );
+		vsplit->Add( m_asm, 3, wxALL|wxEXPAND, 0 );
+		vsplit->Add( m_stack, 1, wxALL|wxEXPAND, 0 );
+	
+		wxBoxSizer *hsplit = new wxBoxSizer( wxHORIZONTAL );
+		hsplit->Add( m_vars, 2, wxALL|wxEXPAND, 0 );
+		hsplit->Add( vsplit, 1, wxALL|wxEXPAND, 0 );
 
 		wxBoxSizer *main_sizer = new wxBoxSizer( wxVERTICAL );
 		main_sizer->Add( button_sizer, 0, wxALL|wxEXPAND, 0 );
-
-		main_sizer->Add( m_notebook, 1, wxALL|wxEXPAND, 0 );
-		panel->SetSizer( main_sizer );	
+		main_sizer->Add( hsplit, 1, wxALL|wxEXPAND, 0 );
+		m_panel->SetSizer( main_sizer );	
 	}
 
 	void PrependMessage( const wxString &msg )
 	{
-		m_view->ChangeValue( msg + "\n\n" + m_view->GetValue() );
+		m_vars->ChangeValue( msg + "\n\n" + m_vars->GetValue() );
 	}
 
 	void SetMessage( const wxString &msg )
 	{
-		m_view->ChangeValue( msg );
+		m_vars->ChangeValue( msg );
 	}
 
 	void UpdateAssembly( const wxArrayString &asmlines )
@@ -971,7 +986,18 @@ public:
 				has_more = F.env.next( key, val );
 			}
 		}
-		m_view->ChangeValue( sout );
+		m_vars->ChangeValue( sout );
+
+		
+		size_t sp = 0;
+		lk::vardata_t *stack = m_vm->get_stack( &sp );
+		sout = wxString::Format("stack [%d]:\n", (int)sp);
+		for( size_t i=0;i<sp;i++ )
+		{
+			lk::vardata_t &sval = stack[sp-i-1];
+			sout += "\t" + sval.as_string() + "\t\t(" + sval.typestr() + ")\n";
+		}
+		m_stack->ChangeValue( sout );
 	}
 
 	void OnCommand( wxCommandEvent &evt )
@@ -984,25 +1010,14 @@ public:
 		case ID_STEP:
 			m_lcs->Debug( wxLKScriptCtrl::DEBUG_STEP );
 			break;
+		case ID_STEP_ASM:
+			m_lcs->Debug( wxLKScriptCtrl::DEBUG_SINGLE );
+			break;
 		case ID_BREAK:
 			m_lcs->Stop();
 			break;
 		case wxID_CLOSE:
 			Close();
-			break;
-
-		case ID_VIEW:
-			if ( m_notebook->GetSelection() == 0 )
-			{
-				m_notebook->SetSelection( 1 );
-				m_viewButton->SetLabel("Variables");
-			}
-			else
-			{
-				m_notebook->SetSelection( 0 );
-				m_viewButton->SetLabel("Assembly");
-			}
-			Layout();
 			break;
 		}
 	}
@@ -1016,6 +1031,24 @@ public:
 		Hide();
 		evt.Veto();
 	}
+	
+	void OnCharHook( wxKeyEvent &evt )
+	{
+		int key = evt.GetKeyCode();
+		if ( key == WXK_F2
+			|| key == 'A' )
+		{
+			bool show = !m_asm->IsShown();
+			m_asm->Show( show );
+			m_stack->Show( show );
+			m_step1->Show( show );
+
+			m_panel->Layout();
+			Refresh();
+		}
+		
+		evt.Skip();
+	}
 
 	DECLARE_EVENT_TABLE();
 };
@@ -1024,8 +1057,9 @@ BEGIN_EVENT_TABLE( wxLKDebugger, wxFrame )
 	EVT_BUTTON( wxLKDebugger::ID_RESUME, wxLKDebugger::OnCommand )
 	EVT_BUTTON( wxLKDebugger::ID_STEP, wxLKDebugger::OnCommand )
 	EVT_BUTTON( wxLKDebugger::ID_BREAK, wxLKDebugger::OnCommand )
-	EVT_BUTTON( wxLKDebugger::ID_VIEW, wxLKDebugger::OnCommand )
+	EVT_BUTTON( wxLKDebugger::ID_STEP_ASM, wxLKDebugger::OnCommand )
 	EVT_BUTTON( wxID_CLOSE, wxLKDebugger::OnCommand )
+	EVT_CHAR_HOOK( wxLKDebugger::OnCharHook )
 	EVT_CLOSE( wxLKDebugger::OnClose )
 END_EVENT_TABLE()
 
@@ -1048,6 +1082,8 @@ wxLKScriptCtrl::wxLKScriptCtrl( wxWindow *parent, int id,
 
 	m_debugger = new wxLKDebugger( this, &m_vm );
 	m_debugger->Hide();
+	m_debuggerFirstShow = true;
+
 	m_syntaxCheck = true;
 	m_env = new lk::env_t;	
 	m_scriptRunning = false;
@@ -1611,6 +1647,14 @@ bool wxLKScriptCtrl::CompileAndLoad( const wxString &work_dir )
 
 bool wxLKScriptCtrl::Debug( int mode )
 {
+	if ( m_debuggerFirstShow )
+	{
+		wxPoint pt( ClientToScreen( GetPosition() ) );
+		wxSize sz( GetClientSize() );
+		m_debugger->SetPosition( wxPoint(pt.x + sz.x/2, pt.y + 30) );
+		m_debuggerFirstShow = false;
+	}
+
 	m_debugger->Show();
 	
 	m_debugger->UpdateAssembly( wxStringTokenize( m_assembly, "\n" ) );
@@ -1638,7 +1682,12 @@ bool wxLKScriptCtrl::Debug( int mode )
 	m_debugger->SetMessage( "running...\n" );
 
 	m_stopScriptFlag = false;
-	bool ok  = m_vm.run( mode == DEBUG_RUN ? lk::vm::DEBUG_RUN : lk::vm::DEBUG_STEP );
+
+	lk::vm::ExecMode em( lk::vm::SINGLE );
+	if ( mode == DEBUG_RUN ) em = lk::vm::DEBUG;
+	else if ( mode == DEBUG_STEP ) em = lk::vm::STEP;
+
+	bool ok = m_vm.run( em );
 
 	if ( !ok )
 	{
