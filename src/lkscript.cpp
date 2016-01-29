@@ -17,16 +17,15 @@
 #include "wex/csv.h"
 #include "wex/metro.h"
 
-#include <lk_lex.h>
-#include <lk_absyn.h>
-#include <lk_eval.h>
-#include <lk_stdlib.h>
-#include <lk_invoke.h>
-//#include <lk_math.h>
-#include <lk_vm.h>
-#include <lk_codegen.h>
-#include <lk_env.h>
-#include <lk_parse.h>
+#include <lk/lex.h>
+#include <lk/absyn.h>
+#include <lk/eval.h>
+#include <lk/stdlib.h>
+#include <lk/invoke.h>
+#include <lk/vm.h>
+#include <lk/codegen.h>
+#include <lk/env.h>
+#include <lk/parse.h>
 
 
 #include "wex/plot/plplotctrl.h"

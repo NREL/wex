@@ -45,6 +45,7 @@
     <ClInclude Include="..\include\wex\lkscript.h" />
     <ClInclude Include="..\include\wex\md5.h" />
     <ClInclude Include="..\include\wex\metro.h" />
+    <ClInclude Include="..\include\wex\mswfatal.h" />
     <ClInclude Include="..\include\wex\mtrand.h" />
     <ClInclude Include="..\include\wex\pagelayout.h" />
     <ClInclude Include="..\include\wex\pageobjects.h" />
@@ -152,6 +153,7 @@
     <ClCompile Include="..\src\lkscript.cpp" />
     <ClCompile Include="..\src\md5.cpp" />
     <ClCompile Include="..\src\metro.cpp" />
+    <ClCompile Include="..\src\mswfatal.cpp" />
     <ClCompile Include="..\src\pagelayout.cpp" />
     <ClCompile Include="..\src\pageobjects.cpp" />
     <ClCompile Include="..\src\plot\plwindrose.cpp" />
@@ -314,7 +316,7 @@
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\include;$(WXMSW3)\lib\vc_lib\mswud;$(LKDIR);$(WXMSW3)\include;.;$(WXMSW3)\samples;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\include;$(WXMSW3)\lib\vc_lib\mswud;$(LKDIR)\include;$(WXMSW3)\include;.;$(WXMSW3)\samples;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE=1;_CRT_NON_CONFORMING_SWPRINTFS=1;_SCL_SECURE_NO_WARNINGS=1;__WXMSW__;_UNICODE;_WINDOWS;NOPCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Sync</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -349,7 +351,7 @@
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\include;$(WXMSW3)\lib\vc_x64_lib\mswud;$(LKDIR);$(WXMSW3)\include;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\include;$(WXMSW3)\lib\vc_x64_lib\mswud;$(LKDIR)\include;$(WXMSW3)\include;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE=1;_CRT_NON_CONFORMING_SWPRINTFS=1;_SCL_SECURE_NO_WARNINGS=1;__WXMSW__;_UNICODE;_WINDOWS;NOPCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Sync</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -383,7 +385,7 @@
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\include;$(WXMSW3)\lib\vc_lib\mswu;$(LKDIR);$(WXMSW3)\include;.;$(WXMSW3)\samples;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\include;$(WXMSW3)\lib\vc_lib\mswu;$(LKDIR)\include;$(WXMSW3)\include;.;$(WXMSW3)\samples;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE=1;_CRT_NON_CONFORMING_SWPRINTFS=1;_SCL_SECURE_NO_WARNINGS=1;__WXMSW__;NDEBUG;_UNICODE;_WINDOWS;NOPCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -418,7 +420,7 @@
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\include;$(WXMSW3)\lib\vc_x64_lib\mswu;$(LKDIR);$(WXMSW3)\include;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\include;$(WXMSW3)\lib\vc_x64_lib\mswu;$(LKDIR)\include;$(WXMSW3)\include;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE=1;_CRT_NON_CONFORMING_SWPRINTFS=1;_SCL_SECURE_NO_WARNINGS=1;__WXMSW__;NDEBUG;_UNICODE;_WINDOWS;NOPCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>

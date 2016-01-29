@@ -363,6 +363,9 @@
     <ClInclude Include="..\include\wex\plot\plcolourmap.h">
       <Filter>plot\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\wex\mswfatal.h">
+      <Filter>wex\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
@@ -628,6 +631,9 @@
     </ClCompile>
     <ClCompile Include="..\src\plot\plcolourmap.cpp">
       <Filter>plot\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\mswfatal.cpp">
+      <Filter>wex\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

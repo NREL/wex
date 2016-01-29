@@ -6,9 +6,9 @@
 
 #define LK_USE_WXWIDGETS 1
 
-#include <lk_absyn.h>
-#include <lk_env.h>
-#include <lk_vm.h>
+#include <lk/absyn.h>
+#include <lk/env.h>
+#include <lk/vm.h>
 
 #include "wex/codeedit.h"
 
@@ -20,8 +20,6 @@
 #define wxLK_STDLIB_HTTP   0x0020
 #define wxLK_STDLIB_MISC   0x0040
 #define wxLK_STDLIB_SOUT   0x0080 // out,outln via wxLKScriptCtrl::OnOutput() virtual method
-#define wxLK_STDLIB_BIOS   0x0100
-
 
 #define wxLK_STDLIB_ALL (wxLK_STDLIB_BASIC|wxLK_STDLIB_STRING| \
 	wxLK_STDLIB_MATH|wxLK_STDLIB_WXUI|wxLK_STDLIB_PLOT| \
