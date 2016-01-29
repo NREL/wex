@@ -7,6 +7,8 @@
 #include <wx/splitter.h>
 #include <wx/busyinfo.h>
 #include <wx/app.h>
+#include <wx/tokenzr.h>
+#include <wx/simplebook.h>
 
 #include <memory>
 
@@ -878,11 +880,15 @@ lk::fcall_t* wxLKStdOutFunctions()
 }
 class wxLKDebugger : public wxFrame
 {
+	wxSimplebook *m_notebook;
 	wxTextCtrl *m_view;
 	wxLKScriptCtrl *m_lcs;
+	wxListBox *m_asm;
+	wxMetroButton *m_viewButton;
+
 	lk::vm *m_vm;
 public:
-	enum { ID_RESUME = wxID_HIGHEST+391, ID_STEP, ID_BREAK };
+	enum { ID_RESUME = wxID_HIGHEST+391, ID_STEP, ID_BREAK, ID_VIEW };
 
 	wxLKDebugger( wxLKScriptCtrl *lcs, lk::vm *vm )
 		: wxFrame( lcs, wxID_ANY, "Debugger", wxDefaultPosition, wxSize( 450, 310 ), 
@@ -895,14 +901,30 @@ public:
 		button_sizer->Add( new wxMetroButton( panel, ID_STEP, "Step" ), 0, wxALL|wxEXPAND, 0 );
 		button_sizer->Add( new wxMetroButton( panel, ID_RESUME, "Resume" ), 0, wxALL|wxEXPAND, 0 );
 		button_sizer->Add( new wxMetroButton( panel, ID_BREAK, "Break" ), 0, wxALL|wxEXPAND, 0 );
+		button_sizer->Add( m_viewButton = new wxMetroButton( panel, ID_VIEW, "Assembly" ), 0, wxALL|wxEXPAND, 0 );
 		button_sizer->AddStretchSpacer();
 		button_sizer->Add( new wxMetroButton( panel, wxID_CLOSE, "Close" ), 0, wxALL|wxEXPAND, 0 );
 		
-		m_view = new wxTextCtrl( panel, wxID_ANY, "ready", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY|wxTE_DONTWRAP|wxBORDER_NONE );
+		m_notebook = new wxSimplebook( panel, wxID_ANY );
+		
+		m_view = new wxTextCtrl( m_notebook, wxID_ANY, "ready", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY|wxTE_DONTWRAP|wxBORDER_NONE );
+		m_notebook->AddPage( m_view, "Variables", true );
+
+		m_asm = new wxListBox( m_notebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, 0, wxLB_HSCROLL );
+		m_asm->SetFont( wxFont( 11, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Consolas" ) );
+		m_asm->SetForegroundColour( "Forest green" );
+		m_notebook->AddPage( m_asm, "Assembly" );
+
 		wxBoxSizer *main_sizer = new wxBoxSizer( wxVERTICAL );
 		main_sizer->Add( button_sizer, 0, wxALL|wxEXPAND, 0 );
-		main_sizer->Add( m_view, 1, wxALL|wxEXPAND, 0 );
+
+		main_sizer->Add( m_notebook, 1, wxALL|wxEXPAND, 0 );
 		panel->SetSizer( main_sizer );	
+	}
+
+	void PrependMessage( const wxString &msg )
+	{
+		m_view->ChangeValue( msg + "\n\n" + m_view->GetValue() );
 	}
 
 	void SetMessage( const wxString &msg )
@@ -910,10 +932,22 @@ public:
 		m_view->ChangeValue( msg );
 	}
 
+	void UpdateAssembly( const wxArrayString &asmlines )
+	{		
+		m_asm->Freeze();
+		m_asm->Clear();
+		m_asm->Append( asmlines );
+		m_asm->Thaw();
+	}
+
 	void UpdateView()
-	{
+	{		
+		size_t ip = m_vm->get_ip();
+		if ( ip  <  m_asm->GetCount() )
+			m_asm->SetSelection( ip );
+
 		wxString sout;
-		
+
 		wxString err( m_vm->error() );
 		if ( !err.IsEmpty() )
 			sout += err + "\n\n";
@@ -956,6 +990,20 @@ public:
 		case wxID_CLOSE:
 			Close();
 			break;
+
+		case ID_VIEW:
+			if ( m_notebook->GetSelection() == 0 )
+			{
+				m_notebook->SetSelection( 1 );
+				m_viewButton->SetLabel("Variables");
+			}
+			else
+			{
+				m_notebook->SetSelection( 0 );
+				m_viewButton->SetLabel("Assembly");
+			}
+			Layout();
+			break;
 		}
 	}
 
@@ -976,6 +1024,7 @@ BEGIN_EVENT_TABLE( wxLKDebugger, wxFrame )
 	EVT_BUTTON( wxLKDebugger::ID_RESUME, wxLKDebugger::OnCommand )
 	EVT_BUTTON( wxLKDebugger::ID_STEP, wxLKDebugger::OnCommand )
 	EVT_BUTTON( wxLKDebugger::ID_BREAK, wxLKDebugger::OnCommand )
+	EVT_BUTTON( wxLKDebugger::ID_VIEW, wxLKDebugger::OnCommand )
 	EVT_BUTTON( wxID_CLOSE, wxLKDebugger::OnCommand )
 	EVT_CLOSE( wxLKDebugger::OnClose )
 END_EVENT_TABLE()
@@ -1544,6 +1593,10 @@ bool wxLKScriptCtrl::CompileAndLoad( const wxString &work_dir )
 		std::vector<lk_string> id;
 		std::vector<lk::srcpos_t> dbg;		
 
+		m_assembly.Clear();
+		m_bytecode.Clear();
+		cg.textout( m_assembly, m_bytecode );
+
 		cg.bytecode( code, data, id, dbg );
 		m_vm.load( code, data, id, dbg );
 		m_vm.initialize( m_env );
@@ -1556,17 +1609,28 @@ bool wxLKScriptCtrl::CompileAndLoad( const wxString &work_dir )
 	}
 }
 
-bool wxLKScriptCtrl::Debug(int mode )
+bool wxLKScriptCtrl::Debug( int mode )
 {
 	m_debugger->Show();
 	
+	m_debugger->UpdateAssembly( wxStringTokenize( m_assembly, "\n" ) );
+
 	m_vm.clrbrk();
 	if ( mode == DEBUG_RUN )
 	{
 		// update all breakpoint markers in vm
 		std::vector<int> brk( GetBreakpoints() );
 		for( size_t i=0;i<brk.size();i++ )
-			m_vm.setbrk( brk[i] + 1 );
+		{
+			int ibrk = m_vm.setbrk( brk[i] + 1 );
+			if ( ibrk-1 != brk[i] )
+			{
+				// update breakpoint position indicators
+				// to the actual line where something will break
+				RemoveBreakpoint( brk[i] );
+				AddBreakpoint( ibrk-1 );
+			}
+		}
 	}
 
 	HideLineArrow();
@@ -1586,12 +1650,15 @@ bool wxLKScriptCtrl::Debug(int mode )
 	
 	size_t ip = m_vm.get_ip();
 	const std::vector<lk::srcpos_t> &dbg = m_vm.get_debuginfo();
+	
+	// always update the view.
+	m_debugger->UpdateView();
+	
 	if ( ip < (int)dbg.size() )
 	{
-		ShowLineArrow( dbg[ip].line-1 );
-		m_debugger->UpdateView();
+		ShowLineArrow( dbg[ip].stmt-1 );
 		
-		int line = dbg[ip].line;
+		int line = dbg[ip].stmt;
 		if ( line > 0 && line <= GetNumberOfLines() )
 		{
 			int nnl = LinesOnScreen();
@@ -1601,7 +1668,7 @@ bool wxLKScriptCtrl::Debug(int mode )
 		}
 	}
 	else
-		m_debugger->SetMessage( "finished.\n" );
+		m_debugger->PrependMessage( "*** finished ***" );
 
 	return ok;
 }

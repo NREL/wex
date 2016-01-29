@@ -114,6 +114,7 @@ private:
 		virtual bool on_run( const lk::srcpos_t &sp );
 	};
 	my_vm m_vm;
+	wxString m_assembly, m_bytecode;
 	
 	bool m_scriptRunning;
 	bool m_stopScriptFlag;
