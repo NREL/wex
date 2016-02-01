@@ -5,7 +5,7 @@ LKLIB = lkuxwx3.a
 
 CC = gcc
 CXX = g++
-CFLAGS = -fPIC -std=c++0x -Wall -O2 `wx-config-3 --cflags` -I../include -I$(LKDIR)
+CFLAGS = -fPIC -std=c++0x -Wall -O2 `wx-config-3 --cflags` -I../include -I$(LKDIR)/include
 CXXFLAGS = $(CFLAGS)
 
 LIBNAME = wexuxwx3
