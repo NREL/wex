@@ -915,7 +915,7 @@ public:
 	
 		m_asm = new wxListBox( m_panel, wxID_ANY, wxDefaultPosition, 
 			wxDefaultSize, 0, 0, wxLB_HSCROLL|wxBORDER_NONE );
-		m_asm->SetFont( wxFont( 10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Consolas" ) );
+		m_asm->SetFont( wxFont( 9, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Consolas" ) );
 		m_asm->SetForegroundColour( "Forest green" );
 		m_asm->Hide();
 
@@ -977,15 +977,23 @@ public:
 			if ( i==nfrm-1 ) sout += "main:\n";
 			else sout += F.id + "():\n";
 
+			wxArrayString keys;
 			lk_string key;
 			lk::vardata_t *val;
 			bool has_more = F.env.first( key, val );
 			while( has_more )
 			{
-				sout += "    " + key + "  =  " + val->as_string() + "\n";
+				keys.Add( key );
 				has_more = F.env.next( key, val );
 			}
+
+			keys.Sort();
+
+			for( size_t k=0;k<keys.size();k++ )
+				if ( val = F.env.lookup( keys[k], false ) )
+					sout += "    " + keys[k] + "  =  " + val->as_string() + "\n";
 		}
+
 		m_vars->ChangeValue( sout );
 
 		
