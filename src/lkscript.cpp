@@ -1285,6 +1285,7 @@ public:
 		tools->Add( label, 0, wxLEFT|wxALIGN_CENTER_VERTICAL, 4 );
 		tools->Add( m_filter, 0, wxALL|wxALIGN_CENTER_VERTICAL, 3 );
 		tools->AddStretchSpacer();
+		tools->Add( new wxMetroButton( this, wxID_CLOSE, "Close" ), 0, wxALL|wxALIGN_CENTER_VERTICAL, 0 );
 
 		wxBoxSizer *main = new wxBoxSizer( wxVERTICAL );
 		main->Add( tools, 0, wxALL|wxEXPAND, 0 );
@@ -1297,11 +1298,18 @@ public:
 		m_list->Filter( m_filter->GetValue() );
 	}
 
+	void OnCommand( wxCommandEvent &evt )
+	{
+		if ( evt.GetId() == wxID_CLOSE )
+			Close();
+	}
+
 	DECLARE_EVENT_TABLE();
 };
 
 BEGIN_EVENT_TABLE( LKDocWindow, wxFrame )
 	EVT_TEXT( ID_FILTER, LKDocWindow::OnFilter )
+	EVT_BUTTON( wxID_CLOSE, LKDocWindow::OnCommand )
 END_EVENT_TABLE()
 
 
