@@ -135,18 +135,23 @@ public:
 		AxisPos *xap, AxisPos *yap, PlotPos *ppos );
 
 	wxPLAxis *GetXAxis1() { return m_x1.axis; }
+	wxPLAxis &X1() { return Axis(X_BOTTOM); }
 	void SetXAxis1( wxPLAxis *a ) { m_x1.set( a ); }
 	
 	wxPLAxis *GetXAxis2() { return m_x2.axis; }
+	wxPLAxis &X2() { return Axis(X_TOP); }
 	void SetXAxis2( wxPLAxis *a ) { return m_x2.set( a ); }
 	
 	wxPLAxis *GetYAxis1( PlotPos ppos = PLOT_TOP ) { return m_y1[ppos].axis; }
+	wxPLAxis &Y1( PlotPos ppos = PLOT_TOP ) { return Axis(Y_LEFT,ppos); }
 	void SetYAxis1( wxPLAxis *a, PlotPos ppos = PLOT_TOP ) { m_y1[ppos].set( a ); }
 	
 	wxPLAxis *GetYAxis2( PlotPos ppos = PLOT_TOP ) { return m_y2[ppos].axis; }
+	wxPLAxis &Y2( PlotPos ppos = PLOT_TOP ) { return Axis(Y_RIGHT,ppos); }
 	void SetYAxis2( wxPLAxis *a, PlotPos ppos = PLOT_TOP ) { m_y2[ppos].set( a ); }
 
 	wxPLAxis *GetAxis( AxisPos axispos, PlotPos ppos = PLOT_TOP );
+	wxPLAxis &Axis( AxisPos axispos, PlotPos ppos = PLOT_TOP );
 	void SetAxis( wxPLAxis *a, AxisPos axispos, PlotPos ppos = PLOT_TOP );
 	
 	void SetScaleTextSize( bool scale ) { m_scaleTextSize = scale; }
@@ -188,9 +193,10 @@ public:
 	void WriteDataAsText( wxUniChar sep, wxOutputStream &os, 
 		bool visible_only = true, bool include_x = true );
 
-	bool ShowExportDialog( wxString &exp_file_name, wxBitmapType &exp_bitmap_type );
-	bool Export( const wxString &file, wxBitmapType type = wxBITMAP_TYPE_PNG,
-		int width=-1, int height=-1 );
+	wxString ShowExportDialog();
+
+	// handle pdf,svg,bmp,jpg,png,xpm,tiff
+	bool Export( const wxString &file, int width=-1, int height=-1 );
 	bool ExportPdf( const wxString &file );
 	bool ExportSvg( const wxString &file );
 	wxBitmap GetBitmap( int width=-1, int height=-1 );

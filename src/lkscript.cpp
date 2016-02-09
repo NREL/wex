@@ -136,6 +136,7 @@ public:
 			(parent != 0 ? wxFRAME_FLOAT_ON_PARENT : 0 )|wxCLOSE_BOX|wxCLIP_CHILDREN|wxCAPTION|wxRESIZE_BORDER )
 	{
 		m_plot = new wxPLPlotCtrl( this, wxID_ANY );
+		m_plot->SetHighlightMode( wxPLPlotCtrl::HIGHLIGHT_ZOOM );
 		m_plot->SetBackgroundColour(*wxWHITE);
 		Show();
 	}
@@ -392,7 +393,7 @@ void fcall_plotopt( lk::invoke_t &cxt )
 		double scale = arg->as_number();
 		if ( scale > 0.2 && scale < 5 )
 		{
-			wxFont font( plot->GetFont() );
+			wxFont font( *wxNORMAL_FONT );
 			double point = font.GetPointSize();
 			point *= scale;
 			font.SetPointSize( (int)point );
@@ -422,14 +423,13 @@ void fcall_plotopt( lk::invoke_t &cxt )
 
 void fcall_plotout( lk::invoke_t &cxt )
 {
-	LK_DOC( "plotout", "Output the current plot to a file. If the optional format parameter is not given, a PNG format image file is generated.  Valid formats are png, bmp, jpg, pdf, svg.", "(string:file name, [string:format]):boolean" );
+	LK_DOC( "plotout", "Output the current plot to a file. Valid formats are png, bmp, jpg, xpm, pdf, svg.", "(string:file name):boolean" );
 	wxPLPlotCtrl *plot = s_curPlot;
 	if (!plot) return;
 	
 	wxString file( cxt.arg(0).as_string() );
-	wxString format( "png" ); // default format is PNG
-	if ( cxt.arg_count() > 1 )
-		format = cxt.arg(1).as_string().Lower();
+	wxFileName fn(file);
+	wxString format( fn.GetExt().Lower() );
 
 	bool ok = false;
 	if ( format == "pdf" ) 

@@ -1026,6 +1026,7 @@ wxPLPlotCtrl::wxPLPlotCtrl(wxWindow *parent, int id, const wxPoint &pos, const w
 	: wxWindow(parent, id, pos, size)
 {
 	SetBackgroundStyle( wxBG_STYLE_CUSTOM );
+	SetFont( *wxNORMAL_FONT );
 
 	for ( size_t i=0;i<4;i++ )
 		m_sideWidgets[i] = 0;
@@ -1215,6 +1216,19 @@ wxPLAxis *wxPLPlotCtrl::GetAxis( AxisPos axispos, PlotPos ppos )
 	case Y_LEFT: return m_y1[ppos].axis;
 	case Y_RIGHT: return m_y2[ppos].axis;
 	default: return 0;
+	}
+}
+
+wxPLAxis &wxPLPlotCtrl::Axis( AxisPos axispos, PlotPos ppos )
+{
+static wxPLLinearAxis s_nullAxis(0, 1, "<null-axis>");
+	switch( axispos )
+	{
+	case X_BOTTOM: if ( m_x1.axis ) return *m_x1.axis;
+	case X_TOP: if ( m_x2.axis ) return *m_x2.axis;
+	case Y_LEFT: if ( m_y1[ppos].axis ) return *m_y1[ppos].axis;
+	case Y_RIGHT: if ( m_y2[ppos].axis ) return *m_y2[ppos].axis;
+	default: return s_nullAxis;
 	}
 }
 
@@ -1520,24 +1534,19 @@ void wxPLPlotCtrl::OnPopupMenu( wxCommandEvent &evt )
 				imgSize.Set(400, 300);
 			else if (menuid == ID_TO_CLIP_NORMAL || menuid == ID_EXPORT_NORMAL)
 				imgSize.Set(800, 600);
-
-			wxBitmap img = GetBitmap( imgSize.x, imgSize.y );
-
+			
 			if (menuid == ID_EXPORT_SCREEN ||
 				menuid == ID_EXPORT_SMALL ||
 				menuid == ID_EXPORT_NORMAL)
 			{
-				wxString filename;
-				wxBitmapType bitmap_type;
-				if ( ShowExportDialog(filename, bitmap_type) )
-				{
-					if (!img.SaveFile(filename, (wxBitmapType)bitmap_type))
+				wxString filename = ShowExportDialog();
+				if ( !filename.IsEmpty() )
+					if ( !Export( filename, imgSize.x, imgSize.y ) )
 						wxMessageBox("Error writing image file to:\n\n" + filename, "Export error", wxICON_ERROR|wxOK);
-				}
 			}
 			else if (wxTheClipboard->Open())
 			{
-				wxTheClipboard->SetData(new wxBitmapDataObject(img));
+				wxTheClipboard->SetData(new wxBitmapDataObject(GetBitmap(imgSize.x, imgSize.y)));
 				wxTheClipboard->Close();
 			}
 		}
@@ -1545,7 +1554,7 @@ void wxPLPlotCtrl::OnPopupMenu( wxCommandEvent &evt )
 	}
 }
 
-bool wxPLPlotCtrl::ShowExportDialog( wxString &exp_file_name, wxBitmapType &exp_bitmap_type )
+wxString wxPLPlotCtrl::ShowExportDialog( )
 {
 	wxString fn;	
 	wxFileDialog fdlg(this, "Export as image file", wxEmptyString, "plot",
@@ -1560,35 +1569,22 @@ bool wxPLPlotCtrl::ShowExportDialog( wxString &exp_file_name, wxBitmapType &exp_
 			// ensure the extension is attached
 			wxString ext;
 			wxFileName::SplitPath( fn, NULL, NULL, NULL, &ext);
+			ext.MakeLower();
 
 			int filt = fdlg.GetFilterIndex();
 			wxLogStatus("FILTER IDX=%d\n", filt);
-			if (filt == 0) // BMP
+			switch( filt )
 			{
-				exp_bitmap_type = wxBITMAP_TYPE_BMP;
-				if (ext.Lower() != "bmp")
-					fn += ".bmp";
-			}
-			else if (filt == 1) // JPG
-			{
-				exp_bitmap_type = wxBITMAP_TYPE_JPEG;
-				if (ext.Lower() != "jpg")
-					fn += ".jpg";
-			}
-			else if (filt == 2) // PNG
-			{
-				exp_bitmap_type = wxBITMAP_TYPE_PNG;
-				if (ext.Lower() != "png")
-					fn += ".png";
+			case 0: if (ext != "bmp") fn += ".bmp"; break;
+			case 1: if (ext != "jpg") fn += ".jpg"; break;
+			case 2: if (ext != "png") fn += ".png"; break;
 			}
 
-			exp_file_name = fn;
-
-			return true;
+			return fn;
 		}
 	}
 
-	return false;
+	return wxEmptyString;
 }
 
 wxBitmap wxPLPlotCtrl::GetBitmap( int width, int height )
@@ -1646,43 +1642,61 @@ wxBitmap wxPLPlotCtrl::GetBitmap( int width, int height )
 	return bitmap;
 }
 
-bool wxPLPlotCtrl::Export( const wxString &file, wxBitmapType type, int width, int height )
+bool wxPLPlotCtrl::Export( const wxString &file, int width, int height )
 {
-	return GetBitmap(width,height).SaveFile(file, type);
+	wxFileName fn(file);
+	wxString ext( fn.GetExt().Lower() );
+	if ( ext == "pdf" ) return ExportPdf( file );
+	else if ( ext == "svg" ) return ExportSvg( file );
+	else {
+		wxBitmapType type( wxBITMAP_TYPE_INVALID );
+
+		if ( ext == "bmp" ) type = wxBITMAP_TYPE_BMP;
+		else if ( ext == "jpg" ) type = wxBITMAP_TYPE_JPEG;
+		else if ( ext == "png" ) type = wxBITMAP_TYPE_PNG;
+		else if ( ext == "xpm" ) type = wxBITMAP_TYPE_XPM;
+		else if ( ext == "tiff" ) type = wxBITMAP_TYPE_TIFF;
+		else return false;
+
+		return GetBitmap(width,height).SaveFile(file, type);
+	}
 }
 
 bool wxPLPlotCtrl::ExportPdf( const wxString &file )
 {
-	wxPrintData prnDat;
-	prnDat.SetFilename( file );
-	prnDat.SetOrientation( wxLANDSCAPE );
-	prnDat.SetPaperId( wxPAPER_A5 );
-	wxPdfDC  dc( prnDat );			
-	if ( !dc.StartDoc(_("Exporting to pdf...")) )
-		return false;
+	int width, height;
+	GetClientSize( &width, &height );
 
-	dc.StartPage();
-	dc.SetFont( *wxNORMAL_FONT );
+	wxPdfDocument doc( wxPORTRAIT, "pt", wxPAPER_A5 );	
+	doc.AddPage( wxPORTRAIT, width, height );	
+	wxPdfDC dc( &doc, width, height );
+
+	dc.SetFont( GetFont() );
 	dc.SetBackground( *wxWHITE_BRUSH );
 	dc.Clear();
 					
 	wxSize size = dc.GetSize();
-	const double frac = 0.01;
+	const double frac = 0.015;
 	wxPoint margin( (int)(frac*((double)size.x)), (int)(frac*((double)size.y)) );
 	wxRect geom( margin, wxSize( size.x - 2*margin.x, size.y - 2*margin.y ) );
 
 	bool save = m_scaleTextSize ;
 	m_scaleTextSize = false;
 	Invalidate();
+	
 	Render( dc, geom );
-	m_scaleTextSize = save;
+	
+	m_scaleTextSize = save;	
 	Invalidate();
 	Refresh();
+		
+	const wxMemoryOutputStream &data = doc.CloseAndGetBuffer();
+	wxFileOutputStream fp( file );
+	if (!fp.IsOk()) return false;
 
-	dc.EndPage();
-	dc.EndDoc();
-	
-	return true;
+	wxMemoryInputStream tmpis( data );
+	fp.Write( tmpis );
+	return fp.Close();
 }
 
 bool wxPLPlotCtrl::ExportSvg( const wxString &file )
@@ -2285,12 +2299,15 @@ void wxPLPlotCtrl::CalcLegendTextLayout( wxDC &dc )
 			
 			for ( size_t i=0; i<m_legendItems.size(); i++ )
 			{
-				wxCoord height = m_legendItems[i]->layout->height();
-				if ( height > m_legendRect.height )
-					m_legendRect.height = height;
+				if ( !m_legendItems[i]->text.IsEmpty() )
+				{
+					wxCoord height = m_legendItems[i]->layout->height();
+					if ( height > m_legendRect.height )
+						m_legendRect.height = height;
 
-				wxCoord width = m_legendItems[i]->layout->width();
-				m_legendRect.width += width + 5*text_space + legend_item_box.x;
+					wxCoord width = m_legendItems[i]->layout->width();
+					m_legendRect.width += width + 5*text_space + legend_item_box.x;
+				}
 			}
 		}
 		else
@@ -2299,14 +2316,18 @@ void wxPLPlotCtrl::CalcLegendTextLayout( wxDC &dc )
 			m_legendRect.height = text_space;
 			for ( size_t i=0; i<m_legendItems.size(); i++ )
 			{
-				wxCoord width = m_legendItems[i]->layout->width();
-				if ( width > m_legendRect.width )
-					m_legendRect.width = width;
+				if ( !m_legendItems[i]->text.IsEmpty() )
+				{
+					wxCoord width = m_legendItems[i]->layout->width();
+					if ( width > m_legendRect.width )
+						m_legendRect.width = width;
 
-				wxCoord height = m_legendItems[i]->layout->height();
-				if ( height < legend_item_box.y )
-					height = legend_item_box.y;
-				m_legendRect.height += height + text_space;
+					wxCoord height = m_legendItems[i]->layout->height();
+					if ( height < legend_item_box.y )
+						height = legend_item_box.y;
+
+					m_legendRect.height += height + text_space;
+				}
 			}
 		}
 		
@@ -2406,6 +2427,8 @@ void wxPLPlotCtrl::DrawLegend( wxDC &dc, wxDC &aadc, const wxRect& geom )
 	for ( size_t i = 0; i < m_legendItems.size(); i++ )
 	{
 		legend_item &li = *m_legendItems[ m_reverseLegend ? m_legendItems.size() - i - 1 : i ];
+
+		if ( li.text.IsEmpty() ) continue;
 		
 		wxCoord yoff_text = 0;
 		if ( layout == wxHORIZONTAL )
