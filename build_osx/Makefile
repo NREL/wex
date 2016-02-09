@@ -5,7 +5,7 @@ LKLIB = lkosxwx3.a
 
 CC = gcc
 CXX = g++
-CFLAGS = -fPIC -Wall -O2 `wx-config-3 --cflags` -I../include -I$(LKDIR)
+CFLAGS = -fPIC -Wall -O2 `wx-config-3 --cflags` -I../include -I$(LKDIR)/include
 CXXFLAGS = $(CFLAGS)
 
 
