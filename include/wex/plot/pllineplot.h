@@ -41,6 +41,9 @@ protected:
 	Marker m_marker;
 	std::vector< wxRealPoint > m_data;
 
+	wxPen GetLinePen();
+	wxPen GetMarkerPen();
+
 	void DrawMarkers( wxDC &dc, std::vector<wxPoint> &points, int size );
 
 private:	

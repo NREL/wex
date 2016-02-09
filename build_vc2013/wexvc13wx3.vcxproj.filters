@@ -655,12 +655,6 @@
     <None Include="..\src\pdf\pdfcorefontkerning.inc">
       <Filter>pdf\Sources</Filter>
     </None>
-    <None Include="..\src\pdf\pdfdc28.inc">
-      <Filter>pdf\Sources</Filter>
-    </None>
-    <None Include="..\src\pdf\pdfdc29.inc">
-      <Filter>pdf\Sources</Filter>
-    </None>
     <None Include="..\src\pdf\pdfglyphnames.inc">
       <Filter>pdf\Sources</Filter>
     </None>

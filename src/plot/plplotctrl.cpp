@@ -2027,6 +2027,7 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 	{
 		wxPen pen( m_gridColour, 1, wxPENSTYLE_SOLID );
 		pen.SetJoin( wxJOIN_MITER );
+		pen.SetCap( wxCAP_BUTT );
 		dc.SetPen( pen );
 		if (cartesion_plot)
 			DrawGrid( dc, wxPLAxis::TickData::LARGE );
@@ -2073,9 +2074,10 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 	}
 
 	// draw some axes
-	wxPen axispen( m_axisColour, 1, wxPENSTYLE_SOLID );
+	wxPen axispen( m_axisColour, 1, wxSOLID );
 	axispen.SetJoin( wxJOIN_MITER );
-	dc.SetPen( m_axisColour );
+	axispen.SetCap( wxCAP_BUTT );
+	dc.SetPen( axispen );
 	dc.SetTextForeground(  m_tickTextColour );
 	
 	if ( m_x2.axis )

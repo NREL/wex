@@ -224,8 +224,6 @@
     <None Include="..\src\pdf\pdfcolourdata.inc" />
     <None Include="..\src\pdf\pdfcorefontdata.inc" />
     <None Include="..\src\pdf\pdfcorefontkerning.inc" />
-    <None Include="..\src\pdf\pdfdc28.inc" />
-    <None Include="..\src\pdf\pdfdc29.inc" />
     <None Include="..\src\pdf\pdfglyphnames.inc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

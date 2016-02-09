@@ -74,7 +74,7 @@ void wxPLLinePlot::DrawMarkers( wxDC &dc, std::vector<wxPoint> &points, int size
 {
 	if ( m_marker == NONE ) return;
 
-	std::vector<wxPoint> mkr(4, wxPoint() );
+	std::vector<wxPoint> mkr(6, wxPoint() );
 		
 	int radius = (size<=3) ? 3 : 4;
 
@@ -88,8 +88,11 @@ void wxPLLinePlot::DrawMarkers( wxDC &dc, std::vector<wxPoint> &points, int size
 			mkr[1] = wxPoint( p.x+radius, p.y-radius );
 			mkr[2] = wxPoint( p.x-radius, p.y+radius );
 			mkr[3] = wxPoint( p.x+radius, p.y+radius );
+			mkr[4] = mkr[0];
+			mkr[5] = mkr[1];
 			
 			dc.DrawPolygon( 4, &mkr[0] );
+			dc.DrawLines( 6, &mkr[0] );
 		}
 		else if ( m_marker == SQUARE )
 		{
@@ -97,7 +100,11 @@ void wxPLLinePlot::DrawMarkers( wxDC &dc, std::vector<wxPoint> &points, int size
 			mkr[1] = wxPoint( p.x+radius, p.y-radius );
 			mkr[2] = wxPoint( p.x+radius, p.y+radius );
 			mkr[3] = wxPoint( p.x-radius, p.y+radius );
+			mkr[4] = mkr[0];
+			mkr[5] = mkr[1];
+
 			dc.DrawPolygon( 4, &mkr[0] );
+			dc.DrawLines( 6, &mkr[0] );
 		}
 		else if ( m_marker == DIAMOND )
 		{
@@ -105,7 +112,11 @@ void wxPLLinePlot::DrawMarkers( wxDC &dc, std::vector<wxPoint> &points, int size
 			mkr[1] = wxPoint( p.x+radius, p.y );
 			mkr[2] = wxPoint( p.x, p.y+radius );
 			mkr[3] = wxPoint( p.x-radius, p.y );
+			mkr[4] = mkr[0];
+			mkr[5] = mkr[1];
+
 			dc.DrawPolygon( 4, &mkr[0] );
+			dc.DrawLines( 6, &mkr[0] );
 		}
 		else
 		{
@@ -122,8 +133,8 @@ void wxPLLinePlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 	wxRealPoint wmin( map.GetWorldMinimum() );
 	wxRealPoint wmax( map.GetWorldMaximum() );
 	
-	wxPen line_pen( m_colour, m_thickness, GetWxLineStyle(m_style) );
-	line_pen.SetJoin( wxJOIN_ROUND );
+	wxPen line_pen( GetLinePen() );
+	wxPen marker_pen( GetMarkerPen() );
 
 	dc.SetPen( line_pen );
 	dc.SetBrush( wxBrush( m_colour, wxSOLID ) );
@@ -143,7 +154,10 @@ void wxPLLinePlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 			// draw currently accumulated points and clear
 			// accumulator - this will draw the contiguous
 			// segments of data that don't have any NaN values
+			dc.SetPen( line_pen );
 			dc.DrawLines( points.size(), &points[0] );
+			
+			dc.SetPen( marker_pen );
 			DrawMarkers( dc, points, m_thickness );
 			points.clear();
 		}
@@ -151,7 +165,9 @@ void wxPLLinePlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 	
 	if ( points.size() > 1 )
 	{
+		dc.SetPen( line_pen );
 		dc.DrawLines( points.size(), &points[0] );
+		dc.SetPen( marker_pen );
 		DrawMarkers( dc, points, m_thickness );
 	}
 }
@@ -159,13 +175,32 @@ void wxPLLinePlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 void wxPLLinePlot::DrawInLegend( wxDC &dc, const wxRect &rct)
 {
 	int thick = m_thickness;
-	if ( thick > 3 ) thick = 3; // limit line thickness for legend display
-	dc.SetPen( wxPen( m_colour, m_thickness, GetWxLineStyle(m_style) ) );
-	dc.SetBrush( wxBrush( m_colour, wxSOLID ) );
+	if ( thick > 2 ) thick = 2; // limit line thickness for legend display
+	
+	dc.SetPen( GetLinePen() );
 	dc.DrawLine( rct.x, rct.y+rct.height/2, rct.x+rct.width, rct.y+rct.height/2 );
+
 	if ( m_marker != NONE )
 	{
 		std::vector<wxPoint> mkr(1, wxPoint( rct.x + rct.width/2, rct.y + rct.height/2 ) );
+		dc.SetPen( GetMarkerPen() );
+		dc.SetBrush( wxBrush( m_colour, wxSOLID ) );	
 		DrawMarkers( dc, mkr, thick );
 	}
+}
+
+wxPen wxPLLinePlot::GetLinePen()
+{
+	wxPen line_pen( m_colour, m_thickness, GetWxLineStyle(m_style) );
+	line_pen.SetJoin( wxJOIN_BEVEL );
+	line_pen.SetCap( wxCAP_BUTT );
+	return line_pen;
+}
+
+wxPen wxPLLinePlot::GetMarkerPen()
+{
+	wxPen marker_pen( m_colour, m_thickness-1, wxSOLID );
+	marker_pen.SetJoin( wxJOIN_MITER );
+	marker_pen.SetCap( wxCAP_BUTT );
+	return marker_pen;
 }
