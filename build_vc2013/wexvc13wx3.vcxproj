@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="..\include\wex\codeedit.h" />
     <ClInclude Include="..\include\wex\csv.h" />
+    <ClInclude Include="..\include\wex\dclatex.h" />
     <ClInclude Include="..\include\wex\dview\dvautocolourassigner.h" />
     <ClInclude Include="..\include\wex\dview\dvdcctrl.h" />
     <ClInclude Include="..\include\wex\dview\dvdmapctrl.h" />
@@ -129,6 +130,7 @@
   <ItemGroup>
     <ClCompile Include="..\src\codeedit.cpp" />
     <ClCompile Include="..\src\csv.cpp" />
+    <ClCompile Include="..\src\dclatex.cpp" />
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp" />
     <ClCompile Include="..\src\dview\dvdcctrl.cpp" />
     <ClCompile Include="..\src\dview\dvdmapctrl.cpp" />
