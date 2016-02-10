@@ -512,6 +512,8 @@ public:
 			return false;
 		
 		wxInitAllImageHandlers();
+		TestPLPlot( 0 );
+		return true;
 
 		//TestFormDesigner();
 		//return true;
@@ -547,7 +549,7 @@ public:
 		//frame->Show();
 		
 
-		//TestPLPlot( 0 );
+		//
 
 		//TestSnapLayout( 0 );
 		return true;

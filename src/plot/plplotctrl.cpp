@@ -1671,6 +1671,7 @@ bool wxPLPlotCtrl::ExportPdf( const wxString &file )
 	doc.AddPage( wxPORTRAIT, width, height );	
 	wxPdfDC dc( &doc, width, height );
 
+	
 	dc.SetFont( GetFont() );
 	dc.SetBackground( *wxWHITE_BRUSH );
 	dc.Clear();
@@ -1685,6 +1686,14 @@ bool wxPLPlotCtrl::ExportPdf( const wxString &file )
 	Invalidate();
 	
 	Render( dc, geom );
+	
+	if ( !doc.AddFont( "Computer Modern", "", "cmunrm.xml" ) )
+		wxMessageBox( "Could not load computer-modern font\n\ncwd: " + wxGetCwd() );
+	
+	if ( !doc.SetFont( "Computer Modern", wxPDF_FONTSTYLE_REGULAR, 12.0 ) )
+		wxMessageBox( "Could not set computer-modern font" );
+
+	doc.Text( 10, 10, "Text output with computer modern font!!" );
 	
 	m_scaleTextSize = save;	
 	Invalidate();
