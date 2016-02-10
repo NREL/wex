@@ -17,6 +17,7 @@ example usage in code:
 
 	doc.Text( 10, 10, "Text output with computer modern font!!" );
 
-Note:  the font files need to be in the 'fonts/' subfolder of the 
+Note:  if a full path name is not given for the .xml file in AddFont(...)
+the font files need to be in the 'fonts/' subfolder of the 
 current working directory of the application, or in folder 
 defined by the WXPDF_FONTPATH environment variable if it is defined.
