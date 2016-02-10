@@ -1687,14 +1687,22 @@ bool wxPLPlotCtrl::ExportPdf( const wxString &file )
 	
 	Render( dc, geom );
 	
-	if ( !doc.AddFont( "Computer Modern", "", "cmunrm.xml" ) )
+	/*
+	// example for loading and using an external font in PDF output
+	if ( !doc.AddFont( "Computer Modern", "", "C:/Users/adobos/Projects/wex/fonts/cmunrm.xml" ) )
 		wxMessageBox( "Could not load computer-modern font\n\ncwd: " + wxGetCwd() );
 	
 	if ( !doc.SetFont( "Computer Modern", wxPDF_FONTSTYLE_REGULAR, 12.0 ) )
 		wxMessageBox( "Could not set computer-modern font" );
 
-	doc.Text( 10, 10, "Text output with computer modern font!!" );
+	wxString text( wxString::Format("Text output with computer modern font!! (pt=%lg asc=%d dsc=%d)", 
+			doc.GetFontSize(), doc.GetFontDescription().GetAscent(), doc.GetFontDescription().GetDescent() ) );
+	wxMessageBox( text );
+
+	doc.Text( 10, 10, text );
+	*/
 	
+
 	m_scaleTextSize = save;	
 	Invalidate();
 	Refresh();

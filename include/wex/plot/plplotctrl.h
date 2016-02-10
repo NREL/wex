@@ -31,6 +31,33 @@ public:
 	inline wxPoint ToDevice( const wxRealPoint &p ) const { return ToDevice(p.x, p.y); }
 };
 
+class wxPLOutputDevice
+{
+public:
+	virtual ~wxPLOutputDevice() { }
+
+	enum LineStyle { SOLID, DOT, DASH, DOT_DASH };
+	enum JoinStyle { MITER, BEVEL, ROUND };
+	enum CapStyle  { BUTT, ROUND };
+
+	virtual void Clip( int x, int y, int width, int height ) = 0;
+	virtual void Unclip() = 0;
+
+	virtual void Color( const wxColour &c ) = 0;
+	virtual void Style( int size, LineStyle style = SOLID, JoinStyle join = MITER, CapStyle cap = BUTT ) = 0;
+
+	virtual void Point( int x, int y ) = 0;
+	virtual void Line( int x1, int y1, int x2, int y2 ) = 0;
+	virtual void Lines( size_t n, const wxPoint *pts ) = 0;
+	virtual void Polygon( size_t n, const wxPoint *pts ) = 0;
+	virtual void Rect( int x, int y, int width, int height, bool fill = false, int radius = 0.0  )  = 0;
+	virtual void Circle( int x, int y, int radius, bool fill = false ) = 0;
+	
+	virtual void Font( int relpt = 0, bool bold = false ) = 0;
+	virtual void Text( int x, int y, const wxString &text, int angle=0 ) = 0;
+	virtual void Measure( const wxString &text, int *width, int *height ) = 0;
+};
+
 class wxPLPlottable
 {
 protected:
