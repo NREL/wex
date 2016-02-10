@@ -161,15 +161,24 @@ wxPdfImage::~wxPdfImage()
 bool
 wxPdfImage::ConvertWxImage(const wxImage& image, bool jpegFormat)
 {
+#if !wxUSE_LIBJPEG
+  if (jpegFormat)
+  {
+    return false;
+  }
+#endif // wxUSE_LIBJPEG
+
   bool isValid = false;
   wxBitmapType bitmapType = (jpegFormat) ? wxBITMAP_TYPE_JPEG : wxBITMAP_TYPE_PNG;
   if (wxImage::FindHandler(bitmapType) == NULL)
   {
+#if wxUSE_LIBJPEG
     if (jpegFormat)
     {
       wxImage::AddHandler(new wxJPEGHandler());
     }
     else
+#endif // wxUSE_LIBJPEG
     {
       wxImage::AddHandler(new wxPNGHandler());
     }
@@ -179,12 +188,14 @@ wxPdfImage::ConvertWxImage(const wxImage& image, bool jpegFormat)
   if (isValid)
   {
     wxMemoryInputStream is(os);
+#if wxUSE_LIBJPEG
     if (jpegFormat)
     {
       m_type = wxT("jpeg");
       isValid = ParseJPG(&is);
     }
     else
+#endif // wxUSE_LIBJPEG
     {
       m_type = wxT("png");
       isValid = ParsePNG(&is);
@@ -213,11 +224,13 @@ wxPdfImage::Parse()
     {
       isValid = ParseJPG(m_imageStream);
     }
+#if wxUSE_GIF
     else if ((m_type.StartsWith(wxT("image/")) && m_type.EndsWith(wxT("gif"))) || 
              m_type == wxT("gif"))
     {
       isValid = ParseGIF(m_imageStream);
     }
+#endif // wxUSE_GIF
     else
     {
       if ((m_type.StartsWith(wxT("image/")) && m_type.EndsWith(wxT("wmf"))) || 
@@ -637,6 +650,7 @@ wxPdfImage::ParseJPG(wxInputStream* imageStream)
 bool
 wxPdfImage::ParseGIF(wxInputStream* imageStream)
 {
+#if wxUSE_GIF
   bool isValid = false;
 
   m_palSize  = 0;
@@ -759,6 +773,9 @@ wxPdfImage::ParseGIF(wxInputStream* imageStream)
   }
 #endif
   return isValid;
+#else // !wxUSE_GIF
+  return false;
+#endif // wxUSE_GIF/!wxUSE_GIF
 }
 
 // --- Parse WMF image file ---
