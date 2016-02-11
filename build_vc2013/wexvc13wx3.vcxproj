@@ -50,6 +50,7 @@
     <ClInclude Include="..\include\wex\mtrand.h" />
     <ClInclude Include="..\include\wex\pagelayout.h" />
     <ClInclude Include="..\include\wex\pageobjects.h" />
+    <ClInclude Include="..\include\wex\plot\plplot.h" />
     <ClInclude Include="..\include\wex\plot\plwindrose.h" />
     <ClInclude Include="..\include\wex\radiochoice.h" />
     <ClInclude Include="..\include\wex\diurnal.h" />
@@ -158,6 +159,7 @@
     <ClCompile Include="..\src\mswfatal.cpp" />
     <ClCompile Include="..\src\pagelayout.cpp" />
     <ClCompile Include="..\src\pageobjects.cpp" />
+    <ClCompile Include="..\src\plot\plplot.cpp" />
     <ClCompile Include="..\src\plot\plwindrose.cpp" />
     <ClCompile Include="..\src\radiochoice.cpp" />
     <ClCompile Include="..\src\diurnal.cpp" />

@@ -7,7 +7,7 @@
 #include <wx/gdicmn.h>
 #include <wx/dc.h>
 
-#include "wex/plot/plplotctrl.h"
+#include "wex/plot/plplot.h"
 
 class wxPLColourMap : public wxPLSideWidgetBase
 {

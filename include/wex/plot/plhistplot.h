@@ -1,7 +1,7 @@
 #ifndef __pl_histplot_h
 #define __pl_histplot_h
 
-#include "wex/plot/plplotctrl.h"
+#include "wex/plot/plplot.h"
 
 class wxPLHistogramPlot : public wxPLPlottable
 {

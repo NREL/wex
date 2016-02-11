@@ -1,7 +1,7 @@
 #ifndef __pl_scatterplot_h
 #define __pl_scatterplot_h
 
-#include "wex/plot/plplotctrl.h"
+#include "wex/plot/plplot.h"
 
 class wxPLColourMap;
 

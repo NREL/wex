@@ -1,7 +1,7 @@
 #ifndef __pl_polarplot_h
 #define __pl_polarplot_h
 
-#include "wex/plot/plplotctrl.h"
+#include "wex/plot/plplot.h"
 
 class wxPLWindRose : public wxPLPlottable
 {

@@ -2,7 +2,7 @@
 #define __pl_barplot_h
 
 #include <vector>
-#include "wex/plot/plplotctrl.h"
+#include "wex/plot/plplot.h"
 
 #define wxPL_BAR_AUTOSIZE -1
 

@@ -1,7 +1,7 @@
 #ifndef __pl_lineplot_h
 #define __pl_lineplot_h
 
-#include "wex/plot/plplotctrl.h"
+#include "wex/plot/plplot.h"
 
 class wxPLLinePlot : public wxPLPlottable
 {

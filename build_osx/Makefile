@@ -49,6 +49,7 @@ OBJECTS = \
 	dvselectionlist.o \
 	dvtimeseriesctrl.o \
 	dvtimeseriesdataset.o \
+	plplot.o \
 	plaxis.o \
 	plbarplot.o \
 	plhistplot.o \
