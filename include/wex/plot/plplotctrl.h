@@ -36,15 +36,15 @@ class wxPLOutputDevice
 public:
 	virtual ~wxPLOutputDevice() { }
 
-	enum LineStyle { SOLID, DOT, DASH, DOT_DASH };
-	enum JoinStyle { MITER, BEVEL, ROUND };
-	enum CapStyle  { BUTT, ROUND };
+	enum LineStyle { ls_SOLID, DOT, ls_DASH, ls_DOT_DASH };
+	enum JoinStyle { js_MITER, js_BEVEL, js_ROUND };
+	enum CapStyle  { cs_BUTT, cs_ROUND };
 
 	virtual void Clip( int x, int y, int width, int height ) = 0;
 	virtual void Unclip() = 0;
 
 	virtual void Color( const wxColour &c ) = 0;
-	virtual void Style( int size, LineStyle style = SOLID, JoinStyle join = MITER, CapStyle cap = BUTT ) = 0;
+	virtual void Style( int size, LineStyle style = ls_SOLID, JoinStyle join = js_MITER, CapStyle cap = cs_BUTT ) = 0;
 
 	virtual void Point( int x, int y ) = 0;
 	virtual void Line( int x1, int y1, int x2, int y2 ) = 0;
