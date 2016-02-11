@@ -62,9 +62,12 @@ public:
 	{
 		if ( !m_data || !m_colourMap ) return;
 	
-		wxRect bounds = map.GetDeviceExtents();
+		wxRealPoint pos, size;
+		map.GetDeviceExtents( &pos, &size );
+
+		dc.Pen( *wxWHITE, 0, wxPLOutputDevice::NONE );			
 		dc.Brush( *wxRED, wxPLOutputDevice::HATCH  );
-		dc.Rect(bounds);
+		dc.Rect( pos.x, pos.y, size.x, size.y );
 
 		wxRealPoint wmin = map.GetWorldMinimum();
 		wxRealPoint wmax = map.GetWorldMaximum();
@@ -76,8 +79,8 @@ public:
 		//That would give us the ability to average data points into boxes if we wanted.
 		//But would lower the resolution (for high res data sets).
 
-		double dRectWidth = double(bounds.width) / (xlen / 24); //Rect width does not depend on data.
-		double dRectHeight = double(bounds.height-1) / ylen * m_data->GetTimeStep(); 
+		double dRectWidth = double(size.x) / (xlen / 24); //Rect width does not depend on data.
+		double dRectHeight = double(size.y-1) / ylen * m_data->GetTimeStep(); 
 		for (size_t i=0; i<m_data->Length(); i++)
 		{
 			if (m_data->At(i).x < wmin.x)
@@ -95,10 +98,9 @@ public:
 				continue;
 			worldY -= wmin.y;
 
-			wxCoord screenX = bounds.x + int((worldXDay - wmin.x/24) * dRectWidth);
-			wxCoord screenY = bounds.y + bounds.height-1 - int(dRectHeight * (worldY/m_data->GetTimeStep() + 1)); //+1 is because we have top corner, not bottom.
+			double screenX = pos.x + int((worldXDay - wmin.x/24) * dRectWidth);
+			double screenY = pos.y + size.y-1 - int(dRectHeight * (worldY/m_data->GetTimeStep() + 1)); //+1 is because we have top corner, not bottom.
 			
-			dc.Pen( m_colourMap->ColourForValue(m_data->At(i).y), 2 );
 			dc.Brush( m_colourMap->ColourForValue(m_data->At(i).y) );
 			dc.Rect(screenX, screenY, int(dRectWidth + 1), int(dRectHeight + 1)); //+1s cover empty spaces between rects.
 		}

@@ -27,12 +27,12 @@ public:
 	};
 
 	virtual wxPLAxis *Duplicate() = 0;
-	virtual void GetAxisTicks( wxCoord phys_min, wxCoord phys_max, std::vector<TickData> &list ) = 0;
+	virtual void GetAxisTicks( double phys_min, double phys_max, std::vector<TickData> &list ) = 0;
 
 	// by default assumes a linear axis.  can be overridden to provide logarithmic or other scaling
 
-	virtual wxCoord WorldToPhysical( double coord, wxCoord phys_min, wxCoord phys_max );
-	virtual double PhysicalToWorld( wxCoord p, wxCoord phys_min, wxCoord phys_max );
+	virtual double WorldToPhysical( double coord, double phys_min, double phys_max );
+	virtual double PhysicalToWorld( double p, double phys_min, double phys_max );
 
 	// get & set axis properties
 
@@ -87,12 +87,12 @@ public:
 	wxPLLinearAxis( const wxPLLinearAxis &rhs );
 
 	virtual wxPLAxis *Duplicate();
-	virtual void GetAxisTicks( wxCoord phys_min, wxCoord phys_max, std::vector<TickData> &list );
+	virtual void GetAxisTicks( double phys_min, double phys_max, std::vector<TickData> &list );
 	
 protected:
-	virtual void CalcTicksFirstPass( wxCoord phys_min, wxCoord phys_max, 
+	virtual void CalcTicksFirstPass( double phys_min, double phys_max, 
 			std::vector<double> &largeticks, std::vector<double> &smallticks) ;
-	virtual void CalcTicksSecondPass( wxCoord phys_min, wxCoord phys_max, 
+	virtual void CalcTicksSecondPass( double phys_min, double phys_max, 
 			std::vector<double> &largeticks, std::vector<double> &smallticks) ;
 	
 	double AdjustedWorldValue( double world );
@@ -112,7 +112,7 @@ public:
 	wxPLLabelAxis( const wxPLLabelAxis &rhs );
 	
 	virtual wxPLAxis *Duplicate();
-	virtual void GetAxisTicks( wxCoord phys_min, wxCoord phys_max, std::vector<TickData> &list );
+	virtual void GetAxisTicks( double phys_min, double phys_max, std::vector<TickData> &list );
 
 	void Add( double world, const wxString &text );
 	void Clear();
@@ -129,9 +129,9 @@ public:
 	wxPLLogAxis( const wxPLLogAxis &rhs );
 
 	virtual wxPLAxis *Duplicate();
-	virtual void GetAxisTicks( wxCoord phys_min, wxCoord phys_max, std::vector<TickData> &list );
-	virtual wxCoord WorldToPhysical( double coord, wxCoord phys_min, wxCoord phys_max );
-	virtual double PhysicalToWorld( wxCoord p, wxCoord phys_min, wxCoord phys_max );
+	virtual void GetAxisTicks( double phys_min, double phys_max, std::vector<TickData> &list );
+	virtual double WorldToPhysical( double coord, double phys_min, double phys_max );
+	virtual double PhysicalToWorld( double p, double phys_min, double phys_max );
 
 	virtual void SetWorld( double min, double max );
 	virtual void SetWorldMin( double min );
@@ -153,7 +153,7 @@ public:
 
 	virtual wxString GetLabel();
 	virtual wxPLAxis *Duplicate();
-	virtual void GetAxisTicks( wxCoord phys_min, wxCoord phys_max, std::vector<TickData> &list );
+	virtual void GetAxisTicks( double phys_min, double phys_max, std::vector<TickData> &list );
 
 private:
 	std::vector<TickData> m_tickList;
@@ -172,7 +172,7 @@ public:
 	wxPLPolarAngularAxis(const wxString &label = wxEmptyString, PolarAngularUnits units = DEGREES, PolarAngularZero zero = UP, PolarAxisLabels pal = NUMBERS);
 	wxPLPolarAngularAxis( const wxPLPolarAngularAxis &rhs );
 	
-	virtual void GetAxisTicks(wxCoord phys_min, wxCoord phys_max, std::vector<TickData> &list);
+	virtual void GetAxisTicks(double phys_min, double phys_max, std::vector<TickData> &list);
 	virtual PolarAngularUnits GetAxisUnits() { return m_pau; }
 	virtual double AngleInRadians(double world) { return AdjustedWorldValue(world); }
 	virtual void ExtendBound(wxPLAxis *a);

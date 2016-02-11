@@ -20,15 +20,16 @@ class wxPLDeviceMapping
 public:
 	wxPLDeviceMapping() { }
 	virtual ~wxPLDeviceMapping() { }
-	virtual wxPoint ToDevice( double x, double y ) const = 0;
-	virtual wxRect GetDeviceExtents( ) const = 0;
+	virtual wxRealPoint ToDevice( double x, double y ) const = 0;
+	virtual void GetDeviceExtents( wxRealPoint *pos, wxRealPoint *size ) const = 0;
 	virtual wxRealPoint GetWorldMinimum() const = 0;
 	virtual wxRealPoint GetWorldMaximum() const = 0;
 	virtual wxPLAxis* GetXAxis() const = 0;
 	virtual wxPLAxis* GetYAxis() const = 0;
-	virtual wxPLPlotCtrl *GetPlotCtrl() const = 0;
+	virtual bool IsPrimaryXAxis() const = 0; // true if X_BOTTOM
+	virtual bool IsPrimaryYAxis() const = 0; // true if Y_LEFT
 	
-	inline wxPoint ToDevice( const wxRealPoint &p ) const { return ToDevice(p.x, p.y); }
+	inline wxRealPoint ToDevice( const wxRealPoint &p ) const { return ToDevice(p.x, p.y); }
 };
 
 class wxPLOutputDevice
@@ -39,29 +40,31 @@ public:
 	enum Style { NONE, SOLID, DOT, DASH, DOTDASH, MITER, BEVEL, ROUND, BUTT, HATCH, ODDEVEN, WIND };
 
 	// Pure virtuals, to be implemented
-	virtual void Clip( int x, int y, int width, int height ) = 0;
+	virtual bool Equals( double a, double b ) const = 0; // determine if two positions are equal for display purposes at native device resolution
+	virtual void Clip( double x, double y, double width, double height ) = 0;
 	virtual void Unclip() = 0;
-	virtual void Pen( const wxColour &c = *wxBLACK, int size=1, Style line = SOLID, Style join = MITER, Style cap = BUTT ) = 0;
+	virtual void Pen( const wxColour &c = *wxBLACK, double size=1, Style line = SOLID, Style join = MITER, Style cap = BUTT ) = 0;
 	virtual void Brush( const wxColour &c = *wxBLACK, Style sty = SOLID ) = 0;
 	
-	virtual void Point( int x, int y ) = 0;
-	virtual void Line( int x1, int y1, int x2, int y2 ) = 0;
-	virtual void Lines( size_t n, const wxPoint *pts ) = 0;
-	virtual void Polygon( size_t n, const wxPoint *pts, Style winding = ODDEVEN ) = 0;
-	virtual void Rect( int x, int y, int width, int height )  = 0;	
-	virtual void Circle( int x, int y, int radius ) = 0;
+	virtual void Point( double x, double y ) = 0;
+	virtual void Line( double x1, double y1, double x2, double y2 ) = 0;
+	virtual void Lines( size_t n, const wxRealPoint *pts ) = 0;
+	virtual void Polygon( size_t n, const wxRealPoint *pts, Style winding = ODDEVEN ) = 0;
+	virtual void Rect( double x, double y, double width, double height )  = 0;	
+	virtual void Circle( double x, double y, double radius ) = 0;
 	
-	virtual void Font( int relpt = 0, bool bold = false ) = 0;
-	virtual void Text( const wxString &text, int x, int y,  int angle=0 ) = 0;
-	virtual void Measure( const wxString &text, int *width, int *height ) = 0;
-	virtual int CharHeight() = 0;
+	virtual void Font( double relpt = 0, bool bold = false ) = 0;
+	virtual void Font( double *rel, bool *bld ) const = 0;
+	virtual void Text( const wxString &text, double x, double y,  double angle=0 ) = 0;
+	virtual void Measure( const wxString &text, double *width, double *height ) = 0;
+	virtual double CharHeight() = 0;
 
 
 	// API variants
-	virtual void Point( const wxPoint &p ) { Point(p.x,p.y); }
-	virtual void Line( const wxPoint &p1, const wxPoint &p2 ) { Line( p1.x, p1.y, p2.x, p2.y ); }
+	virtual void Point( const wxRealPoint &p ) { Point(p.x,p.y); }
+	virtual void Line( const wxRealPoint &p1, const wxPoint &p2 ) { Line( p1.x, p1.y, p2.x, p2.y ); }
 	virtual void Rect( const wxRect &r ) { Rect( r.x, r.y, r.width, r.height ); }
-	virtual void Circle( const wxPoint &p, int radius ) { Circle(p.x, p.y, radius); }
+	virtual void Circle( const wxRealPoint &p, int radius ) { Circle(p.x, p.y, radius); }
 	virtual void Text( const wxString &text, const wxPoint &p, int angle=0 ) { Text( text, p.x, p.y, angle ); }
 
 };
@@ -241,7 +244,8 @@ public:
 	void DeleteAxes();
 
 	void Invalidate(); // erases all cached positions and layouts, but does not issue refresh
-	void Render( wxDC &dc, wxRect geom ); // note: does not draw the background.  DC should be cleared with desired bg color already
+	void Render( wxDC &dc, wxRect geom );
+	void Render( wxPLOutputDevice &dc, wxPLOutputDevice &aadc,	 wxRect geom ); // note: does not draw the background.  DC should be cleared with desired bg color already
 
 	class text_layout;
 	class axis_layout;
@@ -257,9 +261,9 @@ protected:
 	void OnMotion( wxMouseEvent & );
 	void OnMouseCaptureLost( wxMouseCaptureLostEvent & );
 
-	void DrawGrid( wxDC &dc, wxPLAxis::TickData::TickSize size );
-	void DrawPolarGrid(wxDC &dc, wxPLAxis::TickData::TickSize size);
-	void DrawLegend(wxDC &dc, wxPLOutputDevice &odev, const wxRect &geom);
+	void DrawGrid( wxPLOutputDevice &dc, wxPLAxis::TickData::TickSize size );
+	void DrawPolarGrid(wxPLOutputDevice &dc, wxPLAxis::TickData::TickSize size);
+	void DrawLegend(wxPLOutputDevice &gdc, wxPLOutputDevice &odev, const wxRect &geom);
 
 	void UpdateHighlightRegion();
 	void DrawLegendOutline();
@@ -314,7 +318,7 @@ private:
 
 	struct legend_item
 	{
-		legend_item( wxDC &dc, wxPLPlottable *p );
+		legend_item( wxPLOutputDevice &dc, wxPLPlottable *p );
 		~legend_item();
 		wxPLPlottable *plot;
 		wxString text;
@@ -323,7 +327,7 @@ private:
 
 	bool m_legendInvalidated;
 	std::vector< legend_item* > m_legendItems;
-	void CalcLegendTextLayout( wxDC &dc );
+	void CalcLegendTextLayout( wxPLOutputDevice &dc );
 
 	struct axis_data
 	{
@@ -350,7 +354,7 @@ class TextLayoutDemo : public wxWindow
 public:
 	TextLayoutDemo( wxWindow *parent );
 
-	std::vector<wxCoord> Draw( wxDC &dc, const wxRect &geom );
+	std::vector<double> Draw( wxDC &dc, const wxRect &geom );
 	void OnPaint( wxPaintEvent & );
 	void OnSize( wxSizeEvent & );
 

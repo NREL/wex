@@ -204,12 +204,10 @@ void TestPLPlot( wxWindow *parent )
 	plot->GetYAxis1()->SetWorld( -20, 20 );
 	//plot->SetFont( wxFont( 10, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false ) );
 
-	/*
 	wxFrame *frame2 = new wxFrame( 0, wxID_ANY, wxT("GCDC vs DC"), wxDefaultPosition, wxSize( 850, 950 ) );
 	TextLayoutDemo *tldemo = new TextLayoutDemo( frame2 );
 	frame2->Show();
-	*/
-
+	
 	wxLogWindow *log = new wxLogWindow( frame , "Log");
 	wxLog::SetActiveTarget(log);
 	log->Show();

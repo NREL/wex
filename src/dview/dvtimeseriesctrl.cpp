@@ -153,7 +153,7 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 			if ( !m_data || m_data->Length() < 2 ) return;
 
 			size_t len;
-			std::vector< wxPoint > points;
+			std::vector< wxRealPoint > points;
 			wxRealPoint rpt;
 			wxRealPoint rpt2;
 			double tempY;
@@ -167,9 +167,7 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 			// otherwise, this could result in problems
 			// if a plot is checked for both left and right Y axes,
 			// since this wxDVTimeSeriesPlot instance is the same for both
-			if ( m_stacked && 
-				(map.GetYAxis() == map.GetPlotCtrl()->GetYAxis1( wxPLPlotCtrl::PLOT_TOP )
-				|| map.GetYAxis() == map.GetPlotCtrl()->GetYAxis1( wxPLPlotCtrl::PLOT_BOTTOM )) )
+			if ( m_stacked && map.IsPrimaryXAxis() )
 			{
 				len = m_data->Length();
 
@@ -232,12 +230,14 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 							points.push_back( map.ToDevice( p ) );
 					}
 
-					points.push_back( wxPoint( points[ points.size()-1 ].x,  map.ToDevice( wxRealPoint(0,0) ).y ) );
-					points.push_back( wxPoint( points[ 0 ].x, map.ToDevice( wxRealPoint(0,0) ).y ) );
+					points.push_back( wxRealPoint( points[ points.size()-1 ].x,  map.ToDevice( wxRealPoint(0,0) ).y ) );
+					points.push_back( wxRealPoint( points[ 0 ].x, map.ToDevice( wxRealPoint(0,0) ).y ) );
 				}
 
-				if ( points.size() > 3 * map.GetDeviceExtents().GetWidth() ) {
-					dc.Text( "too many data points: please zoom in", map.GetDeviceExtents().GetTopLeft() );
+				wxRealPoint pos, size;
+				map.GetDeviceExtents( &pos, &size );
+				if ( points.size() > (int)(3.0*size.x) ) {
+					dc.Text( "too many data points: please zoom in", pos );
 					return; // quit if 3x more x coord points than pixels
 				}
 				
@@ -285,7 +285,7 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 							continue;
 						}
 						
-						wxPoint cur( map.ToDevice( rpt ) );
+						wxRealPoint cur( map.ToDevice( rpt ) );
 						
 						size_t jmin=i, jmax=i;
 						double min=rpt.y, max=rpt.y;
@@ -297,9 +297,9 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 						while( j < len )
 						{
 							rpt2 = m_data->At(j);
-							wxPoint cur2( map.ToDevice( rpt2 ) );
+							wxRealPoint cur2( map.ToDevice( rpt2 ) );
 
-							if ( cur.x != cur2.x )
+							if ( !dc.Equals(cur.x, cur2.x) )
 								break;
 
 							if ( rpt2.y > max ) { max = rpt2.y; jmax = j;}
@@ -415,9 +415,13 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 				}
 
 				if ( points.size() < 2 ) return;
-				if ( points.size() > 4 * map.GetDeviceExtents().GetWidth() ) {
-					dc.Text( "too many data points: please zoom in", map.GetDeviceExtents().GetTopLeft() );
-					return; // quit if 3x more x coord points than pixels
+
+				wxRealPoint devpos, devsize;
+				map.GetDeviceExtents( &devpos, &devsize );
+
+				if ( points.size() > 4 * devsize.x ) {
+					dc.Text( "too many data points: please zoom in", devpos );
+					return; // quit if 4x more x coord points than integer device units
 				}
 				
 				dc.Lines( points.size(), &points[0] );

@@ -17,7 +17,7 @@ public:
 	void SetData( const std::vector<wxRealPoint> &data );
 
 	//Getters and Setters
-	void SetLineStyle( const wxColour &c, int width );
+	void SetLineStyle( const wxColour &c, double width );
 	void SetFillColour( const wxColour &c );
 	void SetNumberOfBins( size_t n );
 	void SetNormalize( NormalizeType n );
@@ -50,7 +50,7 @@ private:
 	bool m_ignoreZeros;
 
 	wxColour m_lineColour;
-	int m_lineThickness;
+	double m_lineThickness;
 	wxColour m_fillColour;
 
 	size_t m_numberOfBins;

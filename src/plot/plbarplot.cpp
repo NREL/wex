@@ -42,6 +42,7 @@ size_t wxPLBarPlotBase::Len() const
 void wxPLBarPlotBase::DrawInLegend( wxPLOutputDevice &dc, const wxRect &rct)
 {
 	dc.Pen( m_colour );
+	dc.Brush( m_colour );
 	dc.Rect( rct );
 }
 
@@ -142,7 +143,8 @@ int wxPLBarPlot::CalcDispBarWidth( const wxPLDeviceMapping &map )
 {
 	if ( m_thickness <= 1 )
 	{
-		wxRect rct = map.GetDeviceExtents();
+		wxRealPoint pos, size;
+		map.GetDeviceExtents( &pos, &size );
 		double xmin = map.GetWorldMinimum().x;
 		double xmax = map.GetWorldMaximum().x;
 
@@ -156,7 +158,7 @@ int wxPLBarPlot::CalcDispBarWidth( const wxPLDeviceMapping &map )
 
 		if ( m_group.size() > 0 ) bars_in_view *= m_group.size();
 
-		return (int)( ((double)rct.GetWidth()) / ((double)( bars_in_view + 4 )) );
+		return (int)( ((double)size.x) / ((double)( bars_in_view + 4 )) );
 	}
 	else return m_thickness;
 }
@@ -254,10 +256,14 @@ void wxPLHBarPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 			dc.Rect(prct.x, prct.y, prct.width, prct.height);
 	}
 	
-	wxPoint start,end;
+	wxRealPoint start,end;
 	end.x = start.x = map.ToDevice( m_baselineX, 0 ).x;
-	start.y = map.GetDeviceExtents().y+1;
-	end.y = start.y + map.GetDeviceExtents().height-1;
+	
+	wxRealPoint pos, size;
+	map.GetDeviceExtents( &pos, &size );
+
+	start.y = pos.y+1;
+	end.y = start.y + size.y-1;
 	
 	dc.Pen( *wxBLACK, 1 );
 	dc.Line(start.x, start.y, end.x, end.y);
@@ -288,7 +294,8 @@ int wxPLHBarPlot::CalcDispBarWidth( const wxPLDeviceMapping &map )
 {
 	if ( m_thickness <= 1 )
 	{
-		wxRect rct = map.GetDeviceExtents();
+		wxRealPoint pos, size;
+		map.GetDeviceExtents( &pos, &size );
 		double ymin = map.GetWorldMinimum().y;
 		double ymax = map.GetWorldMaximum().y;
 
@@ -301,7 +308,7 @@ int wxPLHBarPlot::CalcDispBarWidth( const wxPLDeviceMapping &map )
 		}
 
 
-		return (int)( ((double)rct.GetHeight()) / ((double)( bars_in_view + 4 )) );
+		return (int)( ((double)size.y) / ((double)( bars_in_view + 4 )) );
 	}
 	else return m_thickness;
 }

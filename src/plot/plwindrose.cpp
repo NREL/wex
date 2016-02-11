@@ -93,7 +93,7 @@ void wxPLWindRose::Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map)
 	if (width > fullCircle / 36.0) width = fullCircle / 36.0;
 
 	double centerOfSlice = width / 2.0;
-	wxPoint pts[3];
+	wxRealPoint pts[3];
 	pts[0] = map.ToDevice(0, 0);
 
 	for (size_t i = 0; i<Len(); i++)

@@ -67,27 +67,21 @@ void wxPLAxis::SetWorldMax( double max )
 	m_max = max;
 }
 
-wxCoord wxPLAxis::WorldToPhysical( double coord, wxCoord phys_min, wxCoord phys_max )
+double wxPLAxis::WorldToPhysical( double coord, double phys_min, double phys_max )
 {
-	wxCoord pmin = phys_min;
-	wxCoord pmax = phys_max;
-
 	double range = m_max - m_min;
 	if (range == 0)
 		return 1;
 
 	double prop = (coord - m_min) / range;
-	// calculate the physical coordinate.
-	return (wxCoord)((double)pmin + prop * (double)(pmax - pmin));
+
+	return (phys_min + prop*(phys_max - phys_min));
 }
 
-double wxPLAxis::PhysicalToWorld( wxCoord point, wxCoord phys_min, wxCoord phys_max )
+double wxPLAxis::PhysicalToWorld( double point, double phys_min, double phys_max )
 {
-	wxCoord pmin = phys_min;
-	wxCoord pmax = phys_max;
-
-	double len = pmax - pmin;
-	double prop = (point-pmin) / len;
+	double len = phys_max - phys_min;
+	double prop = (point-phys_min) / len;
 	return prop * (m_max - m_min) + m_min;
 }
 
@@ -195,7 +189,7 @@ wxPLAxis *wxPLLinearAxis::Duplicate()
 	return new wxPLLinearAxis( *this );
 }
 
-void wxPLLinearAxis::GetAxisTicks( wxCoord phys_min, wxCoord phys_max, std::vector<TickData> &list )
+void wxPLLinearAxis::GetAxisTicks( double phys_min, double phys_max, std::vector<TickData> &list )
 {
 	std::vector<double> largeticks, smallticks;
 	CalcTicksFirstPass( phys_min, phys_max, largeticks, smallticks );
@@ -215,7 +209,7 @@ void wxPLLinearAxis::GetAxisTicks( wxCoord phys_min, wxCoord phys_max, std::vect
 }
 
 
-void wxPLLinearAxis::CalcTicksFirstPass(wxCoord phys_min, wxCoord phys_max, 
+void wxPLLinearAxis::CalcTicksFirstPass(double phys_min, double phys_max, 
 		std::vector<double> &largeticks, std::vector<double> &smallticks)
 {
 	if ( m_min == m_max )
@@ -226,7 +220,7 @@ void wxPLLinearAxis::CalcTicksFirstPass(wxCoord phys_min, wxCoord phys_max,
 
 	// (2) determine distance between large ticks.
 	bool should_cull_middle;
-	double tickDist = DetermineLargeTickStep( fabs((double)phys_min-(double)phys_max), should_cull_middle );
+	double tickDist = DetermineLargeTickStep( fabs(phys_min-phys_max), should_cull_middle );
 
 	// (3) determine starting position.
 	double first = 0.0;
@@ -278,14 +272,14 @@ void wxPLLinearAxis::CalcTicksFirstPass(wxCoord phys_min, wxCoord phys_max,
 	}
 }
 
-void wxPLLinearAxis::CalcTicksSecondPass(wxCoord phys_min, wxCoord phys_max, 
+void wxPLLinearAxis::CalcTicksSecondPass(double phys_min, double phys_max, 
 		std::vector<double> &largeticks, std::vector<double> &smallticks)
 {
 		//return if already generated.
 	if (smallticks.size() > 0)
 		return;
 
-	double physicalAxisLength = fabs( (double)phys_min - (double)phys_max );
+	double physicalAxisLength = fabs( phys_min - phys_max );
 
 	double adjustedMax = AdjustedWorldValue( m_max );
 	double adjustedMin = AdjustedWorldValue( m_min );
@@ -428,7 +422,7 @@ wxPLAxis *wxPLLabelAxis::Duplicate()
 	return new wxPLLabelAxis( *this );
 }
 
-void wxPLLabelAxis::GetAxisTicks( wxCoord phys_min, wxCoord phys_max, std::vector<TickData> &list )
+void wxPLLabelAxis::GetAxisTicks( double phys_min, double phys_max, std::vector<TickData> &list )
 {
 	double min_shown = PhysicalToWorld( phys_min, phys_min, phys_max );
 	double max_shown = PhysicalToWorld( phys_max, phys_min, phys_max );
@@ -486,7 +480,7 @@ wxPLAxis *wxPLLogAxis::Duplicate()
 	return new wxPLLogAxis( *this );
 }
 
-void wxPLLogAxis::GetAxisTicks( wxCoord, wxCoord, std::vector<TickData> &list )
+void wxPLLogAxis::GetAxisTicks( double, double, std::vector<TickData> &list )
 {
 	std::vector<double> largeticks, smallticks;
 	CalcTicksFirstPass( largeticks, smallticks );
@@ -505,18 +499,18 @@ void wxPLLogAxis::GetAxisTicks( wxCoord, wxCoord, std::vector<TickData> &list )
 		list.push_back( TickData( smallticks[i], wxEmptyString, TickData::SMALL ) );
 }
 
-wxCoord wxPLLogAxis::WorldToPhysical( double coord, wxCoord phys_min, wxCoord phys_max )
+double wxPLLogAxis::WorldToPhysical( double coord, double phys_min, double phys_max )
 {
 	if (coord <= 0.0 || m_min <= 0.0) return 0; // error
 
 	// inside range or don't want to clip.
-	double lrange = (double)(log10(m_max) - log10(m_min));
-	double prop = (double)((log10(coord) - log10(m_min)) / lrange);
+	double lrange = (log10(m_max) - log10(m_min));
+	double prop = ((log10(coord) - log10(m_min)) / lrange);
 	double offset = prop * (phys_max - phys_min);
 	return phys_min + offset;
 }
 
-double wxPLLogAxis::PhysicalToWorld( wxCoord p, wxCoord phys_min, wxCoord phys_max )
+double wxPLLogAxis::PhysicalToWorld( double p, double phys_min, double phys_max )
 {
 	double t = wxPLAxis::PhysicalToWorld( p, phys_min, phys_max );
 
@@ -712,7 +706,7 @@ wxString wxPLTimeAxis::GetLabel()
 	return m_timeLabel;
 }
 
-void wxPLTimeAxis::GetAxisTicks( wxCoord phys_min, wxCoord phys_max, std::vector<TickData> &list )
+void wxPLTimeAxis::GetAxisTicks( double, double, std::vector<TickData> &list )
 {
 	RecalculateTicksAndLabel(); // only does it if necessary
 	list = m_tickList;
@@ -950,9 +944,9 @@ wxPLPolarAngularAxis::wxPLPolarAngularAxis(const wxPLPolarAngularAxis &rhs)
 
 }
 
-void wxPLPolarAngularAxis::GetAxisTicks(wxCoord phys_min, wxCoord phys_max, std::vector<TickData> &list)
+void wxPLPolarAngularAxis::GetAxisTicks(double phys_min, double phys_max, std::vector<TickData> &list)
 {
-	double physical_size = fabs((double)phys_min - (double)phys_max);
+	double physical_size = fabs(phys_min - phys_max);
 	double divisions = 4;
 	int skip = (m_pau == GRADIANS) ? 5 : 3;
 
@@ -1003,12 +997,9 @@ void wxPLPolarAngularAxis::GetAxisTicks(wxCoord phys_min, wxCoord phys_max, std:
 		list.push_back(TickData(x, sLabel, ts));
 		i++;
 	}
-
-
-
 }
 
-void wxPLPolarAngularAxis::ExtendBound(wxPLAxis *a)
+void wxPLPolarAngularAxis::ExtendBound( wxPLAxis * )
 {
 	// don't do anything - just leave it at m_min=0 & m_max = full circle.
 	return;

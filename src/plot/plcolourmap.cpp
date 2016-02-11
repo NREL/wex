@@ -91,15 +91,15 @@ wxSize wxPLColourMap::CalculateBestSize()
 
 void wxPLColourMap::Render( wxPLOutputDevice &dc, const wxRect &geom)
 {
-	wxCoord colourBarHeight = 240;
+	double colourBarHeight = 240;
 	if (geom.height < 240)
 		colourBarHeight = 120; //Probably not ideal.  Fix this.
 	
 	
 	dc.Font( -1, false );
-	wxCoord charHeight = dc.CharHeight();
+	double charHeight = dc.CharHeight();
 	
-	wxCoord colourBarX = geom.x+1;
+	double colourBarX = geom.x+1;
 	double colourBarStep = colourBarHeight / ((double)m_colourList.size());
 	for (size_t i=0; i<m_colourList.size(); i++)
 	{
@@ -107,11 +107,8 @@ void wxPLColourMap::Render( wxPLOutputDevice &dc, const wxRect &geom)
 		dc.Brush( m_colourList[i] );
 		dc.Rect(colourBarX+1, geom.y+charHeight/2 + 1 + (m_colourList.size()-1-i)*colourBarStep, 10, colourBarStep+1);
 	}
-
-	//dc.Pen( *wxBLACK, 1 );
-	//dc.Rect(colourBarX, geom.y+charHeight/2, 12, colourBarHeight+2);
-	
-	wxCoord xTextPos = colourBarX + 14;
+		
+	double xTextPos = colourBarX + 14;
 	double yTextStep = colourBarHeight / 10;
 
 	double range = m_max - m_min;

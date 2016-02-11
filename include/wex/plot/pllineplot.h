@@ -41,7 +41,7 @@ protected:
 	Marker m_marker;
 	std::vector< wxRealPoint > m_data;
 	
-	void DrawMarkers( wxPLOutputDevice &dc, std::vector<wxPoint> &points, int size );
+	void DrawMarkers( wxPLOutputDevice &dc, std::vector<wxRealPoint> &points, int size );
 
 private:	
 	bool m_ignoreZeros;

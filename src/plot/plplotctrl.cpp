@@ -37,30 +37,53 @@ class wxDCOutputDevice : public wxPLOutputDevice
 	wxPen m_pen;
 	wxBrush m_brush;
 	wxFont m_font0;
+	double m_fontSize;
+	bool m_fontBold;
+#define CAST(x) ((int)x)
 public:
-	wxDCOutputDevice( wxDC &dc ) : wxPLOutputDevice(), m_dc(dc), m_pen( *wxBLACK_PEN ), m_brush( *wxBLACK_BRUSH ), m_font0( m_dc.GetFont() ) { }
+	wxDCOutputDevice( wxDC &dc ) 
+		: wxPLOutputDevice(), m_dc(dc), 
+			m_pen( *wxBLACK_PEN ), m_brush( *wxBLACK_BRUSH ), 
+			m_font0( m_dc.GetFont() )
+	{
+		m_fontSize = 0;
+		m_fontBold = ( m_font0.GetWeight() == wxFONTWEIGHT_BOLD );
+	}
+
+	wxDC *GetDC() { return &m_dc; }
 	
-	virtual void Clip( int x, int y, int width, int height ) { m_dc.SetClippingRegion( x, y, width, height ); }
-	virtual void Unclip() { m_dc.DestroyClippingRegion(); }
+	virtual bool Equals( double a, double b ) const {
+		return ((int)a) == ((int)b);
+	}
+
+	virtual void Clip( double x, double y, double width, double height ) { 
+		m_dc.SetClippingRegion( CAST(x), CAST(y), CAST(width), CAST(height) );
+	}
+
+	virtual void Unclip() {
+		m_dc.DestroyClippingRegion();
+	}
+
 	virtual void Brush( const wxColour &c, Style sty ) { 
 		m_brush.SetColour( c );
 		switch( sty )
 		{
-		case NONE: m_brush = *wxTRANSPARENT_BRUSH; return;
-
+		case NONE: m_brush = *wxTRANSPARENT_BRUSH; break;
 		case HATCH: m_brush.SetStyle(wxCROSSDIAG_HATCH); break;
 		default: m_brush.SetStyle( wxSOLID ); break;
 		}
+
 		m_dc.SetBrush( m_brush );
 	}
 
-	virtual void Pen( const wxColour &c, int size, Style line = SOLID, Style join = MITER, Style cap = BUTT ) {
+	virtual void Pen( const wxColour &c, double size, 
+		Style line = SOLID, Style join = MITER, Style cap = BUTT ) {
+
 		m_pen.SetColour( c );
-		m_pen.SetWidth( size );
+		m_pen.SetWidth( CAST(size) );
 		switch( line )
 		{
-		case NONE: m_pen = *wxTRANSPARENT_PEN; return; // if transparent skip everything else
-
+		case NONE: m_pen = *wxTRANSPARENT_PEN; break; // if transparent skip everything else
 		case DOT: m_pen.SetStyle( wxDOT ); break;
 		case DASH: m_pen.SetStyle( wxSHORT_DASH ); break;
 		case DOTDASH: m_pen.SetStyle( wxDOT_DASH ); break;
@@ -81,37 +104,63 @@ public:
 		m_dc.SetPen( m_pen );
 	}
 
-	virtual void Point( int x, int y ) { m_dc.DrawPoint( x, y ); }
-	virtual void Line( int x1, int y1, int x2, int y2 ) { m_dc.DrawLine( x1, y1, x2, y2 ); }
-	virtual void Lines( size_t n, const wxPoint *pts ) { m_dc.DrawLines( n, pts ); }
-	virtual void Polygon( size_t n, const wxPoint *pts, Style sty ) { 
-		m_dc.DrawPolygon( n, pts, 0, 0, sty==ODDEVEN ?  wxODDEVEN_RULE : wxWINDING_RULE );
-	}
-	virtual void Rect( int x, int y, int width, int height ) {
-		m_dc.DrawRectangle( x, y, width, height );
-	}
-	virtual void Circle( int x, int y, int radius ) {
-		m_dc.DrawCircle( x, y, radius );
-	}
-	
-	virtual void Font( int relpt = 0, bool bold = false ) {
-		wxFont font( m_font0 );
-		if ( relpt != 0 ) font.SetPointSize( font.GetPointSize() + relpt );
-		font.SetWeight( bold ? wxFONTWEIGHT_BOLD : wxFONTWEIGHT_NORMAL );
-		m_dc.SetFont( font );
+	virtual void Point( double x, double y ) {
+		m_dc.DrawPoint( CAST(x), CAST(y) );
 	}
 
-	virtual void Text( const wxString &text, int x, int y,  int angle=0 ) {
-		if ( angle != 0 ) m_dc.DrawRotatedText( text, x, y, angle );
-		else m_dc.DrawText( text, x, y );
+	virtual void Line( double x1, double y1, double x2, double y2 ) {
+		m_dc.DrawLine( CAST(x1), CAST(y1), CAST(x2), CAST(y2) );
 	}
-	virtual void Measure( const wxString &text, int *width, int *height ) {
+
+	virtual void Lines( size_t n, const wxRealPoint *pts ) {
+		if ( n == 0 ) return;
+		std::vector<wxPoint> ipt( n, wxPoint(0,0) );
+		for( size_t i=0;i<n;i++ )
+			ipt[i] = wxPoint( CAST(pts[i].x), CAST(pts[i].y) );
+
+		m_dc.DrawLines( n, &ipt[0] );
+	}
+
+	virtual void Polygon( size_t n, const wxRealPoint *pts, Style sty ) {
+		if ( n == 0 ) return;
+		std::vector<wxPoint> ipt( n, wxPoint(0,0) );
+		for( size_t i=0;i<n;i++ )
+			ipt[i] = wxPoint( CAST(pts[i].x), CAST(pts[i].y) );
+
+		m_dc.DrawPolygon( n, &ipt[0], 0, 0, sty==ODDEVEN ?  wxODDEVEN_RULE : wxWINDING_RULE );
+	}
+	virtual void Rect( double x, double y, double width, double height ) {
+		m_dc.DrawRectangle( CAST(x), CAST(y), CAST(width), CAST(height) );
+	}
+	virtual void Circle( double x, double y, double radius ) {
+		m_dc.DrawCircle( CAST(x), CAST(y), CAST(radius) );
+	}
+	
+	virtual void Font( double relpt = 0, bool bold = false ) {
+		wxFont font( m_font0 );
+		if ( relpt != 0 ) font.SetPointSize( font.GetPointSize() + CAST(relpt) );
+		font.SetWeight( bold ? wxFONTWEIGHT_BOLD : wxFONTWEIGHT_NORMAL );
+		m_dc.SetFont( font );
+		m_fontSize = relpt;
+		m_fontBold = bold;
+	}
+	
+	virtual void Font( double *rel, bool *bld ) const {
+		if ( rel ) *rel = m_fontSize;
+		if ( bld ) *bld = m_fontBold;
+	}
+
+	virtual void Text( const wxString &text, double x, double y, double angle=0 ) {
+		if ( angle != 0 ) m_dc.DrawRotatedText( text, CAST(x), CAST(y), angle );
+		else m_dc.DrawText( text, CAST(x), CAST(y) );
+	}
+	virtual void Measure( const wxString &text, double *width, double *height ) {
 		wxSize sz( m_dc.GetTextExtent( text ) );
-		if ( width )  *width = sz.x;
-		if ( height ) *height = sz.y;
+		if ( width )  *width = (double)sz.x;
+		if ( height ) *height = (double)sz.y;
 	}
-	virtual int CharHeight() {
-		return m_dc.GetCharHeight();
+	virtual double CharHeight() {
+		return (double)m_dc.GetCharHeight();
 	}
 };
 
@@ -121,26 +170,27 @@ static const wxSize legend_item_box(13, 13);
 class wxPLAxisDeviceMapping : public wxPLDeviceMapping
 {
 private:
-	wxPLPlotCtrl *m_plotCtrl;
 	wxPLAxis *m_xAxis;
-	wxCoord m_xPhysMin, m_xPhysMax;
+	double m_xPhysMin, m_xPhysMax;
 	wxPLAxis *m_yAxis;
-	wxCoord m_yPhysMin, m_yPhysMax;
-	wxCoord m_physical_constraint;
-	wxPoint m_ptCenter;
+	double m_yPhysMin, m_yPhysMax;
+	double m_physicalConstraint;
+	wxRealPoint m_ptCenter;
+	bool m_primaryX, m_primaryY;
 
 public:
-	wxPLAxisDeviceMapping( wxPLPlotCtrl *ctrl, wxPLAxis *x, wxCoord xmin, wxCoord xmax,
-		wxPLAxis *y, wxCoord ymin, wxCoord ymax )
-		: m_plotCtrl(ctrl), m_xAxis(x), m_xPhysMin(xmin), m_xPhysMax(xmax), 
-		m_yAxis(y), m_yPhysMin(ymin), m_yPhysMax(ymax)
+	wxPLAxisDeviceMapping( wxPLAxis *x, double xmin, double xmax, bool primaryx,
+		wxPLAxis *y, double ymin, double ymax, bool primaryy )
+		: m_xAxis(x), m_xPhysMin(xmin), m_xPhysMax(xmax), m_primaryX(primaryx), 
+		m_yAxis(y), m_yPhysMin(ymin), m_yPhysMax(ymax), m_primaryY(primaryy)
 	{
-		wxRect box = GetDeviceExtents();
-		m_ptCenter = wxPoint(box.x + box.width / 2.0, box.y + box.height / 2.0);
-		m_physical_constraint = (box.width < box.height) ? box.width : box.height;
+		wxRealPoint pos, size;
+		GetDeviceExtents( &pos, &size );
+		m_ptCenter = wxRealPoint( 0.5*(pos.x+size.x), 0.5*(pos.y+size.y) );
+		m_physicalConstraint = (size.x < size.y) ? size.x : size.y;
 	}
 	
-	virtual wxPoint ToDevice( double x, double y ) const
+	virtual wxRealPoint ToDevice( double x, double y ) const
 	{
 		if (wxPLPolarAngularAxis *pa = dynamic_cast<wxPLPolarAngularAxis *>(m_xAxis)) {
 			// this is a polar plot, so translate the "point" as if it's a angle/radius combination
@@ -149,25 +199,30 @@ public:
 			double angle_in_rad = pa->AngleInRadians(x);
 
 			// get radius in physical units
-			double radius0 = m_yAxis->WorldToPhysical(y, 0, m_physical_constraint / 2.0); // max radius has to be 1/2 of physical constraint
+			double radius0 = m_yAxis->WorldToPhysical(y, 0, m_physicalConstraint / 2.0); // max radius has to be 1/2 of physical constraint
 
 			// locate point relative to center of polar plot
-			wxPoint pt = wxPoint(radius0*cos(angle_in_rad), radius0*sin(angle_in_rad));
+			wxRealPoint pt(radius0*cos(angle_in_rad), radius0*sin(angle_in_rad));
 
 			// return point on physical device
 			return (m_ptCenter + pt);
 		}
 		else // Cartesian plot
-			return wxPoint( m_xAxis->WorldToPhysical( x, m_xPhysMin, m_xPhysMax ),
+			return wxRealPoint( m_xAxis->WorldToPhysical( x, m_xPhysMin, m_xPhysMax ),
 				m_yAxis->WorldToPhysical( y, m_yPhysMin, m_yPhysMax ) );
 	}
 	
-	virtual wxRect GetDeviceExtents( ) const
+	virtual void GetDeviceExtents( wxRealPoint *pos, wxRealPoint *size ) const
 	{
-		return wxRect( m_xPhysMin, 
-			m_yPhysMin < m_yPhysMax ? m_yPhysMin : m_yPhysMax,
-			m_xPhysMax - m_xPhysMin,
-			abs( m_yPhysMax - m_yPhysMin ) );
+			if ( pos ) {
+				pos->x = m_xPhysMin;
+				pos->y = m_yPhysMin < m_yPhysMax ? m_yPhysMin : m_yPhysMax;
+			}
+
+			if ( size ) {
+				size->x = m_xPhysMax - m_xPhysMin;
+				size->y = fabs( m_yPhysMax - m_yPhysMin);
+			}
 	}
 
 	virtual wxRealPoint GetWorldMinimum() const
@@ -192,9 +247,8 @@ public:
 		return m_yAxis;
 	}
 
-	virtual wxPLPlotCtrl *GetPlotCtrl() const {
-		return m_plotCtrl;
-	}
+	virtual bool IsPrimaryXAxis() const { return m_primaryX; }
+	virtual bool IsPrimaryYAxis() const { return m_primaryY; }
 };
 
 
@@ -421,23 +475,29 @@ class wxPLPlotCtrl::text_layout
 		enum TextState { NORMAL, SUPERSCRIPT, SUBSCRIPT }; 
 		wxString text;
 		TextState state;
-		wxPoint origin;
-		wxSize size;
-		wxCoord aligned_x;
+		wxRealPoint origin;
+		wxRealPoint size;
+		double aligned_x;
 	};
 
 	std::vector< std::vector<text_piece> > m_lines;
-	wxSize m_bounds;
+	wxRealPoint m_bounds;
 
 	static const int FontPointAdjust = 2;
 
 public:
 	enum TextAlignment { LEFT, CENTER, RIGHT };
 
-	text_layout( wxDC &dc, const wxString &text, TextAlignment ta = LEFT )
+	text_layout( wxPLOutputDevice &dc, const wxString &text, TextAlignment ta = LEFT )
 		: m_bounds(0, 0)
 	{
 		if ( text.IsEmpty() ) return;
+
+		double fontPoints = 0;
+		bool fontBold = false;
+		
+		// get current font state for subsequent relative adjustments
+		dc.Font( &fontPoints, &fontBold );
 
 		// split text into lines, and parse each one into text pieces after resolving escape sequences
 		wxArrayString lines = wxStringTokenize( text, "\r\n" );
@@ -446,38 +506,34 @@ public:
 
 		if ( m_lines.size() == 0 ) return;
 		
-		// set up fonts for text layout
-		wxFont font_normal = dc.GetFont();
-		wxFont font_small( font_normal );
-		font_small.SetPointSize( font_small.GetPointSize() - FontPointAdjust );
-
 		// compute extents of each text piece with the right font
 		for ( size_t i=0;i<m_lines.size(); i++ )
 		{
 			for ( size_t j=0;j<m_lines[i].size(); j++ )
 			{
 				text_piece &tp = m_lines[i][j];
-				wxCoord width, height;
-				dc.GetTextExtent( tp.text, &width, &height, 0, 0, 
-					tp.state == text_piece::NORMAL ? &font_normal : &font_small);
-				tp.size.Set( width, height );
+				double width, height;
+				dc.Font( tp.state == text_piece::NORMAL ? fontPoints : fontPoints-FontPointAdjust, fontBold );
+				dc.Measure( tp.text, &width, &height );
+				tp.size.x = width;
+				tp.size.y = height;
 			}
 		}
 
 		// obtain the approximate heights for normal and small text
-		dc.SetFont( font_small );
-		wxCoord height_small = dc.GetCharHeight();
-		dc.SetFont( font_normal );
-		wxCoord height_normal = dc.GetCharHeight();
+		dc.Font( fontPoints-FontPointAdjust, fontBold );
+		double height_small = dc.CharHeight();
+		dc.Font( fontPoints, fontBold );
+		double height_normal = dc.CharHeight();
 
 		// sequentially calculate the origins of each text piece
 		
-		const wxCoord offset = height_small/4; // amount to raise/lower super/sub-scripts
-		wxCoord y = 0;
+		const double offset = 0.25*height_small; // amount to raise/lower super/sub-scripts
+		double y = 0;
 		
 		for ( size_t i=0;i<m_lines.size(); i++ )
 		{
-			wxCoord x = 0;
+			double x = 0;
 			bool has_sup = false, has_sub = false;
 			// layout this line's X positions, keep track of whether it has super/subs
 			for ( size_t j=0; j< m_lines[i].size(); j++ )
@@ -529,7 +585,7 @@ public:
 		// note: does not require recalculating text sizes since they are cached
 		for ( size_t i=0;i<m_lines.size();i++ )
 		{
-			wxCoord line_width = 0;
+			double line_width = 0;
 			for ( size_t j=0;j<m_lines[i].size();j++ )
 			{
 				// restore original aligned positions for each text piece
@@ -537,8 +593,8 @@ public:
 				line_width += m_lines[i][j].size.x;
 			}
 
-			wxCoord offset = 0;
-			if ( ta == CENTER ) offset = (m_bounds.x - line_width)/2;
+			double offset = 0;
+			if ( ta == CENTER ) offset = 0.5*(m_bounds.x - line_width);
 			else if ( ta == RIGHT ) offset = m_bounds.x - line_width;
 
 			if ( offset != 0 ) // only do this for center/right alignments
@@ -547,18 +603,18 @@ public:
 		}
 	}
 
-	void render( wxDC &dc, wxCoord x, wxCoord y, double rotationDegrees = 0.0, bool draw_bounds = false )
+	void render( wxPLOutputDevice &dc, double x, double y, double rotationDegrees = 0.0, bool draw_bounds = false )
 	{
 		if ( m_lines.size() == 0 ) return;
 
-		wxFont font_normal = dc.GetFont();
-		wxFont font_small( font_normal );
-		font_small.SetPointSize( font_small.GetPointSize() - FontPointAdjust );
+		double fontPoints = 0;
+		bool fontBold = false;
+		dc.Font( &fontPoints, &fontBold );
 
 		if ( draw_bounds )
 		{
-			dc.SetPen( *wxLIGHT_GREY_PEN );
-			dc.SetBrush( *wxTRANSPARENT_BRUSH );
+			dc.Pen( *wxLIGHT_GREY, 1 );
+			dc.Brush( *wxBLUE, wxPLOutputDevice::NONE );
 		}
 
 		// layout has already been calculated, assuming the same font.
@@ -570,10 +626,10 @@ public:
 				for ( size_t j=0;j<m_lines[i].size();j++ )
 				{
 					text_piece &tp = m_lines[i][j];
-					dc.SetFont( tp.state == text_piece::NORMAL ? font_normal : font_small );
-					dc.DrawText( tp.text, x + tp.origin.x, y + tp.origin.y );				
+					dc.Font( tp.state == text_piece::NORMAL ? fontPoints : fontPoints-FontPointAdjust, fontBold );
+					dc.Text( tp.text, x + tp.origin.x, y + tp.origin.y );				
 					if ( draw_bounds )
-						dc.DrawRectangle( x+tp.origin.x, y+tp.origin.y, tp.size.x, tp.size.y );
+						dc.Rect( x+tp.origin.x, y+tp.origin.y, tp.size.x, tp.size.y );
 				}
 			}
 		}
@@ -587,15 +643,16 @@ public:
 				for ( size_t j=0;j<m_lines[i].size();j++ )
 				{
 					text_piece &tp = m_lines[i][j];
-					dc.SetFont( tp.state == text_piece::NORMAL ? font_normal : font_small );
+					dc.Font( tp.state == text_piece::NORMAL ? fontPoints : fontPoints-FontPointAdjust, fontBold );
 					double rotx = tp.origin.x*costheta - tp.origin.y*sintheta;
 					double roty = tp.origin.x*sintheta + tp.origin.y*costheta;
-					dc.DrawRotatedText( tp.text, x + rotx, y + roty, rotationDegrees );
+					dc.Text( tp.text, x + rotx, y + roty, rotationDegrees );
 				}
 			}
 		}
 
-		dc.SetFont( font_normal );
+		// restore font state
+		dc.Font( fontPoints, fontBold );
 	}
 
 	wxString escape( const wxString &text )
@@ -745,9 +802,8 @@ public:
 		return list;
 	}
 
-	inline wxSize bounds() { return m_bounds; }
-	inline wxCoord width() { return m_bounds.x; }
-	inline wxCoord height() { return m_bounds.y; }
+	inline double width() { return m_bounds.x; }
+	inline double height() { return m_bounds.y; }
 };
 
 class wxPLPlotCtrl::axis_layout
@@ -756,7 +812,7 @@ private:
 
 	struct tick_layout
 	{
-		tick_layout( wxDC &dc, const wxPLAxis::TickData &td )
+		tick_layout( wxPLOutputDevice &dc, const wxPLAxis::TickData &td )
 			: text( dc, td.label, text_layout::CENTER ), world( td.world ), 
 			  tick_size( td.size ), 
 			  text_angle(0.0) {  }
@@ -771,19 +827,19 @@ private:
 	int m_axisPos;
 	wxSize m_bounds;
 
-	void renderAngular(wxDC &dc, wxCoord radius, wxPLPolarAngularAxis *axis, wxCoord cntr_x, wxCoord cntr_y)
+	void renderAngular( wxPLOutputDevice &dc, double radius, wxPLPolarAngularAxis *axis, double cntr_x, double cntr_y)
 	{
-		wxPoint cntr = wxPoint(cntr_x, cntr_y);
+		wxRealPoint cntr(cntr_x, cntr_y);
 
 		// draw tick marks and tick labels
 		for (size_t i = 0; i < m_tickList.size(); i++)
 		{
 			tick_layout &ti = m_tickList[i];
-			wxCoord tick_length = ti.tick_size == wxPLAxis::TickData::LARGE ? 5 : 2;
+			double tick_length = ti.tick_size == wxPLAxis::TickData::LARGE ? 5 : 2;
 			double angle = axis->AngleInRadians(ti.world);
-			wxPoint pt0 = cntr + wxPoint(radius*cos(angle), radius*sin(angle));
-			wxPoint pt1 = cntr + wxPoint((radius - tick_length)*cos(angle), (radius - tick_length)*sin(angle));
-			dc.DrawLine(pt0, pt1);
+			wxRealPoint pt0( cntr + wxRealPoint(radius*cos(angle), radius*sin(angle)) );
+			wxRealPoint pt1( cntr + wxRealPoint((radius - tick_length)*cos(angle), (radius - tick_length)*sin(angle)) );
+			dc.Line(pt0, pt1);
 
 			if (ti.text.width() > 0)
 			{
@@ -816,7 +872,7 @@ public:
 		return values;
 	}
 
-	axis_layout( int ap, wxDC &dc, wxPLAxis *axis, wxCoord phys_min, wxCoord phys_max )
+	axis_layout( int ap, wxPLOutputDevice &dc, wxPLAxis *axis, double phys_min, double phys_max )
 	{
 		m_axisPos = ap;
 
@@ -834,14 +890,14 @@ public:
 		{
 			// calculate axis bounds extents assuming
 			// no text rotation
-			wxCoord xmin = phys_min;
-			wxCoord xmax = phys_max;
-			wxCoord ymax = 0;
+			double xmin = phys_min;
+			double xmax = phys_max;
+			double ymax = 0;
 
 			for ( size_t i=0;i<m_tickList.size();i++ )
 			{
 				tick_layout &ti = m_tickList[i];
-				wxCoord phys = axis->WorldToPhysical( ti.world, phys_min, phys_max );
+				double phys = axis->WorldToPhysical( ti.world, phys_min, phys_max );
 				if ( phys-ti.text.width()/2 < xmin )
 					xmin = phys-ti.text.width()/2;
 				if ( phys+ti.text.width()/2 > xmax )
@@ -858,7 +914,7 @@ public:
 				return;
 
 			// required pixels of separation between adjacent tick texts
-			const int tick_label_space = 4;
+			const double tick_label_space = 4;
 
 			// mediocre attempt for laying out axis tick text to avoid overlap
 			// note: may need to adjust bounds accordingly
@@ -875,7 +931,7 @@ public:
 				double textAngle = 0.0; // default: no rotation
 
 				size_t index = 0;
-				wxCoord width = 0;
+				double width = 0;
 				for ( size_t j = 0; j < labeledTicks.size(); j++ )
 				{
 					if ( labeledTicks[j]->text.width() > width )
@@ -892,16 +948,16 @@ public:
 				tick_layout &center = *labeledTicks[index];
 				tick_layout &right = *labeledTicks[index+1];
 
-				wxCoord phys_left = axis->WorldToPhysical( left.world, phys_min, phys_max );
-				wxCoord phys = axis->WorldToPhysical( center.world, phys_min, phys_max );
-				wxCoord phys_right = axis->WorldToPhysical( right.world, phys_min, phys_max );
+				double phys_left = axis->WorldToPhysical( left.world, phys_min, phys_max );
+				double phys = axis->WorldToPhysical( center.world, phys_min, phys_max );
+				double phys_right = axis->WorldToPhysical( right.world, phys_min, phys_max );
 				
 				if ( (phys - center.text.width()/2 - tick_label_space < phys_left + left.text.width()/2)
 					|| (phys + center.text.width()/2 + tick_label_space > phys_right - right.text.width()/2) )
 				{
 					// rotate all the ticks, not just the large ones
 
-					textAngle = 45;
+					textAngle = 45.0;
 					for ( size_t j=0;j<m_tickList.size();j++ )
 					{
 						m_tickList[j].text_angle = textAngle;
@@ -920,13 +976,13 @@ public:
 		}
 		else
 		{ // ap = Y_LEFT || Y_RIGHT
-			wxCoord ymin = phys_max; // ymin is upper coordinate
-			wxCoord ymax = phys_min; // ymax is lower coordinate
-			wxCoord xmax = 0; // maximum text width
+			double ymin = phys_max; // ymin is upper coordinate
+			double ymax = phys_min; // ymax is lower coordinate
+			double xmax = 0; // maximum text width
 			for ( size_t i=0;i<m_tickList.size();i++ )
 			{
 				tick_layout &ti = m_tickList[i];
-				wxCoord phys = axis->WorldToPhysical( ti.world, phys_min, phys_max );
+				double phys = axis->WorldToPhysical( ti.world, phys_min, phys_max );
 				if ( phys-ti.text.height()/2 < ymin )
 					ymin = phys-ti.text.height()/2;
 				if ( phys+ti.text.height()/2 > ymax )
@@ -942,7 +998,7 @@ public:
 
 	wxSize bounds() { return m_bounds; }
 
-	void render( wxDC &dc, wxCoord ordinate, wxPLAxis *axis, wxCoord phys_min, wxCoord phys_max, wxCoord ordinate_opposite = -1 )
+	void render( wxPLOutputDevice &dc, double ordinate, wxPLAxis *axis, double phys_min, double phys_max, double ordinate_opposite = -1 )
 	{
 		// if this is a polar angular axis, render it and leave
 		// radius passed in a 'ordinate', center.x as phys_min, center.y as phys_max
@@ -955,12 +1011,12 @@ public:
 		for ( size_t i=0;i<m_tickList.size(); i++ )
 		{
 			tick_layout &ti = m_tickList[i];
-			wxCoord physical = axis->WorldToPhysical( ti.world, phys_min, phys_max );
+			double physical = axis->WorldToPhysical( ti.world, phys_min, phys_max );
 
 			if ( ti.tick_size != wxPLAxis::TickData::NONE )
 			{
-				wxPoint tickStart, tickEnd;
-				wxCoord tick_length = ti.tick_size == wxPLAxis::TickData::LARGE ? 5 : 2;
+				wxRealPoint tickStart, tickEnd;
+				double tick_length = ti.tick_size == wxPLAxis::TickData::LARGE ? 5 : 2;
 				if ( m_axisPos == X_BOTTOM || m_axisPos == X_TOP )
 				{
 					tickStart.x = physical;
@@ -976,7 +1032,7 @@ public:
 					tickEnd.y = physical;
 				}
 
-				dc.DrawLine( tickStart, tickEnd );
+				dc.Line( tickStart, tickEnd );
 
 				// draw ticks on opposite ordinate line if needed
 				if ( ordinate_opposite > 0 )
@@ -996,13 +1052,13 @@ public:
 						tickEnd.y = physical;
 					}
 
-					dc.DrawLine( tickStart, tickEnd );
+					dc.Line( tickStart, tickEnd );
 				}
 			}
 
 			if ( ti.text.width() > 0 )
 			{
-				wxCoord text_x = 0, text_y = 0;
+				double text_x = 0, text_y = 0;
 				if ( m_axisPos ==  X_BOTTOM )
 				{
 					if ( ti.text_angle == 0.0 )
@@ -1690,7 +1746,8 @@ wxBitmap wxPLPlotCtrl::GetBitmap( int width, int height )
 			wxBitmap bittemp( 10, 10 );
 			wxMemoryDC dctemp( bittemp );
 			dctemp.SetFont( GetFont() );
-			CalcLegendTextLayout( dctemp );
+			wxDCOutputDevice odev(dctemp);
+			CalcLegendTextLayout( odev );
 			m_legendInvalidated = true; // keep legend invalidated for subsequent render
 
 			width += m_legendRect.width;
@@ -1828,6 +1885,17 @@ public:
 
 void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 {
+	wxFont font_normal( dc.GetFont() );
+	if ( m_scaleTextSize )
+	{
+		// scale text according to geometry width, within limits
+		double point_size = geom.width/1000.0 * 12.0;
+		if ( point_size > 23 ) point_size = 23;
+		if ( point_size < 7 ) point_size = 7;
+		font_normal.SetPointSize( (int)point_size );
+	}
+	dc.SetFont( font_normal );
+
 	gcdc_ref gdc;
 	if ( wxMemoryDC *memdc = dynamic_cast<wxMemoryDC*>( &dc ) )
 		gdc.m_ptr = new wxGCDC( *memdc );
@@ -1835,10 +1903,23 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 		gdc.m_ptr = new wxGCDC( *windc );
 	else if ( wxPrinterDC *prindc = dynamic_cast<wxPrinterDC*>( &dc ) )
 		gdc.m_ptr = new wxGCDC( *prindc );
-	
-	wxDC &aadc = gdc.m_ptr != 0 ? *gdc.m_ptr : dc;
-	wxDCOutputDevice odev( aadc );
-	
+
+	wxDC &aadc = gdc.m_ptr ? *gdc.m_ptr : dc;
+
+	wxDCOutputDevice odev1(dc);
+	wxDCOutputDevice odev2(aadc);
+
+	Render( odev1, odev2, geom );
+}
+
+
+void wxPLPlotCtrl::Render( wxPLOutputDevice &dc, wxPLOutputDevice &aadc, wxRect geom )
+{
+#define NORMAL_FONT(dc)  dc.Font( 0, false )
+#define TITLE_FONT(dc)   dc.Font( 0, true )
+#define LEGEND_FONT(dc)  dc.Font( -1, false )
+#define AXIS_FONT(dc)    dc.Font( 0, false )
+
 	// ensure plots have the axes they need to be rendered
 	for ( size_t i = 0; i< m_plots.size(); i++ )
 	{
@@ -1849,30 +1930,11 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 			SetAxis( m_plots[i].plot->SuggestYAxis(), m_plots[i].yap, m_plots[i].ppos );
 	}
 
-	// Configure fonts
-	wxFont font_normal( dc.GetFont() );
-	if ( m_scaleTextSize )
-	{
-		// scale text according to geometry width, within limits
-		double point_size = geom.width/1000.0 * 12.0;
-		if ( point_size > 23 ) point_size = 23;
-		if ( point_size < 7 ) point_size = 7;
-		font_normal.SetPointSize( (int)point_size );
-	}
-
-	wxFont font_bold( font_normal );
-	font_bold.SetWeight( wxFONTWEIGHT_BOLD );
-	//font_bold.SetPointSize( font_bold.GetPointSize()+1 );
-
-	wxFont font_axis( font_normal );
-	font_axis.SetPointSize( font_axis.GetPointSize()-2 );
-
-
 	// draw any side widgets first and remove the space from the total plot area
 	if ( m_sideWidgets[Y_LEFT] != 0 )
 	{
 		wxSize sz = m_sideWidgets[Y_LEFT]->GetBestSize();
-		m_sideWidgets[Y_LEFT]->Render( odev, 
+		m_sideWidgets[Y_LEFT]->Render( dc, 
 			wxRect( geom.x, geom.y, 
 				sz.x, geom.height ) );
 		geom.width -= sz.x;
@@ -1882,7 +1944,7 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 	if ( m_sideWidgets[Y_RIGHT] != 0 )
 	{
 		wxSize sz = m_sideWidgets[Y_RIGHT]->GetBestSize();		
-		m_sideWidgets[Y_RIGHT]->Render( odev, 
+		m_sideWidgets[Y_RIGHT]->Render( dc, 
 			wxRect( geom.x+geom.width-sz.x, geom.y, 
 				sz.x, geom.height ) );
 
@@ -1899,12 +1961,12 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 	bool legend_right = false;
 	if ( m_showLegend )
 	{
-		dc.SetFont( font_normal );
+		LEGEND_FONT(dc);
 		CalcLegendTextLayout( dc );
 
 		if ( m_legendPos == BOTTOM )
 		{
-			wxCoord height = 0;
+			double height = 0;
 			for ( size_t i=0;i<m_legendItems.size();i++ )
 				if (m_legendItems[i]->layout->height() > height )
 					height = m_legendItems[i]->layout->height();
@@ -1917,7 +1979,7 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 
 		if ( m_legendPos == RIGHT )
 		{
-			wxCoord width = 0;
+			double width = 0;
 			for ( size_t i=0;i<m_legendItems.size();i++ )
 				if (m_legendItems[i]->layout->width() > width )
 					width = m_legendItems[i]->layout->width();
@@ -1932,7 +1994,7 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 	// position and render title using cached layout if possible
 	if ( m_showTitle && !m_title.IsEmpty() )
 	{
-		dc.SetFont( font_bold );
+		TITLE_FONT(dc);
 		if ( m_titleLayout == 0 )
 			m_titleLayout = new text_layout( dc, m_title, text_layout::CENTER );
 
@@ -1940,8 +2002,15 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 		box.y += m_titleLayout->height() + text_space;
 		box.height -= m_titleLayout->height() + text_space;
 	}
+	else
+	{
+		// if no title, leave a few extra pixels at the top for Y axes labels at the edges
+		int topmargin = (int)(0.5*dc.CharHeight() ) + text_space;
+		box.y += topmargin;
+		box.height -= topmargin;
+	}
 
-	dc.SetFont( font_normal );
+	NORMAL_FONT(dc);
 
 	wxRect plotbox = box; // save current box for where to draw the axis labels
 
@@ -1964,7 +2033,7 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 		box.height -= m_x1.label->height() + 2*text_space;
 	}
 
-	wxCoord yleft_max_label_width = 0, yright_max_label_width = 0;
+	double yleft_max_label_width = 0, yright_max_label_width = 0;
 	for ( size_t pp = 0; pp < NPLOTPOS; pp++ )
 	{
 		if (m_y1[pp].axis && m_y1[pp].axis->IsLabelVisible() && !m_y1[pp].axis->GetLabel().IsEmpty() )
@@ -2000,9 +2069,9 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 	// actual plot
 
 	// note that the axis_layouts are cached and are only
-	// invalidated on a resize event, or when an axis is changed
-	dc.SetFont( font_axis );
-	
+	// invalidated on a resize even.t, or when an axis is changed
+
+	AXIS_FONT(dc);	
 	if ( m_x2.axis != 0 )
 	{
 		if ( m_x2.layout == 0 )
@@ -2010,8 +2079,8 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 
 		if ( m_x2.layout->bounds().x > box.width )
 		{   // this adjusts for really wide tick text at the ends of the axis
-			wxCoord diff = m_x2.layout->bounds().x - box.width;
-			wxCoord adj = 2*diff/3; // actual adjustment needed is diff/2, but leave a little extra space
+			double diff = m_x2.layout->bounds().x - box.width;
+			double adj = 2*diff/3; // actual adjustment needed is diff/2, but leave a little extra space
 
 			if (box.x + box.width + diff > plotbox.x + plotbox.width )
 				box.width -= adj;
@@ -2028,14 +2097,14 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 	}
 
 	// create an indicator as to whether or not this is a cartesion plot
-	bool cartesion_plot = true;
+	bool is_cartesian = true;
 	if (wxPLPolarAngularAxis *pa = dynamic_cast<wxPLPolarAngularAxis *>(m_x1.axis))
-		cartesion_plot = false;
+		is_cartesian = false;
 
 
 	if ( m_x1.axis != 0 )
 	{
-		if (cartesion_plot) {
+		if (is_cartesian) {
 			if (m_x1.layout == 0)
 				m_x1.layout = new axis_layout(X_BOTTOM, dc, m_x1.axis, box.x, box.x + box.width);
 			
@@ -2054,13 +2123,13 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 		}
 	}
 	
-	wxCoord yleft_max_axis_width = 0, yright_max_axis_width = 0;
+	double yleft_max_axis_width = 0, yright_max_axis_width = 0;
 	for ( size_t pp=0;pp<NPLOTPOS;pp++)
 	{
 		if ( m_y1[pp].axis != 0 )
 		{
 			if (m_y1[pp].layout == 0) {
-				if (cartesion_plot)
+				if (is_cartesian)
 					m_y1[pp].layout = new axis_layout( Y_LEFT, dc, m_y1[pp].axis, box.y+box.height, box.y );
 				else {
 					if (box.width < box.height)
@@ -2099,26 +2168,26 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 				nyaxes = pp+1;
 
 	if ( nyaxes == 0 ) nyaxes = 1;
-	const wxCoord plot_space = 16;
-	wxCoord single_plot_height = box.height/nyaxes - (nyaxes-1)*(plot_space/2);
-	if ( single_plot_height < 40 ) return;
+	const double plot_space = 16;
+	double single_plot_height = box.height/nyaxes - (nyaxes-1)*(plot_space/2);
+	if ( single_plot_height < 50 ) return;
 
 	// compute box dimensions for each plot/subplot
 	// and fill plot area with background color
-	dc.SetBrush( wxBrush( m_plotAreaColour ) );
-	dc.SetPen( *wxTRANSPARENT_PEN );
+	dc.Brush(  m_plotAreaColour );
+	dc.Pen( *wxWHITE, 1.0, wxPLOutputDevice::NONE );
 
-	wxCoord cur_plot_y_start = box.y;
+	double cur_plot_y_start = box.y;
 	m_plotRects.clear();
 	for ( size_t pp=0;pp<nyaxes; pp++ )
 	{
 		wxRect rect( box.x, cur_plot_y_start, box.width, single_plot_height );
-		if (cartesion_plot) 
-			dc.DrawRectangle(rect);
+		if (is_cartesian) 
+			dc.Rect(rect);
 		else {
-			wxCoord radius = (box.width < box.height) ? box.width / 2.0 : box.height / 2.0;
-			wxPoint cntr = wxPoint(box.x + box.width / 2.0, box.y + box.height / 2.0);
-			dc.DrawCircle(cntr, radius);
+			double radius = (box.width < box.height) ? box.width / 2.0 : box.height / 2.0;
+			wxRealPoint cntr(box.x + box.width / 2.0, box.y + box.height / 2.0);
+			dc.Circle(cntr, radius);
 		}
 		m_plotRects.push_back(rect);
 		cur_plot_y_start += single_plot_height + plot_space;
@@ -2127,27 +2196,20 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 	// render grid lines
 	if ( m_showCoarseGrid )
 	{
-		wxPen pen( m_gridColour, 1, wxPENSTYLE_SOLID );
-		pen.SetJoin( wxJOIN_MITER );
-		pen.SetCap( wxCAP_BUTT );
-		dc.SetPen( pen );
-		if (cartesion_plot)
-			DrawGrid( dc, wxPLAxis::TickData::LARGE );
-		else
-			DrawPolarGrid(dc, wxPLAxis::TickData::LARGE);
+		dc.Pen( m_gridColour, 1, 
+			wxPLOutputDevice::SOLID, wxPLOutputDevice::MITER, wxPLOutputDevice::BUTT );
+
+		if (is_cartesian)	DrawGrid( dc, wxPLAxis::TickData::LARGE );
+		else DrawPolarGrid(dc, wxPLAxis::TickData::LARGE);
 	}
 
 	if ( m_showFineGrid )
-	{
-		wxPen pen( m_gridColour, 1, wxPENSTYLE_DOT );
-		pen.SetCap( wxCAP_BUTT );
-		pen.SetJoin( wxJOIN_MITER );
-		dc.SetPen( pen );
+	{		
+		dc.Pen( m_gridColour, 1, 
+			wxPLOutputDevice::DOT, wxPLOutputDevice::MITER, wxPLOutputDevice::BUTT );
 
-		if (cartesion_plot)
-			DrawGrid( dc, wxPLAxis::TickData::SMALL );
-		else
-			DrawPolarGrid(dc, wxPLAxis::TickData::SMALL);
+		if (is_cartesian) DrawGrid( dc, wxPLAxis::TickData::SMALL );
+		else DrawPolarGrid(dc, wxPLAxis::TickData::SMALL);
 	}
 
 	// render plots
@@ -2157,31 +2219,27 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 		wxPLAxis *yaxis = GetAxis( m_plots[i].yap, m_plots[i].ppos );
 		if ( xaxis == 0 || yaxis == 0 ) continue; // this should never be encountered
 		wxRect &bb = m_plotRects[ m_plots[i].ppos ];
-		wxPLAxisDeviceMapping map( this, xaxis, bb.x, bb.x+bb.width,
-			yaxis, bb.y+bb.height, bb.y );
+		wxPLAxisDeviceMapping map( xaxis, bb.x, bb.x+bb.width, xaxis == GetXAxis1(),
+			yaxis, bb.y+bb.height, bb.y, yaxis == GetYAxis1() );
 
 		if ( m_plots[i].plot->GetAntiAliasing() )
 		{
-			aadc.SetClippingRegion( bb );
-			m_plots[i].plot->Draw( odev, map );
-			aadc.DestroyClippingRegion();
+			aadc.Clip( bb.x, bb.y, bb.width, bb.height );
+			m_plots[i].plot->Draw( aadc, map );
+			aadc.Unclip();
 		}
 		else
 		{
-			dc.SetClippingRegion( bb );
-			m_plots[i].plot->Draw( odev, map );
-			dc.DestroyClippingRegion();
+			dc.Clip( bb.x, bb.y, bb.width, bb.height );
+			m_plots[i].plot->Draw( dc, map );
+			dc.Unclip();
 
 		}
 	}
 
 	// draw some axes
-	wxPen axispen( m_axisColour, 1, wxSOLID );
-	axispen.SetJoin( wxJOIN_MITER );
-	axispen.SetCap( wxCAP_BUTT );
-	dc.SetPen( axispen );
-	dc.SetTextForeground(  m_tickTextColour );
-	
+	AXIS_FONT(dc);
+	dc.Pen( m_axisColour, 1 );	
 	if ( m_x2.axis )
 		m_x2.layout->render( dc, m_plotRects[0].y, m_x2.axis, 
 			box.x, box.x+box.width, 
@@ -2189,14 +2247,14 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 	
 	// set up some polar plot values
 	wxRect rect1 = m_plotRects[0];
-	wxCoord pp_radius = (rect1.width < rect1.height) ? rect1.width / 2.0 : rect1.height / 2.0;
-	wxPoint pp_center = wxPoint(rect1.x + rect1.width / 2.0, rect1.y + rect1.height / 2.0);
+	double pp_radius = (rect1.width < rect1.height) ? rect1.width / 2.0 : rect1.height / 2.0;
+	wxRealPoint pp_center(rect1.x + rect1.width / 2.0, rect1.y + rect1.height / 2.0);
 
 	// render y axes
 	for ( size_t pp=0;pp<nyaxes; pp++ )
 	{
 		if (m_y1[pp].axis != 0) {
-			if (cartesion_plot)
+			if (is_cartesian)
 				m_y1[pp].layout->render( dc, box.x, m_y1[pp].axis, 
 					m_plotRects[pp].y + m_plotRects[pp].height,  m_plotRects[pp].y,
 					m_y2[pp].axis == 0 ? box.x+box.width : -1 );
@@ -2209,43 +2267,42 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 		if ( m_y2[pp].axis != 0 )
 			m_y2[pp].layout->render( dc, box.x+box.width, m_y2[pp].axis, 
 				m_plotRects[pp].y + m_plotRects[pp].height,  m_plotRects[pp].y,
-				m_y1[pp].axis == 0 ? box.x : -1 );
+				-1 /* m_y1[pp].axis == 0 ? box.x : -1 */ );
 	}
 
 	// render x1 axis (or angular axis on polar plots)
 	if (m_x1.axis) {
-		if (cartesion_plot)
+		if (is_cartesian)
 			m_x1.layout->render(dc, m_plotRects[nyaxes - 1].y + m_plotRects[nyaxes - 1].height, m_x1.axis,
 				box.x, box.x + box.width,
-				m_x2.axis == 0 ? m_plotRects[0].y : -1);
+				-1 /*m_x2.axis == 0 ? m_plotRects[0].y : -1*/);
 		else
 			m_x1.layout->render(dc, pp_radius, m_x1.axis, pp_center.x, pp_center.y, -1);
 	}
 
 	// draw boundaries around plots
-	if (cartesion_plot) {
+	if (is_cartesian) {
 		for (size_t pp = 0; pp < nyaxes; pp++)
 		{
-			dc.DrawLine(m_plotRects[pp].x, m_plotRects[pp].y, m_plotRects[pp].x + m_plotRects[pp].width, m_plotRects[pp].y);
-			dc.DrawLine(m_plotRects[pp].x, m_plotRects[pp].y, m_plotRects[pp].x, m_plotRects[pp].y + m_plotRects[pp].height);
-			dc.DrawLine(m_plotRects[pp].x, m_plotRects[pp].y + m_plotRects[pp].height, m_plotRects[pp].x + m_plotRects[pp].width, m_plotRects[pp].y + m_plotRects[pp].height);
-			dc.DrawLine(m_plotRects[pp].x + m_plotRects[pp].width, m_plotRects[pp].y, m_plotRects[pp].x + m_plotRects[pp].width, m_plotRects[pp].y + m_plotRects[pp].height);
+			dc.Line(m_plotRects[pp].x, m_plotRects[pp].y, m_plotRects[pp].x + m_plotRects[pp].width, m_plotRects[pp].y);
+			dc.Line(m_plotRects[pp].x, m_plotRects[pp].y, m_plotRects[pp].x, m_plotRects[pp].y + m_plotRects[pp].height);
+			dc.Line(m_plotRects[pp].x, m_plotRects[pp].y + m_plotRects[pp].height, m_plotRects[pp].x + m_plotRects[pp].width, m_plotRects[pp].y + m_plotRects[pp].height);
+			dc.Line(m_plotRects[pp].x + m_plotRects[pp].width, m_plotRects[pp].y, m_plotRects[pp].x + m_plotRects[pp].width, m_plotRects[pp].y + m_plotRects[pp].height);
 		}
 	}
 	else {
-		dc.DrawLine(pp_center.x-pp_radius,pp_center.y,pp_center.x+pp_radius,pp_center.y);
-		dc.DrawLine(pp_center.x, pp_center.y + pp_radius, pp_center.x, pp_center.y - pp_radius);
+		dc.Line(pp_center.x-pp_radius,pp_center.y,pp_center.x+pp_radius,pp_center.y);
+		dc.Line(pp_center.x, pp_center.y + pp_radius, pp_center.x, pp_center.y - pp_radius);
 
-		dc.SetBrush(*wxTRANSPARENT_BRUSH); // otherwise, circle is filled in
-		dc.DrawCircle(pp_center, pp_radius);
+		dc.Brush( *wxWHITE, wxPLOutputDevice::NONE ); // otherwise, circle is filled in
+		dc.Circle(pp_center, pp_radius);
 	}
 
-	// draw axis labels
-	dc.SetTextForeground( *wxBLACK );
-	dc.SetFont( font_normal );
 
+	// draw axis labels
+	AXIS_FONT(dc);
 	if (m_x1.axis && m_x1.axis->IsLabelVisible() && !m_x1.axis->GetLabel().IsEmpty()) {
-		if (cartesion_plot)
+		if (is_cartesian)
 			m_x1.label->render(dc, box.x + box.width / 2 - m_x1.label->width() / 2, plotbox.y + plotbox.height - m_x1.label->height() - text_space, 0, false);
 		else {
 			double dist = sqrt(pow(pp_radius, 2) / 2.0);
@@ -2259,7 +2316,7 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 	for ( size_t pp = 0; pp<nyaxes; pp++ )
 	{
 		if (m_y1[pp].axis && m_y1[pp].axis->IsLabelVisible() && !m_y1[pp].axis->GetLabel().IsEmpty()) {
-			if (cartesion_plot) {
+			if (is_cartesian) {
 				m_y1[pp].label->render(dc, plotbox.x + yleft_max_label_width - m_y1[pp].label->height(),
 					m_plotRects[pp].y + m_plotRects[pp].height / 2 + m_y1[pp].label->width() / 2, 90, false);
 			}
@@ -2273,18 +2330,13 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 				m_plotRects[pp].y + m_plotRects[pp].height/2 - m_y2[pp].label->width()/2, -90, false );
 	}
 
-	/*
-	dc.SetPen( wxPen( *wxLIGHT_GREY, 1 ) );
-	dc.SetBrush( *wxTRANSPARENT_BRUSH );
-	dc.DrawRectangle( box );
-	*/
-
-	dc.SetFont( font_normal );
+	LEGEND_FONT(dc);
+	LEGEND_FONT(aadc);
 	wxRect plotarea( m_plotRects[0].x, m_plotRects[0].y, m_plotRects[0].width, m_plotRects[0].height*nyaxes + (nyaxes-1)*plot_space );
-	DrawLegend( dc, odev, (m_legendPos==FLOATING||legend_bottom||legend_right) ? geom : plotarea  );
+	DrawLegend( dc, aadc, (m_legendPos==FLOATING||legend_bottom||legend_right) ? geom : plotarea  );
 }
 
-void wxPLPlotCtrl::DrawGrid( wxDC &dc, wxPLAxis::TickData::TickSize size )
+void wxPLPlotCtrl::DrawGrid( wxPLOutputDevice &dc, wxPLAxis::TickData::TickSize size )
 {
 	if ( m_plotRects.size() < 1 ) return;
 	
@@ -2297,11 +2349,13 @@ void wxPLPlotCtrl::DrawGrid( wxDC &dc, wxPLAxis::TickData::TickSize size )
 		std::vector<double> ticks = xgrid_axis->layout->ticks( size );
 		for ( size_t i=0;i<ticks.size();i++ )
 		{
-			wxCoord xpos = xgrid_axis->axis->WorldToPhysical( ticks[i], m_plotRects[0].x, m_plotRects[0].x+m_plotRects[0].width );
+			double xpos = xgrid_axis->axis->WorldToPhysical( ticks[i], m_plotRects[0].x, m_plotRects[0].x+m_plotRects[0].width );
 
 			for ( size_t pp = 0; pp < m_plotRects.size(); pp++ )
-				dc.DrawLine( xpos, m_plotRects[pp].y, xpos, m_plotRects[pp].y + m_plotRects[pp].height );
-				
+			{
+				dc.Line( xpos, m_plotRects[pp].y, 
+					xpos, m_plotRects[pp].y + m_plotRects[pp].height );
+			}				
 		}
 	}
 
@@ -2316,19 +2370,22 @@ void wxPLPlotCtrl::DrawGrid( wxDC &dc, wxPLAxis::TickData::TickSize size )
 			std::vector<double> ticks = ygrid_axis->layout->ticks( size );
 			for ( size_t j=0;j<ticks.size();j++)
 			{
-				wxCoord ypos = ygrid_axis->axis->WorldToPhysical( ticks[j], m_plotRects[pp].y+m_plotRects[pp].height, m_plotRects[pp].y );
-				dc.DrawLine( m_plotRects[0].x, ypos, m_plotRects[0].x + m_plotRects[0].width, ypos );
+				double ypos = ygrid_axis->axis->WorldToPhysical( ticks[j], m_plotRects[pp].y+m_plotRects[pp].height, m_plotRects[pp].y );
+
+				dc.Line( m_plotRects[0].x, ypos, 
+					m_plotRects[0].x + m_plotRects[0].width, ypos );
 			}
 		}
 	}
 }
 
-void wxPLPlotCtrl::DrawPolarGrid(wxDC &dc, wxPLAxis::TickData::TickSize size)
+void wxPLPlotCtrl::DrawPolarGrid( wxPLOutputDevice &dc, wxPLAxis::TickData::TickSize size)
 {
 	if (m_plotRects.size() < 1) return;
-	dc.SetBrush(*wxTRANSPARENT_BRUSH); // otherwise, grid circles are filled in
-	wxPoint cntr = wxPoint(m_plotRects[0].x + m_plotRects[0].width / 2.0, m_plotRects[0].y + m_plotRects[0].height / 2.0);
-	wxCoord max_radius = (m_plotRects[0].width < m_plotRects[0].height) ? m_plotRects[0].width / 2.0 : m_plotRects[0].height / 2.0;
+
+	dc.Brush( *wxWHITE, wxPLOutputDevice::NONE );
+	wxRealPoint cntr(m_plotRects[0].x + m_plotRects[0].width / 2.0, m_plotRects[0].y + m_plotRects[0].height / 2.0);
+	double max_radius = (m_plotRects[0].width < m_plotRects[0].height) ? m_plotRects[0].width / 2.0 : m_plotRects[0].height / 2.0;
 
 	// circles from center
 	axis_data *radial_grid = 0;
@@ -2339,8 +2396,8 @@ void wxPLPlotCtrl::DrawPolarGrid(wxDC &dc, wxPLAxis::TickData::TickSize size)
 		std::vector<double> ticks = radial_grid->layout->ticks(size);
 		for (size_t j = 0; j<ticks.size(); j++)
 		{
-			wxCoord radius = radial_grid->axis->WorldToPhysical(ticks[j], 0, max_radius);
-			dc.DrawCircle(cntr, radius);
+			double radius = radial_grid->axis->WorldToPhysical(ticks[j], 0, max_radius);
+			dc.Circle(cntr, radius);
 		}
 	}
 
@@ -2354,8 +2411,8 @@ void wxPLPlotCtrl::DrawPolarGrid(wxDC &dc, wxPLAxis::TickData::TickSize size)
 			for (size_t i = 0; i<ticks.size(); i++)
 			{
 				double angle = pa->AngleInRadians(ticks[i]);
-				wxPoint pt = wxPoint(max_radius*cos(angle), max_radius*sin(angle));
-				dc.DrawLine(cntr, cntr + pt);
+				wxRealPoint pt(max_radius*cos(angle), max_radius*sin(angle));
+				dc.Line(cntr, cntr + pt);
 			}
 		}
 	}
@@ -2364,7 +2421,7 @@ void wxPLPlotCtrl::DrawPolarGrid(wxDC &dc, wxPLAxis::TickData::TickSize size)
 
 
 
-wxPLPlotCtrl::legend_item::legend_item( wxDC &dc, wxPLPlottable *p )
+wxPLPlotCtrl::legend_item::legend_item( wxPLOutputDevice &dc, wxPLPlottable *p )
 {
 	plot = p;
 	text = p->GetLabel();
@@ -2376,7 +2433,7 @@ wxPLPlotCtrl::legend_item::~legend_item()
 	if ( layout ) delete layout;
 }
 
-void wxPLPlotCtrl::CalcLegendTextLayout( wxDC &dc )
+void wxPLPlotCtrl::CalcLegendTextLayout( wxPLOutputDevice &dc )
 {
 	if ( !m_showLegend ) return;
 
@@ -2405,11 +2462,11 @@ void wxPLPlotCtrl::CalcLegendTextLayout( wxDC &dc )
 			{
 				if ( !m_legendItems[i]->text.IsEmpty() )
 				{
-					wxCoord height = m_legendItems[i]->layout->height();
+					double height = m_legendItems[i]->layout->height();
 					if ( height > m_legendRect.height )
 						m_legendRect.height = height;
 
-					wxCoord width = m_legendItems[i]->layout->width();
+					double width = m_legendItems[i]->layout->width();
 					m_legendRect.width += width + 5*text_space + legend_item_box.x;
 				}
 			}
@@ -2422,11 +2479,11 @@ void wxPLPlotCtrl::CalcLegendTextLayout( wxDC &dc )
 			{
 				if ( !m_legendItems[i]->text.IsEmpty() )
 				{
-					wxCoord width = m_legendItems[i]->layout->width();
+					double width = m_legendItems[i]->layout->width();
 					if ( width > m_legendRect.width )
 						m_legendRect.width = width;
 
-					wxCoord height = m_legendItems[i]->layout->height();
+					double height = m_legendItems[i]->layout->height();
 					if ( height < legend_item_box.y )
 						height = legend_item_box.y;
 
@@ -2440,14 +2497,14 @@ void wxPLPlotCtrl::CalcLegendTextLayout( wxDC &dc )
 	}
 }
 
-void wxPLPlotCtrl::DrawLegend( wxDC &dc, wxPLOutputDevice &odev, const wxRect& geom )
+void wxPLPlotCtrl::DrawLegend( wxPLOutputDevice &dc, wxPLOutputDevice &odev, const wxRect& geom )
 {
 	if ( !m_showLegend )
 		return;
 
 	int layout = wxVERTICAL;
-	wxCoord max_item_height = 0;
-	wxCoord max_item_width = 0;
+	double max_item_height = 0;
+	double max_item_width = 0;
 
 	// offset by LegendXYPercents
 	if ( m_legendPos == FLOATING )
@@ -2516,31 +2573,26 @@ void wxPLPlotCtrl::DrawLegend( wxDC &dc, wxPLOutputDevice &odev, const wxRect& g
 	
 	if ( m_legendPos != BOTTOM && m_legendPos != RIGHT )
 	{
-		dc.SetBrush( *wxWHITE_BRUSH );
-		dc.SetPen( *wxLIGHT_GREY_PEN );
+		dc.Brush( *wxWHITE );
+		dc.Pen( *wxLIGHT_GREY );
+		dc.Rect( m_legendRect );
 	}
-	else
-	{
-		dc.SetBrush( dc.GetBackground() );
-		dc.SetPen(*wxTRANSPARENT_PEN);
-	}
-	dc.DrawRectangle( m_legendRect );
 	
-	wxCoord x = m_legendRect.x;
-	wxCoord y = m_legendRect.y + text_space;
+	double x = m_legendRect.x;
+	double y = m_legendRect.y + text_space;
 	for ( size_t i = 0; i < m_legendItems.size(); i++ )
 	{
 		legend_item &li = *m_legendItems[ m_reverseLegend ? m_legendItems.size() - i - 1 : i ];
 
 		if ( li.text.IsEmpty() ) continue;
 		
-		wxCoord yoff_text = 0;
+		double yoff_text = 0;
 		if ( layout == wxHORIZONTAL )
 			yoff_text = (max_item_height - li.layout->height())/2;
 
 		li.layout->render( dc, x + legend_item_box.x + 2*text_space + text_space, y + yoff_text );
 
-		wxCoord yoff_box = li.layout->height()/2 - legend_item_box.y/2;
+		double yoff_box = li.layout->height()/2 - legend_item_box.y/2;
 		if ( layout == wxHORIZONTAL )
 			yoff_box = max_item_height/2 - legend_item_box.y/2;
 
@@ -3201,57 +3253,87 @@ TextLayoutDemo::TextLayoutDemo( wxWindow *parent )
 	SetBackgroundStyle( wxBG_STYLE_CUSTOM );
 }
 
-std::vector<wxCoord> TextLayoutDemo::Draw( wxDC &dc, const wxRect &geom )
+std::vector<double> TextLayoutDemo::Draw( wxDC &scdc, const wxRect &geom )
 {
-	std::vector<wxCoord> vlines;
-	dc.SetClippingRegion( geom );
+	std::vector<double> vlines;
+	scdc.SetClippingRegion( geom );
 	
-	dc.SetFont( *wxNORMAL_FONT );
-	wxPLPlotCtrl::text_layout t1( dc, "basic text, nothing special" );
-	t1.render( dc, geom.x+20, geom.y+20, 0.0, true );
+	// test 1
+	{
+		scdc.SetFont( *wxNORMAL_FONT );
+		wxDCOutputDevice dc(scdc);
+		wxPLPlotCtrl::text_layout t1( dc, "basic text, nothing special" );
+		t1.render( dc, geom.x+20, geom.y+20, 0.0, true );
+		vlines.push_back( geom.x+20 );
+		vlines.push_back( geom.x+20+t1.width() );
+	}
 
-	vlines.push_back( geom.x+20 );
-	vlines.push_back( geom.x+20+t1.width() );
-
-	dc.SetFont( wxFont(18, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Century Schoolbook") );
-	wxPLPlotCtrl::text_layout t2( dc, "escape^sup_sub \\\\  \\  \\euro \\badcode \\Omega~\\Phi\\ne\\delta, but\n\\Kappa\\approx\\zeta \\emph\\qmark, and this is the end of the text!. Cost was 10 \\pound, or 13.2\\cent" );
-	t2.render( dc, geom.x+20, geom.y+120, 0.0, true );
-
-	dc.SetFont( wxFont(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Consolas") );
-	wxPLPlotCtrl::text_layout t3( dc, "super^2 ,not_\\rho\\gamma f hing_{special,great,best}\n\\alpha^^\\beta c^\\delta  efjhijkl__mnO^25 pq_0 r\\Sigma tuvwxyz\nABCDEFGHIJKL^^MNOPQRSTUVWXZY" );
-	t3.render( dc, geom.x+20, geom.y+420, 90, true );
-	t3.render( dc, geom.x+200, geom.y+350, 45.0, true );
-	t3.render( dc, geom.x+400, geom.y+300, 0.0, true );
-	vlines.push_back( geom.x+400 );
-	vlines.push_back( geom.x+400+t3.width() );
-
-	dc.SetFont( wxFont(16, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL) );
-	wxPLPlotCtrl::text_layout t4( dc, "x_1^2_3 abc=y_2^4" );
-	t4.render( dc, geom.x+200, geom.y+70, 0, false );
-
+	// test 2
+	{
+		scdc.SetFont( wxFont(18, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Century Schoolbook") );
+		wxDCOutputDevice dc(scdc);
+		wxPLPlotCtrl::text_layout t2( dc, "escape^sup_sub \\\\  \\  \\euro \\badcode \\Omega~\\Phi\\ne\\delta, but\n\\Kappa\\approx\\zeta \\emph\\qmark, and this is the end of the text!. Cost was 10 \\pound, or 13.2\\cent" );
+		t2.render( dc, geom.x+20, geom.y+120, 0.0, true );
+	}
 	
-	dc.SetFont( wxFont(7, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL) );
-	wxPLPlotCtrl::text_layout t5( dc, "small (7): x_1^2_3 abc=y_2^4" );
-	t5.render( dc, geom.x+500, geom.y+60, 0, false );
+	// test 3
+	{
+		scdc.SetFont( wxFont(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Consolas") );
+		wxDCOutputDevice dc(scdc);
+		wxPLPlotCtrl::text_layout t3( dc, "super^2 ,not_\\rho\\gamma f hing_{special,great,best}\n\\alpha^^\\beta c^\\delta  efjhijkl__mnO^25 pq_0 r\\Sigma tuvwxyz\nABCDEFGHIJKL^^MNOPQRSTUVWXZY" );
+		t3.render( dc, geom.x+20, geom.y+420, 90, true );
+		t3.render( dc, geom.x+200, geom.y+350, 45.0, true );
+		t3.render( dc, geom.x+400, geom.y+300, 0.0, true );
+		vlines.push_back( geom.x+400 );
+		vlines.push_back( geom.x+400+t3.width() );
+	}
 	
-	dc.SetFont( wxFont(8, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL) );
-	wxPLPlotCtrl::text_layout t6( dc, "small (8): x_1^2_3 abc=y_2^4" );
-	t6.render( dc, geom.x+500, geom.y+80, 0, false );
+	// test 4
+	{
+		scdc.SetFont( wxFont(16, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL) );
+		wxDCOutputDevice dc(scdc);
+		wxPLPlotCtrl::text_layout t4( dc, "x_1^2_3 abc=y_2^4" );
+		t4.render( dc, geom.x+200, geom.y+70, 0, false );
+	}
+
+	// test 5
+	{
+		scdc.SetFont( wxFont(7, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL) );
+		wxDCOutputDevice dc(scdc);
+		wxPLPlotCtrl::text_layout t5( dc, "small (7): x_1^2_3 abc=y_2^4" );
+		t5.render( dc, geom.x+500, geom.y+60, 0, false );
+	}
 	
-	dc.SetFont( wxFont(9, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL) );
-	wxPLPlotCtrl::text_layout t7( dc, "small (9): x_1^2_3 abc=y_2^4" );
-	t7.render( dc, geom.x+500, geom.y+100, 0, false );
+	// test 6
+	{
+		scdc.SetFont( wxFont(8, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL) );
+		wxDCOutputDevice dc(scdc);
+		wxPLPlotCtrl::text_layout t6( dc, "small (8): x_1^2_3 abc=y_2^4" );
+		t6.render( dc, geom.x+500, geom.y+80, 0, false );
+	}
 	
-	dc.SetFont( wxFont(10, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL) );
-	wxPLPlotCtrl::text_layout t8( dc, "small (10): x_1^2_3 abc=y_2^4" );
-	t8.render( dc, geom.x+500, geom.y+120, 0, false );
+	// test 7
+	{
+		scdc.SetFont( wxFont(9, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL) );
+		wxDCOutputDevice dc(scdc);
+		wxPLPlotCtrl::text_layout t7( dc, "small (9): x_1^2_3 abc=y_2^4" );
+		t7.render( dc, geom.x+500, geom.y+100, 0, false );
+	}
+	
+	// test 8
+	{
+		scdc.SetFont( wxFont(10, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL) );
+		wxDCOutputDevice dc(scdc);
+		wxPLPlotCtrl::text_layout t8( dc, "small (10): x_1^2_3 abc=y_2^4" );
+		t8.render( dc, geom.x+500, geom.y+120, 0, false );
+	}
 
 	vlines.push_back( geom.x+500 );
 
-	dc.DestroyClippingRegion();
-	dc.SetPen( *wxBLUE_PEN );
-	dc.SetBrush( *wxTRANSPARENT_BRUSH );
-	dc.DrawRectangle( geom );
+	scdc.DestroyClippingRegion();
+	scdc.SetPen( *wxBLUE_PEN );
+	scdc.SetBrush( *wxTRANSPARENT_BRUSH );
+	scdc.DrawRectangle( geom );
 
 	return vlines;
 }

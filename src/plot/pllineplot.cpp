@@ -73,24 +73,24 @@ void wxPLLinePlot::SetIgnoreZeros(bool value)
 	m_ignoreZeros = value;
 }
 
-void wxPLLinePlot::DrawMarkers( wxPLOutputDevice &dc, std::vector<wxPoint> &points, int size )
+void wxPLLinePlot::DrawMarkers( wxPLOutputDevice &dc, std::vector<wxRealPoint> &points, int size )
 {
 	if ( m_marker == NONE ) return;
 
-	std::vector<wxPoint> mkr(6, wxPoint() );
+	std::vector<wxRealPoint> mkr(6, wxRealPoint() );
 		
 	int radius = (size<=3) ? 3 : 4;
 
 	for( size_t i=0;i<points.size();i++ )
 	{
-		wxPoint &p = points[i];
+		wxRealPoint &p = points[i];
 		
 		if ( m_marker == HOURGLASS )
 		{
-			mkr[0] = wxPoint( p.x-radius, p.y-radius );
-			mkr[1] = wxPoint( p.x+radius, p.y-radius );
-			mkr[2] = wxPoint( p.x-radius, p.y+radius );
-			mkr[3] = wxPoint( p.x+radius, p.y+radius );
+			mkr[0] = wxRealPoint( p.x-radius, p.y-radius );
+			mkr[1] = wxRealPoint( p.x+radius, p.y-radius );
+			mkr[2] = wxRealPoint( p.x-radius, p.y+radius );
+			mkr[3] = wxRealPoint( p.x+radius, p.y+radius );
 			mkr[4] = mkr[0];
 			mkr[5] = mkr[1];
 			
@@ -99,10 +99,10 @@ void wxPLLinePlot::DrawMarkers( wxPLOutputDevice &dc, std::vector<wxPoint> &poin
 		}
 		else if ( m_marker == SQUARE )
 		{
-			mkr[0] = wxPoint( p.x-radius, p.y-radius );
-			mkr[1] = wxPoint( p.x+radius, p.y-radius );
-			mkr[2] = wxPoint( p.x+radius, p.y+radius );
-			mkr[3] = wxPoint( p.x-radius, p.y+radius );
+			mkr[0] = wxRealPoint( p.x-radius, p.y-radius );
+			mkr[1] = wxRealPoint( p.x+radius, p.y-radius );
+			mkr[2] = wxRealPoint( p.x+radius, p.y+radius );
+			mkr[3] = wxRealPoint( p.x-radius, p.y+radius );
 			mkr[4] = mkr[0];
 			mkr[5] = mkr[1];
 
@@ -111,10 +111,10 @@ void wxPLLinePlot::DrawMarkers( wxPLOutputDevice &dc, std::vector<wxPoint> &poin
 		}
 		else if ( m_marker == DIAMOND )
 		{
-			mkr[0] = wxPoint( p.x, p.y-radius );
-			mkr[1] = wxPoint( p.x+radius, p.y );
-			mkr[2] = wxPoint( p.x, p.y+radius );
-			mkr[3] = wxPoint( p.x-radius, p.y );
+			mkr[0] = wxRealPoint( p.x, p.y-radius );
+			mkr[1] = wxRealPoint( p.x+radius, p.y );
+			mkr[2] = wxRealPoint( p.x, p.y+radius );
+			mkr[3] = wxRealPoint( p.x-radius, p.y );
 			mkr[4] = mkr[0];
 			mkr[5] = mkr[1];
 
@@ -138,7 +138,7 @@ void wxPLLinePlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 	
 	dc.Brush( m_colour );
 
-	std::vector< wxPoint > points;
+	std::vector< wxRealPoint > points;
 	points.reserve( len );
 
 	for ( size_t i = 0; i<len; i++ )
@@ -181,7 +181,7 @@ void wxPLLinePlot::DrawInLegend( wxPLOutputDevice &dc, const wxRect &rct)
 
 	if ( m_marker != NONE )
 	{
-		std::vector<wxPoint> mkr(1, wxPoint( rct.x + rct.width/2, rct.y + rct.height/2 ) );
+		std::vector<wxRealPoint> mkr(1, wxPoint( rct.x + rct.width/2, rct.y + rct.height/2 ) );
 		MARKER_PEN;
 		dc.Brush( m_colour );
 		DrawMarkers( dc, mkr, thick );

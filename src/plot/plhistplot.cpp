@@ -18,7 +18,7 @@ wxPLHistogramPlot::wxPLHistogramPlot( const std::vector<wxRealPoint> &data,
 void wxPLHistogramPlot::Init()
 {
 	m_lineColour = *wxBLACK;
-	m_lineThickness = 1;
+	m_lineThickness = 1.0;
 	m_fillColour = wxColour("dark olive green");
 	m_normalize = true;
 	m_normalizeToPdf = false;
@@ -53,7 +53,7 @@ size_t wxPLHistogramPlot::Len() const
 	return m_data.size();
 }
 
-void wxPLHistogramPlot::SetLineStyle( const wxColour &c, int width )
+void wxPLHistogramPlot::SetLineStyle( const wxColour &c, double width )
 {
 	m_lineColour = c;
 	m_lineThickness = width;
@@ -127,8 +127,8 @@ void wxPLHistogramPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map
 {
 	if ( m_histData.size() > 0 )
 	{
-		wxCoord xMin = map.ToDevice( wxRealPoint(m_dataMin, 0) ).x;
-		wxCoord xMax = map.ToDevice( wxRealPoint(m_dataMax, 0) ).x;
+		double xMin = map.ToDevice( wxRealPoint(m_dataMin, 0) ).x;
+		double xMax = map.ToDevice( wxRealPoint(m_dataMax, 0) ).x;
 
 		double usableLength = xMax - xMin;
 		
@@ -137,12 +137,12 @@ void wxPLHistogramPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map
 		dc.Pen( m_lineColour, 1 );
 		dc.Brush( col );
 
-		wxCoord xLoc = 0;
-		wxPoint zero = map.ToDevice(wxPoint(0,0));
+		double xLoc = 0;
+		wxRealPoint zero = map.ToDevice(wxRealPoint(0.0,0.0));
 		for (size_t i=0; i<m_histData.size(); i++)
 		{
 			wxRect barRect;
-			wxCoord nextXLoc =int((double)(i+1) * usableLength / (double)m_numberOfBins + 0.5); // .5 rounds.
+			double nextXLoc =int((double)(i+1) * usableLength / (double)m_numberOfBins + 0.5); // .5 rounds.
 			barRect.x = xMin + xLoc; 
 
 			barRect.width = nextXLoc - xLoc + 1;
