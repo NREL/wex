@@ -17,8 +17,8 @@ public:
 	
 	virtual wxRealPoint At( size_t i ) const;
 	virtual size_t Len() const;
-	virtual void Draw( wxDC &dc, const wxPLDeviceMapping &map );
-	virtual void DrawInLegend( wxDC &dc, const wxRect &rct);
+	virtual void Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map );
+	virtual void DrawInLegend( wxPLOutputDevice &dc, const wxRect &rct);
 
 	void SetColour( const wxColour &col ) { m_colour = col; }
 	void SetSize( int radius ) { m_size = radius; }

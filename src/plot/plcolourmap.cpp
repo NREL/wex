@@ -89,30 +89,27 @@ wxSize wxPLColourMap::CalculateBestSize()
 	return wxSize( 17+maxWidth, 300 );
 }
 
-void wxPLColourMap::Render(wxDC &dc, const wxRect &geom)
+void wxPLColourMap::Render( wxPLOutputDevice &dc, const wxRect &geom)
 {
 	wxCoord colourBarHeight = 240;
 	if (geom.height < 240)
 		colourBarHeight = 120; //Probably not ideal.  Fix this.
 	
 	
-	wxFont font( *wxNORMAL_FONT );
-	font.SetPointSize( font.GetPointSize() - 1 );
-	dc.SetFont( font );
-	wxCoord charHeight = dc.GetCharHeight();
+	dc.Font( -1, false );
+	wxCoord charHeight = dc.CharHeight();
 	
 	wxCoord colourBarX = geom.x+1;
 	double colourBarStep = colourBarHeight / ((double)m_colourList.size());
-	dc.SetPen(*wxTRANSPARENT_PEN);
 	for (size_t i=0; i<m_colourList.size(); i++)
 	{
-		dc.SetBrush(wxBrush(m_colourList[i]));
-		dc.DrawRectangle(colourBarX+1, geom.y+charHeight/2 + 1 + (m_colourList.size()-1-i)*colourBarStep, 10, colourBarStep+1);
+		dc.Pen( m_colourList[i] );
+		dc.Brush( m_colourList[i] );
+		dc.Rect(colourBarX+1, geom.y+charHeight/2 + 1 + (m_colourList.size()-1-i)*colourBarStep, 10, colourBarStep+1);
 	}
 
-	dc.SetBrush(*wxTRANSPARENT_BRUSH);
-	dc.SetPen(*wxBLACK_PEN);
-	dc.DrawRectangle(colourBarX, geom.y+charHeight/2, 12, colourBarHeight+2);
+	//dc.Pen( *wxBLACK, 1 );
+	//dc.Rect(colourBarX, geom.y+charHeight/2, 12, colourBarHeight+2);
 	
 	wxCoord xTextPos = colourBarX + 14;
 	double yTextStep = colourBarHeight / 10;
@@ -120,7 +117,7 @@ void wxPLColourMap::Render(wxDC &dc, const wxRect &geom)
 	double range = m_max - m_min;
 	double step = range / 10;
 	for (size_t i=0; i<11; i++)
-		dc.DrawText( wxString::Format( wxFormatString(m_format), m_min + i*step), xTextPos, geom.y+wxCoord((10-i)*yTextStep) );	
+		dc.Text( wxString::Format( wxFormatString(m_format), m_min + i*step), xTextPos, geom.y+wxCoord((10-i)*yTextStep) );	
 }
 
 wxColour wxPLColourMap::ColourForValue(double val)

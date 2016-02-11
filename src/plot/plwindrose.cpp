@@ -43,14 +43,13 @@ size_t wxPLWindRose::Len() const
 	return m_data.size();
 }
 
-void wxPLWindRose::DrawInLegend( wxDC &dc, const wxRect &rct)
+void wxPLWindRose::DrawInLegend( wxPLOutputDevice &dc, const wxRect &rct)
 {
-	dc.SetPen( wxPen( m_colour, 1 ) );
-	dc.SetBrush( wxBrush( m_colour ) );
+	dc.Pen( m_colour, 1 );
 	wxCoord rad = std::min( rct.width, rct.height );
 	rad = rad/2 - 2;
 	if ( rad < 2 ) rad = 2;
-	dc.DrawCircle( rct.x+rct.width/2, rct.y+rct.height/2, rad );
+	dc.Circle( rct.x+rct.width/2, rct.y+rct.height/2, rad );
 }
 
 wxPLAxis *wxPLWindRose::SuggestXAxis() const
@@ -65,14 +64,13 @@ wxPLAxis *wxPLWindRose::SuggestYAxis() const
 	return new wxPLLinearAxis(0, ymax);
 }
 
-void wxPLWindRose::Draw(wxDC &dc, const wxPLDeviceMapping &map)
+void wxPLWindRose::Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map)
 {
 	if (Len() == 0) return;
 	wxPLPolarAngularAxis *pa = dynamic_cast<wxPLPolarAngularAxis *>(map.GetXAxis());
 	if (!pa) return;
 
-	dc.SetBrush(wxBrush(m_colour));
-	dc.SetPen(*wxTRANSPARENT_PEN);
+	dc.Brush( m_colour );
 
 	// basic assumption - wind rose will ignore the X values (angle) and use only the radius
 	double fullCircle = 0;
@@ -105,7 +103,7 @@ void wxPLWindRose::Draw(wxDC &dc, const wxPLDeviceMapping &map)
 		double center = (m_ignoreAngles) ? centerOfSlice : pt.x;
 		pts[1] = map.ToDevice(center - half, pt.y);
 		pts[2] = map.ToDevice(center + half, pt.y);
-		dc.DrawPolygon(3, pts);
+		dc.Polygon(3, pts);
 
 		centerOfSlice += fullCircle / Len();;
 	}

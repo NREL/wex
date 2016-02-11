@@ -366,9 +366,11 @@ END_EVENT_TABLE()
 class TestSideBarWidget : public wxPLSideWidgetBase
 {
 public:
-	virtual void Render( wxDC &dc, const wxRect &geom )
+	virtual void Render( wxPLOutputDevice &dc, const wxRect &geom )
 	{
-		dc.GradientFillLinear( geom, *wxRED, *wxBLUE, wxSOUTH );
+		dc.Pen( *wxBLUE, 2, wxPLOutputDevice::DOT );
+		dc.Brush( *wxRED );
+		dc.Rect( geom );
 	}
 	virtual wxSize CalculateBestSize()
 	{

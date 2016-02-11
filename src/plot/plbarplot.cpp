@@ -39,11 +39,10 @@ size_t wxPLBarPlotBase::Len() const
 	return m_data.size();
 }
 
-void wxPLBarPlotBase::DrawInLegend( wxDC &dc, const wxRect &rct)
+void wxPLBarPlotBase::DrawInLegend( wxPLOutputDevice &dc, const wxRect &rct)
 {
-	dc.SetPen( *wxTRANSPARENT_PEN );
-	dc.SetBrush( wxBrush( m_colour ) );
-	dc.DrawRectangle( rct );
+	dc.Pen( m_colour );
+	dc.Rect( rct );
 }
 
 ////////// wxPLBarPlot ///////////
@@ -162,14 +161,14 @@ int wxPLBarPlot::CalcDispBarWidth( const wxPLDeviceMapping &map )
 	else return m_thickness;
 }
 
-void wxPLBarPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
+void wxPLBarPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 {
 	if ( Len() == 0 ) return;
 
 	int dispbar_w = CalcDispBarWidth( map );
-		
-	dc.SetBrush(wxBrush(m_colour));
-	dc.SetPen( *wxTRANSPARENT_PEN );
+	
+	dc.Pen( m_colour );
+	dc.Brush( m_colour );
 	
 	for (size_t i=0; i<Len(); i++)
 	{
@@ -194,7 +193,7 @@ void wxPLBarPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 		prct.y = pbottom < ptop ? pbottom : ptop;
 		prct.height = abs( pbottom-ptop );
 
-		dc.DrawRectangle(prct.x, prct.y, prct.width, prct.height);
+		dc.Rect(prct.x, prct.y, prct.width, prct.height);
 	}
 }
 
@@ -216,15 +215,13 @@ wxPLHBarPlot:: ~wxPLHBarPlot()
 	m_stackedOn = 0;
 }
 
-void wxPLHBarPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
+void wxPLHBarPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 {
 	if( Len() == 0 ) return;
 
 	int bar_width = CalcDispBarWidth( map );
-
-	dc.SetBrush(wxBrush(m_colour));
-	dc.SetPen( *wxTRANSPARENT_PEN );
-
+	dc.Pen( m_colour );
+	dc.Brush( m_colour );
 	for (size_t i=0; i<Len(); i++)
 	{
 		wxRealPoint pt(  At(i) );
@@ -254,15 +251,16 @@ void wxPLHBarPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 		prct.height = bar_width;
 		prct.width = abs(pleft - pright);
 		if ( prct.width > 0 && prct.height > 0 )
-			dc.DrawRectangle(prct.x, prct.y, prct.width, prct.height);
+			dc.Rect(prct.x, prct.y, prct.width, prct.height);
 	}
 	
-	dc.SetPen(*wxBLACK_PEN);
 	wxPoint start,end;
 	end.x = start.x = map.ToDevice( m_baselineX, 0 ).x;
 	start.y = map.GetDeviceExtents().y+1;
 	end.y = start.y + map.GetDeviceExtents().height-1;
-	dc.DrawLine(start.x, start.y, end.x, end.y);
+	
+	dc.Pen( *wxBLACK, 1 );
+	dc.Line(start.x, start.y, end.x, end.y);
 }
 
 	

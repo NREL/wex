@@ -31,6 +31,90 @@
 #define wxIsNaN(a) std::isnan(a)
 #endif
 
+class wxDCOutputDevice : public wxPLOutputDevice
+{
+	wxDC &m_dc;
+	wxPen m_pen;
+	wxBrush m_brush;
+	wxFont m_font0;
+public:
+	wxDCOutputDevice( wxDC &dc ) : wxPLOutputDevice(), m_dc(dc), m_pen( *wxBLACK_PEN ), m_brush( *wxBLACK_BRUSH ), m_font0( m_dc.GetFont() ) { }
+	
+	virtual void Clip( int x, int y, int width, int height ) { m_dc.SetClippingRegion( x, y, width, height ); }
+	virtual void Unclip() { m_dc.DestroyClippingRegion(); }
+	virtual void Brush( const wxColour &c, Style sty ) { 
+		m_brush.SetColour( c );
+		switch( sty )
+		{
+		case NONE: m_brush = *wxTRANSPARENT_BRUSH; return;
+
+		case HATCH: m_brush.SetStyle(wxCROSSDIAG_HATCH); break;
+		default: m_brush.SetStyle( wxSOLID ); break;
+		}
+		m_dc.SetBrush( m_brush );
+	}
+
+	virtual void Pen( const wxColour &c, int size, Style line = SOLID, Style join = MITER, Style cap = BUTT ) {
+		m_pen.SetColour( c );
+		m_pen.SetWidth( size );
+		switch( line )
+		{
+		case NONE: m_pen = *wxTRANSPARENT_PEN; return; // if transparent skip everything else
+
+		case DOT: m_pen.SetStyle( wxDOT ); break;
+		case DASH: m_pen.SetStyle( wxSHORT_DASH ); break;
+		case DOTDASH: m_pen.SetStyle( wxDOT_DASH ); break;
+		default: m_pen.SetStyle( wxSOLID ); break;
+		}
+		switch( join )
+		{
+		case MITER: m_pen.SetJoin( wxJOIN_MITER ); break;
+		case BEVEL: m_pen.SetJoin( wxJOIN_BEVEL ); break;
+		default: m_pen.SetJoin( wxJOIN_ROUND ); break;
+		}
+		switch( cap )
+		{
+		case ROUND: m_pen.SetCap( wxCAP_ROUND ); break;
+		case MITER: m_pen.SetCap( wxCAP_PROJECTING ); break;
+		default: m_pen.SetCap( wxCAP_BUTT );
+		}
+		m_dc.SetPen( m_pen );
+	}
+
+	virtual void Point( int x, int y ) { m_dc.DrawPoint( x, y ); }
+	virtual void Line( int x1, int y1, int x2, int y2 ) { m_dc.DrawLine( x1, y1, x2, y2 ); }
+	virtual void Lines( size_t n, const wxPoint *pts ) { m_dc.DrawLines( n, pts ); }
+	virtual void Polygon( size_t n, const wxPoint *pts, Style sty ) { 
+		m_dc.DrawPolygon( n, pts, 0, 0, sty==ODDEVEN ?  wxODDEVEN_RULE : wxWINDING_RULE );
+	}
+	virtual void Rect( int x, int y, int width, int height ) {
+		m_dc.DrawRectangle( x, y, width, height );
+	}
+	virtual void Circle( int x, int y, int radius ) {
+		m_dc.DrawCircle( x, y, radius );
+	}
+	
+	virtual void Font( int relpt = 0, bool bold = false ) {
+		wxFont font( m_font0 );
+		if ( relpt != 0 ) font.SetPointSize( font.GetPointSize() + relpt );
+		font.SetWeight( bold ? wxFONTWEIGHT_BOLD : wxFONTWEIGHT_NORMAL );
+		m_dc.SetFont( font );
+	}
+
+	virtual void Text( const wxString &text, int x, int y,  int angle=0 ) {
+		if ( angle != 0 ) m_dc.DrawRotatedText( text, x, y, angle );
+		else m_dc.DrawText( text, x, y );
+	}
+	virtual void Measure( const wxString &text, int *width, int *height ) {
+		wxSize sz( m_dc.GetTextExtent( text ) );
+		if ( width )  *width = sz.x;
+		if ( height ) *height = sz.y;
+	}
+	virtual int CharHeight() {
+		return m_dc.GetCharHeight();
+	}
+};
+
 static const int text_space = 3;
 static const wxSize legend_item_box(13, 13);
 
@@ -1753,6 +1837,7 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 		gdc.m_ptr = new wxGCDC( *prindc );
 	
 	wxDC &aadc = gdc.m_ptr != 0 ? *gdc.m_ptr : dc;
+	wxDCOutputDevice odev( aadc );
 	
 	// ensure plots have the axes they need to be rendered
 	for ( size_t i = 0; i< m_plots.size(); i++ )
@@ -1787,7 +1872,7 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 	if ( m_sideWidgets[Y_LEFT] != 0 )
 	{
 		wxSize sz = m_sideWidgets[Y_LEFT]->GetBestSize();
-		m_sideWidgets[Y_LEFT]->Render( aadc, 
+		m_sideWidgets[Y_LEFT]->Render( odev, 
 			wxRect( geom.x, geom.y, 
 				sz.x, geom.height ) );
 		geom.width -= sz.x;
@@ -1797,7 +1882,7 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 	if ( m_sideWidgets[Y_RIGHT] != 0 )
 	{
 		wxSize sz = m_sideWidgets[Y_RIGHT]->GetBestSize();		
-		m_sideWidgets[Y_RIGHT]->Render( aadc, 
+		m_sideWidgets[Y_RIGHT]->Render( odev, 
 			wxRect( geom.x+geom.width-sz.x, geom.y, 
 				sz.x, geom.height ) );
 
@@ -2078,13 +2163,13 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 		if ( m_plots[i].plot->GetAntiAliasing() )
 		{
 			aadc.SetClippingRegion( bb );
-			m_plots[i].plot->Draw( aadc, map );
+			m_plots[i].plot->Draw( odev, map );
 			aadc.DestroyClippingRegion();
 		}
 		else
 		{
 			dc.SetClippingRegion( bb );
-			m_plots[i].plot->Draw( dc, map );
+			m_plots[i].plot->Draw( odev, map );
 			dc.DestroyClippingRegion();
 
 		}
@@ -2196,7 +2281,7 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 
 	dc.SetFont( font_normal );
 	wxRect plotarea( m_plotRects[0].x, m_plotRects[0].y, m_plotRects[0].width, m_plotRects[0].height*nyaxes + (nyaxes-1)*plot_space );
-	DrawLegend( dc, aadc, (m_legendPos==FLOATING||legend_bottom||legend_right) ? geom : plotarea  );
+	DrawLegend( dc, odev, (m_legendPos==FLOATING||legend_bottom||legend_right) ? geom : plotarea  );
 }
 
 void wxPLPlotCtrl::DrawGrid( wxDC &dc, wxPLAxis::TickData::TickSize size )
@@ -2355,7 +2440,7 @@ void wxPLPlotCtrl::CalcLegendTextLayout( wxDC &dc )
 	}
 }
 
-void wxPLPlotCtrl::DrawLegend( wxDC &dc, wxDC &aadc, const wxRect& geom )
+void wxPLPlotCtrl::DrawLegend( wxDC &dc, wxPLOutputDevice &odev, const wxRect& geom )
 {
 	if ( !m_showLegend )
 		return;
@@ -2459,7 +2544,7 @@ void wxPLPlotCtrl::DrawLegend( wxDC &dc, wxDC &aadc, const wxRect& geom )
 		if ( layout == wxHORIZONTAL )
 			yoff_box = max_item_height/2 - legend_item_box.y/2;
 
-		li.plot->DrawInLegend( aadc, wxRect( x + 2*text_space, y + yoff_box , 
+		li.plot->DrawInLegend( odev, wxRect( x + 2*text_space, y + yoff_box , 
 			legend_item_box.x, legend_item_box.y ) );
 
 		if ( layout == wxHORIZONTAL )

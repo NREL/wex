@@ -123,7 +123,7 @@ void wxPLHistogramPlot::SetIgnoreZeros(bool value)
 	RecalculateHistogram();
 }
 
-void wxPLHistogramPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
+void wxPLHistogramPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 {
 	if ( m_histData.size() > 0 )
 	{
@@ -134,8 +134,9 @@ void wxPLHistogramPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 		
 		// try alpha blending for nicer plots
 		wxColour col( m_fillColour.Red(), m_fillColour.Green(), m_fillColour.Blue(), 128 );
-		dc.SetBrush( wxBrush( col ) );
-		dc.SetPen( wxPen( m_lineColour, m_lineThickness ) );
+		dc.Pen( m_lineColour, 1 );
+		dc.Brush( col );
+
 		wxCoord xLoc = 0;
 		wxPoint zero = map.ToDevice(wxPoint(0,0));
 		for (size_t i=0; i<m_histData.size(); i++)
@@ -150,17 +151,17 @@ void wxPLHistogramPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 			barRect.y = map.ToDevice(wxPoint(0,m_histData[i])).y;
 			barRect.height = zero.y - barRect.y + 1;
 
-			dc.DrawRectangle( barRect.x, barRect.y, barRect.width, barRect.height );
+			dc.Rect( barRect.x, barRect.y, barRect.width, barRect.height );
 		}
 	}
 }
 
-void wxPLHistogramPlot::DrawInLegend(wxDC &dc, const wxRect &rct)
+void wxPLHistogramPlot::DrawInLegend(wxPLOutputDevice &dc, const wxRect &rct)
 {
 	wxColour col( m_fillColour.Red(), m_fillColour.Green(), m_fillColour.Blue(), 128 );
-	dc.SetBrush( wxBrush( col ) );
-	dc.SetPen( wxPen( m_lineColour, m_lineThickness ) );
-	dc.DrawRectangle(rct.x, rct.y, rct.width, rct.height);
+	dc.Pen( col );
+	dc.Brush( col );
+	dc.Rect(rct.x, rct.y, rct.width, rct.height);
 }
 
 wxPLAxis* wxPLHistogramPlot::SuggestXAxis()

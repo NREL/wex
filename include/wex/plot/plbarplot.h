@@ -22,7 +22,7 @@ public:
 	void SetThickness( int thick = wxPL_BAR_AUTOSIZE ) { m_thickness = thick; }
 	void SetData( const std::vector<wxRealPoint> &data ) { m_data = data; }
 
-	virtual void DrawInLegend( wxDC &dc, const wxRect &rct);
+	virtual void DrawInLegend( wxPLOutputDevice &dc, const wxRect &rct);
 
 protected:
 	
@@ -42,7 +42,7 @@ public:
 		const wxColour &col = *wxLIGHT_GREY );
 	virtual ~wxPLBarPlot();
 	
-	virtual void Draw( wxDC &dc, const wxPLDeviceMapping &map );
+	virtual void Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map );
 	
 	void SetStackedOn( wxPLBarPlot *bp ) { m_stackedOn = bp; }
 	void SetGroup( const std::vector<wxPLBarPlot*> &grp ) { m_group = grp; }
@@ -69,7 +69,7 @@ public:
 	virtual ~wxPLHBarPlot();
 		
 	void SetStackedOn( wxPLHBarPlot *bp ) { m_stackedOn = bp; }
-	virtual void Draw( wxDC &dc, const wxPLDeviceMapping &map );
+	virtual void Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map );
 	
 	virtual wxPLAxis *SuggestXAxis() const;
 protected:

@@ -72,21 +72,22 @@ size_t wxPLScatterPlot::Len() const
 	return m_data.size();
 }
 
-void wxPLScatterPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
+void wxPLScatterPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 {
-	dc.SetPen( wxPen( m_colour, 1 ) );
-	dc.SetBrush( wxBrush( m_colour ) );
+	dc.Pen( m_colour, 1 );
+	dc.Brush( m_colour );
 
 	wxRealPoint min = map.GetWorldMinimum();
 	wxRealPoint max = map.GetWorldMaximum();
-
+	
+	size_t len = Len();
 	wxPLColourMap *zcmap = 0;
-	if ( m_cmap && m_colours.size() == m_data.size() )
+	if ( m_cmap && m_colours.size() == len )
 		zcmap = m_cmap;
 
-	bool has_sizes = ( m_sizes.size() == m_data.size() );
+	bool has_sizes = ( m_sizes.size() == len );
 
-	for ( size_t i=0; i<Len(); i++ )
+	for ( size_t i=0; i<len; i++ )
 	{
 		const wxRealPoint p = At(i);
 		if ( p.x >= min.x && p.x <= max.x
@@ -103,14 +104,14 @@ void wxPLScatterPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 			if ( zcmap )
 			{
 				wxColour C( zcmap->ColourForValue( m_colours[i] ) );
-				dc.SetPen( wxPen( C, 1 ) );
-				dc.SetBrush( wxBrush( C ) );
+				dc.Pen( C, 1 );
+				dc.Brush( C );
 			}
 
 			if ( rad < 2 )
-				dc.DrawPoint( map.ToDevice( p ) );			
+				dc.Point( map.ToDevice( p ) );			
 			else
-				dc.DrawCircle( map.ToDevice(p), rad );
+				dc.Circle( map.ToDevice(p), rad );
 		}
 	}
 
@@ -118,8 +119,7 @@ void wxPLScatterPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 		&& !m_isLineOfPerfectAgreementDrawn )
 	{
 		m_isLineOfPerfectAgreementDrawn = true;		
-		dc.SetPen(wxPen(*wxBLACK, m_radius));
-		dc.SetBrush(wxBrush(*wxBLACK));
+		dc.Pen(*wxBLACK, 1);
 
 		wxRealPoint pstart, pend;
 		if (min.x <= min.y) pstart = wxRealPoint(min.y, min.y);
@@ -128,18 +128,18 @@ void wxPLScatterPlot::Draw( wxDC &dc, const wxPLDeviceMapping &map )
 		if (max.x <= max.y) pend = wxRealPoint(max.x, max.x);
 		else pend = wxRealPoint(max.y, max.y);
 
-		dc.DrawLine(map.ToDevice(pstart), map.ToDevice(pend));
+		dc.Line(map.ToDevice(pstart), map.ToDevice(pend));
 	}
 }
 
-void wxPLScatterPlot::DrawInLegend( wxDC &dc, const wxRect &rct)
+void wxPLScatterPlot::DrawInLegend( wxPLOutputDevice &dc, const wxRect &rct)
 {
-	dc.SetPen( wxPen( m_colour, 1 ) );
-	dc.SetBrush( wxBrush( m_colour ) );
+	dc.Pen( m_colour, 1 );
+	dc.Brush( m_colour );
 	wxCoord rad = std::min( rct.width, rct.height );
 	rad = rad/2 - 2;
 	if ( rad < 2 ) rad = 2;
-	dc.DrawCircle( rct.x+rct.width/2, rct.y+rct.height/2, rad );
+	dc.Circle( rct.x+rct.width/2, rct.y+rct.height/2, rad );
 }
 void wxPLScatterPlot::SetLineOfPerfectAgreementFlag(bool flagValue)
 {

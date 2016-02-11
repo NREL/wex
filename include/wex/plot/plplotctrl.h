@@ -36,26 +36,34 @@ class wxPLOutputDevice
 public:
 	virtual ~wxPLOutputDevice() { }
 
-	enum LineStyle { ls_SOLID, DOT, ls_DASH, ls_DOT_DASH };
-	enum JoinStyle { js_MITER, js_BEVEL, js_ROUND };
-	enum CapStyle  { cs_BUTT, cs_ROUND };
+	enum Style { NONE, SOLID, DOT, DASH, DOTDASH, MITER, BEVEL, ROUND, BUTT, HATCH, ODDEVEN, WIND };
 
+	// Pure virtuals, to be implemented
 	virtual void Clip( int x, int y, int width, int height ) = 0;
 	virtual void Unclip() = 0;
-
-	virtual void Color( const wxColour &c ) = 0;
-	virtual void Style( int size, LineStyle style = ls_SOLID, JoinStyle join = js_MITER, CapStyle cap = cs_BUTT ) = 0;
-
+	virtual void Pen( const wxColour &c = *wxBLACK, int size=1, Style line = SOLID, Style join = MITER, Style cap = BUTT ) = 0;
+	virtual void Brush( const wxColour &c = *wxBLACK, Style sty = SOLID ) = 0;
+	
 	virtual void Point( int x, int y ) = 0;
 	virtual void Line( int x1, int y1, int x2, int y2 ) = 0;
 	virtual void Lines( size_t n, const wxPoint *pts ) = 0;
-	virtual void Polygon( size_t n, const wxPoint *pts ) = 0;
-	virtual void Rect( int x, int y, int width, int height, bool fill = false, int radius = 0.0  )  = 0;
-	virtual void Circle( int x, int y, int radius, bool fill = false ) = 0;
+	virtual void Polygon( size_t n, const wxPoint *pts, Style winding = ODDEVEN ) = 0;
+	virtual void Rect( int x, int y, int width, int height )  = 0;	
+	virtual void Circle( int x, int y, int radius ) = 0;
 	
 	virtual void Font( int relpt = 0, bool bold = false ) = 0;
-	virtual void Text( int x, int y, const wxString &text, int angle=0 ) = 0;
+	virtual void Text( const wxString &text, int x, int y,  int angle=0 ) = 0;
 	virtual void Measure( const wxString &text, int *width, int *height ) = 0;
+	virtual int CharHeight() = 0;
+
+
+	// API variants
+	virtual void Point( const wxPoint &p ) { Point(p.x,p.y); }
+	virtual void Line( const wxPoint &p1, const wxPoint &p2 ) { Line( p1.x, p1.y, p2.x, p2.y ); }
+	virtual void Rect( const wxRect &r ) { Rect( r.x, r.y, r.width, r.height ); }
+	virtual void Circle( const wxPoint &p, int radius ) { Circle(p.x, p.y, radius); }
+	virtual void Text( const wxString &text, const wxPoint &p, int angle=0 ) { Text( text, p.x, p.y, angle ); }
+
 };
 
 class wxPLPlottable
@@ -76,8 +84,8 @@ public:
 
 	virtual wxRealPoint At( size_t i ) const = 0;
 	virtual size_t Len() const = 0;
-	virtual void Draw( wxDC &dc, const wxPLDeviceMapping &map ) = 0;
-	virtual void DrawInLegend( wxDC &dc, const wxRect &rct ) = 0;
+	virtual void Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map ) = 0;
+	virtual void DrawInLegend( wxPLOutputDevice &dc, const wxRect &rct ) = 0;
 
 	// properties
 
@@ -113,7 +121,7 @@ public:
 	wxPLSideWidgetBase();
 	virtual ~wxPLSideWidgetBase();
 
-	virtual void Render( wxDC &, const wxRect & ) = 0;
+	virtual void Render( wxPLOutputDevice &, const wxRect & ) = 0;
 	virtual wxSize CalculateBestSize() = 0;
 
 	void InvalidateBestSize();
@@ -251,7 +259,7 @@ protected:
 
 	void DrawGrid( wxDC &dc, wxPLAxis::TickData::TickSize size );
 	void DrawPolarGrid(wxDC &dc, wxPLAxis::TickData::TickSize size);
-	void DrawLegend(wxDC &dc, wxDC &aadc, const wxRect &geom);
+	void DrawLegend(wxDC &dc, wxPLOutputDevice &odev, const wxRect &geom);
 
 	void UpdateHighlightRegion();
 	void DrawLegendOutline();

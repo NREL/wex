@@ -35,7 +35,7 @@ public:
 	
 	// side widget renderer
 	virtual wxSize CalculateBestSize();
-	virtual void Render(wxDC& dc, const wxRect& geom);
+	virtual void Render( wxPLOutputDevice &dc, const wxRect& geom);
 	
 protected:
 	wxString m_format;

@@ -148,7 +148,7 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 			return m_data->Length();
 		}
 
-		virtual void Draw( wxDC &dc, const wxPLDeviceMapping &map )
+		virtual void Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 		{
 			if ( !m_data || m_data->Length() < 2 ) return;
 
@@ -160,7 +160,7 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 			wxRealPoint wmin = map.GetWorldMinimum();
 			wxRealPoint wmax = map.GetWorldMaximum();
 		
-			dc.SetPen( wxPen( m_colour, 2, wxPENSTYLE_SOLID ) );
+			dc.Pen( m_colour, 2 );
 
 			// check that Y axis is a left axis, so as to
 			// only allow stacking on the left axis.
@@ -237,13 +237,13 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 				}
 
 				if ( points.size() > 3 * map.GetDeviceExtents().GetWidth() ) {
-					dc.DrawText( "too many data points: please zoom in", map.GetDeviceExtents().GetTopLeft() );
+					dc.Text( "too many data points: please zoom in", map.GetDeviceExtents().GetTopLeft() );
 					return; // quit if 3x more x coord points than pixels
 				}
 				
-				dc.SetPen( *wxTRANSPARENT_PEN );
-				dc.SetBrush( wxBrush( m_colour, wxSOLID ) );
-				dc.DrawPolygon( points.size(), &points[0], 0, 0, wxWINDING_RULE );
+				dc.Pen( *wxBLACK, 0, wxPLOutputDevice::NONE );
+				dc.Brush( m_colour );
+				dc.Polygon( points.size(), &points[0], wxPLOutputDevice::WIND );
 			}
 			else
 			{
@@ -416,11 +416,11 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 
 				if ( points.size() < 2 ) return;
 				if ( points.size() > 4 * map.GetDeviceExtents().GetWidth() ) {
-					dc.DrawText( "too many data points: please zoom in", map.GetDeviceExtents().GetTopLeft() );
+					dc.Text( "too many data points: please zoom in", map.GetDeviceExtents().GetTopLeft() );
 					return; // quit if 3x more x coord points than pixels
 				}
 				
-				dc.DrawLines( points.size(), &points[0] );
+				dc.Lines( points.size(), &points[0] );
 
 			}
 		}
@@ -432,10 +432,10 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 			//else return m_data->GetTitleWithUnits();
 		}
 
-		virtual void DrawInLegend( wxDC &dc, const wxRect &rct )
+		virtual void DrawInLegend( wxPLOutputDevice &dc, const wxRect &rct )
 		{
-			dc.SetPen( wxPen( m_colour, 3, wxCAP_ROUND ) );
-			dc.DrawLine( rct.x, rct.y+rct.height/2, rct.x+rct.width, rct.y+rct.height/2 );
+			dc.Pen( m_colour, 3, wxPLOutputDevice::SOLID, wxPLOutputDevice::MITER, wxPLOutputDevice::BUTT );
+			dc.Line( rct.x, rct.y+rct.height/2, rct.x+rct.width, rct.y+rct.height/2 );
 		}
 
 		double GetPeriodLowerBoundary(double hourNumber, double timeStep)

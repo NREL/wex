@@ -58,13 +58,13 @@ public:
 		else return m_data->Length();
 	}
 
-	virtual void Draw( wxDC &dc, const wxPLDeviceMapping &map )
+	virtual void Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 	{
 		if ( !m_data || !m_colourMap ) return;
 	
 		wxRect bounds = map.GetDeviceExtents();
-		dc.SetBrush( wxBrush(*wxRED, wxCROSSDIAG_HATCH) );
-		dc.DrawRectangle(bounds);
+		dc.Brush( *wxRED, wxPLOutputDevice::HATCH  );
+		dc.Rect(bounds);
 
 		wxRealPoint wmin = map.GetWorldMinimum();
 		wxRealPoint wmax = map.GetWorldMaximum();
@@ -97,13 +97,14 @@ public:
 
 			wxCoord screenX = bounds.x + int((worldXDay - wmin.x/24) * dRectWidth);
 			wxCoord screenY = bounds.y + bounds.height-1 - int(dRectHeight * (worldY/m_data->GetTimeStep() + 1)); //+1 is because we have top corner, not bottom.
-
-			dc.SetBrush( wxBrush(m_colourMap->ColourForValue(m_data->At(i).y)) );
-			dc.DrawRectangle(screenX, screenY, int(dRectWidth + 1), int(dRectHeight + 1)); //+1s cover empty spaces between rects.
+			
+			dc.Pen( m_colourMap->ColourForValue(m_data->At(i).y), 2 );
+			dc.Brush( m_colourMap->ColourForValue(m_data->At(i).y) );
+			dc.Rect(screenX, screenY, int(dRectWidth + 1), int(dRectHeight + 1)); //+1s cover empty spaces between rects.
 		}
 	}
 
-	virtual void DrawInLegend( wxDC &dc, const wxRect &rct)
+	virtual void DrawInLegend( wxPLOutputDevice &dc, const wxRect &rct)
 	{
 		// nothing to do: won't be showing legends
 	}

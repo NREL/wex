@@ -21,8 +21,8 @@ public:
 
 	virtual wxRealPoint At( size_t i ) const;
 	virtual size_t Len() const;
-	virtual void Draw( wxDC &dc, const wxPLDeviceMapping &map );
-	virtual void DrawInLegend( wxDC &dc, const wxRect &rct);
+	virtual void Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map );
+	virtual void DrawInLegend( wxPLOutputDevice &dc, const wxRect &rct);
 
 	bool GetIgnoreZeros();
 	void SetIgnoreZeros(bool value = true);
@@ -40,11 +40,8 @@ protected:
 	Style m_style;
 	Marker m_marker;
 	std::vector< wxRealPoint > m_data;
-
-	wxPen GetLinePen();
-	wxPen GetMarkerPen();
-
-	void DrawMarkers( wxDC &dc, std::vector<wxPoint> &points, int size );
+	
+	void DrawMarkers( wxPLOutputDevice &dc, std::vector<wxPoint> &points, int size );
 
 private:	
 	bool m_ignoreZeros;
