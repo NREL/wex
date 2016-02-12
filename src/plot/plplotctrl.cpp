@@ -80,7 +80,7 @@ public:
 		Style line = SOLID, Style join = MITER, Style cap = BUTT ) {
 
 		m_pen.SetColour( c );
-		m_pen.SetWidth( CAST(size) );
+		m_pen.SetWidth( size < 1.0 ? 1 : CAST(size) );
 		switch( line )
 		{
 		case NONE: m_pen = *wxTRANSPARENT_PEN; break; // if transparent skip everything else
@@ -474,54 +474,9 @@ bool wxPLPlotCtrl::ExportPdf( const wxString &file )
 {
 	int width, height;
 	GetClientSize( &width, &height );
-
-	wxPdfDocument doc( wxPORTRAIT, "pt", wxPAPER_A5 );	
-	doc.AddPage( wxPORTRAIT, width, height );	
-	wxPdfDC dc( &doc, width, height );
-
-	
-	dc.SetFont( GetFont() );
-	dc.SetBackground( *wxWHITE_BRUSH );
-	dc.Clear();
-					
-	wxSize size = dc.GetSize();
-	const double frac = 0.015;
-	wxPoint margin( (int)(frac*((double)size.x)), (int)(frac*((double)size.y)) );
-	wxRect geom( margin, wxSize( size.x - 2*margin.x, size.y - 2*margin.y ) );
-
-	bool save = m_scaleTextSize;
-	m_scaleTextSize = false;
-	Invalidate();
-	
-	Render( dc, geom );
-	
-	/*
-	// example for loading and using an external font in PDF output
-	if ( !doc.AddFont( "Computer Modern", "", "C:/Users/adobos/Projects/wex/fonts/cmunrm.xml" ) )
-		wxMessageBox( "Could not load computer-modern font\n\ncwd: " + wxGetCwd() );
-	
-	if ( !doc.SetFont( "Computer Modern", wxPDF_FONTSTYLE_REGULAR, 12.0 ) )
-		wxMessageBox( "Could not set computer-modern font" );
-
-	wxString text( wxString::Format("Text output with computer modern font!! (pt=%lg asc=%d dsc=%d)", 
-			doc.GetFontSize(), doc.GetFontDescription().GetAscent(), doc.GetFontDescription().GetDescent() ) );
-	wxMessageBox( text );
-
-	doc.Text( 10, 10, text );
-	*/
-	
-
-	m_scaleTextSize = save;	
-	Invalidate();
-	Refresh();
-		
-	const wxMemoryOutputStream &data = doc.CloseAndGetBuffer();
-	wxFileOutputStream fp( file );
-	if (!fp.IsOk()) return false;
-
-	wxMemoryInputStream tmpis( data );
-	fp.Write( tmpis );
-	return fp.Close();
+	wxClientDC dc(this);
+	double ppi = dc.GetPPI().x;
+	return RenderPdf( file, width*72.0/ppi, height*72.0/ppi );
 }
 
 bool wxPLPlotCtrl::ExportSvg( const wxString &file )

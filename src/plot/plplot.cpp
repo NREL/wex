@@ -3,7 +3,11 @@
 
 #include <wx/tokenzr.h>
 #include <wx/txtstrm.h>
+#include <wx/wfstream.h>
+#include <wx/msgdlg.h>
 
+#include "wex/pdf/pdfdoc.h"
+#include "wex/pdf/pdffont.h"
 #include "wex/plot/plhistplot.h"
 #include "wex/plot/plplot.h"
 
@@ -11,6 +15,186 @@
 #include <cmath>
 #define wxIsNaN(a) std::isnan(a)
 #endif
+
+class wxPLPdfOutputDevice : public wxPLOutputDevice
+{
+	double m_fontPoint0, m_fontPoint;
+	bool m_fontBold;
+	bool m_pen, m_brush;
+	wxPdfDocument &m_pdf;
+
+public:
+	wxPLPdfOutputDevice( wxPdfDocument &doc ) : wxPLOutputDevice(), m_pdf(doc)	
+	{
+		m_fontPoint = 0;
+		m_fontPoint0 = m_pdf.GetFontSize();
+		m_fontBold = (m_pdf.GetFontStyles() & wxPDF_FONTSTYLE_BOLD);
+		m_pen = m_brush = true;
+	}
+
+		// Pure virtuals, to be implemented
+	virtual bool Equals( double a, double b ) const
+	{
+		return ( wxRound(10.0*a) == wxRound(10.0*b) );
+	}
+
+	virtual void Clip( double x, double y, double width, double height ) {
+		m_pdf.ClippingRect( x, y, width, height );
+	}
+
+	virtual void Unclip() {
+		m_pdf.UnsetClipping();
+	}
+
+	virtual void Pen( const wxColour &c, double size=1, Style line = SOLID, Style join = MITER, Style cap = BUTT )
+	{
+		if ( line == NONE ) {
+			m_pen = false;
+			return;
+		}
+
+		m_pen = true;
+
+		wxPdfArrayDouble dash;
+		wxPdfLineStyle style;
+		
+		style.SetColour( c );
+		
+		style.SetWidth( size );
+
+		double dsize = size;
+		if ( dsize < 1.5 ) dsize = 1.5;
+		
+		switch( line )
+		{
+		case DOT:
+			dash.Add( dsize );
+			dash.Add( dsize );
+			break;
+		case DASH:
+			dash.Add( 2.0*dsize );
+			dash.Add( dsize );
+			break;
+		case DOTDASH:
+			dash.Add( dsize );
+			dash.Add( dsize );
+			dash.Add( 2.0*dsize );
+			dash.Add( dsize );
+			break;
+		}
+		style.SetDash( dash );
+
+		switch( join )
+		{
+		case ROUND: style.SetLineJoin( wxPDF_LINEJOIN_ROUND ); break;
+		case BEVEL: style.SetLineJoin( wxPDF_LINEJOIN_BEVEL ); break;
+		default: style.SetLineJoin( wxPDF_LINEJOIN_MITER ); break;
+		}
+		
+		switch( cap )
+		{
+		case ROUND: style.SetLineCap( wxPDF_LINECAP_ROUND ); break;
+		default: style.SetLineCap( wxPDF_LINECAP_BUTT ); break;
+		}
+
+		m_pdf.SetLineStyle( style );
+	}
+
+	virtual void Brush( const wxColour &c, Style sty = SOLID ) {
+		if ( sty == NONE )
+		{
+			m_brush = false;
+			return;
+		}
+
+		// currently, hatch and other patterns not supported
+		m_pdf.SetFillColour( c );
+	}
+	
+	virtual void Point( double x, double y ){
+		m_pdf.Circle( x, y, 0.5 );
+	}
+
+	virtual void Line( double x1, double y1, double x2, double y2 )	{
+		m_pdf.Line( x1, y1, x2, y2 );
+	}
+
+	virtual void Lines( size_t n, const wxRealPoint *pts ) {
+		for (size_t i = 0; i < n; ++i)
+		{			
+			if (i == 0) m_pdf.MoveTo( pts[i].x, pts[i].y );
+			else m_pdf.LineTo( pts[i].x, pts[i].y );
+		}
+		m_pdf.EndPath(wxPDF_STYLE_DRAW);
+	}
+
+	int GetDrawingStyle()
+	{
+		int style = wxPDF_STYLE_NOOP;
+		if ( m_brush && m_pen ) style = wxPDF_STYLE_FILLDRAW;
+		else if (m_pen) style = wxPDF_STYLE_DRAW;
+		else if (m_brush) style = wxPDF_STYLE_FILL;
+		return style;
+	}
+
+	virtual void Polygon( size_t n, const wxRealPoint *pts, Style winding = ODDEVEN ) {		
+		if ( n == 0 ) return;
+		int saveFillingRule = m_pdf.GetFillingRule();
+		m_pdf.SetFillingRule( winding==ODDEVEN ? wxODDEVEN_RULE : wxWINDING_RULE );
+		wxPdfArrayDouble xp(n, 0.0), yp(n, 0.0);
+		for( size_t i=0;i<n;i++ )
+		{
+			xp[i] = pts[i].x;
+			yp[i] = pts[i].y;
+		}
+		m_pdf.Polygon(xp, yp, GetDrawingStyle() );
+		m_pdf.SetFillingRule(saveFillingRule);
+	}
+	virtual void Rect( double x, double y, double width, double height ) {
+		m_pdf.Rect( x, y, width, height, GetDrawingStyle() );
+	}
+
+	virtual void Circle( double x, double y, double radius ) {
+		m_pdf.Circle( x, y, radius, 0.0, 360.0, GetDrawingStyle() );
+	}
+	
+	virtual void Font( double relpt = 0, bool bold = false ) {
+		m_pdf.SetFontSize( m_fontPoint0 + relpt );
+		m_fontPoint = relpt;
+		m_fontBold = bold;
+	}
+
+	virtual void Font( double *rel, bool *bld ) const {
+		if ( rel ) *rel = m_fontPoint;
+		if ( bld ) *bld = m_fontBold;
+	}
+	virtual void Text( const wxString &text, double x, double y,  double angle=0 ) {		
+		double points = m_pdf.GetFontSize();
+		double asc = (double)abs(m_pdf.GetFontDescription().GetAscent());
+		double des = (double)abs(m_pdf.GetFontDescription().GetDescent());
+		double em = asc+des;
+		double ascfrac = asc/em;
+		double ybase = points*ascfrac;
+
+		if ( fabs(angle) < 0.5)
+		{
+			m_pdf.Text( x, y + ybase, text );
+		}
+		else
+		{
+			double xx = x + ybase*sin( angle*M_PI/180 );
+			double yy = y + ybase*cos( angle*M_PI/180 );
+			m_pdf.RotatedText( xx, yy, text, angle );
+		}
+	}
+	virtual void Measure( const wxString &text, double *width, double *height ) {
+		*width = m_pdf.GetStringWidth(text);
+		*height = m_pdf.GetFontSize();
+	}
+	virtual double CharHeight() {
+		return m_pdf.GetFontSize();
+	}
+};
 
 static const int text_space = 3;
 static const wxSize legend_item_box(13, 13);
@@ -461,7 +645,7 @@ public:
 
 		if ( draw_bounds )
 		{
-			dc.Pen( *wxLIGHT_GREY, 1 );
+			dc.Pen( *wxLIGHT_GREY, 0.5 );
 			dc.Brush( *wxBLUE, wxPLOutputDevice::NONE );
 		}
 
@@ -1364,7 +1548,7 @@ void wxPLPlot::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visible_
 void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLOutputDevice &aadc, wxRect geom )
 {
 #define NORMAL_FONT(dc)  dc.Font( 0, false )
-#define TITLE_FONT(dc)   dc.Font( 0, true )
+#define TITLE_FONT(dc)   dc.Font( +1, false )
 #define LEGEND_FONT(dc)  dc.Font( -1, false )
 #define AXIS_FONT(dc)    dc.Font( 0, false )
 
@@ -1644,7 +1828,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLOutputDevice &aadc, wxRect geom
 	// render grid lines
 	if ( m_showCoarseGrid )
 	{
-		dc.Pen( m_gridColour, 1, 
+		dc.Pen( m_gridColour, 0.5, 
 			wxPLOutputDevice::SOLID, wxPLOutputDevice::MITER, wxPLOutputDevice::BUTT );
 
 		if (is_cartesian)	DrawGrid( dc, wxPLAxis::TickData::LARGE );
@@ -1653,7 +1837,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLOutputDevice &aadc, wxRect geom
 
 	if ( m_showFineGrid )
 	{		
-		dc.Pen( m_gridColour, 1, 
+		dc.Pen( m_gridColour, 0.5, 
 			wxPLOutputDevice::DOT, wxPLOutputDevice::MITER, wxPLOutputDevice::BUTT );
 
 		if (is_cartesian) DrawGrid( dc, wxPLAxis::TickData::SMALL );
@@ -1687,7 +1871,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLOutputDevice &aadc, wxRect geom
 
 	// draw some axes
 	AXIS_FONT(dc);
-	dc.Pen( m_axisColour, 1 );	
+	dc.Pen( m_axisColour, 0.5 );	
 	if ( m_x2.axis )
 		m_x2.layout->render( dc, m_plotRects[0].y, m_x2.axis, 
 			box.x, box.x+box.width, 
@@ -1887,6 +2071,8 @@ void wxPLPlot::CalcLegendTextLayout( wxPLOutputDevice &dc )
 
 	if ( m_legendInvalidated )
 	{
+		LEGEND_FONT(dc);
+
 		// rebuild legend items to show in plot
 		for ( size_t i=0;i<m_legendItems.size(); i++ )
 			delete m_legendItems[i];
@@ -2022,7 +2208,7 @@ void wxPLPlot::DrawLegend( wxPLOutputDevice &dc, wxPLOutputDevice &odev, const w
 	if ( m_legendPos != BOTTOM && m_legendPos != RIGHT )
 	{
 		dc.Brush( *wxWHITE );
-		dc.Pen( *wxLIGHT_GREY );
+		dc.Pen( *wxLIGHT_GREY, 0.5 );
 		dc.Rect( m_legendRect );
 	}
 	
@@ -2283,6 +2469,50 @@ void wxPLPlot::UpdateAxes( bool recalc_all )
 			GetYAxis2(ppos)->ShowTickText( true );
         }
     }
+}
+
+bool wxPLPlot::RenderPdf( const wxString &file, double width, double height )
+{
+	wxPdfDocument doc( wxPORTRAIT, "pt", wxPAPER_A5 );	
+	doc.AddPage( wxPORTRAIT, width, height );
+	doc.SetFont( "Helvetica", wxPDF_FONTSTYLE_REGULAR, 12.0 );
+	Invalidate();
+	
+	/*
+	if ( !doc.AddFont( "Computer Modern", "", "C:/Users/arond/Documents/NREL_Projects/wex/fonts/cmunrm.xml" ) )
+		wxMessageBox( "Could not load computer-modern font\n\ncwd: " + wxGetCwd() );
+	
+	if ( !doc.SetFont( "Computer Modern", wxPDF_FONTSTYLE_REGULAR, 12.0 ) )
+		wxMessageBox( "Could not set computer-modern font" );
+		*/
+
+	wxPLPdfOutputDevice dc(doc);
+	Render( dc, dc, wxRect( 3, 3, width-6, height-6 ) );
+	
+	/*
+	// example for loading and using an external font in PDF output
+	if ( !doc.AddFont( "Computer Modern", "", "C:/Users/adobos/Projects/wex/fonts/cmunrm.xml" ) )
+		wxMessageBox( "Could not load computer-modern font\n\ncwd: " + wxGetCwd() );
+	
+	if ( !doc.SetFont( "Computer Modern", wxPDF_FONTSTYLE_REGULAR, 12.0 ) )
+		wxMessageBox( "Could not set computer-modern font" );
+
+	wxString text( wxString::Format("Text output with computer modern font!! (pt=%lg asc=%d dsc=%d)", 
+			doc.GetFontSize(), doc.GetFontDescription().GetAscent(), doc.GetFontDescription().GetDescent() ) );
+	wxMessageBox( text );
+
+	doc.Text( 10, 10, text );
+	*/
+	
+	Invalidate();
+		
+	const wxMemoryOutputStream &data = doc.CloseAndGetBuffer();
+	wxFileOutputStream fp( file );
+	if (!fp.IsOk()) return false;
+
+	wxMemoryInputStream tmpis( data );
+	fp.Write( tmpis );
+	return fp.Close();
 }
 
 /*

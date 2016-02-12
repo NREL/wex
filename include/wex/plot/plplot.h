@@ -55,10 +55,10 @@ public:
 
 	// API variants
 	virtual void Point( const wxRealPoint &p ) { Point(p.x,p.y); }
-	virtual void Line( const wxRealPoint &p1, const wxPoint &p2 ) { Line( p1.x, p1.y, p2.x, p2.y ); }
+	virtual void Line( const wxRealPoint &p1, const wxRealPoint &p2 ) { Line( p1.x, p1.y, p2.x, p2.y ); }
 	virtual void Rect( const wxRect &r ) { Rect( r.x, r.y, r.width, r.height ); }
 	virtual void Circle( const wxRealPoint &p, int radius ) { Circle(p.x, p.y, radius); }
-	virtual void Text( const wxString &text, const wxPoint &p, int angle=0 ) { Text( text, p.x, p.y, angle ); }
+	virtual void Text( const wxString &text, const wxRealPoint &p, int angle=0 ) { Text( text, p.x, p.y, angle ); }
 
 };
 
@@ -199,6 +199,9 @@ public:
 
 	void Invalidate(); // erases all cached positions and layouts, but does not issue refresh
 	void Render( wxPLOutputDevice &dc, wxPLOutputDevice &aadc, wxRect geom ); // note: does not draw the background.  DC should be cleared with desired bg color already
+
+	
+	bool wxPLPlot::RenderPdf( const wxString &file, double width, double height );
 
 	class text_layout;
 	class axis_layout;
