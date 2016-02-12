@@ -542,6 +542,7 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 		dataSets.reserve(count_names);
 		bool firstRowContainsTitles = true;
 		bool secondRowContainsUnits = true;
+		bool isEnergyPlusOutput = true; // Remains true if first row contains titles, second row contains units, and first value in first row is "Date/Time"
 		double entry;
 
 		wxDVArrayDataSet *ds = new wxDVArrayDataSet();
@@ -551,6 +552,7 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 		if (IsNumeric(title) || IsDate(title))
 		{
 			firstRowContainsTitles = false;
+			isEnergyPlusOutput = false;
 			ds->SetSeriesTitle(wxT("-no name-"));
 			groupNames.push_back("");
 			title.ToDouble(&entry);
@@ -563,6 +565,8 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 			groupNames.push_back(title.BeforeLast('|'));
 //			ds->SetXLabel("Hours since 00:00 Jan 1");
 //			ds->SetYLabel(title);
+			if (title != "Date/Time")
+				isEnergyPlusOutput = false;
 		}
 	
 		if (firstRowContainsTitles)
@@ -578,6 +582,7 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 			}
 			else
 			{
+				isEnergyPlusOutput = false;
 				ds->SetUnits(units);
 //				ds->SetYLabel(title + " (" + units + ")");
 			}
@@ -590,7 +595,25 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 			timeCounters.push_back(0.5);
 			wxDVArrayDataSet *ds = new wxDVArrayDataSet();
 			wxString titleToken = tkz_names.GetNextToken();
-			if (firstRowContainsTitles)
+			if (isEnergyPlusOutput)
+			{
+				wxString tt = titleToken.AfterLast('|');
+				int fstart = tt.First('[');
+				int fend = tt.First(']');
+				if (fstart != -1 && fend != -1 && fstart < fend)
+				{
+					// Convert, e.g., "Variable [Units](Hourly)" to "Variable (Hourly)" with units "Units"
+					wxString units = tt.SubString(fstart+1, fend-1);
+					tt.Replace("[" + units + "]", "");
+					ds->SetSeriesTitle(tt);
+					ds->SetUnits(units);
+				}
+				else
+				{
+					ds->SetSeriesTitle(tt);
+				}
+			}
+			else if (firstRowContainsTitles)
 				ds->SetSeriesTitle(titleToken.AfterLast('|'));
 			else
 			{
@@ -608,7 +631,7 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 				else
 					ds->SetUnits(wxT("-no units-"));
 			}
-			else
+			else if (!isEnergyPlusOutput)
 			{
 				tkz_units.GetNextToken().ToDouble(&entry);
 				ds->SetUnits(wxT("-no units-"));
