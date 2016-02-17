@@ -9,6 +9,7 @@
  * for axis labels.  If no year is specified, we use 1970 because the year doesn't matter.
  */
 
+#include <algorithm>
 #include <wx/scrolbar.h>
 #include <wx/gbsizer.h>
 #include <wx/tokenzr.h>

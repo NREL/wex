@@ -1364,7 +1364,13 @@ wxString wxMetroListBox::Get(size_t idx)
 
 wxString wxMetroListBox::GetValue()
 {
-	return m_selectedIdx >= 0 ? Get(m_selectedIdx) : wxEmptyString;
+	wxString retval;
+	if(m_selectedIdx >= 0)
+		retval = Get(m_selectedIdx);
+	else
+		retval = wxEmptyString;
+
+	return retval;
 }
 
 void wxMetroListBox::Clear()

@@ -15,7 +15,7 @@
 #include "wex/icons/scatter.cpng"
 
 #include "wex/metro.h"
-
+#include <algorithm>
 
 
 enum {	TAB_TIME_SERIES = 0,

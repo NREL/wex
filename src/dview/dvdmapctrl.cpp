@@ -15,7 +15,7 @@
 #include "wex/icons/zoom_in.cpng"
 #include "wex/icons/zoom_out.cpng"
 #include "wex/icons/zoom_fit.cpng"
-
+#include <algorithm>  
 
 class wxDVDMapPlot : public wxPLPlottable
 {

@@ -15,6 +15,8 @@
 
 #include "wex/pagelayout.h"
 
+#include <algorithm>
+
 wxScreenOutputDevice::wxScreenOutputDevice( wxPageScaleInterface *lc, wxDC &dc ) : m_lc(lc), m_dc(dc)
 {
 	Color( *wxBLUE );

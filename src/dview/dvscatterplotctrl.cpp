@@ -1,5 +1,6 @@
 #include <limits>
 #include <numeric>
+#include <algorithm> 
 
 #include <wx/wx.h>
 #include <wx/tokenzr.h>

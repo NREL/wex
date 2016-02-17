@@ -1,6 +1,7 @@
 
 #include <wx/dc.h>
 #include "wex/plot/plbarplot.h"
+#include <algorithm>
 
 
 wxPLBarPlotBase::wxPLBarPlotBase()

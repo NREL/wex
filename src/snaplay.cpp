@@ -6,7 +6,7 @@
 
 #include <wex/snaplay.h>
 #include <wex/metro.h>
-
+#include <algorithm>
 
 class wxSnapLayout::OverlayWindow : public wxFrame
 {

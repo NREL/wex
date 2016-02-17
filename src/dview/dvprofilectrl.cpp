@@ -10,6 +10,7 @@
 #include "wex/dview/dvselectionlist.h"
 #include "wex/dview/dvprofilectrl.h"
 #include "wex/dview/dvplothelper.h"
+#include <algorithm>
 
 static const wxString NO_UNITS("ThereAreNoUnitsForThisAxis.");
 

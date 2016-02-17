@@ -15,6 +15,7 @@
 #include <wex/utils.h>
 #include <wex/uiform.h>
 #include <wex/diurnal.h>
+#include <algorithm>
 
 static wxColour g_uiSelectColor( 135, 135, 135 );
 

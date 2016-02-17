@@ -2223,9 +2223,13 @@ bool wxLKScriptWindow::RunScript()
 	Layout();
 	wxYield();
 
-	bool ok = m_script->Execute( !m_fileName.IsEmpty() 
-		? wxPathOnly(m_fileName) 
-		: wxEmptyString );
+	wxString sval;
+	if(!m_fileName.IsEmpty() )
+		sval = wxPathOnly(m_fileName);
+	else
+		sval = wxEmptyString;
+
+	bool ok = m_script->Execute(sval);
 
 	m_stopBtn->Hide();
 	m_runBtn->Show();
