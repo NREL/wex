@@ -576,9 +576,9 @@ void fcall_axis( lk::invoke_t &cxt )
 	}
 }
 
-void fcall_csvtext( lk::invoke_t &cxt )
+void fcall_csvconv( lk::invoke_t &cxt )
 {
-	LK_DOC( "csvtext", "Convert arrays to CSV text and vice-versa."
+	LK_DOC( "csvconv", "Convert arrays to CSV text and vice-versa."
 		" For string->array conversion, options are 'numeric'=t/F, '1darray'=t/F (for one line csv data)."
 		" For array->string conversion, options are 'trim'=t/F' (remove last newline).",
 		"( array, [table:options] ):string or ( string, [table:options] ):array" );
@@ -958,7 +958,7 @@ lk::fcall_t* wxLKMiscFunctions()
 		fcall_jsonparse,
 		fcall_csvread,
 		fcall_csvwrite,
-		fcall_csvtext,
+		fcall_csvconv,
 		0 };
 		
 	return (lk::fcall_t*)vec;
