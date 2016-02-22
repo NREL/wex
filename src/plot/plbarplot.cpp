@@ -40,7 +40,7 @@ size_t wxPLBarPlotBase::Len() const
 	return m_data.size();
 }
 
-void wxPLBarPlotBase::DrawInLegend( wxPLOutputDevice &dc, const wxRect &rct)
+void wxPLBarPlotBase::DrawInLegend( wxPLOutputDevice &dc, const wxPLRealRect &rct)
 {
 	dc.Pen( m_colour );
 	dc.Brush( m_colour );

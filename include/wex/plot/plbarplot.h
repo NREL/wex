@@ -22,7 +22,7 @@ public:
 	void SetThickness( int thick = wxPL_BAR_AUTOSIZE ) { m_thickness = thick; }
 	void SetData( const std::vector<wxRealPoint> &data ) { m_data = data; }
 
-	virtual void DrawInLegend( wxPLOutputDevice &dc, const wxRect &rct);
+	virtual void DrawInLegend( wxPLOutputDevice &dc, const wxPLRealRect &rct);
 
 protected:
 	

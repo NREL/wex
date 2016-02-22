@@ -437,7 +437,7 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 			//else return m_data->GetTitleWithUnits();
 		}
 
-		virtual void DrawInLegend( wxPLOutputDevice &dc, const wxRect &rct )
+		virtual void DrawInLegend( wxPLOutputDevice &dc, const wxPLRealRect &rct )
 		{
 			dc.Pen( m_colour, 3, wxPLOutputDevice::SOLID, wxPLOutputDevice::MITER, wxPLOutputDevice::BUTT );
 			dc.Line( rct.x, rct.y+rct.height/2, rct.x+rct.width, rct.y+rct.height/2 );

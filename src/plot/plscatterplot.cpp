@@ -132,7 +132,7 @@ void wxPLScatterPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 	}
 }
 
-void wxPLScatterPlot::DrawInLegend( wxPLOutputDevice &dc, const wxRect &rct)
+void wxPLScatterPlot::DrawInLegend( wxPLOutputDevice &dc, const wxPLRealRect &rct)
 {
 	dc.Pen( m_colour, 1 );
 	dc.Brush( m_colour );

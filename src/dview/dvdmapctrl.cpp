@@ -106,7 +106,7 @@ public:
 		}
 	}
 
-	virtual void DrawInLegend( wxPLOutputDevice &dc, const wxRect &rct)
+	virtual void DrawInLegend( wxPLOutputDevice &dc, const wxPLRealRect &rct)
 	{
 		// nothing to do: won't be showing legends
 	}

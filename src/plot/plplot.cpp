@@ -10,194 +10,15 @@
 #include "wex/pdf/pdffont.h"
 #include "wex/plot/plhistplot.h"
 #include "wex/plot/plplot.h"
+#include "wex/plot/ploutdev.h"
 
 #ifdef __WXOSX__
 #include <cmath>
 #define wxIsNaN(a) std::isnan(a)
 #endif
 
-class wxPLPdfOutputDevice : public wxPLOutputDevice
-{
-	double m_fontPoint0, m_fontPoint;
-	bool m_fontBold;
-	bool m_pen, m_brush;
-	wxPdfDocument &m_pdf;
-
-public:
-	wxPLPdfOutputDevice( wxPdfDocument &doc ) : wxPLOutputDevice(), m_pdf(doc)	
-	{
-		m_fontPoint = 0;
-		m_fontPoint0 = m_pdf.GetFontSize();
-		m_fontBold = (m_pdf.GetFontStyles() & wxPDF_FONTSTYLE_BOLD);
-		m_pen = m_brush = true;
-	}
-
-		// Pure virtuals, to be implemented
-	virtual bool Equals( double a, double b ) const
-	{
-		return ( wxRound(10.0*a) == wxRound(10.0*b) );
-	}
-
-	virtual void Clip( double x, double y, double width, double height ) {
-		m_pdf.ClippingRect( x, y, width, height );
-	}
-
-	virtual void Unclip() {
-		m_pdf.UnsetClipping();
-	}
-
-	virtual void Pen( const wxColour &c, double size=1, Style line = SOLID, Style join = MITER, Style cap = BUTT )
-	{
-		if ( line == NONE ) {
-			m_pen = false;
-			return;
-		}
-
-		m_pen = true;
-
-		wxPdfArrayDouble dash;
-		wxPdfLineStyle style;
-		
-		style.SetColour( c );
-		
-		style.SetWidth( size );
-
-		double dsize = size;
-		if ( dsize < 1.5 ) dsize = 1.5;
-		
-		switch( line )
-		{
-		case DOT:
-			dash.Add( dsize );
-			dash.Add( dsize );
-			break;
-		case DASH:
-			dash.Add( 2.0*dsize );
-			dash.Add( dsize );
-			break;
-		case DOTDASH:
-			dash.Add( dsize );
-			dash.Add( dsize );
-			dash.Add( 2.0*dsize );
-			dash.Add( dsize );
-			break;
-		}
-		style.SetDash( dash );
-
-		switch( join )
-		{
-		case ROUND: style.SetLineJoin( wxPDF_LINEJOIN_ROUND ); break;
-		case BEVEL: style.SetLineJoin( wxPDF_LINEJOIN_BEVEL ); break;
-		default: style.SetLineJoin( wxPDF_LINEJOIN_MITER ); break;
-		}
-		
-		switch( cap )
-		{
-		case ROUND: style.SetLineCap( wxPDF_LINECAP_ROUND ); break;
-		default: style.SetLineCap( wxPDF_LINECAP_BUTT ); break;
-		}
-
-		m_pdf.SetLineStyle( style );
-	}
-
-	virtual void Brush( const wxColour &c, Style sty = SOLID ) {
-		if ( sty == NONE )
-		{
-			m_brush = false;
-			return;
-		}
-
-		// currently, hatch and other patterns not supported
-		m_pdf.SetFillColour( c );
-	}
-	
-	virtual void Point( double x, double y ){
-		m_pdf.Circle( x, y, 0.5 );
-	}
-
-	virtual void Line( double x1, double y1, double x2, double y2 )	{
-		m_pdf.Line( x1, y1, x2, y2 );
-	}
-
-	virtual void Lines( size_t n, const wxRealPoint *pts ) {
-		for (size_t i = 0; i < n; ++i)
-		{			
-			if (i == 0) m_pdf.MoveTo( pts[i].x, pts[i].y );
-			else m_pdf.LineTo( pts[i].x, pts[i].y );
-		}
-		m_pdf.EndPath(wxPDF_STYLE_DRAW);
-	}
-
-	int GetDrawingStyle()
-	{
-		int style = wxPDF_STYLE_NOOP;
-		if ( m_brush && m_pen ) style = wxPDF_STYLE_FILLDRAW;
-		else if (m_pen) style = wxPDF_STYLE_DRAW;
-		else if (m_brush) style = wxPDF_STYLE_FILL;
-		return style;
-	}
-
-	virtual void Polygon( size_t n, const wxRealPoint *pts, Style winding = ODDEVEN ) {		
-		if ( n == 0 ) return;
-		int saveFillingRule = m_pdf.GetFillingRule();
-		m_pdf.SetFillingRule( winding==ODDEVEN ? wxODDEVEN_RULE : wxWINDING_RULE );
-		wxPdfArrayDouble xp(n, 0.0), yp(n, 0.0);
-		for( size_t i=0;i<n;i++ )
-		{
-			xp[i] = pts[i].x;
-			yp[i] = pts[i].y;
-		}
-		m_pdf.Polygon(xp, yp, GetDrawingStyle() );
-		m_pdf.SetFillingRule(saveFillingRule);
-	}
-	virtual void Rect( double x, double y, double width, double height ) {
-		m_pdf.Rect( x, y, width, height, GetDrawingStyle() );
-	}
-
-	virtual void Circle( double x, double y, double radius ) {
-		m_pdf.Circle( x, y, radius, 0.0, 360.0, GetDrawingStyle() );
-	}
-	
-	virtual void Font( double relpt = 0, bool bold = false ) {
-		m_pdf.SetFontSize( m_fontPoint0 + relpt );
-		m_fontPoint = relpt;
-		m_fontBold = bold;
-	}
-
-	virtual void Font( double *rel, bool *bld ) const {
-		if ( rel ) *rel = m_fontPoint;
-		if ( bld ) *bld = m_fontBold;
-	}
-	virtual void Text( const wxString &text, double x, double y,  double angle=0 ) {		
-		double points = m_pdf.GetFontSize();
-		double asc = (double)abs(m_pdf.GetFontDescription().GetAscent());
-		double des = (double)abs(m_pdf.GetFontDescription().GetDescent());
-		double em = asc+des;
-		double ascfrac = asc/em;
-		double ybase = points*ascfrac;
-
-		if ( fabs(angle) < 0.5)
-		{
-			m_pdf.Text( x, y + ybase, text );
-		}
-		else
-		{
-			double xx = x + ybase*sin( angle*M_PI/180 );
-			double yy = y + ybase*cos( angle*M_PI/180 );
-			m_pdf.RotatedText( xx, yy, text, angle );
-		}
-	}
-	virtual void Measure( const wxString &text, double *width, double *height ) {
-		*width = m_pdf.GetStringWidth(text);
-		*height = m_pdf.GetFontSize();
-	}
-	virtual double CharHeight() {
-		return m_pdf.GetFontSize();
-	}
-};
-
-static const int text_space = 3;
-static const wxSize legend_item_box(13, 13);
+static const double text_space = 3.0;
+static const wxRealPoint legend_item_box(14.0, 14.0);
 
 class wxPLAxisDeviceMapping : public wxPLDeviceMapping
 {
@@ -410,7 +231,7 @@ void wxPLSideWidgetBase::InvalidateBestSize()
 	m_bestSize.x = m_bestSize.y = -1;
 }
 
-wxSize wxPLSideWidgetBase::GetBestSize()
+wxRealPoint wxPLSideWidgetBase::GetBestSize()
 {
 	if ( m_bestSize.x < 0 || m_bestSize.y < 0 )
 		m_bestSize = CalculateBestSize();
@@ -1545,7 +1366,7 @@ void wxPLPlot::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visible_
 }
 
 
-void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLOutputDevice &aadc, wxRect geom )
+void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 {
 #define NORMAL_FONT(dc)  dc.Font( 0, false )
 #define TITLE_FONT(dc)   dc.Font( +1, false )
@@ -1565,9 +1386,9 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLOutputDevice &aadc, wxRect geom
 	// draw any side widgets first and remove the space from the total plot area
 	if ( m_sideWidgets[Y_LEFT] != 0 )
 	{
-		wxSize sz = m_sideWidgets[Y_LEFT]->GetBestSize();
+		wxRealPoint sz = m_sideWidgets[Y_LEFT]->GetBestSize();
 		m_sideWidgets[Y_LEFT]->Render( dc, 
-			wxRect( geom.x, geom.y, 
+			wxPLRealRect( geom.x, geom.y, 
 				sz.x, geom.height ) );
 		geom.width -= sz.x;
 		geom.x += sz.x;
@@ -1575,16 +1396,16 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLOutputDevice &aadc, wxRect geom
 
 	if ( m_sideWidgets[Y_RIGHT] != 0 )
 	{
-		wxSize sz = m_sideWidgets[Y_RIGHT]->GetBestSize();		
+		wxRealPoint sz = m_sideWidgets[Y_RIGHT]->GetBestSize();		
 		m_sideWidgets[Y_RIGHT]->Render( dc, 
-			wxRect( geom.x+geom.width-sz.x, geom.y, 
+			wxPLRealRect( geom.x+geom.width-sz.x, geom.y, 
 				sz.x, geom.height ) );
 
 		geom.width -= sz.x;
 	}
 
 
-	wxRect box( geom.x+text_space, 
+	wxPLRealRect box( geom.x+text_space, 
 		geom.y+text_space, 
 		geom.width-text_space-text_space, 
 		geom.height-text_space-text_space );
@@ -1644,7 +1465,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLOutputDevice &aadc, wxRect geom
 
 	NORMAL_FONT(dc);
 
-	wxRect plotbox = box; // save current box for where to draw the axis labels
+	wxPLRealRect plotbox = box; // save current box for where to draw the axis labels
 
 	// determine sizes of axis labels
 
@@ -1813,7 +1634,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLOutputDevice &aadc, wxRect geom
 	m_plotRects.clear();
 	for ( size_t pp=0;pp<nyaxes; pp++ )
 	{
-		wxRect rect( box.x, cur_plot_y_start, box.width, single_plot_height );
+		wxPLRealRect rect( box.x, cur_plot_y_start, box.width, single_plot_height );
 		if (is_cartesian) 
 			dc.Rect(rect);
 		else {
@@ -1850,24 +1671,18 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLOutputDevice &aadc, wxRect geom
 		wxPLAxis *xaxis = GetAxis( m_plots[i].xap );
 		wxPLAxis *yaxis = GetAxis( m_plots[i].yap, m_plots[i].ppos );
 		if ( xaxis == 0 || yaxis == 0 ) continue; // this should never be encountered
-		wxRect &bb = m_plotRects[ m_plots[i].ppos ];
+		wxPLRealRect &bb = m_plotRects[ m_plots[i].ppos ];
 		wxPLAxisDeviceMapping map( xaxis, bb.x, bb.x+bb.width, xaxis == GetXAxis1(),
 			yaxis, bb.y+bb.height, bb.y, yaxis == GetYAxis1() );
 
-		if ( m_plots[i].plot->GetAntiAliasing() )
-		{
-			aadc.Clip( bb.x, bb.y, bb.width, bb.height );
-			m_plots[i].plot->Draw( aadc, map );
-			aadc.Unclip();
-		}
-		else
-		{
-			dc.Clip( bb.x, bb.y, bb.width, bb.height );
-			m_plots[i].plot->Draw( dc, map );
-			dc.Unclip();
+		dc.SetAntiAliasing( m_plots[i].plot->GetAntiAliasing() );
 
-		}
+		dc.Clip( bb.x, bb.y, bb.width, bb.height );
+		m_plots[i].plot->Draw( dc, map );
+		dc.Unclip();
 	}
+
+	dc.SetAntiAliasing( false );
 
 	// draw some axes
 	AXIS_FONT(dc);
@@ -1878,7 +1693,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLOutputDevice &aadc, wxRect geom
 			m_x1.axis == 0 ? m_plotRects[nyaxes-1].y+m_plotRects[nyaxes-1].height : -1 );
 	
 	// set up some polar plot values
-	wxRect rect1 = m_plotRects[0];
+	wxPLRealRect rect1 = m_plotRects[0];
 	double pp_radius = (rect1.width < rect1.height) ? rect1.width / 2.0 : rect1.height / 2.0;
 	wxRealPoint pp_center(rect1.x + rect1.width / 2.0, rect1.y + rect1.height / 2.0);
 
@@ -1963,9 +1778,9 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLOutputDevice &aadc, wxRect geom
 	}
 
 	LEGEND_FONT(dc);
-	LEGEND_FONT(aadc);
-	wxRect plotarea( m_plotRects[0].x, m_plotRects[0].y, m_plotRects[0].width, m_plotRects[0].height*nyaxes + (nyaxes-1)*plot_space );
-	DrawLegend( dc, aadc, (m_legendPos==FLOATING||legend_bottom||legend_right) ? geom : plotarea  );
+
+	wxPLRealRect plotarea( m_plotRects[0].x, m_plotRects[0].y, m_plotRects[0].width, m_plotRects[0].height*nyaxes + (nyaxes-1)*plot_space );
+	DrawLegend( dc, (m_legendPos==FLOATING||legend_bottom||legend_right) ? geom : plotarea  );
 }
 
 void wxPLPlot::DrawGrid( wxPLOutputDevice &dc, wxPLAxis::TickData::TickSize size )
@@ -2131,7 +1946,7 @@ void wxPLPlot::CalcLegendTextLayout( wxPLOutputDevice &dc )
 	}
 }
 
-void wxPLPlot::DrawLegend( wxPLOutputDevice &dc, wxPLOutputDevice &odev, const wxRect& geom )
+void wxPLPlot::DrawLegend( wxPLOutputDevice &dc, const wxPLRealRect& geom )
 {
 	if ( !m_showLegend )
 		return;
@@ -2205,6 +2020,8 @@ void wxPLPlot::DrawLegend( wxPLOutputDevice &dc, wxPLOutputDevice &odev, const w
 		}
 	}
 	
+	dc.SetAntiAliasing( false );
+	
 	if ( m_legendPos != BOTTOM && m_legendPos != RIGHT )
 	{
 		dc.Brush( *wxWHITE );
@@ -2230,7 +2047,9 @@ void wxPLPlot::DrawLegend( wxPLOutputDevice &dc, wxPLOutputDevice &odev, const w
 		if ( layout == wxHORIZONTAL )
 			yoff_box = max_item_height/2 - legend_item_box.y/2;
 
-		li.plot->DrawInLegend( odev, wxRect( x + 2*text_space, y + yoff_box , 
+		dc.SetAntiAliasing( li.plot->GetAntiAliasing() );
+
+		li.plot->DrawInLegend( dc, wxPLRealRect( x + 2*text_space, y + yoff_box , 
 			legend_item_box.x, legend_item_box.y ) );
 
 		if ( layout == wxHORIZONTAL )
@@ -2239,6 +2058,8 @@ void wxPLPlot::DrawLegend( wxPLOutputDevice &dc, wxPLOutputDevice &odev, const w
 			y += li.layout->height() + text_space;
 	}
 	
+	dc.SetAntiAliasing( false );
+
 	//dc.SetPen( *wxBLACK_PEN );
 	//dc.SetBrush( *wxTRANSPARENT_BRUSH );
 	//dc.DrawRectangle( m_legendRect );
@@ -2471,39 +2292,29 @@ void wxPLPlot::UpdateAxes( bool recalc_all )
     }
 }
 
-bool wxPLPlot::RenderPdf( const wxString &file, double width, double height )
+bool wxPLPlot::RenderPdf( const wxString &file, double width, double height,
+	const wxString &fontxml, double points )
 {
 	wxPdfDocument doc( wxPORTRAIT, "pt", wxPAPER_A5 );	
 	doc.AddPage( wxPORTRAIT, width, height );
 	doc.SetFont( "Helvetica", wxPDF_FONTSTYLE_REGULAR, 12.0 );
-	Invalidate();
-	
-	/*
-	if ( !doc.AddFont( "Computer Modern", "", "C:/Users/arond/Documents/NREL_Projects/wex/fonts/cmunrm.xml" ) )
-		wxMessageBox( "Could not load computer-modern font\n\ncwd: " + wxGetCwd() );
-	
-	if ( !doc.SetFont( "Computer Modern", wxPDF_FONTSTYLE_REGULAR, 12.0 ) )
-		wxMessageBox( "Could not set computer-modern font" );
-		*/
+	Invalidate();	
+
+	if ( !fontxml.IsEmpty() )
+	{
+		wxString name = wxFileName( fontxml ).GetName();
+		if ( doc.AddFont( name, wxEmptyString, fontxml ) )
+		{
+			if ( !doc.SetFont( name, wxPDF_FONTSTYLE_REGULAR, points ) )
+				wxMessageBox( "Could not set custom PDF font: " + name );
+		}
+		else
+			wxMessageBox( "Could not load custom PDF font: " + fontxml );	
+	}
 
 	wxPLPdfOutputDevice dc(doc);
-	Render( dc, dc, wxRect( 3, 3, width-6, height-6 ) );
-	
-	/*
-	// example for loading and using an external font in PDF output
-	if ( !doc.AddFont( "Computer Modern", "", "C:/Users/adobos/Projects/wex/fonts/cmunrm.xml" ) )
-		wxMessageBox( "Could not load computer-modern font\n\ncwd: " + wxGetCwd() );
-	
-	if ( !doc.SetFont( "Computer Modern", wxPDF_FONTSTYLE_REGULAR, 12.0 ) )
-		wxMessageBox( "Could not set computer-modern font" );
-
-	wxString text( wxString::Format("Text output with computer modern font!! (pt=%lg asc=%d dsc=%d)", 
-			doc.GetFontSize(), doc.GetFontDescription().GetAscent(), doc.GetFontDescription().GetDescent() ) );
-	wxMessageBox( text );
-
-	doc.Text( 10, 10, text );
-	*/
-	
+	Render( dc, wxPLRealRect( 3, 3, width-6, height-6 ) );
+		
 	Invalidate();
 		
 	const wxMemoryOutputStream &data = doc.CloseAndGetBuffer();
@@ -2547,7 +2358,7 @@ TextLayoutDemo::TextLayoutDemo( wxWindow *parent )
 	SetBackgroundStyle( wxBG_STYLE_CUSTOM );
 }
 
-std::vector<double> TextLayoutDemo::Draw( wxDC &scdc, const wxRect &geom )
+std::vector<double> TextLayoutDemo::Draw( wxDC &scdc, const wxPLRealRect &geom )
 {
 	std::vector<double> vlines;
 	scdc.SetClippingRegion( geom );
@@ -2648,7 +2459,7 @@ void TextLayoutDemo::OnPaint( wxPaintEvent & )
 //	gdc1.GetGraphicsContext()->MSWSetStringFormat( wxGraphicsContext::Format_Normal );
 #endif
 
-	Draw( gdc1, wxRect( 0, 0, width, height/2 ) );
+	Draw( gdc1, wxPLRealRect( 0, 0, width, height/2 ) );
 
 	wxGCDC gdc2(pdc);
 
@@ -2656,13 +2467,13 @@ void TextLayoutDemo::OnPaint( wxPaintEvent & )
 //	gdc2.GetGraphicsContext()->MSWSetStringFormat( wxGraphicsContext::Format_OptimizeForSmallFont );
 #endif
 	
-	Draw( gdc2, wxRect( 0, height/2, width, height/2 ) );
+	Draw( gdc2, wxPLRealRect( 0, height/2, width, height/2 ) );
 	/*
-	std::vector<int> vlines = Draw(pdc, wxRect( 0, 0, width, height/2 ) );
+	std::vector<int> vlines = Draw(pdc, wxPLRealRect( 0, 0, width, height/2 ) );
 
 	
 	wxGCDC gdc2(pdc);
-	Draw( gdc2, wxRect( 0, height/2, width, height/2 ) );
+	Draw( gdc2, wxPLRealRect( 0, height/2, width, height/2 ) );
 
 	pdc.SetPen( *wxGREEN_PEN );
 	pdc.SetBrush( *wxTRANSPARENT_BRUSH );
@@ -2674,7 +2485,7 @@ void TextLayoutDemo::OnPaint( wxPaintEvent & )
 	pdc.SetTextForeground( *wxRED );
 	pdc.DrawText( wxT("Using wxAutoBufferedPaintDC"), width/3, 10 );
 	pdc.DrawText( wxT("green lines for showing text extent issues (compare top & bottom)"), width/3, 10+pdc.GetCharHeight() );
-	pdc.DrawText( wxT("Corrected using wxGCDC. Modified wxWidgets:graphics.cpp"), width/3, height/2+10 );
+	pdc.DrawText( wxT("CowxPLRealRected using wxGCDC. Modified wxWidgets:graphics.cpp"), width/3, height/2+10 );
 	pdc.DrawText( wxT("This time using StringFormat::GenericTypographic()"), width/3, height/2+10+pdc.GetCharHeight() );
 	*/
 }

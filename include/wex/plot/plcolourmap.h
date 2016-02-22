@@ -34,8 +34,8 @@ public:
 	virtual wxColour ColourForValue(double val);
 	
 	// side widget renderer
-	virtual wxSize CalculateBestSize();
-	virtual void Render( wxPLOutputDevice &dc, const wxRect& geom);
+	virtual wxRealPoint CalculateBestSize();
+	virtual void Render( wxPLOutputDevice &dc, const wxPLRealRect& geom);
 	
 protected:
 	wxString m_format;

@@ -70,7 +70,7 @@ void wxPLColourMap::ExtendScaleToNiceNumbers()
 	wxPLAxis::ExtendBoundsToNiceNumber(&m_max, &m_min);
 }
 
-wxSize wxPLColourMap::CalculateBestSize()
+wxRealPoint wxPLColourMap::CalculateBestSize()
 {
 	wxBitmap bit(100, 100);
 	wxMemoryDC dc(bit);
@@ -86,10 +86,10 @@ wxSize wxPLColourMap::CalculateBestSize()
 			maxWidth = temp;
 	}
 
-	return wxSize( 17+maxWidth, 300 );
+	return wxRealPoint( 17+maxWidth, 300 );
 }
 
-void wxPLColourMap::Render( wxPLOutputDevice &dc, const wxRect &geom)
+void wxPLColourMap::Render( wxPLOutputDevice &dc, const wxPLRealRect &geom)
 {
 	double colourBarHeight = 240;
 	if (geom.height < 240)

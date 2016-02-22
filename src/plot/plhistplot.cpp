@@ -141,7 +141,7 @@ void wxPLHistogramPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map
 		wxRealPoint zero = map.ToDevice(wxRealPoint(0.0,0.0));
 		for (size_t i=0; i<m_histData.size(); i++)
 		{
-			wxRect barRect;
+			wxPLRealRect barRect;
 			double nextXLoc =int((double)(i+1) * usableLength / (double)m_numberOfBins + 0.5); // .5 rounds.
 			barRect.x = xMin + xLoc; 
 
@@ -156,7 +156,7 @@ void wxPLHistogramPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map
 	}
 }
 
-void wxPLHistogramPlot::DrawInLegend(wxPLOutputDevice &dc, const wxRect &rct)
+void wxPLHistogramPlot::DrawInLegend(wxPLOutputDevice &dc, const wxPLRealRect &rct)
 {
 	wxColour col( m_fillColour.Red(), m_fillColour.Green(), m_fillColour.Blue(), 128 );
 	dc.Pen( col );

@@ -423,7 +423,9 @@ void fcall_plotopt( lk::invoke_t &cxt )
 
 void fcall_plotout( lk::invoke_t &cxt )
 {
-	LK_DOC( "plotout", "Output the current plot to a file. Valid formats are png, bmp, jpg, xpm, pdf, svg.", "(string:file name):boolean" );
+	LK_DOC( "plotout", "Output the current plot to a file. Valid formats are png, bmp, jpg, xpm, pdf, svg."
+	                   " Options: 'pdffontfile'=xml font description file, 'pdffontsize'=points", 
+		"(string:file name, [table:options]):boolean" );
 	wxPLPlotCtrl *plot = s_curPlot;
 	if (!plot) return;
 	
@@ -431,9 +433,22 @@ void fcall_plotout( lk::invoke_t &cxt )
 	wxFileName fn(file);
 	wxString format( fn.GetExt().Lower() );
 
+	wxString pdffontfile;
+	double pdffontsize=12.0;
+
+	if ( cxt.arg_count() > 1 && cxt.arg(1).type() == lk::vardata_t::HASH )
+	{
+		lk::vardata_t &opt = cxt.arg(1);
+		if ( lk::vardata_t *x = opt.lookup("pdffontfile") )
+			pdffontfile = x->as_string();
+
+		if ( lk::vardata_t *x = opt.lookup("pdffontsize") )
+			pdffontsize = x->as_number();
+	}
+
 	bool ok = false;
 	if ( format == "pdf" ) 
-		ok = plot->ExportPdf( file );
+		ok = plot->ExportPdf( file, pdffontfile, pdffontsize );
 	else if ( format == "svg" )
 		ok = plot->ExportSvg( file );
 	else if ( format == "bmp" )
@@ -558,6 +573,85 @@ void fcall_axis( lk::invoke_t &cxt )
 	if (mod) {
 		plot->Invalidate();
 		plot->Refresh();
+	}
+}
+
+void fcall_csvtext( lk::invoke_t &cxt )
+{
+	LK_DOC( "csvtext", "Convert arrays to CSV text and vice-versa."
+		" For string->array conversion, options are 'numeric'=t/F, '1darray'=t/F (for one line csv data)."
+		" For array->string conversion, options are 'trim'=t/F' (remove last newline).",
+		"( array, [table:options] ):string or ( string, [table:options] ):array" );
+
+	bool as_numbers = false;
+	bool as_1D = false;
+	bool trim_nl = false;
+	
+	if ( cxt.arg_count() > 1 && cxt.arg(1).type() == lk::vardata_t::HASH )
+	{
+		lk::vardata_t &opt = cxt.arg(1);
+		if ( lk::vardata_t *x = opt.lookup( "numeric" ) )
+			as_numbers = x->as_boolean();
+
+		if ( lk::vardata_t *x = opt.lookup( "1darray" ) )
+			as_1D = x->as_boolean();
+		
+		if ( lk::vardata_t *x = opt.lookup( "trim" ) )
+			trim_nl = x->as_boolean();
+	}
+
+	lk::vardata_t &data = cxt.arg(0);
+	lk::vardata_t &R = cxt.result();
+	R.nullify();
+	
+	if ( data.type() == lk::vardata_t::STRING )
+	{
+		wxCSVData csv;
+		csv.ReadString( data.as_string() );
+		
+		R.empty_vector();
+		if ( as_1D && csv.NumRows() == 1 && csv.NumCols() > 0 )
+		{
+			R.vec()->resize( csv.NumCols() );
+			for( size_t i=0;i<csv.NumCols();i++ )
+			{
+				if ( as_numbers ) R.index(i)->assign( wxAtof( csv(0,i) ) );
+				else R.index(i)->assign( csv(0,i) );
+			}
+		}
+		else if ( csv.NumRows() > 0 && csv.NumCols() > 0 )
+		{
+			R.vec()->resize( csv.NumRows() );
+			for( size_t i=0;i<csv.NumRows();i++ )
+			{
+				R.index(i)->empty_vector();
+				R.index(i)->resize( csv.NumCols() );
+				for( size_t j=0;j<csv.NumCols();j++ )
+				{
+					if ( as_numbers ) R.index(i)->index(j)->assign( wxAtof( csv(i,j) ) );
+					else R.index(i)->index(j)->assign( csv(i,j) );
+				}
+			}
+		}
+	}
+	else if ( data.type() == lk::vardata_t::VECTOR )
+	{
+		wxCSVData csv;
+		for( size_t i=0;i<data.length();i++ )
+		{
+			lk::vardata_t &row = *data.index(i);
+			if ( row.type() == lk::vardata_t::VECTOR )
+			{
+				for( size_t j=0;j<row.length();j++ )
+					csv(i,j) = row.index(j)->as_string();
+			}
+			else
+				csv(0,i) = row.as_string();
+		}
+
+		wxString s( csv.WriteString() );
+		if ( trim_nl && s.Last() == '\n' ) s.Truncate( s.Len() - 1 );
+		R.assign( s );
 	}
 }
 
@@ -864,6 +958,7 @@ lk::fcall_t* wxLKMiscFunctions()
 		fcall_jsonparse,
 		fcall_csvread,
 		fcall_csvwrite,
+		fcall_csvtext,
 		0 };
 		
 	return (lk::fcall_t*)vec;

@@ -171,7 +171,7 @@ void wxPLLinePlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 	}
 }
 
-void wxPLLinePlot::DrawInLegend( wxPLOutputDevice &dc, const wxRect &rct)
+void wxPLLinePlot::DrawInLegend( wxPLOutputDevice &dc, const wxPLRealRect &rct)
 {
 	int thick = m_thickness;
 	if ( thick > 2 ) thick = 2; // limit line thickness for legend display

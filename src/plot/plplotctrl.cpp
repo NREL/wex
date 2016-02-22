@@ -18,6 +18,7 @@
 #include <wx/dcsvg.h>
 #include <wx/tipwin.h>
 
+#include "wex/plot/ploutdev.h"
 #include "wex/plot/plhistplot.h"
 #include "wex/plot/plplotctrl.h"
 #include "wex/pdf/pdfdc.h"
@@ -30,139 +31,6 @@
 #include <cmath>
 #define wxIsNaN(a) std::isnan(a)
 #endif
-
-class wxDCOutputDevice : public wxPLOutputDevice
-{
-	wxDC &m_dc;
-	wxPen m_pen;
-	wxBrush m_brush;
-	wxFont m_font0;
-	double m_fontSize;
-	bool m_fontBold;
-#define CAST(x) ((int)x)
-public:
-	wxDCOutputDevice( wxDC &dc ) 
-		: wxPLOutputDevice(), m_dc(dc), 
-			m_pen( *wxBLACK_PEN ), m_brush( *wxBLACK_BRUSH ), 
-			m_font0( m_dc.GetFont() )
-	{
-		m_fontSize = 0;
-		m_fontBold = ( m_font0.GetWeight() == wxFONTWEIGHT_BOLD );
-	}
-
-	wxDC *GetDC() { return &m_dc; }
-	
-	virtual bool Equals( double a, double b ) const {
-		return ((int)a) == ((int)b);
-	}
-
-	virtual void Clip( double x, double y, double width, double height ) { 
-		m_dc.SetClippingRegion( CAST(x), CAST(y), CAST(width), CAST(height) );
-	}
-
-	virtual void Unclip() {
-		m_dc.DestroyClippingRegion();
-	}
-
-	virtual void Brush( const wxColour &c, Style sty ) { 
-		m_brush.SetColour( c );
-		switch( sty )
-		{
-		case NONE: m_brush = *wxTRANSPARENT_BRUSH; break;
-		case HATCH: m_brush.SetStyle(wxCROSSDIAG_HATCH); break;
-		default: m_brush.SetStyle( wxSOLID ); break;
-		}
-
-		m_dc.SetBrush( m_brush );
-	}
-
-	virtual void Pen( const wxColour &c, double size, 
-		Style line = SOLID, Style join = MITER, Style cap = BUTT ) {
-
-		m_pen.SetColour( c );
-		m_pen.SetWidth( size < 1.0 ? 1 : CAST(size) );
-		switch( line )
-		{
-		case NONE: m_pen = *wxTRANSPARENT_PEN; break; // if transparent skip everything else
-		case DOT: m_pen.SetStyle( wxDOT ); break;
-		case DASH: m_pen.SetStyle( wxSHORT_DASH ); break;
-		case DOTDASH: m_pen.SetStyle( wxDOT_DASH ); break;
-		default: m_pen.SetStyle( wxSOLID ); break;
-		}
-		switch( join )
-		{
-		case MITER: m_pen.SetJoin( wxJOIN_MITER ); break;
-		case BEVEL: m_pen.SetJoin( wxJOIN_BEVEL ); break;
-		default: m_pen.SetJoin( wxJOIN_ROUND ); break;
-		}
-		switch( cap )
-		{
-		case ROUND: m_pen.SetCap( wxCAP_ROUND ); break;
-		case MITER: m_pen.SetCap( wxCAP_PROJECTING ); break;
-		default: m_pen.SetCap( wxCAP_BUTT );
-		}
-		m_dc.SetPen( m_pen );
-	}
-
-	virtual void Point( double x, double y ) {
-		m_dc.DrawPoint( CAST(x), CAST(y) );
-	}
-
-	virtual void Line( double x1, double y1, double x2, double y2 ) {
-		m_dc.DrawLine( CAST(x1), CAST(y1), CAST(x2), CAST(y2) );
-	}
-
-	virtual void Lines( size_t n, const wxRealPoint *pts ) {
-		if ( n == 0 ) return;
-		std::vector<wxPoint> ipt( n, wxPoint(0,0) );
-		for( size_t i=0;i<n;i++ )
-			ipt[i] = wxPoint( CAST(pts[i].x), CAST(pts[i].y) );
-
-		m_dc.DrawLines( n, &ipt[0] );
-	}
-
-	virtual void Polygon( size_t n, const wxRealPoint *pts, Style sty ) {
-		if ( n == 0 ) return;
-		std::vector<wxPoint> ipt( n, wxPoint(0,0) );
-		for( size_t i=0;i<n;i++ )
-			ipt[i] = wxPoint( CAST(pts[i].x), CAST(pts[i].y) );
-
-		m_dc.DrawPolygon( n, &ipt[0], 0, 0, sty==ODDEVEN ?  wxODDEVEN_RULE : wxWINDING_RULE );
-	}
-	virtual void Rect( double x, double y, double width, double height ) {
-		m_dc.DrawRectangle( CAST(x), CAST(y), CAST(width), CAST(height) );
-	}
-	virtual void Circle( double x, double y, double radius ) {
-		m_dc.DrawCircle( CAST(x), CAST(y), CAST(radius) );
-	}
-	
-	virtual void Font( double relpt = 0, bool bold = false ) {
-		wxFont font( m_font0 );
-		if ( relpt != 0 ) font.SetPointSize( font.GetPointSize() + CAST(relpt) );
-		font.SetWeight( bold ? wxFONTWEIGHT_BOLD : wxFONTWEIGHT_NORMAL );
-		m_dc.SetFont( font );
-		m_fontSize = relpt;
-		m_fontBold = bold;
-	}
-	
-	virtual void Font( double *rel, bool *bld ) const {
-		if ( rel ) *rel = m_fontSize;
-		if ( bld ) *bld = m_fontBold;
-	}
-
-	virtual void Text( const wxString &text, double x, double y, double angle=0 ) {
-		if ( angle != 0 ) m_dc.DrawRotatedText( text, CAST(x), CAST(y), angle );
-		else m_dc.DrawText( text, CAST(x), CAST(y) );
-	}
-	virtual void Measure( const wxString &text, double *width, double *height ) {
-		wxSize sz( m_dc.GetTextExtent( text ) );
-		if ( width )  *width = (double)sz.x;
-		if ( height ) *height = (double)sz.y;
-	}
-	virtual double CharHeight() {
-		return (double)m_dc.GetCharHeight();
-	}
-};
 
 DEFINE_EVENT_TYPE( wxEVT_PLOT_LEGEND )
 DEFINE_EVENT_TYPE( wxEVT_PLOT_HIGHLIGHT )
@@ -413,7 +281,7 @@ wxBitmap wxPLPlotCtrl::GetBitmap( int width, int height )
 			wxBitmap bittemp( 10, 10 );
 			wxMemoryDC dctemp( bittemp );
 			dctemp.SetFont( GetFont() );
-			wxDCOutputDevice odev(dctemp);
+			wxPLDCOutputDevice odev( &dctemp );
 			CalcLegendTextLayout( odev );
 			m_legendInvalidated = true; // keep legend invalidated for subsequent render
 
@@ -470,13 +338,13 @@ bool wxPLPlotCtrl::Export( const wxString &file, int width, int height )
 	}
 }
 
-bool wxPLPlotCtrl::ExportPdf( const wxString &file )
+bool wxPLPlotCtrl::ExportPdf( const wxString &file, const wxString &fontxml, double points )
 {
 	int width, height;
 	GetClientSize( &width, &height );
 	wxClientDC dc(this);
 	double ppi = dc.GetPPI().x;
-	return RenderPdf( file, width*72.0/ppi, height*72.0/ppi );
+	return RenderPdf( file, width*72.0/ppi, height*72.0/ppi, fontxml, points );
 }
 
 bool wxPLPlotCtrl::ExportSvg( const wxString &file )
@@ -528,10 +396,15 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 
 	wxDC &aadc = gdc.m_ptr ? *gdc.m_ptr : dc;
 
-	wxDCOutputDevice odev1(dc);
-	wxDCOutputDevice odev2(aadc);
+	wxPLDCOutputDevice odev( &dc, &aadc );
 
-	wxPLPlot::Render( odev1, odev2, geom );
+	wxPLRealRect rr;
+	rr.x = geom.x;
+	rr.y = geom.y;
+	rr.width = geom.width;
+	rr.height = geom.height;
+
+	wxPLPlot::Render( odev, rr );
 }
 
 void wxPLPlotCtrl::OnPaint( wxPaintEvent & )
@@ -611,7 +484,7 @@ void wxPLPlotCtrl::UpdateHighlightRegion()
 	
 	if ( m_highlighting == HIGHLIGHT_SPAN )
 	{
-		for ( std::vector<wxRect>::const_iterator it = m_plotRects.begin();
+		for ( std::vector<wxPLRealRect>::const_iterator it = m_plotRects.begin();
 			it != m_plotRects.end();
 			++it )
 		{
@@ -632,11 +505,11 @@ void wxPLPlotCtrl::UpdateHighlightRegion()
 	else
 	{
 		// rectangular (RECT or ZOOM) highlight on current plot
-		for ( std::vector<wxRect>::const_iterator it = m_plotRects.begin();
+		for ( std::vector<wxPLRealRect>::const_iterator it = m_plotRects.begin();
 			it != m_plotRects.end();
 			++it )
 		{
-			if ( it->Contains( wxPoint(highlight_x, highlight_y) ) )
+			if ( it->Contains( (double)highlight_x, (double)highlight_y ) )
 			{
 				irect = it-m_plotRects.begin();
 
@@ -672,8 +545,10 @@ void wxPLPlotCtrl::OnLeftDClick( wxMouseEvent &evt )
 
 void wxPLPlotCtrl::OnLeftDown( wxMouseEvent &evt )
 {
+	wxPoint pos( evt.GetPosition() );
+
 	if ( m_showLegend 
-		&& m_legendRect.Contains( evt.GetPosition() ) )
+		&& m_legendRect.Contains( (double)pos.x, (double)pos.y ) )
 	{
 		m_moveLegendMode = true;
 		m_moveLegendErase = false;
@@ -682,18 +557,18 @@ void wxPLPlotCtrl::OnLeftDown( wxMouseEvent &evt )
 	}
 	else if ( m_highlighting != HIGHLIGHT_DISABLE )
 	{
-		std::vector<wxRect>::const_iterator it;
+		std::vector<wxPLRealRect>::const_iterator it;
 		for ( it = m_plotRects.begin();
 			it != m_plotRects.end();
 			++it )
-			if ( it->Contains( evt.GetPosition() ) )
+			if ( it->Contains( (double)pos.x, (double)pos.y ) )
 				break;
 
 		if ( it != m_plotRects.end() )
 		{
 			m_highlightMode = true;
 			m_highlightErase = false;
-			m_anchorPoint = evt.GetPosition();
+			m_anchorPoint = pos;
 			CaptureMouse();
 		}
 	}

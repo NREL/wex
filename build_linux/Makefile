@@ -50,6 +50,7 @@ OBJECTS = \
 	dvtimeseriesdataset.o \
 	plaxis.o \
 	plplot.o \
+	ploutdev.o \
 	plbarplot.o \
 	plhistplot.o \
 	pllineplot.o \

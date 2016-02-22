@@ -54,7 +54,7 @@ public:
 
 	// handle pdf,svg,bmp,jpg,png,xpm,tiff
 	bool Export( const wxString &file, int width=-1, int height=-1 );
-	bool ExportPdf( const wxString &file );
+	bool ExportPdf( const wxString &file, const wxString &fontxml=wxEmptyString, double points=12.0 );
 	bool ExportSvg( const wxString &file );
 	wxBitmap GetBitmap( int width=-1, int height=-1 );
 	

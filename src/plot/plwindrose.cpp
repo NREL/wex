@@ -43,7 +43,7 @@ size_t wxPLWindRose::Len() const
 	return m_data.size();
 }
 
-void wxPLWindRose::DrawInLegend( wxPLOutputDevice &dc, const wxRect &rct)
+void wxPLWindRose::DrawInLegend( wxPLOutputDevice &dc, const wxPLRealRect &rct)
 {
 	dc.Pen( m_colour, 1 );
 	wxCoord rad = std::min( rct.width, rct.height );

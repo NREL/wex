@@ -7,6 +7,7 @@
 #include <wx/stream.h>
 
 #include "wex/plot/plaxis.h"
+#include "wex/plot/ploutdev.h"
 
 class wxPLDeviceMapping
 {
@@ -23,43 +24,6 @@ public:
 	virtual bool IsPrimaryYAxis() const = 0; // true if Y_LEFT
 	
 	inline wxRealPoint ToDevice( const wxRealPoint &p ) const { return ToDevice(p.x, p.y); }
-};
-
-class wxPLOutputDevice
-{
-public:
-	virtual ~wxPLOutputDevice() { }
-
-	enum Style { NONE, SOLID, DOT, DASH, DOTDASH, MITER, BEVEL, ROUND, BUTT, HATCH, ODDEVEN, WIND };
-
-	// Pure virtuals, to be implemented
-	virtual bool Equals( double a, double b ) const = 0; // determine if two positions are equal for display purposes at native device resolution
-	virtual void Clip( double x, double y, double width, double height ) = 0;
-	virtual void Unclip() = 0;
-	virtual void Pen( const wxColour &c, double size=1, Style line = SOLID, Style join = MITER, Style cap = BUTT ) = 0;
-	virtual void Brush( const wxColour &c, Style sty = SOLID ) = 0;
-	
-	virtual void Point( double x, double y ) = 0;
-	virtual void Line( double x1, double y1, double x2, double y2 ) = 0;
-	virtual void Lines( size_t n, const wxRealPoint *pts ) = 0;
-	virtual void Polygon( size_t n, const wxRealPoint *pts, Style winding = ODDEVEN ) = 0;
-	virtual void Rect( double x, double y, double width, double height )  = 0;	
-	virtual void Circle( double x, double y, double radius ) = 0;
-	
-	virtual void Font( double relpt = 0, bool bold = false ) = 0;
-	virtual void Font( double *rel, bool *bld ) const = 0;
-	virtual void Text( const wxString &text, double x, double y,  double angle=0 ) = 0;
-	virtual void Measure( const wxString &text, double *width, double *height ) = 0;
-	virtual double CharHeight() = 0;
-
-
-	// API variants
-	virtual void Point( const wxRealPoint &p ) { Point(p.x,p.y); }
-	virtual void Line( const wxRealPoint &p1, const wxRealPoint &p2 ) { Line( p1.x, p1.y, p2.x, p2.y ); }
-	virtual void Rect( const wxRect &r ) { Rect( r.x, r.y, r.width, r.height ); }
-	virtual void Circle( const wxRealPoint &p, int radius ) { Circle(p.x, p.y, radius); }
-	virtual void Text( const wxString &text, const wxRealPoint &p, int angle=0 ) { Text( text, p.x, p.y, angle ); }
-
 };
 
 class wxPLPlottable
@@ -81,7 +45,7 @@ public:
 	virtual wxRealPoint At( size_t i ) const = 0;
 	virtual size_t Len() const = 0;
 	virtual void Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map ) = 0;
-	virtual void DrawInLegend( wxPLOutputDevice &dc, const wxRect &rct ) = 0;
+	virtual void DrawInLegend( wxPLOutputDevice &dc, const wxPLRealRect &rct ) = 0;
 
 	// properties
 
@@ -117,14 +81,14 @@ public:
 	wxPLSideWidgetBase();
 	virtual ~wxPLSideWidgetBase();
 
-	virtual void Render( wxPLOutputDevice &, const wxRect & ) = 0;
-	virtual wxSize CalculateBestSize() = 0;
+	virtual void Render( wxPLOutputDevice &, const wxPLRealRect & ) = 0;
+	virtual wxRealPoint CalculateBestSize() = 0;
 
 	void InvalidateBestSize();
-	wxSize GetBestSize();
+	wxRealPoint GetBestSize();
 
 private:
-	wxSize m_bestSize;
+	wxRealPoint m_bestSize;
 };
 
 class wxPLPlot
@@ -132,7 +96,7 @@ class wxPLPlot
 public:
 	wxPLPlot();
 	virtual ~wxPLPlot();
-
+	
 	enum AxisPos { X_BOTTOM, X_TOP, Y_LEFT, Y_RIGHT };
 	enum PlotPos { PLOT_TOP, PLOT_BOTTOM, NPLOTPOS };
 	enum LegendPos { FLOATING, NORTHWEST, SOUTHWEST, NORTHEAST, SOUTHEAST, NORTH, SOUTH, EAST, WEST, BOTTOM, RIGHT  };
@@ -198,10 +162,11 @@ public:
 	void DeleteAxes();
 
 	void Invalidate(); // erases all cached positions and layouts, but does not issue refresh
-	void Render( wxPLOutputDevice &dc, wxPLOutputDevice &aadc, wxRect geom ); // note: does not draw the background.  DC should be cleared with desired bg color already
+	void Render( wxPLOutputDevice &dc, wxPLRealRect geom ); // note: does not draw the background.  DC should be cleared with desired bg color already
 
 	
-	bool RenderPdf( const wxString &file, double width, double height );
+	bool RenderPdf( const wxString &file, double width, double height,
+		const wxString &fontxml = wxEmptyString, double points=12.0 );
 
 	class text_layout;
 	class axis_layout;
@@ -209,7 +174,7 @@ protected:
 
 	void DrawGrid( wxPLOutputDevice &dc, wxPLAxis::TickData::TickSize size );
 	void DrawPolarGrid(wxPLOutputDevice &dc, wxPLAxis::TickData::TickSize size);
-	void DrawLegend(wxPLOutputDevice &gdc, wxPLOutputDevice &odev, const wxRect &geom);
+	void DrawLegend(wxPLOutputDevice &gdc, const wxPLRealRect &geom);
 
 	void UpdateHighlightRegion();
 	void DrawLegendOutline();
@@ -224,7 +189,7 @@ protected:
 	wxColour m_axisColour;
 	wxColour m_tickTextColour;
 	wxColour m_plotAreaColour;
-	wxRect m_legendRect;
+	wxPLRealRect m_legendRect;
 	LegendPos m_legendPos;
 	wxRealPoint m_legendPosPercent;
 	bool m_reverseLegend;
@@ -233,7 +198,7 @@ protected:
 	wxPoint m_anchorPoint;
 	wxPoint m_currentPoint;
 
-	std::vector< wxRect > m_plotRects;
+	std::vector< wxPLRealRect > m_plotRects;
 	wxPLSideWidgetBase *m_sideWidgets[4];
 
 	struct plot_data
