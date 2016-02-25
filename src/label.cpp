@@ -5,6 +5,7 @@
 #include "wex/label.h"
 
 BEGIN_EVENT_TABLE( wxLabel, wxWindow )
+	EVT_ERASE_BACKGROUND( wxLabel::OnErase )
 	EVT_PAINT( wxLabel::OnPaint )
 	EVT_SIZE( wxLabel::OnResize )
 END_EVENT_TABLE()
@@ -12,8 +13,9 @@ END_EVENT_TABLE()
 wxLabel::wxLabel( wxWindow *parent, int id, const wxString &caption, const wxPoint &pos, const wxSize &size)
 	: wxWindow(parent, id, pos, size )
 {
-	SetBackgroundStyle( wxBG_STYLE_CUSTOM );
+	SetBackgroundStyle( wxBG_STYLE_PAINT );
 
+	InvalidateBestSize();
 	m_colour = *wxBLACK;
 	m_text = caption;
 	m_alignTop = false;
@@ -23,9 +25,9 @@ wxLabel::wxLabel( wxWindow *parent, int id, const wxString &caption, const wxPoi
 	m_wordWrap = false;
 }
 
-wxSize wxLabel::DoGetBestSize()
+wxSize wxLabel::DoGetBestSize() const
 {
-	wxClientDC dc(this);
+	wxClientDC dc(const_cast<wxLabel*>(this));
 	wxFont font( GetFont() );
 	if ( m_bold ) font.SetWeight( wxFONTWEIGHT_BOLD );
 	dc.SetFont( font );
@@ -45,6 +47,7 @@ void wxLabel::AlignRight(bool b)
 
 void wxLabel::SetText(const wxString &txt)
 {
+	InvalidateBestSize();
 	m_text = txt;
 	Refresh();
 }
@@ -74,6 +77,9 @@ void wxLabel::OnPaint(wxPaintEvent &evt)
 	wxAutoBufferedPaintDC pdc(this);
 	PrepareDC(pdc);
 	pdc.SetClippingRegion( this->GetUpdateRegion() );
+
+	pdc.SetBackground( wxBrush( GetBackgroundColour() ) );
+	pdc.Clear();
 	
 	int width, height;
 	GetClientSize( &width, &height );
@@ -82,6 +88,11 @@ void wxLabel::OnPaint(wxPaintEvent &evt)
 		m_alignTop, m_alignRight, m_bold, m_wordWrap, m_relSize );
 
 	pdc.DestroyClippingRegion();
+}
+
+void wxLabel::OnErase( wxEraseEvent &evt )
+{
+	// nothing to do 
 }
 
 void wxLabel::OnResize(wxSizeEvent &evt)

@@ -13,8 +13,8 @@ class wxLabel : public wxWindow
 public:
 	wxLabel( wxWindow *parent, int id, const wxString &caption, 
 		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize );
-
-	virtual wxSize DoGetBestSize();
+	
+	virtual wxSize DoGetBestSize() const;
 
 	void AlignRight( bool b = true );
 	void AlignTop( bool b = true );
@@ -43,6 +43,7 @@ private:
 	wxString m_text;
 	wxColour m_colour;
 	
+	void OnErase(wxEraseEvent &evt);
 	void OnPaint(wxPaintEvent &evt);
 	void OnResize(wxSizeEvent &evt);
 
