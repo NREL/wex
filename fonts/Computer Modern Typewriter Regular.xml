@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <wxpdfdoc-font-metrics type="OpenTypeUnicode">
-  <font-name>CMUTypewriter-Light</font-name>
+  <font-name>Computer Modern Typewriter Regular</font-name>
   <encoding></encoding>
   <description>
     <ascent>775</ascent>
@@ -16,7 +16,7 @@
     <underline-thickness>50</underline-thickness>
   </description>
   <diff></diff>
-  <file name="cmunbtl.z" ctg="cmunbtl.ctg.z" originalsize="167240"/>
+  <file name="Computer Modern Typewriter Regular.z" ctg="Computer Modern Typewriter Regular.ctg.z" originalsize="167240"/>
   <widths subsetting="enabled">
     <char id="0" gn="0" width="525"/>
     <char id="32" gn="1" width="525"/>

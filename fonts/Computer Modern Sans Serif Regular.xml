@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <wxpdfdoc-font-metrics type="OpenTypeUnicode">
-  <font-name>CMUBright-Roman</font-name>
+  <font-name>Computer Modern Sans Serif Regular</font-name>
   <encoding></encoding>
   <description>
     <ascent>800</ascent>
@@ -16,7 +16,7 @@
     <underline-thickness>50</underline-thickness>
   </description>
   <diff></diff>
-  <file name="cmunbmr.z" ctg="cmunbmr.ctg.z" originalsize="232628"/>
+  <file name="Computer Modern Sans Serif Regular.z" ctg="Computer Modern Sans Serif Regular.ctg.z" originalsize="232628"/>
   <widths subsetting="enabled">
     <char id="0" gn="0" width="760"/>
     <char id="32" gn="1" width="333"/>
