@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <wxpdfdoc-font-metrics type="TrueTypeUnicode">
-  <font-name>BitstreamVeraSans-Bold</font-name>
+  <font-name>Bitstream Vera Sans Serif Bold</font-name>
   <encoding></encoding>
   <description>
     <ascent>928</ascent>
@@ -16,7 +16,7 @@
     <underline-thickness>126</underline-thickness>
   </description>
   <diff></diff>
-  <file name="verab.z" ctg="verab.ctg.z" originalsize="58716" />
+  <file name="Bitstream Vera Sans Serif Bold.z" ctg="Bitstream Vera Sans Serif Bold.ctg.z" originalsize="58716" />
   <widths>
     <char id="270" width="600" />
     <char id="32" width="348" />
