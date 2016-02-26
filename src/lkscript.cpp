@@ -320,10 +320,23 @@ void fcall_plotopt( lk::invoke_t &cxt )
 	LK_DOC("plotopt", 
 		"Modifies the current plot properties like title, coarse, fine, legend, legendpos, scale, font, window, pdffontface, pdffontsize, pdffontdir", 
 		"(table:options):boolean");
+	
+	cxt.result().assign( 1.0 );
+	
+	if ( lk::vardata_t *arg = cxt.arg(0).lookup("pdffontface") )
+		if ( !wxPLPlot::SetPdfDefaultFont( arg->as_string(), -1.0 ) )
+			cxt.result().assign( 0.0 );
+
+	if ( lk::vardata_t *arg = cxt.arg(0).lookup("pdffontsize") )
+		if ( !wxPLPlot::SetPdfDefaultFont( wxEmptyString, arg->as_number() ) )
+			cxt.result().assign( 0.0 );
+
+	if ( lk::vardata_t *arg = cxt.arg(0).lookup("pdffontdir") )
+		if ( !wxPLPlot::AddPdfFontDir( arg->as_string() ) )
+			cxt.result().assign( 0.0 );
 
 	wxPLPlotCtrl *plot = s_curPlot;
 	if (!plot) {
-		cxt.result().assign( 0.0 );
 		return;
 	}
 
@@ -414,18 +427,6 @@ void fcall_plotopt( lk::invoke_t &cxt )
 			mod = true;
 		}
 	}
-
-	if ( lk::vardata_t *arg = cxt.arg(0).lookup("pdffontface") )
-		if ( !wxPLPlot::SetPdfDefaultFont( arg->as_string(), -1.0 ) )
-			cxt.result().assign( 0.0 );
-
-	if ( lk::vardata_t *arg = cxt.arg(0).lookup("pdffontsize") )
-		if ( !wxPLPlot::SetPdfDefaultFont( wxEmptyString, arg->as_number() ) )
-			cxt.result().assign( 0.0 );
-
-	if ( lk::vardata_t *arg = cxt.arg(0).lookup("pdffontdir") )
-		if ( !wxPLPlot::AddPdfFontDir( arg->as_string() ) )
-			cxt.result().assign( 0.0 );
 	
 	if (mod)
 	{
