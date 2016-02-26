@@ -1334,7 +1334,7 @@ void wxPLPlot::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visible_
 			}
 		}
 
-		Headers = plot->GetExportableDatasetHeaders(sep);
+		Headers = plot->GetExportableDatasetHeaders(sep, this);
 		data.push_back(plot->GetExportableDataset(worldMin, worldMax, visible_only));
 
 		if (include_x && includeXForPlot[i])

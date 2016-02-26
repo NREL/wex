@@ -226,8 +226,7 @@ void fcall_plot( lk::invoke_t &cxt )
 		double base_x = 0.0; // used for horizontal bar plots
 		int type = LINE;
 		wxColour col = *wxBLUE;
-		wxString xlab = "x";
-		wxString ylab = "y";
+		wxString xlab, ylab;
 		wxString lnsty("solid");
 		wxString marker("none");
 		wxString series = wxEmptyString;
