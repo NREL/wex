@@ -9,6 +9,8 @@
 #include "wex/plot/plaxis.h"
 #include "wex/plot/ploutdev.h"
 
+class wxPLPlot;
+
 class wxPLDeviceMapping
 {
 public:
@@ -50,8 +52,9 @@ public:
 	// properties
 
 	virtual wxString GetLabel() const { return m_label; }
-	virtual wxString GetXDataLabel() const { return m_xLabel; }
-	virtual wxString GetYDataLabel() const { return m_yLabel; }
+	virtual wxString GetXDataLabel( wxPLPlot *plot=0 ) const;
+	virtual wxString GetYDataLabel( wxPLPlot *plot=0 ) const;
+
 	virtual void SetLabel( const wxString &label ) { m_label = label; }
 	virtual void SetXDataLabel( const wxString &label ) { m_xLabel = label; }
 	virtual void SetYDataLabel( const wxString &label ) { m_yLabel = label; }
@@ -71,7 +74,7 @@ public:
 
 	virtual bool GetMinMax(double *pxmin, double *pxmax, double *pymin, double *pymax) const;
 	virtual bool ExtendMinMax(double *pxmin, double *pxmax, double *pymin, double *pymax, bool extendToNice = false) const;
-	virtual std::vector<wxString> GetExportableDatasetHeaders( wxUniChar sep ) const;
+	virtual std::vector<wxString> GetExportableDatasetHeaders( wxUniChar sep, wxPLPlot *plot=0 ) const;
 	virtual std::vector<wxRealPoint> GetExportableDataset(double Xmin, double Xmax, bool visible_only) const;
 };
 
@@ -108,7 +111,7 @@ public:
 	size_t GetPlotCount();
 	wxPLPlottable *GetPlot( size_t i );
 	wxPLPlottable *GetPlotByLabel( const wxString &series );
-	bool GetPlotPosition( wxPLPlottable *p, 
+	bool GetPlotPosition( const wxPLPlottable *p, 
 		AxisPos *xap, AxisPos *yap, PlotPos *ppos );
 
 	wxPLAxis *GetXAxis1() { return m_x1.axis; }
@@ -164,9 +167,12 @@ public:
 	void Invalidate(); // erases all cached positions and layouts, but does not issue refresh
 	void Render( wxPLOutputDevice &dc, wxPLRealRect geom ); // note: does not draw the background.  DC should be cleared with desired bg color already
 
-	
-	bool RenderPdf( const wxString &file, double width, double height,
-		const wxString &fontxml = wxEmptyString, double points=12.0 );
+
+	static bool AddPdfFontDir( const wxString &path );
+	static wxString LocatePdfFontInfoXml( const wxString &face );
+	static wxArrayString ListAvailablePdfFonts();
+	static bool SetPdfDefaultFont( const wxString &face, double points );
+	bool RenderPdf( const wxString &file, double width, double height );
 
 	class text_layout;
 	class axis_layout;

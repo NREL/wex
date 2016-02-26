@@ -57,8 +57,8 @@ public:
 	virtual void Point( const wxRealPoint &p ) { Point(p.x,p.y); }
 	virtual void Line( const wxRealPoint &p1, const wxRealPoint &p2 ) { Line( p1.x, p1.y, p2.x, p2.y ); }
 	virtual void Rect( const wxPLRealRect &r ) { Rect( r.x, r.y, r.width, r.height ); }
-	virtual void Circle( const wxRealPoint &p, int radius ) { Circle(p.x, p.y, radius); }
-	virtual void Text( const wxString &text, const wxRealPoint &p, int angle=0 ) { Text( text, p.x, p.y, angle ); }
+	virtual void Circle( const wxRealPoint &p, double radius ) { Circle(p.x, p.y, radius); }
+	virtual void Text( const wxString &text, const wxRealPoint &p, double angle=0 ) { Text( text, p.x, p.y, angle ); }
 
 };
 

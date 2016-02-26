@@ -9,9 +9,7 @@ public:
 	wxPLWindRose();
 	wxPLWindRose( const std::vector<wxRealPoint> &data,
 		const wxString &label = wxEmptyString,
-		const wxColour &col = *wxBLUE,
-		int size = 1,
-		bool scale = false );
+		const wxColour &col = *wxBLUE );
 
 	virtual ~wxPLWindRose();
 	
@@ -21,7 +19,6 @@ public:
 	virtual void DrawInLegend( wxPLOutputDevice &dc, const wxPLRealRect &rct);
 
 	void SetColour( const wxColour &col ) { m_colour = col; }
-	void SetSize( int radius ) { m_size = radius; }
 	void SetIgnoreAngle(bool ignore=true) { m_ignoreAngles = ignore; }
 
 	virtual wxPLAxis *SuggestXAxis() const;
@@ -29,8 +26,6 @@ public:
 
 protected:
 	wxColour m_colour;
-	int m_size;
-	bool m_scale;
 	bool m_ignoreAngles;
 	std::vector<wxRealPoint> m_data;
 

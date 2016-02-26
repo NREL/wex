@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <wxpdfdoc-font-metrics type="TrueTypeUnicode">
-  <font-name>Bitstream Vera Sans Serif Italic</font-name>
+  <font-name>BitstreamVeraSansSerifRegular</font-name>
   <encoding></encoding>
   <description>
     <ascent>928</ascent>
     <descent>-236</descent>
     <cap-height>928</cap-height>
-    <flags>96</flags>
-    <font-bbox>[-262 -236 1259 928]</font-bbox>
-    <italic-angle>-11</italic-angle>
+    <flags>32</flags>
+    <font-bbox>[-183 -236 1287 928]</font-bbox>
+    <italic-angle>0</italic-angle>
     <stem-v>70</stem-v>
     <missing-width>600</missing-width>
     <x-height>547</x-height>
@@ -16,7 +16,7 @@
     <underline-thickness>70</underline-thickness>
   </description>
   <diff></diff>
-  <file name="Bitstream Vera Sans Serif Italic.z" ctg="Bitstream Vera Sans Serif Italic.ctg.z" originalsize="63684" />
+  <file name="BitstreamVeraSansSerifRegular.z" ctg="BitstreamVeraSansSerifRegular.ctg.z" originalsize="65932" />
   <widths>
     <char id="270" width="600" />
     <char id="32" width="318" />
@@ -122,7 +122,7 @@
     <char id="8224" width="500" />
     <char id="8225" width="500" />
     <char id="710" width="500" />
-    <char id="8240" width="1350" />
+    <char id="8240" width="1342" />
     <char id="352" width="635" />
     <char id="8249" width="400" />
     <char id="338" width="1070" />
@@ -138,7 +138,7 @@
     <char id="8482" width="1000" />
     <char id="353" width="521" />
     <char id="8250" width="400" />
-    <char id="339" width="1028" />
+    <char id="339" width="1023" />
     <char id="382" width="525" />
     <char id="376" width="611" />
     <char id="160" width="636" />
@@ -152,7 +152,7 @@
     <char id="168" width="500" />
     <char id="169" width="1000" />
     <char id="170" width="471" />
-    <char id="171" width="617" />
+    <char id="171" width="612" />
     <char id="172" width="838" />
     <char id="173" width="361" />
     <char id="174" width="1000" />
@@ -168,7 +168,7 @@
     <char id="184" width="500" />
     <char id="185" width="401" />
     <char id="186" width="471" />
-    <char id="187" width="617" />
+    <char id="187" width="612" />
     <char id="188" width="969" />
     <char id="189" width="969" />
     <char id="190" width="969" />
@@ -203,7 +203,7 @@
     <char id="219" width="732" />
     <char id="220" width="732" />
     <char id="221" width="611" />
-    <char id="222" width="608" />
+    <char id="222" width="605" />
     <char id="223" width="630" />
     <char id="224" width="613" />
     <char id="225" width="613" />
@@ -211,7 +211,7 @@
     <char id="227" width="613" />
     <char id="228" width="613" />
     <char id="229" width="613" />
-    <char id="230" width="995" />
+    <char id="230" width="982" />
     <char id="231" width="550" />
     <char id="232" width="615" />
     <char id="233" width="615" />
@@ -252,8 +252,8 @@
     <char id="8710" width="669" />
     <char id="9674" width="494" />
     <char id="8725" width="167" />
-    <char id="64257" width="646" />
-    <char id="64258" width="646" />
+    <char id="64257" width="630" />
+    <char id="64258" width="630" />
     <char id="305" width="278" />
     <char id="728" width="500" />
     <char id="729" width="500" />
@@ -262,7 +262,7 @@
     <char id="731" width="500" />
     <char id="711" width="500" />
     <char id="321" width="562" />
-    <char id="322" width="287" />
+    <char id="322" width="284" />
     <char id="8722" width="838" />
     <char id="286" width="775" />
     <char id="287" width="635" />

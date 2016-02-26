@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <wxpdfdoc-font-metrics type="OpenTypeUnicode">
-  <font-name>Computer Modern Serif Italic</font-name>
+  <font-name>ComputerModernSerifItalic</font-name>
   <encoding></encoding>
   <description>
     <ascent>800</ascent>
@@ -16,7 +16,7 @@
     <underline-thickness>50</underline-thickness>
   </description>
   <diff></diff>
-  <file name="Computer Modern Serif Italic.z" ctg="Computer Modern Serif Italic.ctg.z" originalsize="252972"/>
+  <file name="ComputerModernSerifItalic.z" ctg="ComputerModernSerifItalic.ctg.z" originalsize="252972"/>
   <widths subsetting="enabled">
     <char id="0" gn="0" width="760"/>
     <char id="32" gn="1" width="358"/>

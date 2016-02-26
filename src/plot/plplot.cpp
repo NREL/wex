@@ -5,6 +5,9 @@
 #include <wx/txtstrm.h>
 #include <wx/wfstream.h>
 #include <wx/msgdlg.h>
+#include <wx/filename.h>
+#include <wx/dir.h>
+#include <wx/stdpaths.h>
 
 #include "wex/pdf/pdfdoc.h"
 #include "wex/pdf/pdffont.h"
@@ -105,6 +108,33 @@ public:
 };
 
 
+wxString wxPLPlottable::GetXDataLabel( wxPLPlot *plot ) const
+{
+	if ( !m_xLabel.IsEmpty() ) return m_xLabel;
+	
+	wxPLPlot::AxisPos xap, yap;
+	wxPLPlot::PlotPos ppos;
+	if ( plot && plot->GetPlotPosition( this, &xap, &yap, &ppos ) )
+		if ( wxPLAxis *ax = plot->GetAxis( xap, ppos ) )
+			return ax->GetLabel();
+	
+	return "x";
+}
+
+wxString wxPLPlottable::GetYDataLabel( wxPLPlot *plot ) const
+{
+	if ( !m_yLabel.IsEmpty() ) return m_yLabel;
+	if ( !m_label.IsEmpty() ) return m_label;
+	
+	wxPLPlot::AxisPos xap, yap;
+	wxPLPlot::PlotPos ppos;
+	if ( plot && plot->GetPlotPosition( this, &xap, &yap, &ppos ) )
+		if ( wxPLAxis *ax = plot->GetAxis( yap, ppos ) )
+			return ax->GetLabel();
+	
+	return "y";
+}
+
 wxPLAxis *wxPLPlottable::SuggestXAxis() const 
 {
 	double xmin = 0, xmax = 0, ymin = 0, ymax = 0;
@@ -179,11 +209,11 @@ bool wxPLPlottable::ExtendMinMax(double *pxmin, double *pxmax, double *pymin, do
 	return true;
 }
 
-std::vector<wxString> wxPLPlottable::GetExportableDatasetHeaders( wxUniChar sep ) const
+std::vector<wxString> wxPLPlottable::GetExportableDatasetHeaders( wxUniChar sep, wxPLPlot *plot ) const
 {
 	std::vector<wxString> tt;
-	wxString xLabel = GetXDataLabel();
-	wxString yLabel = GetYDataLabel();
+	wxString xLabel = GetXDataLabel( plot );
+	wxString yLabel = GetYDataLabel( plot );
 			
 	//Remove sep chars that we don't want
 	while (xLabel.Find(sep) != wxNOT_FOUND)
@@ -1124,7 +1154,7 @@ wxPLPlottable *wxPLPlot::GetPlotByLabel( const wxString &series )
 	return 0;
 }
 
-bool wxPLPlot::GetPlotPosition( wxPLPlottable *p, 
+bool wxPLPlot::GetPlotPosition( const wxPLPlottable *p, 
 	AxisPos *xap, AxisPos *yap, PlotPos *ppos )
 {
 	for ( std::vector<plot_data>::iterator it = m_plots.begin();
@@ -1279,7 +1309,7 @@ void wxPLPlot::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visible_
 			includeXForPlot[i] = true;
 
 			//For CDF plots there is no X data label. The closest useful label is the Y label of the companion PDF histogram plot, so we need to store for use by the CDF plot.
-			if(xDataLabel == "") { xDataLabel = m_plots[i].plot->GetYDataLabel(); }
+			if(xDataLabel == "") { xDataLabel = m_plots[i].plot->GetYDataLabel(this); }
 		}
 		else if(histPlot = dynamic_cast<wxPLHistogramPlot*>( m_plots[i - 1].plot ))
 		{
@@ -1287,7 +1317,7 @@ void wxPLPlot::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visible_
 		}
 		else
 		{
-			includeXForPlot[i] = (m_plots[i].plot->GetXDataLabel() != m_plots[i-1].plot->GetXDataLabel());
+			includeXForPlot[i] = (m_plots[i].plot->GetXDataLabel( this ) != m_plots[i-1].plot->GetXDataLabel( this ));
 		}
 
 		if(histPlot = dynamic_cast<wxPLHistogramPlot*>( m_plots[i].plot ))
@@ -2292,25 +2322,109 @@ void wxPLPlot::UpdateAxes( bool recalc_all )
     }
 }
 
-bool wxPLPlot::RenderPdf( const wxString &file, double width, double height,
-	const wxString &fontxml, double points )
-{
-	wxPdfDocument doc( wxPORTRAIT, "pt", wxPAPER_A5 );	
-	doc.AddPage( wxPORTRAIT, width, height );
-	doc.SetFont( "Helvetica", wxPDF_FONTSTYLE_REGULAR, 12.0 );
-	Invalidate();	
+static wxPathList s_pdfFontDirs;
 
-	if ( !fontxml.IsEmpty() )
+bool wxPLPlot::AddPdfFontDir( const wxString &path )
+{
+	wxFileName fn(path);
+	fn.Normalize();
+	wxString folder( fn.GetFullPath() );
+	if (s_pdfFontDirs.Index( folder ) == wxNOT_FOUND )
 	{
-		wxString name = wxFileName( fontxml ).GetName();
-		if ( doc.AddFont( name, wxEmptyString, fontxml ) )
+		if ( wxDirExists( folder ) )
 		{
-			if ( !doc.SetFont( name, wxPDF_FONTSTYLE_REGULAR, points ) )
-				wxMessageBox( "Could not set custom PDF font: " + name );
+			s_pdfFontDirs.Add( folder );
+			return true;
+		}
+	}
+
+	return false;
+}
+
+wxString wxPLPlot::LocatePdfFontInfoXml( const wxString &face )
+{
+	return s_pdfFontDirs.FindAbsoluteValidPath( face + ".xml" );
+}
+
+wxArrayString wxPLPlot::ListAvailablePdfFonts()
+{
+	wxArrayString faces;
+	for( size_t i=0;i<s_pdfFontDirs.size();i++ )
+	{
+		wxArrayString files;
+		wxDir::GetAllFiles( s_pdfFontDirs[i], &files, "*.xml", wxDIR_FILES );
+		for( size_t k=0;k<files.size();k++ )
+		{
+			wxFileName file( files[k] );
+			faces.Add( file.GetName() );
+		}
+	}
+	return faces;
+}
+
+static wxString s_pdfDefaultFontFace("Helvetica");
+static double s_pdfDefaultFontPoints = 12.0;
+
+static void EnsureStandardPdfFontPaths()
+{
+	// make sure we have the standard locations for pdf font data
+	wxPLPlot::AddPdfFontDir( wxPathOnly(wxStandardPaths::Get().GetExecutablePath() ) + "/pdffonts" );
+}
+
+static bool IsBuiltinPdfFont( const wxString &face )
+{
+	return face == "Helvetica"
+		|| face == "Courier"
+		|| face == "Times"
+		|| face == "Arial"
+		|| face == "ZapfDingbats"
+		|| face == "Symbol";
+}
+
+bool wxPLPlot::SetPdfDefaultFont( const wxString &face, double points )
+{
+	EnsureStandardPdfFontPaths();
+
+	if ( points > 0 ) s_pdfDefaultFontPoints = points; // negative point size retains current size
+
+	if ( face.IsEmpty() ) return true; // no changes to the face
+
+	if (  !IsBuiltinPdfFont(face) )
+	{
+		wxString xml( LocatePdfFontInfoXml( face ) );
+		if ( !xml.IsEmpty() )
+		{
+			s_pdfDefaultFontFace = face;
+			return true;
 		}
 		else
-			wxMessageBox( "Could not load custom PDF font: " + fontxml );	
+			return false;
 	}
+	else
+	{
+		s_pdfDefaultFontFace = face;
+		return true;
+	}
+}
+
+bool wxPLPlot::RenderPdf( const wxString &file, double width, double height )
+{
+	EnsureStandardPdfFontPaths();
+
+	wxPdfDocument doc( wxPORTRAIT, "pt", wxPAPER_A5 );
+	doc.AddPage( wxPORTRAIT, width, height );
+
+	if ( !IsBuiltinPdfFont( s_pdfDefaultFontFace ) )
+	{
+		wxString xml( LocatePdfFontInfoXml( s_pdfDefaultFontFace ) );
+		if ( !doc.AddFont( s_pdfDefaultFontFace, wxEmptyString, xml ) 
+			|| !doc.SetFont( s_pdfDefaultFontFace, wxPDF_FONTSTYLE_REGULAR, s_pdfDefaultFontPoints ) )
+			doc.SetFont( "Helvetica", wxPDF_FONTSTYLE_REGULAR, s_pdfDefaultFontPoints );
+	}
+	else
+		doc.SetFont( s_pdfDefaultFontFace, wxPDF_FONTSTYLE_REGULAR, s_pdfDefaultFontPoints );
+	
+	Invalidate();
 
 	wxPLPdfOutputDevice dc(doc);
 	Render( dc, wxPLRealRect( 3, 3, width-6, height-6 ) );

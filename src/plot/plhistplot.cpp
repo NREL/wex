@@ -134,7 +134,7 @@ void wxPLHistogramPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map
 		
 		// try alpha blending for nicer plots
 		wxColour col( m_fillColour.Red(), m_fillColour.Green(), m_fillColour.Blue(), 128 );
-		dc.Pen( m_lineColour, 1 );
+		dc.Pen( m_lineColour, 0.5 );
 		dc.Brush( col );
 
 		double xLoc = 0;
@@ -142,7 +142,7 @@ void wxPLHistogramPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map
 		for (size_t i=0; i<m_histData.size(); i++)
 		{
 			wxPLRealRect barRect;
-			double nextXLoc =int((double)(i+1) * usableLength / (double)m_numberOfBins + 0.5); // .5 rounds.
+			double nextXLoc = int((double)(i+1) * usableLength / (double)m_numberOfBins + 0.5); // .5 rounds.
 			barRect.x = xMin + xLoc; 
 
 			barRect.width = nextXLoc - xLoc + 1;
@@ -300,7 +300,7 @@ void wxPLHistogramPlot::RecalculateHistogram()
 		}
 	}
 
-	int order = floor(log10(m_niceMax));
+	double order = floor(log10(m_niceMax));
 	double interval = pow(10.0, order) / 2;
 	m_niceMax += interval - fmod(m_niceMax, interval);
 }

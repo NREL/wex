@@ -14,7 +14,7 @@ public:
 		const wxString &label = wxEmptyString, 
 		const wxColour &col = *wxBLUE,
 		Style sty = SOLID,
-		int thick = 2,
+		double thick = 2.0,
 		Marker mkr = NONE );
 	virtual ~wxPLLinePlot();
 
@@ -28,7 +28,7 @@ public:
 	void SetIgnoreZeros(bool value = true);
 
 	void SetColour( const wxColour &col ) { m_colour = col; }
-	void SetThickness( int thick ) { m_thickness = thick; }
+	void SetThickness( double thick ) { m_thickness = thick; }
 	void SetStyle( Style ss ) { m_style = ss; }
 	void SetMarker( Marker mm ) { m_marker = mm; }
 	void SetData( const std::vector<wxRealPoint> &data ) { m_data = data; }
@@ -36,12 +36,12 @@ public:
 protected:
 	void Init();
 	wxColour m_colour;
-	int m_thickness;
+	double m_thickness;
 	Style m_style;
 	Marker m_marker;
 	std::vector< wxRealPoint > m_data;
 	
-	void DrawMarkers( wxPLOutputDevice &dc, std::vector<wxRealPoint> &points, int size );
+	void DrawMarkers( wxPLOutputDevice &dc, std::vector<wxRealPoint> &points, double size );
 
 private:	
 	bool m_ignoreZeros;

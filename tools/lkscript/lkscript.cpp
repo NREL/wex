@@ -11,7 +11,9 @@
 #include <wx/splitter.h>
 #include <wx/textctrl.h>
 #include <wx/busyinfo.h>
+#include <wx/stdpaths.h>
 
+#include <wex/plot/plplot.h>
 #include <wex/lkscript.h>
 #include <wex/metro.h>
 #include <wex/utils.h>
@@ -29,6 +31,7 @@ public:
 		bool run = args.Index("-run") >= 0 ;
 
 		wxInitAllImageHandlers();
+		wxPLPlot::SetPdfDefaultFont( "Computer Modern Serif Regular", 12.0 );
 		
 		if ( args.size() > 1 )
 		{

@@ -27,7 +27,7 @@ wxPLLinePlot::wxPLLinePlot()
 wxPLLinePlot::wxPLLinePlot( const std::vector< wxRealPoint > &data, 
 						   const wxString &label, const wxColour &col,
 						   Style sty,
-						   int thick,
+						   double thick,
 						   Marker mkr )
 	: wxPLPlottable( label )
 {
@@ -73,13 +73,13 @@ void wxPLLinePlot::SetIgnoreZeros(bool value)
 	m_ignoreZeros = value;
 }
 
-void wxPLLinePlot::DrawMarkers( wxPLOutputDevice &dc, std::vector<wxRealPoint> &points, int size )
+void wxPLLinePlot::DrawMarkers( wxPLOutputDevice &dc, std::vector<wxRealPoint> &points, double size )
 {
 	if ( m_marker == NONE ) return;
 
 	std::vector<wxRealPoint> mkr(6, wxRealPoint() );
 		
-	int radius = (size<=3) ? 3 : 4;
+	double radius = (size<=3) ? 3 : 4;
 
 	for( size_t i=0;i<points.size();i++ )
 	{
@@ -173,8 +173,8 @@ void wxPLLinePlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 
 void wxPLLinePlot::DrawInLegend( wxPLOutputDevice &dc, const wxPLRealRect &rct)
 {
-	int thick = m_thickness;
-	if ( thick > 2 ) thick = 2; // limit line thickness for legend display
+	double thick = m_thickness;
+	if ( thick > 3 ) thick = 3; // limit line thickness for legend display
 	
 	LINE_PEN;
 	dc.Line( rct.x, rct.y+rct.height/2, rct.x+rct.width, rct.y+rct.height/2 );

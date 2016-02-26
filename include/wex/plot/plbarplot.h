@@ -19,7 +19,7 @@ public:
 	virtual size_t Len() const;
 	
 	void SetColour( const wxColour &col ) { m_colour = col; }
-	void SetThickness( int thick = wxPL_BAR_AUTOSIZE ) { m_thickness = thick; }
+	void SetThickness( double thick = wxPL_BAR_AUTOSIZE ) { m_thickness = thick; }
 	void SetData( const std::vector<wxRealPoint> &data ) { m_data = data; }
 
 	virtual void DrawInLegend( wxPLOutputDevice &dc, const wxPLRealRect &rct);
@@ -28,7 +28,7 @@ protected:
 	
 	void Init();
 	wxColour m_colour;
-	int m_thickness;
+	double m_thickness;
 	std::vector< wxRealPoint > m_data;
 
 };
@@ -53,7 +53,7 @@ protected:
 
 	double CalcYPos(double x) const;
 	double CalcXPos(double x, const wxPLDeviceMapping &map, int dispwidth);
-	int CalcDispBarWidth( const wxPLDeviceMapping &map );
+	double CalcDispBarWidth( const wxPLDeviceMapping &map );
 	
 	wxPLBarPlot *m_stackedOn;
 	std::vector<wxPLBarPlot*> m_group;
@@ -74,7 +74,7 @@ public:
 	virtual wxPLAxis *SuggestXAxis() const;
 protected:
 	double CalcXPos(double y) const;
-	int CalcDispBarWidth( const wxPLDeviceMapping &map );
+	double CalcDispBarWidth( const wxPLDeviceMapping &map );
 
 	wxPLHBarPlot *m_stackedOn;
 	double m_baselineX;

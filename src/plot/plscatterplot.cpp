@@ -18,7 +18,7 @@ wxPLScatterPlot::wxPLScatterPlot()
 wxPLScatterPlot::wxPLScatterPlot( const std::vector<wxRealPoint> &data,
 	const wxString &label,
 	const wxColour &col,
-	int size,
+	double size,
 	bool scale )
 	: wxPLPlottable( label )
 {
@@ -93,11 +93,11 @@ void wxPLScatterPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 		if ( p.x >= min.x && p.x <= max.x
 			&& p.y >= min.y && p.y <= max.y )
 		{
-			int rad = m_radius;
+			double rad = m_radius;
 
 			if ( has_sizes )
 			{
-				rad = (int) m_sizes[i];
+				rad = m_sizes[i];
 				if ( rad < 1 ) rad = 1;
 			}
 			

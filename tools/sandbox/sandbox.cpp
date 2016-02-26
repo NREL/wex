@@ -111,6 +111,15 @@ void TestSnapLayout( wxWindow *parent )
 
 void TestPLPlot( wxWindow *parent )
 {
+	wxString wexdir;
+	if ( wxGetEnv("WEXDIR", &wexdir) )
+	{
+		if (!wxPLPlot::AddPdfFontDir( wexdir + "/pdffonts" ))
+			wxMessageBox("Could not add font dir: " + wexdir + "/pdffonts" );
+		if (!wxPLPlot::SetPdfDefaultFont( "ComputerModernSerifItalic", 12.0 ) )
+			wxMessageBox("Could not set default pdf font to Computer Modern Sans Serif Regular" );
+	}
+
 	wxFrame *frame = new wxFrame( parent, wxID_ANY, wxT("wxPLPlotCtrl in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(850,500) );
 #ifdef __WXMSW__
 	frame->SetIcon( wxICON( appicon ) );
@@ -304,7 +313,7 @@ void TestWindRose(wxWindow *parent)
 	}
 
 
-	wxPLWindRose* wr = new wxPLWindRose(data, "Test data", *wxBLUE, 2);
+	wxPLWindRose* wr = new wxPLWindRose(data, "Test data", *wxBLUE);
 	wr->SetIgnoreAngle(false);
 	plot->AddPlot(wr); // adding a wxPLWindRose plot will automatically set the x-axis to a wxPLPolarAngularAxis
 

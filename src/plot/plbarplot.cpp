@@ -1,7 +1,8 @@
 
+#include <algorithm>
+#include <math.h>
 #include <wx/dc.h>
 #include "wex/plot/plbarplot.h"
-#include <algorithm>
 
 
 wxPLBarPlotBase::wxPLBarPlotBase()
@@ -122,7 +123,7 @@ double wxPLBarPlot::CalcXPos(double x, const wxPLDeviceMapping &map, int dispwid
 	{
 		idx = iit-m_group.begin();
 
-		std::vector<size_t> barwidths;
+		std::vector<double> barwidths;
 		for (g=0;g<m_group.size();g++)
 			barwidths.push_back( m_group[g]->CalcDispBarWidth(map) );
 
@@ -140,9 +141,9 @@ double wxPLBarPlot::CalcXPos(double x, const wxPLDeviceMapping &map, int dispwid
 	return x_start;
 }
 
-int wxPLBarPlot::CalcDispBarWidth( const wxPLDeviceMapping &map )
+double wxPLBarPlot::CalcDispBarWidth( const wxPLDeviceMapping &map )
 {
-	if ( m_thickness <= 1 )
+	if ( m_thickness <= 0 )
 	{
 		wxRealPoint pos, size;
 		map.GetDeviceExtents( &pos, &size );
@@ -159,7 +160,7 @@ int wxPLBarPlot::CalcDispBarWidth( const wxPLDeviceMapping &map )
 
 		if ( m_group.size() > 0 ) bars_in_view *= m_group.size();
 
-		return (int)( ((double)size.x) / ((double)( bars_in_view + 4 )) );
+		return ( ((double)size.x) / ((double)( bars_in_view + 4 )) );
 	}
 	else return m_thickness;
 }
@@ -168,7 +169,7 @@ void wxPLBarPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 {
 	if ( Len() == 0 ) return;
 
-	int dispbar_w = CalcDispBarWidth( map );
+	double dispbar_w = CalcDispBarWidth( map );
 	
 	dc.Pen( m_colour );
 	dc.Brush( m_colour );
@@ -176,7 +177,7 @@ void wxPLBarPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 	for (size_t i=0; i<Len(); i++)
 	{
 		wxRealPoint pt = At(i);
-		int pbottom=0, ptop=0;
+		double pbottom=0, ptop=0;
 		double y_start=0;
 		double x_start = CalcXPos( pt.x, map, dispbar_w );
 
@@ -186,7 +187,7 @@ void wxPLBarPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 			x_start = m_stackedOn->CalcXPos( pt.x, map, dispbar_w);
 		}
 
-		wxRect prct;
+		wxPLRealRect prct;
 		prct.x = x_start - dispbar_w/2;
 		prct.width = dispbar_w;
 
@@ -194,7 +195,7 @@ void wxPLBarPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 		ptop = map.ToDevice( 0, pt.y + y_start ).y;
 
 		prct.y = pbottom < ptop ? pbottom : ptop;
-		prct.height = abs( pbottom-ptop );
+		prct.height = fabs( pbottom-ptop );
 
 		dc.Rect(prct.x, prct.y, prct.width, prct.height);
 	}
@@ -222,19 +223,19 @@ void wxPLHBarPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 {
 	if( Len() == 0 ) return;
 
-	int bar_width = CalcDispBarWidth( map );
+	double bar_width = CalcDispBarWidth( map );
 	dc.Pen( m_colour );
 	dc.Brush( m_colour );
 	for (size_t i=0; i<Len(); i++)
 	{
 		wxRealPoint pt(  At(i) );
-		int pleft=0, pright=0;
+		double pleft=0, pright=0;
 		double x_start=m_baselineX;
 			
 		if ( m_stackedOn != NULL && m_stackedOn != this )
 			x_start = m_stackedOn->CalcXPos( pt.y );	
 
-		wxRect prct;
+		wxPLRealRect prct;
 
 		pleft = map.ToDevice( x_start, 0 ).x;
 		pright = map.ToDevice( pt.x, 0 ).x;
@@ -252,7 +253,7 @@ void wxPLHBarPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 						
 		prct.y = map.ToDevice( 0, pt.y ).y - bar_width/2;
 		prct.height = bar_width;
-		prct.width = abs(pleft - pright);
+		prct.width = fabs(pleft - pright);
 		if ( prct.width > 0 && prct.height > 0 )
 			dc.Rect(prct.x, prct.y, prct.width, prct.height);
 	}
@@ -291,9 +292,9 @@ double wxPLHBarPlot::CalcXPos(double y) const
 
 }
 
-int wxPLHBarPlot::CalcDispBarWidth( const wxPLDeviceMapping &map )
+double wxPLHBarPlot::CalcDispBarWidth( const wxPLDeviceMapping &map )
 {
-	if ( m_thickness <= 1 )
+	if ( m_thickness <= 0.0 )
 	{
 		wxRealPoint pos, size;
 		map.GetDeviceExtents( &pos, &size );
@@ -309,7 +310,7 @@ int wxPLHBarPlot::CalcDispBarWidth( const wxPLDeviceMapping &map )
 		}
 
 
-		return (int)( ((double)size.y) / ((double)( bars_in_view + 4 )) );
+		return ( ((double)size.y) / ((double)( bars_in_view + 4 )) );
 	}
 	else return m_thickness;
 }

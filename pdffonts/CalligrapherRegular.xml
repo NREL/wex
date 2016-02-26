@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <wxpdfdoc-font-metrics type="TrueType">
-  <font-name>Calligrapher Regular</font-name>
+  <font-name>CalligrapherRegular</font-name>
   <encoding></encoding>
   <description>
     <ascent>899</ascent>
@@ -16,7 +16,7 @@
     <underline-thickness>20</underline-thickness>
   </description>
   <diff></diff>
-  <file name="Calligrapher Regular.z" originalsize="40120"/>
+  <file name="CalligrapherRegular.z" originalsize="40120"/>
   <widths subsetting="enabled">
     <char id="0" gn="0" width="800"/>
     <char id="1" gn="0" width="800"/>

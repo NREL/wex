@@ -338,13 +338,13 @@ bool wxPLPlotCtrl::Export( const wxString &file, int width, int height )
 	}
 }
 
-bool wxPLPlotCtrl::ExportPdf( const wxString &file, const wxString &fontxml, double points )
+bool wxPLPlotCtrl::ExportPdf( const wxString &file )
 {
 	int width, height;
 	GetClientSize( &width, &height );
 	wxClientDC dc(this);
 	double ppi = dc.GetPPI().x;
-	return RenderPdf( file, width*72.0/ppi, height*72.0/ppi, fontxml, points );
+	return RenderPdf( file, width*72.0/ppi, height*72.0/ppi );
 }
 
 bool wxPLPlotCtrl::ExportSvg( const wxString &file )

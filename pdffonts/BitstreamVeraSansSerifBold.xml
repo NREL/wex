@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <wxpdfdoc-font-metrics type="TrueTypeUnicode">
-  <font-name>Bitstream Vera Sans Serif Bold Italic</font-name>
+  <font-name>BitstreamVeraSansSerifBold</font-name>
   <encoding></encoding>
   <description>
     <ascent>928</ascent>
     <descent>-236</descent>
     <cap-height>928</cap-height>
-    <flags>96</flags>
-    <font-bbox>[-278 -236 1401 928]</font-bbox>
-    <italic-angle>-11</italic-angle>
+    <flags>32</flags>
+    <font-bbox>[-199 -236 1417 928]</font-bbox>
+    <italic-angle>0</italic-angle>
     <stem-v>120</stem-v>
     <missing-width>600</missing-width>
     <x-height>547</x-height>
@@ -16,13 +16,13 @@
     <underline-thickness>126</underline-thickness>
   </description>
   <diff></diff>
-  <file name="Bitstream Vera Sans Serif Bold Italic.z" ctg="Bitstream Vera Sans Serif Bold Italic.ctg.z" originalsize="63208" />
+  <file name="BitstreamVeraSansSerifBold.z" ctg="BitstreamVeraSansSerifBold.ctg.z" originalsize="58716" />
   <widths>
     <char id="270" width="600" />
     <char id="32" width="348" />
     <char id="33" width="456" />
     <char id="34" width="521" />
-    <char id="35" width="696" />
+    <char id="35" width="838" />
     <char id="36" width="696" />
     <char id="37" width="1002" />
     <char id="38" width="872" />
@@ -117,20 +117,20 @@
     <char id="8364" width="696" />
     <char id="8218" width="380" />
     <char id="402" width="696" />
-    <char id="8222" width="644" />
+    <char id="8222" width="657" />
     <char id="8230" width="1000" />
     <char id="8224" width="500" />
     <char id="8225" width="500" />
     <char id="710" width="500" />
-    <char id="8240" width="1454" />
+    <char id="8240" width="1440" />
     <char id="352" width="720" />
     <char id="8249" width="412" />
     <char id="338" width="1167" />
     <char id="381" width="725" />
     <char id="8216" width="380" />
     <char id="8217" width="380" />
-    <char id="8220" width="644" />
-    <char id="8221" width="644" />
+    <char id="8220" width="657" />
+    <char id="8221" width="657" />
     <char id="8226" width="639" />
     <char id="8211" width="500" />
     <char id="8212" width="1000" />
@@ -152,7 +152,7 @@
     <char id="168" width="500" />
     <char id="169" width="1000" />
     <char id="170" width="564" />
-    <char id="171" width="650" />
+    <char id="171" width="646" />
     <char id="172" width="838" />
     <char id="173" width="415" />
     <char id="174" width="1000" />
@@ -168,10 +168,10 @@
     <char id="184" width="500" />
     <char id="185" width="438" />
     <char id="186" width="564" />
-    <char id="187" width="650" />
-    <char id="188" width="1065" />
-    <char id="189" width="1065" />
-    <char id="190" width="1065" />
+    <char id="187" width="646" />
+    <char id="188" width="1035" />
+    <char id="189" width="1035" />
+    <char id="190" width="1035" />
     <char id="191" width="580" />
     <char id="192" width="774" />
     <char id="193" width="774" />
@@ -189,7 +189,7 @@
     <char id="205" width="372" />
     <char id="206" width="372" />
     <char id="207" width="372" />
-    <char id="208" width="845" />
+    <char id="208" width="838" />
     <char id="209" width="837" />
     <char id="210" width="850" />
     <char id="211" width="850" />
@@ -203,7 +203,7 @@
     <char id="219" width="812" />
     <char id="220" width="812" />
     <char id="221" width="724" />
-    <char id="222" width="742" />
+    <char id="222" width="738" />
     <char id="223" width="719" />
     <char id="224" width="675" />
     <char id="225" width="675" />
@@ -252,8 +252,8 @@
     <char id="8710" width="697" />
     <char id="9674" width="494" />
     <char id="8725" width="167" />
-    <char id="64257" width="787" />
-    <char id="64258" width="787" />
+    <char id="64257" width="741" />
+    <char id="64258" width="741" />
     <char id="305" width="343" />
     <char id="728" width="500" />
     <char id="729" width="500" />
@@ -261,8 +261,8 @@
     <char id="733" width="500" />
     <char id="731" width="500" />
     <char id="711" width="500" />
-    <char id="321" width="660" />
-    <char id="322" width="375" />
+    <char id="321" width="642" />
+    <char id="322" width="371" />
     <char id="8722" width="838" />
     <char id="286" width="821" />
     <char id="287" width="716" />

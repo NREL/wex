@@ -276,8 +276,13 @@ wxPdfFontDataTrueType::ConvertCID2GID(const wxString& s,
     wxString t = ConvertToValid(s);
     wxMBConv* conv = GetEncodingConv();
     size_t len = conv->FromWChar(NULL, 0, t.wc_str(), slen);
+	if ( len == wxCONV_FAILED )
+		return s;
+	
     char* mbstr = new char[len+3];
     len = conv->FromWChar(mbstr, len+3, t.wc_str(), slen);
+	if ( len == wxCONV_FAILED )
+		return s;
 #else
     size_t len = s.Length();;
     char* mbstr = new char[len+1];

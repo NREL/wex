@@ -6,23 +6,16 @@
 wxPLWindRose::wxPLWindRose()
 {
 	m_colour = *wxBLUE;
-	m_size = 1;
-	m_scale = false;
-	m_antiAliasing = false;
+	m_ignoreAngles = true;
 }
 
 wxPLWindRose::wxPLWindRose( const std::vector<wxRealPoint> &data,
 	const wxString &label,
-	const wxColour &col,
-	int size,
-	bool scale )
+	const wxColour &col )
 	: wxPLPlottable( label )
 {
 	m_data = data;
 	m_colour = col;
-	m_size = size;
-	m_scale = scale;
-	m_antiAliasing = false;
 	m_ignoreAngles = true;
 }
 

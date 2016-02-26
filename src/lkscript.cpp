@@ -37,7 +37,7 @@
 #include "wex/plot/plwindrose.h"
 
 enum { BAR, HBAR, LINE, SCATTER, WINDROSE };
-static void CreatePlot( wxPLPlotCtrl *plot, double *x, double *y, int len, int thick, wxColour &col, int type,
+static void CreatePlot( wxPLPlotCtrl *plot, double *x, double *y, int len, double thick, wxColour &col, int type,
 	const wxString &xlab, const wxString &ylab, const wxString &series,
 	int xap, int yap, double base_x, const wxString &stackon, const wxString &lnsty, const wxString &marker )
 {
@@ -91,7 +91,7 @@ static void CreatePlot( wxPLPlotCtrl *plot, double *x, double *y, int len, int t
 		p = new wxPLScatterPlot( data, series, col, thick, false );
 		break;
 	case WINDROSE:
-		p = new wxPLWindRose(data, series, col, thick, false);
+		p = new wxPLWindRose(data, series, col);
 		break;
 	}
 
@@ -222,7 +222,7 @@ void fcall_plot( lk::invoke_t &cxt )
 		&& a0.length() == a1.length()
 		&& a0.length() > 0 )
 	{
-		int thick = 1;
+		double thick = 1;
 		double base_x = 0.0; // used for horizontal bar plots
 		int type = LINE;
 		wxColour col = *wxBLUE;
@@ -239,10 +239,7 @@ void fcall_plot( lk::invoke_t &cxt )
 		{
 			lk::vardata_t &t = cxt.arg(2).deref();
 			if ( lk::vardata_t *arg = t.lookup("thick") )
-			{
-				thick = arg->as_integer();
-				if (thick < 1) thick = 1;
-			}
+				thick = arg->as_number();
 
 			if ( lk::vardata_t *arg = t.lookup("type") )
 			{
@@ -255,14 +252,10 @@ void fcall_plot( lk::invoke_t &cxt )
 			}
 
 			if ( lk::vardata_t *arg = t.lookup("baseline") )
-			{
 				base_x = arg->as_number();
-			}
 
 			if ( lk::vardata_t *arg = t.lookup("stackon") )
-			{
 				stackon = arg->as_string();
-			}
 			
 			if (lk::vardata_t *arg = t.lookup("color") )
 			{
@@ -324,9 +317,17 @@ void fcall_plot( lk::invoke_t &cxt )
 
 void fcall_plotopt( lk::invoke_t &cxt )
 {
-	LK_DOC("plotopt", "Modifies the current plot properties like title, coarse, fine, legend, legendpos, scale, font, window", "(table:options):void");
+	LK_DOC("plotopt", 
+		"Modifies the current plot properties like title, coarse, fine, legend, legendpos, scale, font, window, pdffontface, pdffontsize, pdffontdir", 
+		"(table:options):boolean");
+
 	wxPLPlotCtrl *plot = s_curPlot;
-	if (!plot) return;
+	if (!plot) {
+		cxt.result().assign( 0.0 );
+		return;
+	}
+
+	cxt.result().assign( 1.0 ); // by default return true
 
 	bool mod = false;
 	if ( lk::vardata_t *arg = cxt.arg(0).lookup("title") )
@@ -413,6 +414,18 @@ void fcall_plotopt( lk::invoke_t &cxt )
 			mod = true;
 		}
 	}
+
+	if ( lk::vardata_t *arg = cxt.arg(0).lookup("pdffontface") )
+		if ( !wxPLPlot::SetPdfDefaultFont( arg->as_string(), -1.0 ) )
+			cxt.result().assign( 0.0 );
+
+	if ( lk::vardata_t *arg = cxt.arg(0).lookup("pdffontsize") )
+		if ( !wxPLPlot::SetPdfDefaultFont( wxEmptyString, arg->as_number() ) )
+			cxt.result().assign( 0.0 );
+
+	if ( lk::vardata_t *arg = cxt.arg(0).lookup("pdffontdir") )
+		if ( !wxPLPlot::AddPdfFontDir( arg->as_string() ) )
+			cxt.result().assign( 0.0 );
 	
 	if (mod)
 	{
@@ -423,32 +436,17 @@ void fcall_plotopt( lk::invoke_t &cxt )
 
 void fcall_plotout( lk::invoke_t &cxt )
 {
-	LK_DOC( "plotout", "Output the current plot to a file. Valid formats are png, bmp, jpg, xpm, pdf, svg."
-	                   " Options: 'pdffontfile'=xml font description file, 'pdffontsize'=points", 
-		"(string:file name, [table:options]):boolean" );
+	LK_DOC( "plotout", "Output the current plot to a file. Valid formats are png, bmp, jpg, xpm, pdf, svg.", "(string:file name):boolean" );
 	wxPLPlotCtrl *plot = s_curPlot;
 	if (!plot) return;
 	
 	wxString file( cxt.arg(0).as_string() );
 	wxFileName fn(file);
 	wxString format( fn.GetExt().Lower() );
-
-	wxString pdffontfile;
-	double pdffontsize=12.0;
-
-	if ( cxt.arg_count() > 1 && cxt.arg(1).type() == lk::vardata_t::HASH )
-	{
-		lk::vardata_t &opt = cxt.arg(1);
-		if ( lk::vardata_t *x = opt.lookup("pdffontfile") )
-			pdffontfile = x->as_string();
-
-		if ( lk::vardata_t *x = opt.lookup("pdffontsize") )
-			pdffontsize = x->as_number();
-	}
-
+	
 	bool ok = false;
 	if ( format == "pdf" ) 
-		ok = plot->ExportPdf( file, pdffontfile, pdffontsize );
+		ok = plot->ExportPdf( file );
 	else if ( format == "svg" )
 		ok = plot->ExportSvg( file );
 	else if ( format == "bmp" )
