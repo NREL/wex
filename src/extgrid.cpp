@@ -219,6 +219,15 @@ void wxExtGridCtrl::GetLastSelRange(int *top, int *bottom, int *left, int *right
 	if (right) *right = m_lastSelRightCol;
 }
 
+size_t wxExtGridCtrl::NumCellsSelected() const
+{
+	int nr = abs(m_selBottomRow - m_selTopRow + 1);
+	int nc = abs(m_selRightCol -  m_selLeftCol + 1);
+	if ( nr < 0 ) nr = 0;
+	if ( nc < 0 ) nc = 0;
+	return (size_t)( nr * nc );
+}
+
 void wxExtGridCtrl::OnGridKey(wxKeyEvent &evt)
 {
 	if (m_enableCopyPaste && evt.CmdDown())
@@ -344,7 +353,7 @@ bool wxExtGridCtrl::IsCopyPasteEnabled()
 	return m_enableCopyPaste;
 }
 
-#define BUSY_DELAY_MS 100
+#define BUSY_DELAY_MS 75
 
 void wxExtGridCtrl::Copy( bool all, bool with_headers )
 {
@@ -359,12 +368,14 @@ void wxExtGridCtrl::Copy( bool all, bool with_headers )
 		minrow = 0;
 		maxrow = GetNumberRows()-1;
 	}
-	else if ( mincol == mincol && mincol < 0 )
+	
+	if ( mincol == mincol && mincol < 0 )
 	{
 		mincol = 0;
 		maxcol = GetNumberCols()-1;
 	}
-	else if ( all || m_selTopRow < 0 || m_selLeftCol < 0 )
+	
+	if ( all || m_selTopRow < 0 || m_selLeftCol < 0 )
 	{
 		minrow = 0;
 		maxrow = GetNumberRows()-1;

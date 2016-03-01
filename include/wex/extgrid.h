@@ -32,6 +32,7 @@ public:
 	void GetSelRange(int *top, int *bottom, int *left, int *right);
 	void GetLastSelRange(int *top, int *bottom, int *left, int *right);
 	void ResetLastSelRange();
+	size_t NumCellsSelected() const;
 
 	void Copy(bool all=false, bool with_headers=false);
 
