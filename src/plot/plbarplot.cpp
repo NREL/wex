@@ -109,7 +109,7 @@ double wxPLBarPlot::CalcYPos(double x) const
 	return y_start;
 }
 
-double wxPLBarPlot::CalcXPos(double x, const wxPLDeviceMapping &map, int dispwidth)
+double wxPLBarPlot::CalcXPos(double x, const wxPLDeviceMapping &map, double dispwidth)
 {
 	if (m_stackedOn && m_stackedOn != this)
 		return m_stackedOn->CalcXPos(x, map, dispwidth);

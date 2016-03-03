@@ -52,7 +52,7 @@ public:
 protected:
 
 	double CalcYPos(double x) const;
-	double CalcXPos(double x, const wxPLDeviceMapping &map, int dispwidth);
+	double CalcXPos(double x, const wxPLDeviceMapping &map, double dispwidth);
 	double CalcDispBarWidth( const wxPLDeviceMapping &map );
 	
 	wxPLBarPlot *m_stackedOn;
