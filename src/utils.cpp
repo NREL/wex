@@ -1047,9 +1047,9 @@ double wxGetScreenHDScale()
 
 
 #if defined(__WXMSW__)
-#define DPI_NOMINAL 96.0
+#define DPI_NOMINAL 96.0 // Windows
 #else
-#define DPI_NOMINAL 72.0
+#define DPI_NOMINAL 72.0 // OSX & Linux
 #endif
 
 void wxDevicePPIToScale( const wxSize &ppi, double *xs, double *ys )
@@ -1065,16 +1065,29 @@ void wxDevicePPIToScale( const wxSize &ppi, double *xs, double *ys )
 
 void wxGetScreenHDScale( double *xs, double *ys )
 {
-	wxSize dpi( DPI_NOMINAL, DPI_NOMINAL );
-	if ( wxWindowList::compatibility_iterator first = wxTopLevelWindows.GetFirst() )
+static wxSize dpi( -1, -1 );
+
+// only calculate scale once per application run
+// if the DPI changes while the application is running,
+// we should handle a WM_DPICHANGE message on Windows
+// in wxWidgets and recalculate the scale below, but
+// that's not done currently...
+
+	if ( dpi.x < 0 || dpi.y < 0 )
 	{
-		dpi = wxClientDC( first->GetData() ).GetPPI();
-	}
-	else
-	{
-		wxFrame *frm = new wxFrame( 0, wxID_ANY, "no title" );
-		dpi = wxClientDC(frm).GetPPI();
-		frm->Destroy();
+		dpi.x = DPI_NOMINAL;
+		dpi.y = DPI_NOMINAL;
+
+		if ( wxWindowList::compatibility_iterator first = wxTopLevelWindows.GetFirst() )
+		{
+			dpi = wxClientDC( first->GetData() ).GetPPI();
+		}
+		else
+		{
+			wxFrame *frm = new wxFrame( 0, wxID_ANY, "no title" );
+			dpi = wxClientDC(frm).GetPPI();
+			frm->Destroy();
+		}
 	}
 
 	wxDevicePPIToScale( dpi, xs, ys );
