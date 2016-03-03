@@ -262,6 +262,53 @@ void TestPLPlot( wxWindow *parent )
 	frame->Show();
 }
 
+#include <wex/mtrand.h>
+
+void TestPLBarPlot( wxWindow *parent )
+{
+	wxFrame *frame = new wxFrame(parent, wxID_ANY, wxT("wxPLPolarPlotCtrl in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(500, 400));
+	wxPLPlotCtrl *plot = new wxPLPlotCtrl(frame, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+	//plot->SetBackgroundColour( *wxWHITE );
+	plot->SetTitle(wxT("Demo Plot: using stuff"));
+
+	wxMTRand rng;
+	std::vector<wxRealPoint> bars1, bars2, bars3;
+	for( size_t i=0;i<16;i++ )
+	{
+		bars1.push_back( wxRealPoint( i, rng() ) );
+		bars2.push_back( wxRealPoint( i, rng() ) );
+		bars3.push_back( wxRealPoint( i, rng() ) );
+	}
+
+	wxPLBarPlot *bar1 = new wxPLBarPlot( bars1, "Bar1", *wxRED );
+	wxPLBarPlot *bar2 = new wxPLBarPlot( bars2, "Bar2", *wxGREEN );
+	wxPLBarPlot *bar3 = new wxPLBarPlot( bars3, "Bar3", *wxBLUE );
+
+	std::vector<wxPLBarPlot*> group;
+	group.push_back( bar1 );
+	group.push_back( bar2 );
+	group.push_back( bar3 );
+
+	bar1->SetGroup( group );
+	bar2->SetGroup( group );
+	bar3->SetGroup( group );
+
+	plot->AddPlot( bar1 );
+	plot->AddPlot( bar2 );
+	plot->AddPlot( bar3 );
+
+	plot->X1().SetWorld( -1, 16 );
+
+	std::vector<wxRealPoint> hb;
+	for( size_t i=0;i<48;i++ )
+		hb.push_back( wxRealPoint( i, rng() ) );
+
+	plot->AddPlot( new wxPLBarPlot( hb, "Test", *wxLIGHT_GREY ), wxPLPlot::X_BOTTOM, wxPLPlot::Y_RIGHT, wxPLPlot::PLOT_BOTTOM );
+
+	frame->Show();
+
+}
+
 void TestPLPolarPlot(wxWindow *parent)
 {
 	wxFrame *frame = new wxFrame(parent, wxID_ANY, wxT("wxPLPolarPlotCtrl in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(850, 850));
@@ -556,6 +603,8 @@ public:
 		
 		wxInitAllImageHandlers();
 		TestPLPlot( 0 );
+		TestPLPolarPlot(0);
+		TestPLBarPlot(0);
 		return true;
 
 		//TestFormDesigner();
