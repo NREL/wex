@@ -148,9 +148,13 @@ public:
 	void SetTickTextColour( const wxColour &col ) { m_tickTextColour = col; }
 	
 	void ShowLegend( bool show ) { m_showLegend = show; }
+	bool IsLegendShown() const { return m_showLegend; }
 	void SetLegendReversed( bool reverse ) { m_reverseLegend = reverse; }
-	void SetLegendLocation( LegendPos pos, double xpercent = -1.0, double ypercent = -1.0 );
+	bool IsLegendReversed() const { return m_reverseLegend; }
+	void SetLegendPosition( LegendPos pos ) { m_legendPos = pos; }
+	void SetLegendLocation( LegendPos pos, double xpercent = -999.0, double ypercent = -999.0 );
 	bool SetLegendLocation( const wxString &spos );
+	LegendPos GetLegendPosition() const { return m_legendPos; }
 	wxRealPoint GetLegendLocation() { return m_legendPosPercent; }
 		
 	void SetSideWidget( wxPLSideWidgetBase *sw, AxisPos pos = Y_RIGHT );
@@ -178,12 +182,19 @@ public:
 	class axis_layout;
 protected:
 
-	void DrawGrid( wxPLOutputDevice &dc, wxPLAxis::TickData::TickSize size );
-	void DrawPolarGrid(wxPLOutputDevice &dc, wxPLAxis::TickData::TickSize size);
+	void InvalidateLegend() { m_legendInvalidated = true; }
+	void CalcLegendTextLayout( wxPLOutputDevice &dc );
 	void DrawLegend(wxPLOutputDevice &gdc, const wxPLRealRect &geom);
+	wxPLRealRect GetLegendRect() { return m_legendRect; }
+	const std::vector<wxPLRealRect> &GetPlotRects() const { return m_plotRects; }
 
 	void UpdateHighlightRegion();
 	void DrawLegendOutline();
+private:
+
+	void DrawGrid( wxPLOutputDevice &dc, wxPLAxis::TickData::TickSize size );
+	void DrawPolarGrid(wxPLOutputDevice &dc, wxPLAxis::TickData::TickSize size);
+
 
 
 	bool m_showLegend;
@@ -230,7 +241,6 @@ protected:
 
 	bool m_legendInvalidated;
 	std::vector< legend_item* > m_legendItems;
-	void CalcLegendTextLayout( wxPLOutputDevice &dc );
 
 	struct axis_data
 	{

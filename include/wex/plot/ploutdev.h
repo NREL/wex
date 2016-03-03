@@ -21,6 +21,8 @@ public:
 		return ( xx >= x && xx <= x+width
 			&& yy >= y && yy <= y+height );
 	}
+
+	bool Contains( const wxRealPoint &pos ) const { return Contains(pos.x,pos.y); }
 };
 
 class wxPLOutputDevice

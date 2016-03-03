@@ -1222,13 +1222,20 @@ void wxPLPlot::SetTitle( const wxString &title )
 
 void wxPLPlot::SetLegendLocation( LegendPos pos, double xpercent, double ypercent )
 {
-	if ( xpercent < -10 ) xpercent = -10;
-	if ( xpercent > 90 ) xpercent = 90;
-	if ( ypercent < -10 ) ypercent = -10;
-	if ( ypercent > 90 ) ypercent = 90;
+	if ( xpercent > -998.0 )
+	{
+		if ( xpercent < -10 ) xpercent = -10;
+		if ( xpercent > 90 ) xpercent = 90;
+		m_legendPosPercent.x = xpercent;
+	}
 
-	m_legendPosPercent.x = xpercent;
-	m_legendPosPercent.y = ypercent;
+	if ( ypercent > -998.0 )
+	{
+		if ( ypercent < -10 ) ypercent = -10;
+		if ( ypercent > 90 ) ypercent = 90;
+		m_legendPosPercent.y = ypercent;
+	}
+
 	m_legendPos = pos;
 }
 

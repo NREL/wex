@@ -265,18 +265,18 @@ wxString wxPLPlotCtrl::ShowExportDialog( )
 
 wxBitmap wxPLPlotCtrl::GetBitmap( int width, int height )
 {
-	bool legend_shown = m_showLegend;
-	LegendPos legend_pos = m_legendPos;
+	bool legend_shown = IsLegendShown();
+	LegendPos legend_pos = GetLegendPosition();
 	wxSize imgSize( GetClientSize() );
 	
 	bool invalidated = false;
 	if ( (width > 10 && width < 10000 && height > 10 && height < 10000)
-		|| (m_includeLegendOnExport && !m_showLegend ))
+		|| (m_includeLegendOnExport && !legend_shown ))
 	{
-		if ( m_includeLegendOnExport && !m_showLegend )
+		if ( m_includeLegendOnExport && !legend_shown )
 		{
-			m_showLegend = true;
-			m_legendPos = RIGHT;
+			ShowLegend( true );
+			SetLegendPosition( RIGHT );
 
 			// estimate legend size and add it to exported bitmap size
 			wxBitmap bittemp( 10, 10 );
@@ -284,9 +284,9 @@ wxBitmap wxPLPlotCtrl::GetBitmap( int width, int height )
 			dctemp.SetFont( GetFont() );
 			wxPLDCOutputDevice odev( &dctemp, 0, wxGetScreenHDScale() );
 			CalcLegendTextLayout( odev );
-			m_legendInvalidated = true; // keep legend invalidated for subsequent render
+			InvalidateLegend(); // keep legend invalidated for subsequent render
 
-			width += m_legendRect.width;
+			width += GetLegendRect().width;
 		}
 
 		Invalidate(); // force recalc of layout
@@ -310,8 +310,9 @@ wxBitmap wxPLPlotCtrl::GetBitmap( int width, int height )
 
 	if ( invalidated )
 	{
-		m_showLegend = legend_shown;
-		m_legendPos = legend_pos;
+		ShowLegend( legend_shown );
+		SetLegendPosition( legend_pos );
+		InvalidateLegend();
 		Invalidate(); // invalidate layout cache again for next time it is draw on screen
 		Refresh(); // issue redraw to on-screen to recalculate layout right away.
 	}
@@ -429,10 +430,12 @@ void wxPLPlotCtrl::OnPaint( wxPaintEvent & )
 
 void wxPLPlotCtrl::OnSize( wxSizeEvent & )
 {
-	if ( m_scaleTextSize ) m_legendInvalidated = true;
+	if ( m_scaleTextSize ) InvalidateLegend();
 	Invalidate();
 	Refresh();
 }
+
+#define LEGEND_DOCK_THRESHOLD 10
 
 void wxPLPlotCtrl::DrawLegendOutline()
 {
@@ -448,20 +451,29 @@ void wxPLPlotCtrl::DrawLegendOutline()
 	dc.SetBrush( *wxTRANSPARENT_BRUSH );
 #endif
 
+	double scale = wxGetScreenHDScale();
+
 	wxPoint diff = ClientToScreen(m_currentPoint) - ClientToScreen(m_anchorPoint);
-    dc.DrawRectangle( wxRect( m_legendRect.x + diff.x, m_legendRect.y + diff.y, 
-		m_legendRect.width, m_legendRect.height) );
+	wxPLRealRect L( GetLegendRect() );
+	L.x *= scale;
+	L.y *= scale;
+	L.width *= scale;
+	L.height *= scale;
+	
+    dc.DrawRectangle( wxRect( L.x + diff.x, L.y + diff.y, L.width, L.height) );
+
+	int dockpix = (int)(LEGEND_DOCK_THRESHOLD*scale);
 
 	wxSize client = GetClientSize();
-	if ( m_currentPoint.x > client.x - 10 )
+	if ( m_currentPoint.x > client.x - dockpix )
 	{
 		dc.SetBrush( *wxBLACK_BRUSH );
-		dc.DrawRectangle( client.x - 10, 0, 10, client.y );
+		dc.DrawRectangle( client.x - dockpix, 0, dockpix, client.y );
 	}
-	else if ( m_currentPoint.y > client.y - 10 )
+	else if ( m_currentPoint.y > client.y - dockpix )
 	{
 		dc.SetBrush( *wxBLACK_BRUSH );
-		dc.DrawRectangle( 0, client.y - 10, client.x, 10 );
+		dc.DrawRectangle( 0, client.y - dockpix, client.x, dockpix );
 	}
 }
 
@@ -480,6 +492,7 @@ void wxPLPlotCtrl::UpdateHighlightRegion()
 	dc.SetBrush( *wxBLACK_BRUSH );
 #endif
 
+	double scale = wxGetScreenHDScale();
 
 	wxCoord highlight_x = m_currentPoint.x < m_anchorPoint.x ? m_currentPoint.x : m_anchorPoint.x;
 	wxCoord highlight_width = abs( m_currentPoint.x - m_anchorPoint.x );
@@ -487,12 +500,24 @@ void wxPLPlotCtrl::UpdateHighlightRegion()
 	wxCoord highlight_y = m_currentPoint.y < m_anchorPoint.y ? m_currentPoint.y : m_anchorPoint.y;
 	wxCoord highlight_height = abs( m_currentPoint.y - m_anchorPoint.y );
 
-	int irect = 0;
+	int irect = 0;	
+	const std::vector<wxPLRealRect> &Rl( GetPlotRects() );
+
+	// scale all the rects to screen coordinates
+	std::vector<wxPLRealRect> prects( Rl.size(), wxPLRealRect() );
+	for( size_t i=0;i<Rl.size();i++ )
+	{
+		prects[i].x = Rl[i].x*scale;
+		prects[i].y = Rl[i].y*scale;
+		prects[i].width = Rl[i].width*scale;
+		prects[i].height = Rl[i].height*scale;
+	}
 	
 	if ( m_highlighting == HIGHLIGHT_SPAN )
 	{
-		for ( std::vector<wxPLRealRect>::const_iterator it = m_plotRects.begin();
-			it != m_plotRects.end();
+
+		for ( std::vector<wxPLRealRect>::const_iterator it = prects.begin();
+			it != prects.end();
 			++it )
 		{
 			if ( highlight_x < it->x )
@@ -512,13 +537,13 @@ void wxPLPlotCtrl::UpdateHighlightRegion()
 	else
 	{
 		// rectangular (RECT or ZOOM) highlight on current plot
-		for ( std::vector<wxPLRealRect>::const_iterator it = m_plotRects.begin();
-			it != m_plotRects.end();
+		for ( std::vector<wxPLRealRect>::const_iterator it = prects.begin();
+			it != prects.end();
 			++it )
 		{
 			if ( it->Contains( (double)highlight_x, (double)highlight_y ) )
 			{
-				irect = it-m_plotRects.begin();
+				irect = it-prects.begin();
 
 				wxRect hrct( highlight_x, highlight_y, highlight_width, highlight_height );
 				dc.DrawRectangle( hrct );
@@ -528,10 +553,10 @@ void wxPLPlotCtrl::UpdateHighlightRegion()
 
 	}
 
-	m_highlightLeftPercent = 100.0*( ((double)(highlight_x - m_plotRects[0].x)) / ( (double)m_plotRects[0].width ) );
-	m_highlightRightPercent = 100.0*( ((double)(highlight_x + highlight_width - m_plotRects[0].x )) / ((double)m_plotRects[0].width ) );
-	m_highlightTopPercent = 100.0*( ((double)(highlight_y - m_plotRects[irect].y)) / ( (double) m_plotRects[irect].height) );
-	m_highlightBottomPercent = 100.0*( ((double)(highlight_y + highlight_height - m_plotRects[irect].y)) / ( (double) m_plotRects[irect].height) );
+	m_highlightLeftPercent = 100.0*( ((double)(highlight_x - prects[0].x)) / ( (double)prects[0].width ) );
+	m_highlightRightPercent = 100.0*( ((double)(highlight_x + highlight_width - prects[0].x )) / ((double)prects[0].width ) );
+	m_highlightTopPercent = 100.0*( ((double)(highlight_y - prects[irect].y)) / ( (double) prects[irect].height) );
+	m_highlightBottomPercent = 100.0*( ((double)(highlight_y + highlight_height - prects[irect].y)) / ( (double) prects[irect].height) );
 }
 
 void wxPLPlotCtrl::OnLeftDClick( wxMouseEvent &evt )
@@ -552,30 +577,34 @@ void wxPLPlotCtrl::OnLeftDClick( wxMouseEvent &evt )
 
 void wxPLPlotCtrl::OnLeftDown( wxMouseEvent &evt )
 {
-	wxPoint pos( evt.GetPosition() );
+	double scale = wxGetScreenHDScale();
+	wxPoint mousepos( evt.GetPosition() );
+	wxRealPoint pos( mousepos.x/scale, mousepos.y/scale );
 
-	if ( m_showLegend 
-		&& m_legendRect.Contains( (double)pos.x, (double)pos.y ) )
+
+	if ( IsLegendShown() 
+		&& GetLegendRect().Contains( pos ) )
 	{
 		m_moveLegendMode = true;
 		m_moveLegendErase = false;
-		m_anchorPoint = evt.GetPosition();		
+		m_anchorPoint = mousepos;		
 		CaptureMouse();
 	}
 	else if ( m_highlighting != HIGHLIGHT_DISABLE )
 	{
+		const std::vector<wxPLRealRect> &prects( GetPlotRects() );
 		std::vector<wxPLRealRect>::const_iterator it;
-		for ( it = m_plotRects.begin();
-			it != m_plotRects.end();
+		for ( it = prects.begin();
+			it != prects.end();
 			++it )
-			if ( it->Contains( (double)pos.x, (double)pos.y ) )
+			if ( it->Contains( pos ) )
 				break;
 
-		if ( it != m_plotRects.end() )
+		if ( it != prects.end() )
 		{
 			m_highlightMode = true;
 			m_highlightErase = false;
-			m_anchorPoint = pos;
+			m_anchorPoint = mousepos;
 			CaptureMouse();
 		}
 	}
@@ -585,7 +614,8 @@ void wxPLPlotCtrl::OnLeftUp( wxMouseEvent &evt )
 {
 	if ( HasCapture() )
 		ReleaseMouse();
-
+	
+	double scale = wxGetScreenHDScale();
 
 	if ( m_moveLegendMode )
 	{
@@ -600,33 +630,49 @@ void wxPLPlotCtrl::OnLeftUp( wxMouseEvent &evt )
 		if ( m_moveLegendErase )
 			DrawLegendOutline();
 #endif
+
 		
 		wxSize client = GetClientSize();
 		wxPoint point = evt.GetPosition();
 		wxPoint diff = ClientToScreen(point) - ClientToScreen(m_anchorPoint);
-		m_legendPosPercent.x = 100.0*((double)(m_legendRect.x+diff.x) / (double)client.x);
-		m_legendPosPercent.y = 100.0*((double)(m_legendRect.y+diff.y) / (double)client.y);
 
-		LegendPos old = m_legendPos;
+		LegendPos lpos( GetLegendPosition() );
+		LegendPos lpos0 = lpos;
+		wxRealPoint lloc( GetLegendLocation() );
+		wxPLRealRect lrct( GetLegendRect() );
 		
+		// account for high DPI screens - convert to 
+		// screen pixels from nominal wxPLPlot native units
+		lrct.x *= scale;
+		lrct.y *= scale;
+		lrct.width *= scale;
+		lrct.height *= scale;
+
+		lloc.x = 100.0*((double)(lrct.x+diff.x) / (double)client.x);
+		lloc.y = 100.0*((double)(lrct.y+diff.y) / (double)client.y);
+		
+		int dockpix = (int)(LEGEND_DOCK_THRESHOLD*scale);
+
 		// undock legend if it's currently docked
-		if ( m_legendPos == RIGHT && point.x < client.x - 10 )
-			m_legendPos = FLOATING;
-		else if ( m_legendPos == BOTTOM && point.y < client.y - 10 )
-			m_legendPos = FLOATING;
+		if ( lpos == RIGHT && point.x < client.x - dockpix )
+			lpos = FLOATING;
+		else if ( lpos == BOTTOM && point.y < client.y - dockpix )
+			lpos = FLOATING;
 
 		// redock legend if applicable
-		if ( m_legendPos == FLOATING )
+		if ( lpos == FLOATING )
 		{
-			if ( point.x  > client.x - 10 )
-				m_legendPos = RIGHT;
-			else if ( point.y > client.y - 10 )
-				m_legendPos = BOTTOM;
+			if ( point.x  > client.x - dockpix )
+				lpos = RIGHT;
+			else if ( point.y > client.y - dockpix )
+				lpos = BOTTOM;
 		}
 
-		if ( old != m_legendPos )
+		SetLegendLocation( lpos, lloc.x, lloc.y );
+
+		if ( lpos != lpos0 )
 		{
-			m_legendInvalidated = true; // also invalidate legend text layouts to recalculate shape
+			InvalidateLegend(); // also invalidate legend text layouts to recalculate shape
 			Invalidate(); // recalculate all plot positions if legend snap changed.
 		}
 
