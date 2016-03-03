@@ -94,12 +94,12 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 		void SetStyle( wxDVTimeSeriesStyle ss ) { m_style = ss; }
 		void SetColour( const wxColour &col ) { m_colour = col; }
 
-		virtual wxString GetXDataLabel() const 
+		virtual wxString GetXDataLabel( wxPLPlot * ) const 
 		{
 			return _("Hours since 00:00 Jan 1");
 		}
 
-		virtual wxString GetYDataLabel() const
+		virtual wxString GetYDataLabel( wxPLPlot * ) const
 		{
 			if ( !m_data ) return wxEmptyString;
 
@@ -432,7 +432,7 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 
 		virtual wxString GetLabel() const
 		{
-			return GetYDataLabel();
+			return GetYDataLabel( NULL );
 			//if ( !m_data ) return wxEmptyString;
 			//else return m_data->GetTitleWithUnits();
 		}

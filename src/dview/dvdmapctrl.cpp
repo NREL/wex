@@ -33,12 +33,12 @@ public:
 	void SetData( wxDVTimeSeriesDataSet *d ) { m_data = d; }
 	void SetColourMap( wxPLColourMap *c ) { m_colourMap = c; }
 	
-	virtual wxString GetXDataLabel() const 
+	virtual wxString GetXDataLabel( wxPLPlot * ) const 
 	{
 		return _("Hours since 00:00 Jan 1");
 	}
 
-	virtual wxString GetYDataLabel() const
+	virtual wxString GetYDataLabel( wxPLPlot * ) const
 	{
 		wxString label = m_data->GetSeriesTitle();
 		if ( !m_data->GetUnits().IsEmpty() )

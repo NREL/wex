@@ -192,10 +192,10 @@ bool wxPLHistogramPlot::GetMinMax(double *pxmin, double *pxmax, double *pymin, d
 	return true;
 }
 
-std::vector<wxString> wxPLHistogramPlot::GetExportableDatasetHeaders( wxUniChar sep ) const
+std::vector<wxString> wxPLHistogramPlot::GetExportableDatasetHeaders( wxUniChar sep, wxPLPlot *plot ) const
 {
 	std::vector<wxString> tt;
-	wxString xLabel = GetXDataLabel();
+	wxString xLabel = GetXDataLabel( plot );
 	wxString yLabel = (GetNormalize() == 0 ? "Point Count" : "% of Points");
 
 	if(xLabel.size() == 0) { xLabel = "Avg Bin Value"; }

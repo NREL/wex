@@ -52,8 +52,8 @@ public:
 	// properties
 
 	virtual wxString GetLabel() const { return m_label; }
-	virtual wxString GetXDataLabel( wxPLPlot *plot=0 ) const;
-	virtual wxString GetYDataLabel( wxPLPlot *plot=0 ) const;
+	virtual wxString GetXDataLabel( wxPLPlot *plot ) const;
+	virtual wxString GetYDataLabel( wxPLPlot *plot ) const;
 
 	virtual void SetLabel( const wxString &label ) { m_label = label; }
 	virtual void SetXDataLabel( const wxString &label ) { m_xLabel = label; }
@@ -74,7 +74,7 @@ public:
 
 	virtual bool GetMinMax(double *pxmin, double *pxmax, double *pymin, double *pymax) const;
 	virtual bool ExtendMinMax(double *pxmin, double *pxmax, double *pymin, double *pymax, bool extendToNice = false) const;
-	virtual std::vector<wxString> GetExportableDatasetHeaders( wxUniChar sep, wxPLPlot *plot=0 ) const;
+	virtual std::vector<wxString> GetExportableDatasetHeaders( wxUniChar sep, wxPLPlot *plot ) const;
 	virtual std::vector<wxRealPoint> GetExportableDataset(double Xmin, double Xmax, bool visible_only) const;
 };
 

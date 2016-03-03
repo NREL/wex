@@ -41,7 +41,7 @@ public:
 	virtual wxPLAxis *SuggestXAxis();
 	virtual wxPLAxis *SuggestYAxis();
 	virtual bool GetMinMax(double *pxmin, double *pxmax, double *pymin, double *pymax) const;
-	virtual std::vector<wxString> GetExportableDatasetHeaders( wxUniChar sep ) const;
+	virtual std::vector<wxString> GetExportableDatasetHeaders( wxUniChar sep, wxPLPlot *plot ) const;
 	virtual std::vector<wxRealPoint> GetExportableDataset(double Xmin, double Xmax, bool visible_only) const;
 
 private:	

@@ -24,12 +24,12 @@ public:
 	{
 	}
 
-	virtual wxString GetXDataLabel() const
+	virtual wxString GetXDataLabel( wxPLPlot * ) const
 	{
 		return m_x->GetTitleWithUnits();
 	}
 
-	virtual wxString GetYDataLabel() const
+	virtual wxString GetYDataLabel( wxPLPlot * ) const
 	{
 		return m_y->GetTitleWithUnits();
 	}

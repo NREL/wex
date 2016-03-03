@@ -118,7 +118,7 @@ wxString wxPLPlottable::GetXDataLabel( wxPLPlot *plot ) const
 		if ( wxPLAxis *ax = plot->GetAxis( xap, ppos ) )
 			return ax->GetLabel();
 	
-	return "x";
+	return wxEmptyString;
 }
 
 wxString wxPLPlottable::GetYDataLabel( wxPLPlot *plot ) const
@@ -132,7 +132,7 @@ wxString wxPLPlottable::GetYDataLabel( wxPLPlot *plot ) const
 		if ( wxPLAxis *ax = plot->GetAxis( yap, ppos ) )
 			return ax->GetLabel();
 	
-	return "y";
+	return wxEmptyString;
 }
 
 wxPLAxis *wxPLPlottable::SuggestXAxis() const 
