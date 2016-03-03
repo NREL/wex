@@ -11,6 +11,7 @@
 #include <lk/vm.h>
 
 #include "wex/codeedit.h"
+#include "wex/utils.h"
 
 #define wxLK_STDLIB_BASIC  0x0001
 #define wxLK_STDLIB_STRING 0x0002
@@ -142,7 +143,7 @@ class wxLKScriptWindow  : public wxFrame
 {
 public:
 	wxLKScriptWindow( wxWindow *parent, int id = wxID_ANY, 
-		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxSize( 760, 800 ) );
+		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxScaleSize( 760, 800 ) );
 	
 	static wxLKScriptWindowFactory &GetFactory();
 	static void SetFactory( wxLKScriptWindowFactory *f );

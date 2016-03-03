@@ -132,7 +132,7 @@ public:
 	PlotWin( wxWindow *parent )
 		: wxFrame( parent, wxID_ANY, 
 			wxString::Format("plot %d", _iplot++),
-			wxDefaultPosition, wxSize(500,400),
+			wxDefaultPosition, wxScaleSize(wxSize(500,400)),
 			(parent != 0 ? wxFRAME_FLOAT_ON_PARENT : 0 )|wxCLOSE_BOX|wxCLIP_CHILDREN|wxCAPTION|wxRESIZE_BORDER )
 	{
 		m_plot = new wxPLPlotCtrl( this, wxID_ANY );
@@ -385,19 +385,29 @@ void fcall_plotopt( lk::invoke_t &cxt )
 	if ( lk::vardata_t *arg = cxt.arg(0).lookup("window") )
 	{
 		if ( s_curPlotWin
-			&& arg->type() == lk::vardata_t::VECTOR 
-			&& arg->length() == 4 )
+			&& arg->type() == lk::vardata_t::VECTOR )
 		{
-			int x = arg->index(0)->as_integer();
-			int y = arg->index(1)->as_integer();
-			int w = arg->index(2)->as_integer();
-			int h = arg->index(3)->as_integer();
+			int x, y, w, h;
+			x=y=w=h=-1;
+			
+			if ( arg->length() == 4 )
+			{
+				x = arg->index(0)->as_integer();
+				y = arg->index(1)->as_integer();
+				w = arg->index(2)->as_integer();
+				h = arg->index(3)->as_integer();
+			}
+			else if ( arg->length() == 2 )
+			{
+				w = arg->index(0)->as_integer();
+				h = arg->index(1)->as_integer();
+			}
+
 			if ( x >= 0 && y >= 0 )
 				s_curPlotWin->SetPosition( wxPoint(x, y) );
 
 			if ( w > 0 && h > 0 )
 				s_curPlotWin->SetClientSize( wxSize(w,h) );
-
 		}
 	}
 
@@ -985,7 +995,7 @@ public:
 	enum { ID_RESUME = wxID_HIGHEST+391, ID_STEP, ID_STEP_ASM, ID_BREAK, ID_SWITCH_ADVANCED };
 
 	wxLKDebugger( wxLKScriptCtrl *lcs, lk::vm *vm )
-		: wxFrame( lcs, wxID_ANY, "Debugger", wxDefaultPosition, wxSize( 450, 310 ), 
+		: wxFrame( lcs, wxID_ANY, "Debugger", wxDefaultPosition, wxScaleSize( 450, 310 ), 
 			wxRESIZE_BORDER|wxCAPTION|wxCLOSE_BOX|wxFRAME_TOOL_WINDOW|wxFRAME_FLOAT_ON_PARENT ), 
 			m_lcs(lcs), m_vm(vm)
 	{
@@ -1209,7 +1219,7 @@ wxLKScriptCtrl::wxLKScriptCtrl( wxWindow *parent, int id,
 	StyleSetBackground( 512, wxColour(255,187,187) );
 
 	MarkerSetBackground( m_markLeftBox, *wxRED );
-	SetMarginWidth( m_syntaxCheckMarginId, 5 );
+	SetMarginWidth( m_syntaxCheckMarginId, (int)(5.0 * wxGetScreenHDScale()) );
 	SetMarginSensitive( m_syntaxCheckMarginId, true );
 	SetMarginType( m_syntaxCheckMarginId, wxSTC_MARGIN_SYMBOL );
 
@@ -1364,7 +1374,7 @@ public:
 		std::vector<wxLKScriptCtrl::libdata> &ll,
 		const wxString &title = "Function Reference" )
 		: wxFrame( parent, wxID_ANY, title,
-			wxDefaultPosition, wxSize(900, 800),
+			wxDefaultPosition, wxScaleSize(700, 600),
 			wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN | wxRESIZE_BORDER | wxFRAME_TOOL_WINDOW | wxFRAME_FLOAT_ON_PARENT)
 	{
 		SetBackgroundColour( wxMetroTheme::Colour( wxMT_FOREGROUND ) );
@@ -1431,7 +1441,7 @@ void wxLKScriptCtrl::SetSyntaxCheck( bool on )
 	m_syntaxCheck = on;
 	
 	SetMouseDwellTime( on ? 500 : wxSTC_TIME_FOREVER );
-	SetMarginWidth( m_syntaxCheckMarginId, on ? 5 : 0 );
+	SetMarginWidth( m_syntaxCheckMarginId, on ? (int)(wxGetScreenHDScale() * 5.0) : 0 );
 	SetMarginSensitive( m_syntaxCheckMarginId, on );
 	
 	if ( !on )
@@ -1908,7 +1918,7 @@ public:
 		
 		wxProgressDialog dialog( "Find in files", "Searching for " + text, (int)windows.size(), m_scriptwin,
 			wxPD_SMOOTH|wxPD_CAN_ABORT );
-		dialog.SetClientSize( wxSize(350,100) );
+		dialog.SetClientSize( wxScaleSize(350,100) );
 		dialog.CenterOnParent();
 		dialog.Show();
 

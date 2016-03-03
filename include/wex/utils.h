@@ -85,6 +85,7 @@ wxPoint wxScalePoint( const wxPoint &p, double xs, double ys );
 wxSize wxScaleSize( const wxSize &s, double xs, double ys );
 inline wxSize wxScaleSize( const wxSize &s, double sf ) { return wxScaleSize( s, sf, sf ); }
 inline wxSize wxScaleSize( const wxSize &s ) { return wxScaleSize( s, wxGetScreenHDScale() ); }
+inline wxSize wxScaleSize( int width, int height ) { return wxScaleSize( wxSize(width, height) ); }
 wxRect wxScaleRect( const wxRect &r, double xs, double ys );
 inline wxRect wxScaleRect( const wxRect &r, double sf ) { return wxScaleRect( r, sf, sf ); }
 

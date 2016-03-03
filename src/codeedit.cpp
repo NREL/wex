@@ -708,7 +708,7 @@ void wxCodeEditCtrl::HideLineArrow()
 
 void wxCodeEditCtrl::ShowBreakpoints( bool show )
 {
-	SetMarginWidth( m_breakpointMarginId, show ? 12 : 0 );
+	SetMarginWidth( m_breakpointMarginId, show ? (int)(wxGetScreenHDScale()*12.0) : 0 );
 	SetMarginSensitive( m_breakpointMarginId, show );
 }
 
