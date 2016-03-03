@@ -18,6 +18,7 @@
 #include <wx/dcsvg.h>
 #include <wx/tipwin.h>
 
+#include "wex/utils.h"
 #include "wex/plot/ploutdev.h"
 #include "wex/plot/plhistplot.h"
 #include "wex/plot/plplotctrl.h"
@@ -281,7 +282,7 @@ wxBitmap wxPLPlotCtrl::GetBitmap( int width, int height )
 			wxBitmap bittemp( 10, 10 );
 			wxMemoryDC dctemp( bittemp );
 			dctemp.SetFont( GetFont() );
-			wxPLDCOutputDevice odev( &dctemp );
+			wxPLDCOutputDevice odev( &dctemp, 0, wxGetScreenHDScale() );
 			CalcLegendTextLayout( odev );
 			m_legendInvalidated = true; // keep legend invalidated for subsequent render
 
@@ -373,6 +374,11 @@ public:
 	wxGCDC *m_ptr;
 };
 
+wxSize wxPLPlotCtrl::DoGetBestSize() const
+{
+	return wxScaleSize( 500, 400 ); // default plot size
+}
+
 void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 {
 	wxFont font_normal( dc.GetFont() );
@@ -396,13 +402,14 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 
 	wxDC &aadc = gdc.m_ptr ? *gdc.m_ptr : dc;
 
-	wxPLDCOutputDevice odev( &dc, &aadc );
+	double scale = wxGetScreenHDScale();
+	wxPLDCOutputDevice odev( &dc, &aadc, scale );
 
 	wxPLRealRect rr;
-	rr.x = geom.x;
-	rr.y = geom.y;
-	rr.width = geom.width;
-	rr.height = geom.height;
+	rr.x = geom.x/scale;
+	rr.y = geom.y/scale;
+	rr.width = geom.width/scale;
+	rr.height = geom.height/scale;
 
 	wxPLPlot::Render( odev, rr );
 }

@@ -61,6 +61,8 @@ public:
 	void Render( wxDC &dc, wxRect geom );
 
 protected:
+	virtual wxSize DoGetBestSize() const;
+
 	void OnPopupMenu( wxCommandEvent & );
 	void OnPaint( wxPaintEvent & );
 	void OnSize( wxSizeEvent & );

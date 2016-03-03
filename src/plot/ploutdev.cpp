@@ -185,13 +185,12 @@ double wxPLPdfOutputDevice::CharHeight() {
 }
 
 
+#define CAST(x) ((int)(m_scale*(x)))
 
-#define CAST(x) ((int)x)
-
-wxPLDCOutputDevice::wxPLDCOutputDevice( wxDC *dc, wxDC *aadc ) 
+wxPLDCOutputDevice::wxPLDCOutputDevice( wxDC *dc, wxDC *aadc, double scale ) 
 	: wxPLOutputDevice(), m_dc(dc), m_aadc(aadc), m_curdc(dc),
 		m_pen( *wxBLACK_PEN ), m_brush( *wxBLACK_BRUSH ), 
-		m_font0( m_dc->GetFont() )
+		m_font0( m_dc->GetFont() ), m_scale( scale )
 {
 	m_fontSize = 0;
 	m_fontBold = ( m_font0.GetWeight() == wxFONTWEIGHT_BOLD );
@@ -249,7 +248,8 @@ void wxPLDCOutputDevice::Pen( const wxColour &c, double size,
 	Style line, Style join, Style cap ) {
 
 	m_pen.SetColour( c );
-	m_pen.SetWidth( size < 1.0 ? 1 : CAST(size) );
+	size *= m_scale;
+	m_pen.SetWidth( size < 1.0 ? 1 : ((int)size) );
 	switch( line )
 	{
 	case NONE: m_pen = *wxTRANSPARENT_PEN; break; // if transparent skip everything else
@@ -325,9 +325,9 @@ void wxPLDCOutputDevice::Text( const wxString &text, double x, double y, double 
 }
 void wxPLDCOutputDevice::Measure( const wxString &text, double *width, double *height ) {
 	wxSize sz( m_curdc->GetTextExtent( text ) );
-	if ( width )  *width = (double)sz.x;
-	if ( height ) *height = (double)sz.y;
+	if ( width )  *width = (double)sz.x/m_scale;
+	if ( height ) *height = (double)sz.y/m_scale;
 }
 double wxPLDCOutputDevice::CharHeight() {
-	return (double)m_curdc->GetCharHeight();
+	return (double)m_curdc->GetCharHeight()/m_scale;
 }

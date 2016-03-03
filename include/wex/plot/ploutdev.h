@@ -101,8 +101,9 @@ class wxPLDCOutputDevice : public wxPLOutputDevice
 	wxFont m_font0;
 	double m_fontSize;
 	bool m_fontBold;
+	double m_scale;
 public:
-	wxPLDCOutputDevice( wxDC *dc, wxDC *aadc = 0 );
+	wxPLDCOutputDevice( wxDC *dc, wxDC *aadc = 0, double scale=1.0 );
 	wxDC *GetDC();
 	
 	virtual void SetAntiAliasing( bool b );
