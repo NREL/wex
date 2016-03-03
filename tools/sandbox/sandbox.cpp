@@ -36,6 +36,7 @@ public:
 
 #include "wex/plot/plplotctrl.h"
 #include "wex/plot/pllineplot.h"
+#include "wex/plot/plbarplot.h"
 #include "wex/plot/plscatterplot.h"
 #include "wex/plot/plwindrose.h"
 
@@ -116,7 +117,7 @@ void TestPLPlot( wxWindow *parent )
 	{
 		if (!wxPLPlot::AddPdfFontDir( wexdir + "/pdffonts" ))
 			wxMessageBox("Could not add font dir: " + wexdir + "/pdffonts" );
-		if (!wxPLPlot::SetPdfDefaultFont( "ComputerModernSerifItalic", 12.0 ) )
+		if (!wxPLPlot::SetPdfDefaultFont( "ComputerModernSansSerifRegular", 12.0 ) )
 			wxMessageBox("Could not set default pdf font to Computer Modern Sans Serif Regular" );
 	}
 
@@ -179,7 +180,40 @@ void TestPLPlot( wxWindow *parent )
 		wxPLPlotCtrl::Y_LEFT, 
 		wxPLPlotCtrl::PLOT_TOP);
 
+	std::vector<wxRealPoint> bar_data;
+	bar_data.push_back( wxRealPoint( 1, 4 ) );
+	bar_data.push_back( wxRealPoint( 2, 3 ) );
+	bar_data.push_back( wxRealPoint( 3, 4 ) );
+	bar_data.push_back( wxRealPoint( 4, 6 ) );
+	bar_data.push_back( wxRealPoint( 5, 5 ) );
 
+	wxPLBarPlot *bar1 = new wxPLBarPlot( bar_data, "bar1", *wxRED );
+	wxPLBarPlot *bar2 = new wxPLBarPlot( bar_data, "bar2", *wxGREEN );
+	wxPLBarPlot *bar3 = new wxPLBarPlot( bar_data, "bar3", *wxBLUE );
+
+	std::vector<wxPLBarPlot*> group;
+	group.push_back( bar1 );
+	group.push_back( bar2 );
+	group.push_back( bar3 );
+
+	bar1->SetGroup( group );
+	bar2->SetGroup( group );
+	bar3->SetGroup( group );
+
+	plot->AddPlot( bar1 );
+	plot->AddPlot( bar2 );
+	plot->AddPlot( bar3 );
+
+	bar_data.clear();
+	bar_data.push_back( wxRealPoint( -2, -15 ) );
+	bar_data.push_back( wxRealPoint( -3, -10 ) );
+	bar_data.push_back( wxRealPoint(  2, -5 ) );
+	bar_data.push_back( wxRealPoint(  1, 0 ) );
+	bar_data.push_back( wxRealPoint(  -0.5, 5 ) );
+	
+	wxPLHBarPlot *hbar1 = new wxPLHBarPlot( bar_data, 0.0, "hbar1", wxColour( 255, 130, 0, 128 ) );
+	plot->AddPlot( hbar1 );
+	
 	plot->GetXAxis1()->SetLabel( "Bottom X Axis has a great sequence of \\nu  values!" );
 		
 
