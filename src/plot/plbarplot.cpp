@@ -170,7 +170,7 @@ double wxPLBarPlot::CalcDispBarWidth( const wxPLDeviceMapping &map )
 		if ( bars_in_view <= 1 || cxmin == cxmax )
 			return 5; // default point thickness
 
-		return ( (cxmax-cxmin) / ((double)( bars_in_view + 3 )) );
+		return ( (cxmax-cxmin) / ((double)( bars_in_view + 4 )) );
 	}
 	else return m_thickness;
 }

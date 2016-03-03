@@ -185,7 +185,7 @@ double wxPLPdfOutputDevice::CharHeight() {
 }
 
 
-#define CAST(x) ((int)(m_scale*(x)))
+#define CAST(x) ((int)wxRound(m_scale*(x)))
 
 wxPLDCOutputDevice::wxPLDCOutputDevice( wxDC *dc, wxDC *aadc, double scale ) 
 	: wxPLOutputDevice(), m_dc(dc), m_aadc(aadc), m_curdc(dc),
