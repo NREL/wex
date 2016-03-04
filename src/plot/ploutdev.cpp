@@ -299,11 +299,7 @@ void wxPLDCOutputDevice::Polygon( size_t n, const wxRealPoint *pts, Style sty ) 
 	m_curdc->DrawPolygon( n, &ipt[0], 0, 0, sty==ODDEVEN ?  wxODDEVEN_RULE : wxWINDING_RULE );
 }
 void wxPLDCOutputDevice::Rect( double x, double y, double width, double height ) {
-	int pw = CAST(width);
-	int ph = CAST(height);
-	if ( pw < 1 ) pw = 1;
-	if ( ph < 1 ) ph = 1;
-	m_curdc->DrawRectangle( CAST(x), CAST(y), pw, ph );
+	m_curdc->DrawRectangle( CAST(x), CAST(y), CAST(width), CAST(height) );
 }
 void wxPLDCOutputDevice::Circle( double x, double y, double radius ) {
 	int irad = CAST(radius);
