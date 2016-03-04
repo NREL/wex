@@ -1453,32 +1453,18 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 	if ( m_showLegend )
 	{
 		LEGEND_FONT(dc);
-		CalcLegendTextLayout( dc );
+		CalculateLegendLayout( dc );
 
 		if ( m_legendPos == BOTTOM )
 		{
-			double height = 0;
-			for ( size_t i=0;i<m_legendItems.size();i++ )
-				if (m_legendItems[i]->layout->height() > height )
-					height = m_legendItems[i]->layout->height();
-
-			if ( height > 0 ) 
-				legend_bottom = true;
-
-			box.height -= height + text_space;
+			if ( m_legendRect.height > 0 ) legend_bottom = true;
+			box.height -= m_legendRect.height;
 		}
 
 		if ( m_legendPos == RIGHT )
 		{
-			double width = 0;
-			for ( size_t i=0;i<m_legendItems.size();i++ )
-				if (m_legendItems[i]->layout->width() > width )
-					width = m_legendItems[i]->layout->width();
-
-			if (width > 0)
-				legend_right = true;
-
-			box.width -= width + 5*text_space + legend_item_box.x;
+			if (m_legendRect.width > 0) legend_right = true;
+			box.width -= m_legendRect.width;
 		}
 	}
 
@@ -1909,16 +1895,18 @@ void wxPLPlot::DrawPolarGrid( wxPLOutputDevice &dc, wxPLAxis::TickData::TickSize
 wxPLPlot::legend_item::legend_item( wxPLOutputDevice &dc, wxPLPlottable *p )
 {
 	plot = p;
-	text = p->GetLabel();
-	layout = new text_layout( dc, text );
+	text = new text_layout( dc, p->GetLabel() );
+	width = legend_item_box.x + text_space + text->width();
+	height = text->height();
+	if ( height < legend_item_box.y ) height = legend_item_box.y;
 }
 
 wxPLPlot::legend_item::~legend_item()
 {
-	if ( layout ) delete layout;
+	if ( text ) delete text;
 }
 
-void wxPLPlot::CalcLegendTextLayout( wxPLOutputDevice &dc )
+void wxPLPlot::CalculateLegendLayout( wxPLOutputDevice &dc )
 {
 	if ( !m_showLegend ) return;
 
@@ -1933,55 +1921,48 @@ void wxPLPlot::CalcLegendTextLayout( wxPLOutputDevice &dc )
 
 		for ( size_t i=0; i<m_plots.size(); i++ )
 		{
-			if ( !m_plots[i].plot->IsShownInLegend() ) continue;
+			if ( !m_plots[i].plot->IsShownInLegend() 
+				|| m_plots[i].plot->GetLabel().IsEmpty() ) continue;
 
 			m_legendItems.push_back( new legend_item( dc, m_plots[i].plot ) );
 		}
 	
+		m_legendRect.width = 0;
+		m_legendRect.height = 0;
+
+		if ( m_legendItems.size() == 0 )
+			return;
 		
-		// realculate legend bounds based on text layouts
+		// realculate legend bounds based on text layouts and item box size
 		if ( m_legendPos == BOTTOM )
 		{
-			m_legendRect.width = 0;
-			m_legendRect.height = 0;
-			
+			m_legendRect.width = text_space;
 			for ( size_t i=0; i<m_legendItems.size(); i++ )
 			{
-				if ( !m_legendItems[i]->text.IsEmpty() )
-				{
-					double height = m_legendItems[i]->layout->height();
-					if ( height > m_legendRect.height )
-						m_legendRect.height = height;
+				if ( m_legendItems[i]->height > m_legendRect.height )
+					m_legendRect.height = m_legendItems[i]->height;
 
-					double width = m_legendItems[i]->layout->width();
-					m_legendRect.width += width + 5*text_space + legend_item_box.x;
-				}
+				m_legendRect.width += m_legendItems[i]->width + text_space + text_space;
 			}
-
-			m_legendRect.height += text_space;
+			
+			// top & bottom padding
+			m_legendRect.height += 2*text_space;
 		}
 		else
 		{
-			m_legendRect.width = 0;	
 			m_legendRect.height = text_space;
 			for ( size_t i=0; i<m_legendItems.size(); i++ )
 			{
-				if ( !m_legendItems[i]->text.IsEmpty() )
-				{
-					double width = m_legendItems[i]->layout->width();
-					if ( width > m_legendRect.width )
-						m_legendRect.width = width;
-
-					double height = m_legendItems[i]->layout->height();
-					if ( height < legend_item_box.y )
-						height = legend_item_box.y;
-
-					m_legendRect.height += height + text_space;
-				}
+				if ( m_legendItems[i]->width > m_legendRect.width )
+					m_legendRect.width = m_legendItems[i]->width;
+					
+				m_legendRect.height += m_legendItems[i]->height + text_space;
 			}
+
+			// left & right padding
+			m_legendRect.width += 2*text_space;
 		}
 		
-		m_legendRect.width += legend_item_box.x + 5*text_space;
 		m_legendInvalidated = false;
 	}
 }
@@ -1992,9 +1973,8 @@ void wxPLPlot::DrawLegend( wxPLOutputDevice &dc, const wxPLRealRect& geom )
 		return;
 
 	int layout = wxVERTICAL;
-	double max_item_height = 0;
-	double max_item_width = 0;
-
+	double max_item_height = 0; // for vertical center alignment on horizontal layout
+	
 	// offset by LegendXYPercents
 	if ( m_legendPos == FLOATING )
 	{
@@ -2044,18 +2024,15 @@ void wxPLPlot::DrawLegend( wxPLOutputDevice &dc, const wxPLRealRect& geom )
 			break;
 		case BOTTOM:
 			m_legendRect.x = geom.x + text_space;
-			for (size_t i=0;i<m_legendItems.size();i++)
-				if ( m_legendItems[i]->layout->height() > max_item_height )
-					max_item_height = m_legendItems[i]->layout->height();
-			m_legendRect.y = geom.y + geom.height - max_item_height - text_space;
-			layout = wxHORIZONTAL;
+			m_legendRect.y = geom.y + geom.height - m_legendRect.height;
+			layout = wxHORIZONTAL;			
+			for( size_t i=0;i<m_legendItems.size();i++ )
+				if ( m_legendItems[i]->height > max_item_height )
+					max_item_height = m_legendItems[i]->height;			
 			break;
 		case RIGHT:
 			m_legendRect.y = geom.y + text_space;
-			for (size_t i=0;i<m_legendItems.size();i++)
-				if ( m_legendItems[i]->layout->width() > max_item_width )
-					max_item_width = m_legendItems[i]->layout->width();
-			m_legendRect.x = geom.x + geom.width - max_item_width - 5*text_space-legend_item_box.x;
+			m_legendRect.x = geom.x + geom.width - m_legendRect.width;
 			break;
 		}
 	}
@@ -2072,33 +2049,32 @@ void wxPLPlot::DrawLegend( wxPLOutputDevice &dc, const wxPLRealRect& geom )
 		dc.Rect( m_legendRect );
 	}
 	
-	double x = m_legendRect.x;
+	double x = m_legendRect.x + text_space;
 	double y = m_legendRect.y + text_space;
+
 	for ( size_t i = 0; i < m_legendItems.size(); i++ )
 	{
 		legend_item &li = *m_legendItems[ m_reverseLegend ? m_legendItems.size() - i - 1 : i ];
-
-		if ( li.text.IsEmpty() ) continue;
-		
-		double yoff_text = 0;
+				
+		double yoff_text = li.height/2 - li.text->height()/2;
 		if ( layout == wxHORIZONTAL )
-			yoff_text = (max_item_height - li.layout->height())/2;
+			yoff_text = (max_item_height - li.text->height())/2;
 
-		li.layout->render( dc, x + legend_item_box.x + 2*text_space + text_space, y + yoff_text );
+		li.text->render( dc, 
+			x + legend_item_box.x + text_space, 
+			y + yoff_text );
 
-		double yoff_box = li.layout->height()/2 - legend_item_box.y/2;
+		double yoff_box = li.height/2 - legend_item_box.y/2;
 		if ( layout == wxHORIZONTAL )
 			yoff_box = max_item_height/2 - legend_item_box.y/2;
 
 		dc.SetAntiAliasing( li.plot->GetAntiAliasing() );
 
-		li.plot->DrawInLegend( dc, wxPLRealRect( x + 2*text_space, y + yoff_box , 
+		li.plot->DrawInLegend( dc, wxPLRealRect( x, y + yoff_box, 
 			legend_item_box.x, legend_item_box.y ) );
 
-		if ( layout == wxHORIZONTAL )
-			x += 5*text_space + legend_item_box.x + li.layout->width();
-		else
-			y += li.layout->height() + text_space;
+		if ( layout == wxHORIZONTAL ) x += li.width + text_space + text_space;
+		else y += li.height + text_space;
 	}
 	
 	dc.SetAntiAliasing( false );

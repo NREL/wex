@@ -283,7 +283,7 @@ wxBitmap wxPLPlotCtrl::GetBitmap( int width, int height )
 			wxMemoryDC dctemp( bittemp );
 			dctemp.SetFont( GetFont() );
 			wxPLDCOutputDevice odev( &dctemp, 0, wxGetScreenHDScale() );
-			CalcLegendTextLayout( odev );
+			CalculateLegendLayout( odev );
 			InvalidateLegend(); // keep legend invalidated for subsequent render
 
 			width += GetLegendRect().width;

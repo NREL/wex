@@ -185,7 +185,7 @@ public:
 protected:
 
 	void InvalidateLegend() { m_legendInvalidated = true; }
-	void CalcLegendTextLayout( wxPLOutputDevice &dc );
+	void CalculateLegendLayout( wxPLOutputDevice &dc );
 	void DrawLegend(wxPLOutputDevice &gdc, const wxPLRealRect &geom);
 	wxPLRealRect GetLegendRect() { return m_legendRect; }
 	const std::vector<wxPLRealRect> &GetPlotRects() const { return m_plotRects; }
@@ -238,8 +238,8 @@ private:
 		legend_item( wxPLOutputDevice &dc, wxPLPlottable *p );
 		~legend_item();
 		wxPLPlottable *plot;
-		wxString text;
-		text_layout *layout;
+		text_layout *text;
+		double width, height;
 	};
 
 	bool m_legendInvalidated;
