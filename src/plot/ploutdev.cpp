@@ -250,14 +250,6 @@ void wxPLDCOutputDevice::Pen( const wxColour &c, double size,
 	m_pen.SetColour( c );
 	size *= m_scale;
 	m_pen.SetWidth( size < 1.0 ? 1 : ((int)size) );
-	switch( line )
-	{
-	case NONE: m_pen = *wxTRANSPARENT_PEN; break; // if transparent skip everything else
-	case DOT: m_pen.SetStyle( wxDOT ); break;
-	case DASH: m_pen.SetStyle( wxSHORT_DASH ); break;
-	case DOTDASH: m_pen.SetStyle( wxDOT_DASH ); break;
-	default: m_pen.SetStyle( wxSOLID ); break;
-	}
 	switch( join )
 	{
 	case MITER: m_pen.SetJoin( wxJOIN_MITER ); break;
@@ -269,6 +261,14 @@ void wxPLDCOutputDevice::Pen( const wxColour &c, double size,
 	case ROUND: m_pen.SetCap( wxCAP_ROUND ); break;
 	case MITER: m_pen.SetCap( wxCAP_PROJECTING ); break;
 	default: m_pen.SetCap( wxCAP_BUTT );
+	}
+	switch( line )
+	{
+	case NONE: m_pen = *wxTRANSPARENT_PEN; break;
+	case DOT: m_pen.SetStyle( wxDOT ); break;
+	case DASH: m_pen.SetStyle( wxSHORT_DASH ); break;
+	case DOTDASH: m_pen.SetStyle( wxDOT_DASH ); break;
+	default: m_pen.SetStyle( wxSOLID ); break;
 	}
 	m_curdc->SetPen( m_pen );
 }

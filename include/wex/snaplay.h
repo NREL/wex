@@ -83,8 +83,8 @@ private:
 
 	wxString m_backgroundText;
 	
-	static const int m_space = 15;
-	static const int m_scrollRate = 1;
+	int m_space;
+	int m_scrollRate;
 
 	wxPoint m_orig;
 

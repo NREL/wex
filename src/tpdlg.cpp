@@ -1,6 +1,7 @@
 #include <wx/wx.h>
 #include <wx/file.h>
 
+#include "wex/utils.h"
 #include "wex/metro.h"
 #include "wex/tpdlg.h"
 
@@ -12,7 +13,7 @@ END_EVENT_TABLE( )
 
 wxThreadProgressDialog::wxThreadProgressDialog(wxWindow *parent, int nthreads, bool border)
 	: wxDialog( parent, wxID_ANY, wxEmptyString, wxDefaultPosition, 
-	wxSize(625, 475), (border ? wxBORDER_SIMPLE : wxBORDER_NONE )
+	wxScaleSize(625, 475), (border ? wxBORDER_SIMPLE : wxBORDER_NONE )
 #if defined(__WXOSX__)||defined(__WXGTK__)
 	|wxSTAY_ON_TOP // on OSX/GTK+ for some reason, we need this for the dialog show up on top of the transparent pane which is the parent
 #endif
@@ -80,6 +81,9 @@ void wxThreadProgressDialog::ShowSaveLogButton()
 {
 	wxSize client( GetClientSize() );
 	wxSize best( m_saveLog->GetBestSize() );
+
+	// TODO - check on high DPI screens if sizer spacing aligns with 10 or
+	// if this offset value needs to be scaled by GetContentScaleFactor()
 	m_saveLog->SetSize( 10, client.y - best.y - 10, best.x, best.y );
 	m_saveLog->Show();
 	Layout();

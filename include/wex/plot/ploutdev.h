@@ -55,7 +55,9 @@ public:
 	virtual double CharHeight() = 0;
 
 
-	// API variants
+	// API variants and helpers;
+	virtual void NoPen() { Pen( *wxBLACK, 1.0, NONE ); }
+	virtual void NoBrush() { Brush( *wxBLACK, NONE ); }
 	virtual void Point( const wxRealPoint &p ) { Point(p.x,p.y); }
 	virtual void Line( const wxRealPoint &p1, const wxRealPoint &p2 ) { Line( p1.x, p1.y, p2.x, p2.y ); }
 	virtual void Rect( const wxPLRealRect &r ) { Rect( r.x, r.y, r.width, r.height ); }

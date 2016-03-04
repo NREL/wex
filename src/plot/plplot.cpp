@@ -21,7 +21,7 @@
 #endif
 
 static const double text_space = 3.0;
-static const wxRealPoint legend_item_box(14.0, 14.0);
+static const wxRealPoint legend_item_box(13.0, 13.0);
 
 class wxPLAxisDeviceMapping : public wxPLDeviceMapping
 {
@@ -497,7 +497,7 @@ public:
 		if ( draw_bounds )
 		{
 			dc.Pen( *wxLIGHT_GREY, 0.5 );
-			dc.Brush( *wxBLUE, wxPLOutputDevice::NONE );
+			dc.NoBrush();
 		}
 
 		// layout has already been calculated, assuming the same font.
@@ -1024,6 +1024,7 @@ wxPLPlot::wxPLPlot()
 		m_sideWidgets[i] = 0;
 
 	m_showLegend = true;
+	m_showLegendBorder = true;
 	m_showCoarseGrid = true;
 	m_showFineGrid = true;
 	m_showTitle = true;
@@ -1665,7 +1666,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 	// compute box dimensions for each plot/subplot
 	// and fill plot area with background color
 	dc.Brush(  m_plotAreaColour );
-	dc.Pen( *wxWHITE, 1.0, wxPLOutputDevice::NONE );
+	dc.NoPen();
 
 	double cur_plot_y_start = box.y;
 	m_plotRects.clear();
@@ -1778,7 +1779,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 		dc.Line(pp_center.x-pp_radius,pp_center.y,pp_center.x+pp_radius,pp_center.y);
 		dc.Line(pp_center.x, pp_center.y + pp_radius, pp_center.x, pp_center.y - pp_radius);
 
-		dc.Brush( *wxWHITE, wxPLOutputDevice::NONE ); // otherwise, circle is filled in
+		dc.NoBrush();
 		dc.Circle(pp_center, pp_radius);
 	}
 
@@ -1867,7 +1868,7 @@ void wxPLPlot::DrawPolarGrid( wxPLOutputDevice &dc, wxPLAxis::TickData::TickSize
 {
 	if (m_plotRects.size() < 1) return;
 
-	dc.Brush( *wxWHITE, wxPLOutputDevice::NONE );
+	dc.NoBrush();
 	wxRealPoint cntr(m_plotRects[0].x + m_plotRects[0].width / 2.0, m_plotRects[0].y + m_plotRects[0].height / 2.0);
 	double max_radius = (m_plotRects[0].width < m_plotRects[0].height) ? m_plotRects[0].width / 2.0 : m_plotRects[0].height / 2.0;
 
@@ -1956,6 +1957,8 @@ void wxPLPlot::CalcLegendTextLayout( wxPLOutputDevice &dc )
 					m_legendRect.width += width + 5*text_space + legend_item_box.x;
 				}
 			}
+
+			m_legendRect.height += text_space;
 		}
 		else
 		{
@@ -2062,7 +2065,10 @@ void wxPLPlot::DrawLegend( wxPLOutputDevice &dc, const wxPLRealRect& geom )
 	if ( m_legendPos != BOTTOM && m_legendPos != RIGHT )
 	{
 		dc.Brush( *wxWHITE );
-		dc.Pen( *wxLIGHT_GREY, 0.5 );
+		
+		if ( m_showLegendBorder ) dc.Pen( *wxLIGHT_GREY, 0.5 );
+		else dc.NoPen();
+
 		dc.Rect( m_legendRect );
 	}
 	

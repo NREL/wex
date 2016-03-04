@@ -7,12 +7,13 @@ BEGIN_EVENT_TABLE(wxRadioChoice, wxPanel)
 	EVT_SIZE( wxRadioChoice::OnResize )
 END_EVENT_TABLE()
 
-#define MIN_HEIGHT 21
-
+static int s_minHeight = -1;
 
 wxRadioChoice::wxRadioChoice( wxWindow *parent, int id, const wxPoint &pos, const wxSize &size)
 	: wxPanel( parent, id, pos, size, wxTAB_TRAVERSAL )
 {
+	if ( s_minHeight < 0 ) s_minHeight = (int)(21.0*GetContentScaleFactor());
+
 	SetBackgroundColour( parent->GetBackgroundColour() );
 	m_showCaptions = true;
 	m_horizontal = false;
@@ -115,7 +116,7 @@ wxSize wxRadioChoice::DoGetBestSize() const
 		{
 			m_buttons[i]->InvalidateBestSize();
 			wxSize s( m_buttons[i]->GetBestSize() );
-			if ( s.y < MIN_HEIGHT ) s.y = MIN_HEIGHT;
+			if ( s.y < s_minHeight ) s.y = s_minHeight;
 			if ( s.y > size.y ) size.y = s.y;
 			size.x += s.x;
 		}
@@ -127,7 +128,7 @@ wxSize wxRadioChoice::DoGetBestSize() const
 		{
 			m_buttons[i]->InvalidateBestSize();
 			wxSize s( m_buttons[i]->GetBestSize() );
-			if ( s.y < MIN_HEIGHT ) s.y = MIN_HEIGHT;
+			if ( s.y < s_minHeight ) s.y = s_minHeight;
 			if( s.x > size.x ) size.x = s.x;
 			size.y += s.y;
 		}
@@ -198,11 +199,11 @@ void wxRadioChoice::Rearrange()
 	}
 	else
 	{
-		int b_height = MIN_HEIGHT;
+		int b_height = s_minHeight;
 		if ( m_buttons.size() > 0 )
 		{
 			int best_height = m_buttons[0]->GetBestSize().GetHeight();
-			if ( best_height > MIN_HEIGHT )
+			if ( best_height > s_minHeight )
 				b_height = best_height;
 
 			if ( m_evenly );

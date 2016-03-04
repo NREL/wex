@@ -6,6 +6,8 @@
 
 #include <wex/snaplay.h>
 #include <wex/metro.h>
+#include <wex/utils.h>
+
 #include <algorithm>
 
 class wxSnapLayout::OverlayWindow : public wxFrame
@@ -59,6 +61,8 @@ wxSnapLayout::wxSnapLayout( wxWindow *parent, int id, const wxPoint &pos, const 
 	m_sizeHover = -1;
 	m_moveHover = -1;
 	m_showSizing = false;
+	m_space = (int)(15.0 * wxGetScreenHDScale());
+	m_scrollRate = 1;
 }
 
 wxSnapLayout::~wxSnapLayout()
@@ -78,7 +82,7 @@ void wxSnapLayout::Add( wxWindow *win, int width, int height )
 	l->win = win;
 	l->req.x = width;
 	l->req.y = height;
-	l->rect = wxRect( 0, 0, 500, 300 );
+	l->rect = wxScaleRect( 0, 0, 500, 300 );
 	l->highlight = false;
 	m_list.push_back( l );
 
@@ -454,7 +458,7 @@ void wxSnapLayout::OnLeftDown( wxMouseEvent &evt )
 		{
 		case SE: case NW: SetCursor( wxCURSOR_SIZENWSE ); break;
 		case SW: case NE: SetCursor( wxCURSOR_SIZENESW ); break;
-		default: SetCursor( wxCURSOR_SIZING );
+		default: SetCursor( wxCURSOR_DEFAULT );
 		}
 	}
 	else SetCursor( wxCURSOR_DEFAULT );

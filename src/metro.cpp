@@ -155,6 +155,7 @@ wxMetroButton::wxMetroButton(wxWindow *parent, int id, const wxString &label, co
 	const wxPoint &pos, const wxSize &sz, long style)
 	: wxWindow(parent, id, pos, sz), m_label( label ), m_bitmap( bitmap ), m_style( style )
 {
+	m_space = (int)( 6 * GetContentScaleFactor() );
 	SetBackgroundStyle(wxBG_STYLE_CUSTOM);
 	m_state = 0;  // state: 0=normal, 1=hover, 2=click
 	m_pressed = false;
@@ -164,8 +165,6 @@ wxMetroButton::wxMetroButton(wxWindow *parent, int id, const wxString &label, co
 	else
 		SetFont( wxMetroTheme::Font( wxMT_NORMAL, 11) );
 }
-
-#define MB_SPACE 6
 
 wxSize wxMetroButton::DoGetBestSize() const
 {
@@ -187,14 +186,14 @@ wxSize wxMetroButton::DoGetBestSize() const
 
 	if ( !icon.IsNull() )
 	{
-		tw += icon.GetWidth() + ( tw > 0 ? MB_SPACE : 0 );
+		tw += icon.GetWidth() + ( tw > 0 ? m_space : 0 );
 		if ( icon.GetHeight() > th )
 			th = icon.GetHeight();
 	}
 
 	if ( !m_bitmap.IsNull() )
 	{
-		tw += m_bitmap.GetWidth() + ( tw > 0 ? MB_SPACE : 0 );
+		tw += m_bitmap.GetWidth() + ( tw > 0 ? m_space : 0 );
 		if ( m_bitmap.GetHeight() > th )
 			th = m_bitmap.GetHeight();
 	}
@@ -242,7 +241,7 @@ void wxMetroButton::OnPaint(wxPaintEvent &)
 	int xoffset = 0;
 	if ( !icon.IsNull() )
 	{
-		int space = ( tw > 0 ? MB_SPACE : 0 );
+		int space = ( tw > 0 ? m_space : 0 );
 		tw += icon.GetWidth() + space;
 		xoffset -= icon.GetWidth() + space;
 		icon_width = icon.GetWidth();
@@ -261,10 +260,10 @@ void wxMetroButton::OnPaint(wxPaintEvent &)
 		xoffset -= bit_width;
 		if ( !icon.IsNull() || !m_label.IsEmpty() )
 		{
-			tw += MB_SPACE;
-			xoffset -= MB_SPACE;
+			tw += m_space;
+			xoffset -= m_space;
 		}
-		bit_space = MB_SPACE/2;
+		bit_space = m_space/2;
 	}
 
 	dc.SetFont( GetFont() );
@@ -366,11 +365,6 @@ void wxMetroButton::OnMotion( wxMouseEvent &)
 
 enum { ID_TAB0 = wxID_HIGHEST+142 };
 
-
-#define TB_SPACE 2
-#define TB_XPADDING 10
-#define TB_YPADDING 12
-
 BEGIN_EVENT_TABLE(wxMetroTabList, wxWindow)
 	EVT_LEFT_DCLICK( wxMetroTabList::OnLeftDown)
 	EVT_LEFT_DOWN( wxMetroTabList::OnLeftDown )
@@ -386,6 +380,12 @@ wxMetroTabList::wxMetroTabList( wxWindow *parent, int id,
 	const wxPoint &pos, const wxSize &size, long style )
 	: wxWindow( parent, id, pos, size )
 {
+	double sf = GetContentScaleFactor();
+	m_space = (int)( 2.0 * sf );
+	m_xPadding = (int)( 10.0 * sf );
+	m_yPadding = (int)( 12.0 * sf );
+
+
 	SetBackgroundStyle( wxBG_STYLE_PAINT );
 	m_dotdotWidth = 0;
 	m_dotdotHover = false;
@@ -539,17 +539,17 @@ wxSize wxMetroTabList::DoGetBestSize() const
 
 	int width = 0;
 
-	int button_width = wxMetroTheme::Bitmap( wxMT_DOWNARROW ).GetWidth() + TB_SPACE + TB_SPACE;
+	int button_width = wxMetroTheme::Bitmap( wxMT_DOWNARROW ).GetWidth() + m_space + m_space;
 
 	for ( size_t i=0;i<m_items.size(); i++ )
 	{
 		int tw, th;
 		dc.GetTextExtent( m_items[i].label, &tw, &th );
-		width += tw + TB_SPACE + TB_XPADDING;
+		width += tw + m_space + m_xPadding;
 		if ( m_items[i].button ) width += button_width;
 	}
 
-	int height = dc.GetCharHeight() + TB_YPADDING;
+	int height = dc.GetCharHeight() + m_yPadding;
 
 	return wxSize( width, height );
 }
@@ -571,12 +571,12 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 	dc.SetBackground( light ? *wxWHITE : wxMetroTheme::Colour( wxMT_FOREGROUND ) );
 	dc.Clear();
 
-	int x = TB_SPACE;
+	int x = m_space;
 
 	m_dotdotWidth = 0;
 	
 	wxBitmap button_icon( wxMetroTheme::Bitmap( wxMT_DOWNARROW, !light ) );
-	int button_width = button_icon.GetWidth() + TB_SPACE + TB_SPACE;
+	int button_width = button_icon.GetWidth() + m_space + m_space;
 	int button_height = button_icon.GetHeight();
 	
 	dc.SetFont( GetFont() );
@@ -588,9 +588,9 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 		{
 			dc.GetTextExtent( m_items[i].label, &txtw, &txth );
 			m_items[i].x_start = x;
-			m_items[i].width = txtw+TB_XPADDING+TB_XPADDING;
+			m_items[i].width = txtw+m_xPadding+m_xPadding;
 			if ( m_items[i].button ) m_items[i].width += button_width;
-			x += m_items[i].width + TB_SPACE;
+			x += m_items[i].width + m_space;
 
 			if ( i > 0 && x > cwidth - 25 ) // 25 approximates width of '...'	
 				m_dotdotWidth = 1;
@@ -611,7 +611,7 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 		font.SetWeight( wxFONTWEIGHT_BOLD );
 		dc.SetFont( font );
 		dc.GetTextExtent( "...", &m_dotdotWidth, &dotdot_height );
-		m_dotdotWidth += TB_SPACE + TB_SPACE;
+		m_dotdotWidth += m_space + m_space;
 		dc.SetFont( GetFont() ); // restore font
 	}
 
@@ -656,8 +656,8 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 			{
 				dc.SetPen( wxPen( wxMetroTheme::Colour( light ? wxMT_HIGHLIGHT : wxMT_DIMHOVER ), 1 ) );
 				dc.SetBrush( wxBrush( wxMetroTheme::Colour( light ? wxMT_HIGHLIGHT : wxMT_DIMHOVER ) ) );
-				dc.DrawRectangle( m_items[i].x_start + m_items[i].width - button_width - TB_XPADDING + TB_SPACE,
-					0, button_width + TB_XPADDING - TB_SPACE, cheight );
+				dc.DrawRectangle( m_items[i].x_start + m_items[i].width - button_width - m_xPadding + m_space,
+					0, button_width + m_xPadding - m_space, cheight );
 			}
 		}
 
@@ -673,12 +673,12 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 		}
 
 		dc.SetTextForeground( text );			
-		dc.DrawText( m_items[i].label, m_items[i].x_start + TB_XPADDING, cheight/2-CharHeight/2-1 );
+		dc.DrawText( m_items[i].label, m_items[i].x_start + m_xPadding, cheight/2-CharHeight/2-1 );
 
 		if ( m_items[i].button )
 		{	
 			dc.DrawBitmap( button_icon, 
-				m_items[i].x_start + m_items[i].width - TB_SPACE - button_width, 
+				m_items[i].x_start + m_items[i].width - m_space - button_width, 
 				cheight/2-button_height/2+1 );
 		}
 
@@ -700,7 +700,7 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 			? (m_dotdotHover ?  wxMetroTheme::Colour( wxMT_SELECT ) : wxMetroTheme::Colour( wxMT_TEXT )) 
 			: *wxWHITE );
 
-		dc.DrawText( "...", cwidth - m_dotdotWidth + TB_SPACE, cheight/2 - dotdot_height/2-1 );
+		dc.DrawText( "...", cwidth - m_dotdotWidth + m_space, cheight/2 - dotdot_height/2-1 );
 	}
 
 	if ( light )
@@ -793,8 +793,8 @@ bool wxMetroTabList::IsOverButton( int mouse_x, size_t i )
 {
 	if ( m_items[i].button )
 	{
-		int button_width = wxMetroTheme::Bitmap( wxMT_DOWNARROW ).GetWidth() + TB_SPACE + TB_SPACE;
-		if ( mouse_x > m_items[i].x_start + m_items[i].width - button_width - TB_XPADDING + TB_SPACE )
+		int button_width = wxMetroTheme::Bitmap( wxMT_DOWNARROW ).GetWidth() + m_space + m_space;
+		if ( mouse_x > m_items[i].x_start + m_items[i].width - button_width - m_xPadding + m_space )
 			return true;
 	}
 	
@@ -1313,6 +1313,7 @@ END_EVENT_TABLE()
 wxMetroListBox::wxMetroListBox(wxWindow *parent, int id, const wxPoint &pos, const wxSize &size)
 	: wxScrolledWindow(parent,id, pos, size, wxBORDER_NONE)
 {
+	m_space = (int)( 10.0 * GetContentScaleFactor() );
 	SetBackgroundStyle(wxBG_STYLE_CUSTOM);
 	SetBackgroundColour( *wxWHITE );
 	SetFont( wxMetroTheme::Font( wxMT_LIGHT, 15 ) );	
@@ -1426,7 +1427,7 @@ void wxMetroListBox::Invalidate()
 	for (int i=0;i<m_items.size();i++)
 	{
 		
-		int height = dc.GetCharHeight()+10;
+		int height = dc.GetCharHeight() + m_space;
 		m_items[i].geom.x = 0;
 		m_items[i].geom.y = y;
 		m_items[i].geom.width = sz.GetWidth()+1;
@@ -1469,7 +1470,7 @@ void wxMetroListBox::OnPaint(wxPaintEvent &evt)
 		dc.SetBrush( wxBrush( bcol ) );
 		dc.DrawRectangle( m_items[i].geom );
 		dc.SetTextForeground( (m_selectedIdx==i) ? *wxWHITE : *wxBLACK );
-		dc.DrawText( m_items[i].name, 6, m_items[i].geom.y + m_items[i].geom.height/2 - height/2 );
+		dc.DrawText( m_items[i].name, m_space/2, m_items[i].geom.y + m_items[i].geom.height/2 - height/2 );
 	}			
 }
 
@@ -1554,14 +1555,11 @@ void wxMetroListBox::OnLeave(wxMouseEvent &evt)
 	Refresh();
 }
 
-#define POPUP_BORDER 1
-#define POPUP_SPACE 5
-#define CHECK_SPACE 14
-#define CHECK_HEIGHT 14
-#define CHECK_WIDTH 10
 
 class wxMetroPopupMenuWindow : public wxPopupWindow
 {
+	int m_border, m_space, m_checkSpace, m_checkHeight, m_checkWidth;
+
 	struct item {
 		int id;
 		wxString label;
@@ -1578,6 +1576,14 @@ public:
 		: wxPopupWindow( parent, wxBORDER_NONE|wxWANTS_CHARS ),
 		m_theme( theme )
 	{
+		double sf = GetContentScaleFactor();
+
+		m_border = (int)(1.0*sf);
+		m_space = (int)(5.0*sf);
+		m_checkSpace = (int)(14.0*sf);
+		m_checkHeight = (int)(14.0*sf);
+		m_checkWidth = (int)(10.0*sf);
+		
 		m_hover = -1;
 		SetBackgroundStyle(wxBG_STYLE_CUSTOM);
 	}
@@ -1612,11 +1618,11 @@ public:
 		dc.SetFont( GetFont() );
 		int ch = dc.GetCharHeight();
 		int wl = 0, wr = 0;
-		int h = POPUP_BORDER;
+		int h = m_border;
 		for( size_t i=0;i<m_items.size();i++ )
 		{
 			if ( m_items[i].label.IsEmpty() )
-				h += POPUP_BORDER;
+				h += m_border;
 			else
 			{
 				int tpos = m_items[i].label.Find( '\t' );
@@ -1637,16 +1643,16 @@ public:
 					if ( wl < sz.x ) wl = sz.x;
 				}
 
-				h += POPUP_SPACE + ch;
+				h += m_space + ch;
 			}
 		}
 	
-		wl += 4*POPUP_SPACE;
-		if ( m_hasCheckItems ) wl += CHECK_SPACE;
+		wl += 4*m_space;
+		if ( m_hasCheckItems ) wl += m_checkSpace;
 
-		if ( wr > 0 ) wr += 3*POPUP_SPACE;
+		if ( wr > 0 ) wr += 3*m_space;
 
-		return wxSize( wl + wr, h+POPUP_BORDER );
+		return wxSize( wl + wr, h+m_border );
 	}
 	
 
@@ -1667,12 +1673,12 @@ public:
 		dc.SetPen( wxPen( wxMetroTheme::Colour( wxMT_HOVER ), 1 ) );
 		dc.DrawRectangle( wxRect(0,0,sz.x,sz.y) );
 
-		int uh = ch + POPUP_SPACE;
-		int x0 = m_hasCheckItems ? CHECK_SPACE : 0;
+		int uh = ch + m_space;
+		int x0 = m_hasCheckItems ? m_checkSpace : 0;
 		
 		dc.SetPen( wxPen( text, 1) );
 
-		size_t yy = POPUP_BORDER;
+		size_t yy = m_border;
 		for ( size_t i=0;i<m_items.size();i++ )
 		{
 			m_items[i].ymin = yy;
@@ -1683,7 +1689,7 @@ public:
 				{
 					dc.SetTextForeground( texthi );
 					dc.SetBrush( wxBrush( acchi ) );
-					dc.DrawRectangle( 0, yy, sz.x, ch + POPUP_SPACE );
+					dc.DrawRectangle( 0, yy, sz.x, ch + m_space );
 				}
 				else
 					dc.SetTextForeground( text );
@@ -1696,13 +1702,13 @@ public:
 					wxString l = m_items[i].label.Left(tpos);
 					wxString r = m_items[i].label.Mid(tpos+1);
 
-					dc.DrawText( l, x0+POPUP_BORDER+POPUP_SPACE, texty );
+					dc.DrawText( l, x0+m_border+m_space, texty );
 					dc.SetTextForeground( *wxLIGHT_GREY );
-					dc.DrawText( r, sz.x - POPUP_BORDER - POPUP_SPACE - dc.GetTextExtent(r).x, texty );
+					dc.DrawText( r, sz.x - m_border - m_space - dc.GetTextExtent(r).x, texty );
 				}
 				else
 				{
-					dc.DrawText( m_items[i].label, x0+POPUP_BORDER+POPUP_SPACE, texty );			
+					dc.DrawText( m_items[i].label, x0+m_border+m_space, texty );			
 				}
 
 				if ( m_items[i].is_checkItem )
@@ -1712,7 +1718,7 @@ public:
 					else dc.SetBrush( *wxTRANSPARENT_BRUSH );
 
 					dc.SetPen( wxPen( chkcol, 1 ) );
-					dc.DrawRectangle( 4, yy + uh/2 - CHECK_HEIGHT/2, CHECK_WIDTH, CHECK_HEIGHT );
+					dc.DrawRectangle( 4, yy + uh/2 - m_checkHeight/2, m_checkWidth, m_checkHeight );
 				}
 
 				yy += uh;
@@ -1720,7 +1726,7 @@ public:
 			else
 			{
 				dc.DrawLine( 0, yy, sz.x, yy );
-				yy += POPUP_BORDER;
+				yy += m_border;
 			}
 
 			m_items[i].ymax = yy;

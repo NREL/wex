@@ -88,6 +88,8 @@ inline wxSize wxScaleSize( const wxSize &s ) { return wxScaleSize( s, wxGetScree
 inline wxSize wxScaleSize( int width, int height ) { return wxScaleSize( wxSize(width, height) ); }
 wxRect wxScaleRect( const wxRect &r, double xs, double ys );
 inline wxRect wxScaleRect( const wxRect &r, double sf ) { return wxScaleRect( r, sf, sf ); }
+inline wxRect wxScaleRect( const wxRect &r ) { return wxScaleRect( r, wxGetScreenHDScale() ); }
+inline wxRect wxScaleRect( int x, int y, int width, int height ) { return wxScaleRect( wxRect(x,y,width,height) ); }
 
 
 // sort (n^2) names and labels together

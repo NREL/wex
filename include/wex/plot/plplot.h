@@ -149,11 +149,13 @@ public:
 	
 	void ShowLegend( bool show ) { m_showLegend = show; }
 	bool IsLegendShown() const { return m_showLegend; }
+	void ShowLegendBorder( bool show ) { m_showLegendBorder = show; }
+	bool IsLegendBorderShown() { return m_showLegendBorder; }
 	void SetLegendReversed( bool reverse ) { m_reverseLegend = reverse; }
 	bool IsLegendReversed() const { return m_reverseLegend; }
 	void SetLegendPosition( LegendPos pos ) { m_legendPos = pos; }
 	void SetLegendLocation( LegendPos pos, double xpercent = -999.0, double ypercent = -999.0 );
-	bool SetLegendLocation( const wxString &spos );
+	bool SetLegendLocation( const wxString &spos );	
 	LegendPos GetLegendPosition() const { return m_legendPos; }
 	wxRealPoint GetLegendLocation() { return m_legendPosPercent; }
 		
@@ -198,6 +200,7 @@ private:
 
 
 	bool m_showLegend;
+	bool m_showLegendBorder;
 	bool m_showCoarseGrid;
 	bool m_showFineGrid;
 	bool m_showTitle;

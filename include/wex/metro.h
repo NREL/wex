@@ -91,6 +91,7 @@ private:
 	int m_state;
 	bool m_pressed;
 	long m_style;
+	int m_space;
 
 	void OnPaint(wxPaintEvent &evt);
 	void OnResize(wxSizeEvent &evt);
@@ -164,6 +165,8 @@ protected:
 	int m_hoverIdx;
 	long m_style;
 	bool m_buttonHover;
+
+	int m_space, m_xPadding, m_yPadding;
 
 	bool IsOverButton( int mouse_x, size_t i );
 
@@ -295,6 +298,7 @@ private:
 	std::vector<_item> m_items;
 	int m_hoverIdx;
 	int m_selectedIdx;
+	int m_space;
 
 	void OnPaint( wxPaintEvent &evt );
 	void OnErase( wxEraseEvent &evt );

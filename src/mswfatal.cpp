@@ -626,7 +626,7 @@ LONG __stdcall MSW_CrashHandlerExceptionFilter( EXCEPTION_POINTERS *pExPtrs )
 
 	delete busyinfo; // hide the busy info dialog before proceeding
 	
-	ExceptionDialog dialog( sg_message.c_str(), "Unhandled Fatal Exception", wxSize(650, 550) );
+	ExceptionDialog dialog( sg_message.c_str(), "Unhandled Fatal Exception", wxScaleSize(650, 550) );
 	dialog.CenterOnScreen();
 	dialog.ShowModal();
 	return lRet;

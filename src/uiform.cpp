@@ -3095,7 +3095,7 @@ wxUIFormDesigner::wxUIFormDesigner(wxWindow *parent, int id, const wxPoint &pos,
 	SetBackgroundStyle( wxBG_STYLE_CUSTOM );
 //	SetBackgroundColour( *wxWHITE );
 	m_formData = 0;
-	m_editor = new wxUIFormEditor( this, id, wxPoint(1,1), wxSize(400,300) );
+	m_editor = new wxUIFormEditor( this, id, wxPoint(1,1), wxScaleSize(400,300) );
 	m_diffX = m_diffY = 0;
 	m_mouseDown = false;
 	UpdateScrollbars();
@@ -3161,7 +3161,8 @@ void wxUIFormDesigner::OnPaint(wxPaintEvent &)
 	pdc.DrawRectangle(vx+fx-1, vy+fy-1, fw+2, fh+2);
 
 	pdc.SetBrush(wxBrush(g_uiSelectColor));
-	pdc.DrawRectangle(vx+fx+fw, vy+fy+fh, 10, 10);
+	int rct = (int)(10.0*GetContentScaleFactor());
+	pdc.DrawRectangle(vx+fx+fw, vy+fy+fh, rct, rct);
 
 	pdc.DestroyClippingRegion();
 }
@@ -3181,8 +3182,10 @@ void wxUIFormDesigner::OnMouseDown(wxMouseEvent &evt)
 	int mw,mh;
 	m_editor->GetClientSize(&mw,&mh);
 
-	if ( mx >= mw+1 && mx < mw+11
-		&& my >= mh+1 && my < mh+11 )
+	int rct = (int)(10.0*GetContentScaleFactor());
+
+	if ( mx >= mw+1 && mx < mw+rct+1
+		&& my >= mh+1 && my < mh+rct+1 )
 	{
 		m_diffX = mx - mw;
 		m_diffY = my - mh;

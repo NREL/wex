@@ -32,7 +32,8 @@ wxSize wxLabel::DoGetBestSize() const
 	if ( m_bold ) font.SetWeight( wxFONTWEIGHT_BOLD );
 	dc.SetFont( font );
 	wxSize size = dc.GetTextExtent( m_text );
-	return wxSize( size.x + 4, size.y + 4 );
+	int border = (int)( 4.0 * GetContentScaleFactor() );
+	return wxSize( size.x + border, size.y + border );
 }
 
 void wxLabel::AlignTop(bool b)

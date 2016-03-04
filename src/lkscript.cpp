@@ -317,7 +317,7 @@ void fcall_plot( lk::invoke_t &cxt )
 void fcall_plotopt( lk::invoke_t &cxt )
 {
 	LK_DOC("plotopt", 
-		"Modifies the current plot properties like title, coarse, fine, legend, legendpos, scale, font, window, pdffontface, pdffontsize, pdffontdir", 
+		"Modifies the current plot properties like title, coarse, fine, legend, legendpos, legendborder, scale, font, window, pdffontface, pdffontsize, pdffontdir", 
 		"(table:options):boolean");
 	
 	cxt.result().assign( 1.0 );
@@ -382,6 +382,12 @@ void fcall_plotopt( lk::invoke_t &cxt )
 		}
 	}
 
+	if ( lk::vardata_t *arg = cxt.arg(0).lookup("legendborder") )
+	{
+		plot->ShowLegendBorder( arg->as_boolean() );
+		mod = true;
+	}
+
 	if ( lk::vardata_t *arg = cxt.arg(0).lookup("window") )
 	{
 		if ( s_curPlotWin
@@ -403,11 +409,13 @@ void fcall_plotopt( lk::invoke_t &cxt )
 				h = arg->index(1)->as_integer();
 			}
 
+			
 			if ( x >= 0 && y >= 0 )
 				s_curPlotWin->SetPosition( wxPoint(x, y) );
 
+			// coordinates for plot window size always in DIPs
 			if ( w > 0 && h > 0 )
-				s_curPlotWin->SetClientSize( wxSize(w,h) );
+				s_curPlotWin->SetClientSize( wxScaleSize(w,h) );
 		}
 	}
 
@@ -1770,7 +1778,7 @@ bool wxLKScriptCtrl::Debug( int mode )
 	{
 		wxPoint pt( ClientToScreen( GetPosition() ) );
 		wxSize sz( GetClientSize() );
-		m_debugger->SetPosition( wxPoint(pt.x + sz.x/2, pt.y + 30) );
+		m_debugger->SetPosition( wxPoint(pt.x + sz.x/2, pt.y + (int)(30.0*GetContentScaleFactor())) );
 		m_debuggerFirstShow = false;
 	}
 
