@@ -3161,7 +3161,7 @@ void wxUIFormDesigner::OnPaint(wxPaintEvent &)
 	pdc.DrawRectangle(vx+fx-1, vy+fy-1, fw+2, fh+2);
 
 	pdc.SetBrush(wxBrush(g_uiSelectColor));
-	int rct = (int)(10.0*GetContentScaleFactor());
+	int rct = (int)(10.0*wxGetScreenHDScale());
 	pdc.DrawRectangle(vx+fx+fw, vy+fy+fh, rct, rct);
 
 	pdc.DestroyClippingRegion();
@@ -3182,7 +3182,7 @@ void wxUIFormDesigner::OnMouseDown(wxMouseEvent &evt)
 	int mw,mh;
 	m_editor->GetClientSize(&mw,&mh);
 
-	int rct = (int)(10.0*GetContentScaleFactor());
+	int rct = (int)(10.0*wxGetScreenHDScale());
 
 	if ( mx >= mw+1 && mx < mw+rct+1
 		&& my >= mh+1 && my < mh+rct+1 )

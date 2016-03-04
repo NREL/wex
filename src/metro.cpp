@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include "wex/metro.h"
+#include "wex/utils.h"
 
 #include "wex/icons/up_arrow_13.cpng"
 #include "wex/icons/down_arrow_13.cpng"
@@ -155,7 +156,7 @@ wxMetroButton::wxMetroButton(wxWindow *parent, int id, const wxString &label, co
 	const wxPoint &pos, const wxSize &sz, long style)
 	: wxWindow(parent, id, pos, sz), m_label( label ), m_bitmap( bitmap ), m_style( style )
 {
-	m_space = (int)( 6 * GetContentScaleFactor() );
+	m_space = (int)( 6 * wxGetScreenHDScale() );
 	SetBackgroundStyle(wxBG_STYLE_CUSTOM);
 	m_state = 0;  // state: 0=normal, 1=hover, 2=click
 	m_pressed = false;
@@ -380,7 +381,7 @@ wxMetroTabList::wxMetroTabList( wxWindow *parent, int id,
 	const wxPoint &pos, const wxSize &size, long style )
 	: wxWindow( parent, id, pos, size )
 {
-	double sf = GetContentScaleFactor();
+	double sf = wxGetScreenHDScale();
 	m_space = (int)( 2.0 * sf );
 	m_xPadding = (int)( 10.0 * sf );
 	m_yPadding = (int)( 12.0 * sf );
@@ -1313,7 +1314,7 @@ END_EVENT_TABLE()
 wxMetroListBox::wxMetroListBox(wxWindow *parent, int id, const wxPoint &pos, const wxSize &size)
 	: wxScrolledWindow(parent,id, pos, size, wxBORDER_NONE)
 {
-	m_space = (int)( 10.0 * GetContentScaleFactor() );
+	m_space = (int)( 10.0 * wxGetScreenHDScale() );
 	SetBackgroundStyle(wxBG_STYLE_CUSTOM);
 	SetBackgroundColour( *wxWHITE );
 	SetFont( wxMetroTheme::Font( wxMT_LIGHT, 15 ) );	
@@ -1576,7 +1577,7 @@ public:
 		: wxPopupWindow( parent, wxBORDER_NONE|wxWANTS_CHARS ),
 		m_theme( theme )
 	{
-		double sf = GetContentScaleFactor();
+		double sf = wxGetScreenHDScale();
 
 		m_border = (int)(1.0*sf);
 		m_space = (int)(5.0*sf);

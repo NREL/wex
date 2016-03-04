@@ -1778,7 +1778,7 @@ bool wxLKScriptCtrl::Debug( int mode )
 	{
 		wxPoint pt( ClientToScreen( GetPosition() ) );
 		wxSize sz( GetClientSize() );
-		m_debugger->SetPosition( wxPoint(pt.x + sz.x/2, pt.y + (int)(30.0*GetContentScaleFactor())) );
+		m_debugger->SetPosition( wxPoint(pt.x + sz.x/2, pt.y + (int)(30.0*wxGetScreenHDScale())) );
 		m_debuggerFirstShow = false;
 	}
 

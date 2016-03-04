@@ -83,7 +83,7 @@ void wxThreadProgressDialog::ShowSaveLogButton()
 	wxSize best( m_saveLog->GetBestSize() );
 
 	// TODO - check on high DPI screens if sizer spacing aligns with 10 or
-	// if this offset value needs to be scaled by GetContentScaleFactor()
+	// if this offset value needs to be scaled by wxGetScreenHDScale()
 	m_saveLog->SetSize( 10, client.y - best.y - 10, best.x, best.y );
 	m_saveLog->Show();
 	Layout();

@@ -1,4 +1,5 @@
 #include "wex/radiochoice.h"
+#include "wex/utils.h"
 
 enum { ID_CHILD_RADIO = wxID_HIGHEST + 938 };
 
@@ -12,7 +13,7 @@ static int s_minHeight = -1;
 wxRadioChoice::wxRadioChoice( wxWindow *parent, int id, const wxPoint &pos, const wxSize &size)
 	: wxPanel( parent, id, pos, size, wxTAB_TRAVERSAL )
 {
-	if ( s_minHeight < 0 ) s_minHeight = (int)(21.0*GetContentScaleFactor());
+	if ( s_minHeight < 0 ) s_minHeight = (int)(21.0*wxGetScreenHDScale());
 
 	SetBackgroundColour( parent->GetBackgroundColour() );
 	m_showCaptions = true;
