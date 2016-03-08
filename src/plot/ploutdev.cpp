@@ -96,10 +96,6 @@ void wxPLPdfOutputDevice::Brush( const wxColour &c, Style sty ) {
 	// currently, hatch and other patterns not supported
 	m_pdf.SetFillColour( c );
 }
-	
-void wxPLPdfOutputDevice::Point( double x, double y ){
-	m_pdf.Circle( x, y, 0.5 );
-}
 
 void wxPLPdfOutputDevice::Line( double x1, double y1, double x2, double y2 )	{
 	m_pdf.Line( x1, y1, x2, y2 );
@@ -180,11 +176,6 @@ void wxPLPdfOutputDevice::Measure( const wxString &text, double *width, double *
 	*height = m_pdf.GetFontSize();
 }
 
-double wxPLPdfOutputDevice::CharHeight() {
-	return m_pdf.GetFontSize();
-}
-
-
 #define CAST(x) ((int)wxRound(m_scale*(x)))
 
 wxPLDCOutputDevice::wxPLDCOutputDevice( wxDC *dc, wxDC *aadc, double scale ) 
@@ -232,49 +223,56 @@ void wxPLDCOutputDevice::Unclip() {
 	m_curdc->DestroyClippingRegion();
 }
 
-void wxPLDCOutputDevice::Brush( const wxColour &c, Style sty ) { 
-	m_brush.SetColour( c );
+static void TranslateBrush( wxBrush *b, const wxColour &c, wxPLDCOutputDevice::Style sty )
+{
+	b->SetColour( c );
 	switch( sty )
 	{
-	case NONE: m_brush = *wxTRANSPARENT_BRUSH; break;
-	case HATCH: m_brush.SetStyle(wxCROSSDIAG_HATCH); break;
-	default: m_brush.SetStyle( wxSOLID ); break;
+	case wxPLDCOutputDevice::NONE: *b = *wxTRANSPARENT_BRUSH; break;
+	case wxPLDCOutputDevice::HATCH: b->SetStyle(wxCROSSDIAG_HATCH); break;
+	default: b->SetStyle( wxSOLID ); break;
 	}
+}
 
+static void TranslatePen( wxPen *p, const wxColour &c, double size, 
+	wxPLDCOutputDevice::Style line, wxPLDCOutputDevice::Style join, wxPLDCOutputDevice::Style cap )
+{	
+	p->SetColour( c );
+	p->SetWidth( size < 1.0 ? 1 : ((int)size) );
+	switch( join )
+	{
+	case wxPLDCOutputDevice::MITER: p->SetJoin( wxJOIN_MITER ); break;
+	case wxPLDCOutputDevice::BEVEL: p->SetJoin( wxJOIN_BEVEL ); break;
+	default: p->SetJoin( wxJOIN_ROUND ); break;
+	}
+	switch( cap )
+	{
+	case wxPLDCOutputDevice::ROUND: p->SetCap( wxCAP_ROUND ); break;
+	case wxPLDCOutputDevice::MITER: p->SetCap( wxCAP_PROJECTING ); break;
+	default: p->SetCap( wxCAP_BUTT );
+	}
+	switch( line )
+	{
+	case wxPLDCOutputDevice::NONE: *p = *wxTRANSPARENT_PEN; break;
+	case wxPLDCOutputDevice::DOT: p->SetStyle( wxDOT ); break;
+	case wxPLDCOutputDevice::DASH: p->SetStyle( wxSHORT_DASH ); break;
+	case wxPLDCOutputDevice::DOTDASH: p->SetStyle( wxDOT_DASH ); break;
+	default: p->SetStyle( wxSOLID ); break;
+	}
+}
+
+
+void wxPLDCOutputDevice::Brush( const wxColour &c, Style sty ) { 
+
+	TranslateBrush( &m_brush, c, sty );
 	m_curdc->SetBrush( m_brush );
 }
 
 void wxPLDCOutputDevice::Pen( const wxColour &c, double size, 
 	Style line, Style join, Style cap ) {
 
-	m_pen.SetColour( c );
-	size *= m_scale;
-	m_pen.SetWidth( size < 1.0 ? 1 : ((int)size) );
-	switch( join )
-	{
-	case MITER: m_pen.SetJoin( wxJOIN_MITER ); break;
-	case BEVEL: m_pen.SetJoin( wxJOIN_BEVEL ); break;
-	default: m_pen.SetJoin( wxJOIN_ROUND ); break;
-	}
-	switch( cap )
-	{
-	case ROUND: m_pen.SetCap( wxCAP_ROUND ); break;
-	case MITER: m_pen.SetCap( wxCAP_PROJECTING ); break;
-	default: m_pen.SetCap( wxCAP_BUTT );
-	}
-	switch( line )
-	{
-	case NONE: m_pen = *wxTRANSPARENT_PEN; break;
-	case DOT: m_pen.SetStyle( wxDOT ); break;
-	case DASH: m_pen.SetStyle( wxSHORT_DASH ); break;
-	case DOTDASH: m_pen.SetStyle( wxDOT_DASH ); break;
-	default: m_pen.SetStyle( wxSOLID ); break;
-	}
+	TranslatePen( &m_pen, c, m_scale*size, line, join, cap );
 	m_curdc->SetPen( m_pen );
-}
-
-void wxPLDCOutputDevice::Point( double x, double y ) {
-	m_curdc->DrawPoint( CAST(x), CAST(y) );
 }
 
 void wxPLDCOutputDevice::Line( double x1, double y1, double x2, double y2 ) {
@@ -330,6 +328,146 @@ void wxPLDCOutputDevice::Measure( const wxString &text, double *width, double *h
 	if ( width )  *width = (double)sz.x/m_scale;
 	if ( height ) *height = (double)sz.y/m_scale;
 }
-double wxPLDCOutputDevice::CharHeight() {
-	return (double)m_curdc->GetCharHeight()/m_scale;
+
+
+
+#define SCALE(x) (m_scale*(x))
+
+
+
+wxPLGraphicsOutputDevice::wxPLGraphicsOutputDevice( wxGraphicsContext *gc, const wxFont &font, double scale)
+	: m_gc(gc), m_font0( font ), m_scale( scale )
+{
+	m_fontSize = 0;
+	m_fontBold = ( m_font0.GetWeight() == wxFONTWEIGHT_BOLD );
+
+	m_pen = m_brush = true;
+	Pen( *wxBLACK, 1, SOLID );
+	Brush( *wxBLACK, SOLID );
+}
+	
+void wxPLGraphicsOutputDevice::SetAntiAliasing( bool b )
+{	
+	m_gc->SetAntialiasMode( b ? wxANTIALIAS_DEFAULT : wxANTIALIAS_NONE );
+}
+
+bool wxPLGraphicsOutputDevice::Equals( double a, double b ) const
+{
+	return ( wxRound(a) == wxRound(b) );
+}
+
+void wxPLGraphicsOutputDevice::Clip( double x, double y, double width, double height )
+{
+	m_gc->Clip( SCALE(x), SCALE(y), SCALE(width), SCALE(height) );
+}
+
+void wxPLGraphicsOutputDevice::Unclip()
+{
+	m_gc->ResetClip();
+}
+
+void wxPLGraphicsOutputDevice::Brush( const wxColour &c, Style sty )
+{
+	wxBrush brush;
+	TranslateBrush( &brush, c, sty );
+	m_gc->SetBrush( brush );
+	m_brush = (sty!=NONE);
+}
+
+void wxPLGraphicsOutputDevice::Pen( const wxColour &c, double size, 
+	Style line, Style join, Style cap )
+{
+	wxPen pen;
+	TranslatePen( &pen, c, m_scale*size, line, join, cap );
+	m_gc->SetPen( pen );
+	m_pen = (line!=NONE);
+}
+
+void wxPLGraphicsOutputDevice::Line( double x1, double y1, double x2, double y2 )
+{
+    m_gc->StrokeLine( SCALE(x1),SCALE(y1),SCALE(x2),SCALE(y2) );
+}
+
+void wxPLGraphicsOutputDevice::Lines( size_t n, const wxRealPoint *pts )
+{
+    wxPoint2DDouble* pointsD = new wxPoint2DDouble[n];
+    for( int i = 0; i < n; ++i)
+    {
+        pointsD[i].m_x = SCALE(pts[i].x);
+        pointsD[i].m_y = SCALE(pts[i].y);
+    }
+
+    m_gc->StrokeLines( n , pointsD );
+    delete[] pointsD;
+}
+
+void wxPLGraphicsOutputDevice::Polygon( size_t n, const wxRealPoint *pts, Style sty )
+{
+    bool closeIt = false;
+    if (pts[n-1] != pts[0])
+        closeIt = true;
+	
+    wxPoint2DDouble* pointsD = new wxPoint2DDouble[n+(closeIt?1:0)];
+    for( int i = 0; i < n; ++i)
+    {
+        pointsD[i].m_x = SCALE(pts[i].x);
+        pointsD[i].m_y = SCALE(pts[i].y);
+    }
+    if ( closeIt )
+        pointsD[n] = pointsD[0];
+
+    m_gc->DrawLines( n+(closeIt?1:0) , pointsD, sty==ODDEVEN ?  wxODDEVEN_RULE : wxWINDING_RULE );
+    delete[] pointsD;
+}
+
+void wxPLGraphicsOutputDevice::Rect( double x, double y, double width, double height )
+{
+	m_gc->DrawRectangle( SCALE(x), SCALE(y), SCALE(width), SCALE(height) );
+}
+
+void wxPLGraphicsOutputDevice::Circle( double x, double y, double radius )
+{
+	wxGraphicsPath path = m_gc->CreatePath();
+	path.AddCircle( SCALE(x), SCALE(y), SCALE(radius) );
+	m_gc->DrawPath( path );
+}
+
+void wxPLGraphicsOutputDevice::Font( double relpt, bool bold )
+{
+	wxFont font( m_font0 );
+	if ( relpt != 0 ) font.SetPointSize( font.GetPointSize() + SCALE(relpt) );
+	font.SetWeight( bold ? wxFONTWEIGHT_BOLD : wxFONTWEIGHT_NORMAL );
+	m_gc->SetFont( font, *wxBLACK );
+	m_fontSize = relpt;
+	m_fontBold = bold;
+}
+
+void wxPLGraphicsOutputDevice::Font( double *rel, bool *bld ) const
+{
+	*rel = m_fontSize;
+	*bld = m_fontBold;
+}
+
+void wxPLGraphicsOutputDevice::Text( const wxString &text, double x, double y, double angle )
+{
+	if ( angle == 0.0 ) m_gc->DrawText( text, SCALE(x), SCALE(y) );
+	else m_gc->DrawText( text, SCALE(x), SCALE(y), angle * 3.1415926/180.0 );
+}
+
+void wxPLGraphicsOutputDevice::Measure( const wxString &text, double *width, double *height )
+{
+    wxDouble h , d , e , w;
+
+    m_gc->GetTextExtent( text, &w, &h, &d, &e );
+
+    if ( height )
+        *height = (wxCoord)(h+0.5);
+    
+	//if ( descent )
+    //    *descent = (wxCoord)(d+0.5);
+    //if ( externalLeading )
+    //    *externalLeading = (wxCoord)(e+0.5);
+
+    if ( width )
+        *width = (wxCoord)(w+0.5);
 }

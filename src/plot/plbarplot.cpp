@@ -27,6 +27,7 @@ wxPLBarPlotBase::~wxPLBarPlotBase()
 
 void wxPLBarPlotBase::Init()
 {
+	m_antiAliasing = false;
 	m_colour = *wxLIGHT_GREY;
 	m_thickness = wxPL_BAR_AUTOSIZE;
 }

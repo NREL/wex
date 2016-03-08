@@ -405,9 +405,12 @@ public:
 
 		// obtain the approximate heights for normal and small text
 		dc.Font( fontPoints-FontPointAdjust, fontBold );
-		double height_small = dc.CharHeight();
+		double height_small = fontPoints-FontPointAdjust;
+		dc.Measure( "0", NULL, &height_small );
+
 		dc.Font( fontPoints, fontBold );
-		double height_normal = dc.CharHeight();
+		double height_normal = fontPoints;
+		dc.Measure( "0", NULL, &height_normal );
 
 		// sequentially calculate the origins of each text piece
 		
@@ -1481,8 +1484,11 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 	}
 	else
 	{
+
 		// if no title, leave a few extra pixels at the top for Y axes labels at the edges
-		int topmargin = (int)(0.5*dc.CharHeight() ) + text_space;
+		double topmargin = 0;
+		dc.Measure( "0", NULL, &topmargin );
+		topmargin = 0.5*topmargin + text_space;
 		box.y += topmargin;
 		box.height -= topmargin;
 	}

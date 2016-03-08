@@ -108,10 +108,7 @@ void wxPLScatterPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 				dc.Brush( C );
 			}
 
-			if ( rad < 2 )
-				dc.Point( map.ToDevice( p ) );			
-			else
-				dc.Circle( map.ToDevice(p), rad );
+			dc.Circle( map.ToDevice(p), rad );
 		}
 	}
 

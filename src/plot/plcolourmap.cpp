@@ -94,10 +94,11 @@ void wxPLColourMap::Render( wxPLOutputDevice &dc, const wxPLRealRect &geom)
 	double colourBarHeight = 240;
 	if (geom.height < 240)
 		colourBarHeight = 120; //Probably not ideal.  Fix this.
-	
-	
+		
 	dc.Font( -1, false );
-	double charHeight = dc.CharHeight();
+
+	double charHeight;
+	dc.Measure( "0", NULL, &charHeight );
 	
 	double colourBarX = geom.x+1;
 	double colourBarStep = colourBarHeight / ((double)m_colourList.size());

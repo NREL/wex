@@ -17,6 +17,7 @@
 #include <wx/sstream.h>
 #include <wx/dcsvg.h>
 #include <wx/tipwin.h>
+#include <wx/graphics.h>
 
 #include "wex/utils.h"
 #include "wex/plot/ploutdev.h"
@@ -367,18 +368,12 @@ bool wxPLPlotCtrl::ExportSvg( const wxString &file )
 	return true;
 }
 
-class gcdc_ref 
-{
-public:
-	gcdc_ref() { m_ptr = 0; }
-	~gcdc_ref() { if (m_ptr != 0) delete m_ptr; }
-	wxGCDC *m_ptr;
-};
-
 wxSize wxPLPlotCtrl::DoGetBestSize() const
 {
 	return wxScaleSize( 500, 400 ); // default plot size
 }
+
+#define USE_MIXED_DC_GC 1
 
 void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 {
@@ -392,19 +387,34 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 		font_normal.SetPointSize( (int)point_size );
 	}
 	dc.SetFont( font_normal );
-
-	gcdc_ref gdc;
-	if ( wxMemoryDC *memdc = dynamic_cast<wxMemoryDC*>( &dc ) )
-		gdc.m_ptr = new wxGCDC( *memdc );
-	else if ( wxWindowDC *windc = dynamic_cast<wxWindowDC*>( &dc ) )
-		gdc.m_ptr = new wxGCDC( *windc );
-	else if ( wxPrinterDC *prindc = dynamic_cast<wxPrinterDC*>( &dc ) )
-		gdc.m_ptr = new wxGCDC( *prindc );
-
-	wxDC &aadc = gdc.m_ptr ? *gdc.m_ptr : dc;
-
+	
 	double scale = wxGetScreenHDScale();
+
+#ifdef USE_MIXED_DC_GC
+	wxGCDC *gcdc = 0;
+	if ( wxMemoryDC *memdc = dynamic_cast<wxMemoryDC*>( &dc ) )
+		gcdc = new wxGCDC( *memdc );
+	else if ( wxWindowDC *windc = dynamic_cast<wxWindowDC*>( &dc ) )
+		gcdc = new wxGCDC( *windc );
+	else if ( wxPrinterDC *prindc = dynamic_cast<wxPrinterDC*>( &dc ) )
+		gcdc = new wxGCDC( *prindc );
+
+	wxDC &aadc = gcdc ? *gcdc : dc;
 	wxPLDCOutputDevice odev( &dc, &aadc, scale );
+#else
+	wxGraphicsContext *gc = 0;
+	if ( wxMemoryDC *memdc = dynamic_cast<wxMemoryDC*>( &dc ) )
+		gc = wxGraphicsContext::Create( *memdc );
+	else if ( wxWindowDC *windc = dynamic_cast<wxWindowDC*>( &dc ) )
+		gc = wxGraphicsContext::Create( *windc );
+	else if ( wxPrinterDC *prindc = dynamic_cast<wxPrinterDC*>( &dc ) )
+		gc = wxGraphicsContext::Create( *prindc );
+
+	if ( !gc ) return;
+
+	gc->SetInterpolationQuality( wxINTERPOLATION_FAST );
+	wxPLGraphicsOutputDevice odev( gc, font_normal, scale );
+#endif
 
 	wxPLRealRect rr;
 	rr.x = geom.x/scale;
@@ -413,6 +423,13 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 	rr.height = geom.height/scale;
 
 	wxPLPlot::Render( odev, rr );
+
+#ifdef USE_MIXED_DC_GC
+	if ( gcdc ) delete gcdc;
+#else
+	delete gc;
+#endif
+
 }
 
 void wxPLPlotCtrl::OnPaint( wxPaintEvent & )
