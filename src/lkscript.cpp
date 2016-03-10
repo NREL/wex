@@ -1111,11 +1111,11 @@ public:
 		size_t sp = 0;
 		lk::vardata_t *stack = m_vm->get_stack( &sp );
 		sout = "breakpoints: ";
-		std::vector<int> bk( m_vm->getbrk() );
+		std::vector<lk::srcpos_t> bk( m_vm->getbrk() );
 		if ( bk.size() > 0 )
 		{
 			for( size_t i=0;i<bk.size();i++ )
-				sout += wxString::Format("%d ", bk[i]);
+				sout += bk[i].file + wxString::Format(":%d ", bk[i].line );
 		}
 		else
 			sout += "none";
@@ -1609,6 +1609,8 @@ void wxLKScriptCtrl::OnSyntaxCheckThreadFinished( wxThreadEvent & )
 }
 
 
+
+
 wxThread::ExitCode wxLKScriptCtrl::Entry()
 {
 	m_syntaxCheckCS.Enter();
@@ -1616,6 +1618,8 @@ wxThread::ExitCode wxLKScriptCtrl::Entry()
 	m_syntaxCheckCS.Leave();
 
 	lk::parser parse( p );
+	parse.add_search_path( m_syntaxCheckWorkDir );
+	
 	lk::node_t *tree = parse.script();	
 	
 	wxCriticalSectionLocker lock( m_syntaxCheckCS );
@@ -1680,6 +1684,7 @@ void wxLKScriptCtrl::StartSyntaxCheckThread()
 
 	wxCriticalSectionLocker lock(m_syntaxCheckCS);
 	m_codeToSyntaxCheck = GetText();
+	m_syntaxCheckWorkDir = m_workDir;
 	m_syntaxErrorLines.clear();
 	m_syntaxErrorMessages.clear();
 	m_syntaxCheckThreadId = m_syntaxCheckRequestId;
@@ -1733,15 +1738,15 @@ bool wxLKScriptCtrl::my_vm::on_run( const lk::srcpos_t &sp )
 	else return true;
 }
 
-bool wxLKScriptCtrl::CompileAndLoad( const wxString &work_dir )
+bool wxLKScriptCtrl::CompileAndLoad( )
 {
 	wxBusyInfo info( "Compiling script...", this );
 	wxYield();
 
 	lk::input_string p( GetText() );
 	lk::parser parse( p );
-	if ( !work_dir.IsEmpty() && wxDirExists( work_dir ) )
-		parse.add_search_path( work_dir );
+	if ( !m_workDir.IsEmpty() && wxDirExists( m_workDir ) )
+		parse.add_search_path( m_workDir );
 
 	std::auto_ptr<lk::node_t> tree( parse.script() );
 			
@@ -1803,7 +1808,7 @@ bool wxLKScriptCtrl::Debug( int mode )
 		std::vector<int> brk( GetBreakpoints() );
 		for( size_t i=0;i<brk.size();i++ )
 		{
-			int ibrk = m_vm.setbrk( brk[i] + 1 );
+			int ibrk = m_vm.setbrk( brk[i] + 1, wxEmptyString );
 			if ( ibrk-1 != brk[i] )
 			{
 				// update breakpoint position indicators
@@ -1859,8 +1864,18 @@ bool wxLKScriptCtrl::Debug( int mode )
 	return ok;
 }
 
+void wxLKScriptCtrl::SetWorkDir( const wxString &path )
+{
+	if ( wxDirExists(path) ) 
+		m_workDir = path;
+}
 
-bool wxLKScriptCtrl::Execute( const wxString &work_dir )
+wxString wxLKScriptCtrl::GetWorkDir()
+{
+	return m_workDir;
+}
+
+bool wxLKScriptCtrl::Execute( )
 {
 	if (m_scriptRunning)
 	{
@@ -1870,7 +1885,7 @@ bool wxLKScriptCtrl::Execute( const wxString &work_dir )
 
 	if ( GetBreakpoints().size() > 0 )
 	{
-		if ( !CompileAndLoad( work_dir ) )
+		if ( !CompileAndLoad( ) )
 			return false;
 	
 		return Debug( DEBUG_RUN );
@@ -1881,9 +1896,9 @@ bool wxLKScriptCtrl::Execute( const wxString &work_dir )
 
 	wxString backupfile;
 	wxString script = GetText();
-	if ( !work_dir.IsEmpty() && wxDirExists(work_dir) )
+	if ( !m_workDir.IsEmpty() && wxDirExists(m_workDir) )
 	{
-		backupfile = work_dir + "/~script";
+		backupfile = m_workDir + "/~script";
 		FILE *fp = fopen( (const char*)backupfile.c_str(), "w" );
 		if (fp)
 		{
@@ -1891,11 +1906,14 @@ bool wxLKScriptCtrl::Execute( const wxString &work_dir )
 			fputs( (const char*)script.c_str(), fp );
 			fclose(fp);
 		}
+
+		// change working directory by default to where script is located
+		wxSetWorkingDirectory( m_workDir );
 	}
 	
 	bool success = true;
 	wxYield();
-	if ( !CompileAndLoad( work_dir ) )
+	if ( !CompileAndLoad( ) )
 		success = false;
 
 	m_vm.clrbrk();
@@ -2247,6 +2265,7 @@ bool wxLKScriptWindow::Load( const wxString &file )
 	if( m_script->ReadAscii( file ) )
 	{
 		m_fileName = file;
+		m_script->SetWorkDir( wxPathOnly(file) );
 		UpdateWindowTitle();
 		return true;
 	}
@@ -2257,11 +2276,12 @@ bool wxLKScriptWindow::Load( const wxString &file )
 bool wxLKScriptWindow::Write( const wxString &file )
 {
 	wxBusyInfo info( "Saving: " + file, this );
-	wxMilliSleep( 120 );
+	wxMilliSleep( 90 );
 
 	if ( m_script->WriteAscii( file ) )
 	{
 		m_fileName = file;
+		m_script->SetWorkDir( wxPathOnly(file) );
 		UpdateWindowTitle();
 		return true;
 	}
@@ -2344,13 +2364,12 @@ bool wxLKScriptWindow::RunScript()
 	Layout();
 	wxYield();
 
-	wxString sval;
-	if(!m_fileName.IsEmpty() )
-		sval = wxPathOnly(m_fileName);
-	else
-		sval = wxEmptyString;
+	wxString work_dir;
+	if( !m_fileName.IsEmpty() )
+		work_dir = wxPathOnly(m_fileName);
 
-	bool ok = m_script->Execute(sval);
+	m_script->SetWorkDir( work_dir );
+	bool ok = m_script->Execute();
 
 	m_stopBtn->Hide();
 	m_runBtn->Show();

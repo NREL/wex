@@ -67,8 +67,11 @@ public:
 	bool IsScriptRunning();
 	bool IsStopFlagSet();
 	void Stop();
-	bool Execute( const wxString &work_dir = wxEmptyString );
-	bool CompileAndLoad( const wxString &work_dir = wxEmptyString );
+
+	void SetWorkDir( const wxString &path );
+	wxString GetWorkDir();
+	bool Execute();
+	bool CompileAndLoad();
 	void UpdateInfo();
 
 	enum { DEBUG_RUN, DEBUG_STEP, DEBUG_SINGLE };
@@ -84,10 +87,12 @@ public:
 	};
 private:
 
+	wxString m_workDir;
 	bool m_syntaxCheck;
 
 	unsigned int m_syntaxCheckRequestId, m_syntaxCheckThreadId;
 	wxString m_codeToSyntaxCheck;
+	wxString m_syntaxCheckWorkDir;
 	std::vector<int> m_syntaxErrorLines;
 	wxArrayString m_syntaxErrorMessages;
 	wxCriticalSection m_syntaxCheckCS;
