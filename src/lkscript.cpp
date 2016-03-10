@@ -1110,7 +1110,17 @@ public:
 		
 		size_t sp = 0;
 		lk::vardata_t *stack = m_vm->get_stack( &sp );
-		sout = wxString::Format("stack [%d]:\n", (int)sp);
+		sout = "breakpoints: ";
+		std::vector<int> bk( m_vm->getbrk() );
+		if ( bk.size() > 0 )
+		{
+			for( size_t i=0;i<bk.size();i++ )
+				sout += wxString::Format("%d ", bk[i]);
+		}
+		else
+			sout += "none";
+
+		sout += wxString::Format("\nstack [%d]:\n", (int)sp);
 		for( size_t i=0;i<sp;i++ )
 		{
 			lk::vardata_t &sval = stack[sp-i-1];
