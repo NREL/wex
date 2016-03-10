@@ -172,8 +172,8 @@ void wxPLPdfOutputDevice::Text( const wxString &text, double x, double y,  doubl
 }
 
 void wxPLPdfOutputDevice::Measure( const wxString &text, double *width, double *height ) {
-	*width = m_pdf.GetStringWidth(text);
-	*height = m_pdf.GetFontSize();
+	if (width) *width = m_pdf.GetStringWidth(text);
+	if (height) *height = m_pdf.GetFontSize();
 }
 
 #define CAST(x) ((int)wxRound(m_scale*(x)))
