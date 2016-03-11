@@ -59,6 +59,9 @@ public:
 	bool IsLabelVisible() { return m_showLabel; }
 	bool IsTickTextVisible() { return m_showTickText; }
 	
+	void SetReversed( bool rev ) { m_reversed = rev; }
+	bool IsReversed() const { return m_reversed; }
+
 	virtual void ExtendBound( wxPLAxis *a );
 
 
@@ -77,6 +80,7 @@ protected:
 	bool m_showTickText;
 	int m_smallTickSize;
 	int m_largeTickSize;
+	bool m_reversed;
 };
 
 

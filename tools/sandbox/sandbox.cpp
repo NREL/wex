@@ -167,7 +167,7 @@ void TestPLPlot( wxWindow *parent )
 	std::vector< wxRealPoint > sine_data;
 	std::vector< wxRealPoint > cosine_data;
 	std::vector< wxRealPoint > tangent_data;
-	for (double x = -6; x < 12; x+= 0.01)
+	for (double x = -6; x < 3; x+= 0.1)
 	{
 		sine_data.push_back( wxRealPoint( x, 3*sin( x )*sin( x ) ) );
 		cosine_data.push_back( wxRealPoint( x/2, 2*cos( x/2 )*x ) );
@@ -215,7 +215,7 @@ void TestPLPlot( wxWindow *parent )
 	plot->AddPlot( hbar1 );
 	
 	plot->GetXAxis1()->SetLabel( "Bottom X Axis has a great sequence of \\nu  values!" );
-		
+	plot->GetXAxis1()->SetReversed( true );
 
 	plot->AddPlot( new wxPLLinePlot( cosine_data, "cos(\\Omega_\\alpha  )", *wxRED, wxPLLinePlot::DASHED ), 
 		wxPLPlotCtrl::X_BOTTOM, 
@@ -241,10 +241,12 @@ void TestPLPlot( wxWindow *parent )
 		wxPLPlotCtrl::PLOT_TOP );
 
 
-
+	plot->SetHighlightMode( wxPLPlotCtrl::HIGHLIGHT_ZOOM );
 	plot->GetYAxis1()->SetLabel( "Pressure (kPa)" );
 	plot->GetYAxis1()->SetColour( *wxRED );
-	plot->GetYAxis1()->SetWorld( -20, 20 );
+	plot->GetYAxis1()->SetWorld( -20, 20 );	
+	plot->GetYAxis1()->SetReversed( true );
+	
 	//plot->SetFont( wxFont( 10, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false ) );
 
 	/*

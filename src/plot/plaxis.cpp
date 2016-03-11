@@ -44,6 +44,7 @@ void wxPLAxis::Init()
 	m_smallTickSize = 2;
 	m_largeTickSize = 5;
 	m_colour = *wxBLACK;
+	m_reversed = false;
 }
 
 wxPLAxis::~wxPLAxis()
@@ -75,6 +76,13 @@ double wxPLAxis::WorldToPhysical( double coord, double phys_min, double phys_max
 
 	double prop = (coord - m_min) / range;
 
+	if ( m_reversed )
+	{
+		double tmp = phys_min;
+		phys_min = phys_max;
+		phys_max = tmp;
+	}
+
 	return (phys_min + prop*(phys_max - phys_min));
 }
 
@@ -82,7 +90,11 @@ double wxPLAxis::PhysicalToWorld( double point, double phys_min, double phys_max
 {
 	double len = phys_max - phys_min;
 	double prop = (point-phys_min) / len;
-	return prop * (m_max - m_min) + m_min;
+
+	if ( m_reversed )
+		return m_max - (1-prop)*(m_max-m_min);
+	else
+		return m_min + prop * ( m_max - m_min);
 }
 
 void wxPLAxis::ExtendBound( wxPLAxis *a )

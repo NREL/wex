@@ -1144,42 +1144,6 @@ void wxDVTimeSeriesCtrl::OnDataChannelSelection(wxCommandEvent& e)
 	else
 		RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos(col), row);
 }
-/*
-
-void wxDVTimeSeriesCtrl::OnPlotDrag(wxCommandEvent& e)
-{
-	//dragDim is the physical coords of where the drag started (top left) and where it is now (bottom right).
-	wxRect* dragDim = static_cast<wxRect*>(e.GetClientData());
-
-	double xDiff = m_xAxis->PhysicalToWorld(wxPoint(dragDim->x + dragDim->width, 0))  
-		- m_xAxis->PhysicalToWorld(wxPoint(dragDim->x, 0));
-
-	double newMin = m_dragStartWorldMin - xDiff;
-	double newMax = m_dragStartWorldMax - xDiff;
-
-	if (newMin < GetMinPossibleTimeForVisibleChannels())
-		newMin = GetMinPossibleTimeForVisibleChannels();
-	if (newMax > GetMaxPossibleTimeForVisibleChannels())
-		newMax = GetMaxPossibleTimeForVisibleChannels();
-
-	SetViewMin(newMin);
-	SetViewMax(newMax);
-	//Don't call SetViewRange 'cause that snaps to days.
-}
-
-void wxDVTimeSeriesCtrl::OnPlotDragStart(wxCommandEvent& e)
-{
-	m_dragStartWorldMin = m_xWorldMin;
-	m_dragStartWorldMax = m_xWorldMax;
-}
-
-void wxDVTimeSeriesCtrl::OnPlotDragEnd(wxCommandEvent& e)
-{
-	//Snap to days and update.
-	SetViewRange(m_xWorldMin, m_xWorldMax);
-}
-*/
-
 
 void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, bool refresh_ui)
 {

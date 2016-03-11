@@ -838,8 +838,19 @@ public:
 				double phys = axis->WorldToPhysical( center.world, phys_min, phys_max );
 				double phys_right = axis->WorldToPhysical( right.world, phys_min, phys_max );
 				
-				if ( (phys - center.text.width()/2 - tick_label_space < phys_left + left.text.width()/2)
-					|| (phys + center.text.width()/2 + tick_label_space > phys_right - right.text.width()/2) )
+				bool rotate = false;
+				if ( !axis->IsReversed() )
+				{
+					rotate = (phys - center.text.width()/2 - tick_label_space < phys_left + left.text.width()/2)
+						|| (phys + center.text.width()/2 + tick_label_space > phys_right - right.text.width()/2);
+				}
+				else
+				{
+					rotate = (phys + center.text.width()/2 + tick_label_space > phys_left - left.text.width()/2)
+						|| (phys - center.text.width()/2 - tick_label_space < phys_right + right.text.width()/2);
+				}
+
+				if ( rotate )
 				{
 					// rotate all the ticks, not just the large ones
 
@@ -892,7 +903,7 @@ public:
 			renderAngular(dc, ordinate, pa, phys_min, phys_max);
 			return;
 		}
-
+		
 		// draw tick marks and tick labels
 		for ( size_t i=0;i<m_tickList.size(); i++ )
 		{
@@ -1702,8 +1713,15 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 		wxPLAxis *yaxis = GetAxis( m_plots[i].yap, m_plots[i].ppos );
 		if ( xaxis == 0 || yaxis == 0 ) continue; // this should never be encountered
 		wxPLRealRect &bb = m_plotRects[ m_plots[i].ppos ];
-		wxPLAxisDeviceMapping map( xaxis, bb.x, bb.x+bb.width, xaxis == GetXAxis1(),
-			yaxis, bb.y+bb.height, bb.y, yaxis == GetYAxis1() );
+		wxPLAxisDeviceMapping map( 
+			xaxis, 
+				bb.x, 
+				bb.x+bb.width, 
+				xaxis == GetXAxis1(),
+			yaxis, 
+				bb.y+bb.height, 
+				bb.y, 
+				yaxis == GetYAxis1() );
 
 		dc.SetAntiAliasing( m_plots[i].plot->GetAntiAliasing() );
 

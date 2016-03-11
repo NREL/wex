@@ -735,9 +735,27 @@ void wxPLPlotCtrl::OnLeftUp( wxMouseEvent &evt )
 				double left, right, top, bottom;
 				GetHighlightBounds( &left, &right, &top, &bottom );
 
+				if ( ax->IsReversed() )
+				{
+					left = 100-left;
+					right = 100-right;
+					double tmp = left;
+					left = right;
+					right = tmp;
+				}
+
 				double min, max;
 				ax->GetWorld( &min, &max );
 				ax->SetWorld( min+(max-min)*0.01*left, min+(max-min)*0.01*right );
+
+				if ( ay->IsReversed() )
+				{
+					top = 100-top;
+					bottom = 100-bottom;
+					double tmp = top;
+					top = bottom;
+					bottom = tmp;
+				}
 
 				ay->GetWorld( &min, &max );
 				ay->SetWorld( max-(max-min)*0.01*bottom, max-(max-min)*0.01*top );
