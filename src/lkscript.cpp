@@ -1894,6 +1894,8 @@ bool wxLKScriptCtrl::Execute( )
 	m_scriptRunning = true;
 	m_stopScriptFlag = false;
 
+	wxString cwd_old( wxGetCwd() );
+
 	wxString backupfile;
 	wxString script = GetText();
 	if ( !m_workDir.IsEmpty() && wxDirExists(m_workDir) )
@@ -1930,6 +1932,10 @@ bool wxLKScriptCtrl::Execute( )
 
 	if ( !backupfile.IsEmpty() && wxFileExists( backupfile ) )
 		wxRemoveFile( backupfile );
+
+	// restore previous working directory if it was changed...
+	if ( wxGetCwd() != cwd_old )
+		wxSetWorkingDirectory( cwd_old );
 
 	return success;
 }
