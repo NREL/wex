@@ -18,6 +18,7 @@
 #include "wex/jsonreader.h"
 #include "wex/csv.h"
 #include "wex/metro.h"
+#include "wex/easycurl.h"
 
 #include <lk/lex.h>
 #include <lk/absyn.h>
@@ -818,17 +819,67 @@ static wxMTRand rng;
 	cxt.result().assign( rng.rand() );
 }
 
-void fcall_httpget( lk::invoke_t &cxt )
+static void fcall_apikeys( lk::invoke_t &cxt )
 {
-	LK_DOC("http_get", "Issue an HTTP GET request and return the text.", "(string:url):string");
-	cxt.result().assign( wxWebHttpGet( cxt.arg(0).as_string() ) );
+	LK_DOC( "apikeys", "Set API keys for Google and Bing web services. Table can have 'google' and 'bing' keys.", "(table:keys):none" );
+	
+	wxString google, bing;
+	if ( lk::vardata_t *x = cxt.arg(0).lookup( "google" ) )
+		google = x->as_string();
+
+	if ( lk::vardata_t *x = cxt.arg(0).lookup( "bing" ) )
+		bing = x->as_string();
+
+	wxEasyCurl::SetApiKeys( google, bing );
 }
 
-void fcall_httpdownload( lk::invoke_t &cxt )
+static void fcall_geocode( lk::invoke_t &cxt )
 {
-	LK_DOC("http_download", "Download a file using HTTP", "(string:url, string:local file):boolean");
-	cxt.result().assign( wxWebHttpDownload( cxt.arg(0).as_string(), cxt.arg(1).as_string() ) );
+	LK_DOC( "geocode", "Returns the latitude and longitude of an address using Google's geocoding web API.  Returned table fields are 'lat', 'lon', 'ok'.", "(string:address):table");
+		
+	double lat = 0, lon = 0;
+	bool ok = wxEasyCurl::GeoCode( cxt.arg(0).as_string(), &lat, &lon );
+	cxt.result().empty_hash();
+	cxt.result().hash_item("lat").assign(lat);
+	cxt.result().hash_item("lon").assign(lon);
+	cxt.result().hash_item("ok").assign( ok ? 1.0 : 0.0 );
 }
+
+static void fcall_curl( lk::invoke_t &cxt )
+{
+	LK_DOC( "curl", "Issue a synchronous HTTP/HTTPS request.  Options are: 'post', 'message', 'file'.  If 'file' is specified, data is downloaded to that file and true/false is returned. Otherwise, the retrieved data is returned as a string.", 
+		"(string:url, [table:options]):variant" );
+	wxEasyCurl curl;
+	
+	wxString url(cxt.arg(0).as_string()), msg, file;
+
+	if ( cxt.arg_count() > 1 && cxt.arg(1).type() == lk::vardata_t::HASH )
+	{
+		lk::vardata_t &opt = cxt.arg(1);
+
+		if ( lk::vardata_t *x = opt.lookup( "post" ) )
+			curl.SetPostData( x->as_string() );
+
+		if ( lk::vardata_t *x = opt.lookup( "message" ) )
+			msg = x->as_string();
+
+		if ( lk::vardata_t *x = opt.lookup( "file" ) )
+			file = x->as_string();
+
+	}
+
+	if ( !curl.Get( url, msg ) )
+	{
+		cxt.result().assign( 0.0 );
+		return;
+	}
+	
+	if ( !file.IsEmpty() )
+		cxt.result().assign( curl.WriteDataToFile( file ) ? 1.0 : 0.0 );
+	else
+		cxt.result().assign( curl.GetDataAsString() );
+}
+
 
 void fcall_decompress( lk::invoke_t &cxt )
 {
@@ -943,16 +994,6 @@ void fcall_outln( lk::invoke_t &cxt )
 	lksc->OnOutput( output );
 }
 
-lk::fcall_t* wxLKHttpFunctions()
-{
-	static const lk::fcall_t vec[] = {
-		fcall_httpget,
-		fcall_httpdownload,
-		0 };
-		
-	return (lk::fcall_t*)vec;
-}
-
 lk::fcall_t* wxLKPlotFunctions()
 {
 	static const lk::fcall_t vec[] = {
@@ -969,12 +1010,15 @@ lk::fcall_t* wxLKPlotFunctions()
 lk::fcall_t* wxLKMiscFunctions()
 {
 	static const lk::fcall_t vec[] = {
-		fcall_decompress, 
-		fcall_rand,
+		fcall_curl,
+		fcall_geocode,
+		fcall_apikeys,
 		fcall_jsonparse,
 		fcall_csvread,
 		fcall_csvwrite,
 		fcall_csvconv,
+		fcall_decompress, 
+		fcall_rand,
 		0 };
 		
 	return (lk::fcall_t*)vec;
@@ -1226,7 +1270,6 @@ wxLKScriptCtrl::wxLKScriptCtrl( wxWindow *parent, int id,
 	if( libs & wxLK_STDLIB_MATH ) RegisterLibrary( lk::stdlib_math(), "Math Functions" );
 	if( libs & wxLK_STDLIB_WXUI ) RegisterLibrary( lk::stdlib_wxui(), "User interface Functions" );
 	if( libs & wxLK_STDLIB_PLOT ) RegisterLibrary( wxLKPlotFunctions(), "Plotting Functions", this );
-	if( libs & wxLK_STDLIB_HTTP ) RegisterLibrary( wxLKHttpFunctions(), "HTTP Functions", this );
 	if( libs & wxLK_STDLIB_MISC ) RegisterLibrary( wxLKMiscFunctions(), "Misc Functions", this );
 	if( libs & wxLK_STDLIB_SOUT ) RegisterLibrary( wxLKStdOutFunctions(), "BIOS Functions", this );
 	

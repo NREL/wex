@@ -18,17 +18,14 @@
 #define wxLK_STDLIB_MATH   0x0004
 #define wxLK_STDLIB_WXUI   0x0008
 #define wxLK_STDLIB_PLOT   0x0010
-#define wxLK_STDLIB_HTTP   0x0020
-#define wxLK_STDLIB_MISC   0x0040
-#define wxLK_STDLIB_SOUT   0x0080 // out,outln via wxLKScriptCtrl::OnOutput() virtual method
+#define wxLK_STDLIB_MISC   0x0020
+#define wxLK_STDLIB_SOUT   0x0040 // out,outln via wxLKScriptCtrl::OnOutput() virtual method
 
 #define wxLK_STDLIB_ALL (wxLK_STDLIB_BASIC|wxLK_STDLIB_STRING| \
-	wxLK_STDLIB_MATH|wxLK_STDLIB_WXUI|wxLK_STDLIB_PLOT| \
-	wxLK_STDLIB_HTTP|wxLK_STDLIB_MISC) // by default don't include stdout functions
+	wxLK_STDLIB_MATH|wxLK_STDLIB_WXUI|wxLK_STDLIB_PLOT|wxLK_STDLIB_MISC) // by default don't include stdout functions
 
 lk::fcall_t* wxLKPlotFunctions(); // newplot, plot, plotopt, plotpng
-lk::fcall_t* wxLKHttpFunctions(); // httpget, httpdownload
-lk::fcall_t* wxLKMiscFunctions(); // rand, decompress, jsonparse
+lk::fcall_t* wxLKMiscFunctions(); // geocode, curl, apikeys, rand, decompress, jsonparse
 lk::fcall_t* wxLKStdOutFunctions(); // out, outln:  must use an extended wxLKScriptCtrl that implements ::OnOutput()
 
 class wxPLPlotCtrl;
