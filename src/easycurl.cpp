@@ -329,10 +329,7 @@ public:
 		Fit();
 
 		if ( m_canceled )
-		{
-			wxLogStatus("requesting cancel from progress dialog on simple curl d/l thread...");
 			m_simpleCurl->Cancel();
-		}
 	}
 
 	void OnButton( wxCommandEvent &evt )
