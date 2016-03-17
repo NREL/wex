@@ -262,6 +262,11 @@ void TestPLPlot( wxWindow *parent )
 	plot->SetHighlightMode( wxPLPlotCtrl::HIGHLIGHT_ZOOM );
 				
 	frame->Show();
+
+
+	frame = new wxFrame( 0, -1, "Text layout", wxDefaultPosition, wxSize(600,600) );
+	new wxPLTextLayoutDemo( frame );
+	frame->Show();
 }
 
 #include <wex/mtrand.h>

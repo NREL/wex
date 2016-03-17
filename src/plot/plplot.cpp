@@ -271,427 +271,6 @@ wxRealPoint wxPLSideWidgetBase::GetBestSize()
 	return m_bestSize;
 }
 
-struct escape_sequence
-{
-	wxString code;
-	wxUniChar value;
-};
-
-static escape_sequence escape_codes[] = {
-
-	{ "Alpha",   L'\x0391' },
-	{ "Beta",    L'\x0392' },
-	{ "Gamma",   L'\x0393' },
-	{ "Delta",   L'\x0394' },
-	{ "Epsilon", L'\x0395' },
-	{ "Zeta",    L'\x0396' },
-	{ "Eta",     L'\x0397' },
-	{ "Theta",   L'\x0398' },
-	{ "Iota",    L'\x0399' },
-	{ "Kappa",   L'\x039a' },
-	{ "Lambda",  L'\x039b' },
-	{ "Mu",      L'\x039c' },
-	{ "Nu",      L'\x039d' },
-	{ "Xi",      L'\x039e' },
-	{ "Omicron", L'\x039f' },
-	{ "Pi",      L'\x03a0' },
-	{ "Rho",     L'\x03a1' },
-	{ "Sigma",   L'\x03a3' },
-	{ "Tau",     L'\x03a4' },
-	{ "Upsilon", L'\x03a5' },
-	{ "Phi",     L'\x03a6' },
-	{ "Chi",     L'\x03a7' },
-	{ "Psi",     L'\x03a8' },
-	{ "Omega",   L'\x03a9' },
-
-	{ "alpha",   L'\x03b1' },
-	{ "beta",    L'\x03b2' },
-	{ "gamma",   L'\x03b3' },
-	{ "delta",   L'\x03b4' },
-	{ "epsilon", L'\x03b5' },
-	{ "zeta",    L'\x03b6' },
-	{ "eta",     L'\x03b7' },
-	{ "theta",   L'\x03b8' },
-	{ "iota",    L'\x03b9' },
-	{ "kappa",   L'\x03ba' },
-	{ "lambda",  L'\x03bb' },
-	{ "mu",      L'\x03bc' },
-	{ "nu",      L'\x03bd' },
-	{ "xi",      L'\x03be' },
-	{ "omicron", L'\x03bf' },
-	{ "pi",      L'\x03c0' },
-	{ "rho",     L'\x03c1' },
-	{ "fsigma",  L'\x03c3' },
-	{ "sigma",   L'\x03c3' },
-	{ "tau",     L'\x03c4' },
-	{ "upsilon", L'\x03c5' },
-	{ "phi",     L'\x03c6' },
-	{ "chi",     L'\x03c7' },
-	{ "psi",     L'\x03c8' },
-	{ "omega",   L'\x03c9' },
-
-	{ "emph",    L'\x00a1' },
-	{ "qmark",   L'\x00bf' },
-	{ "cent",    L'\x00a2' },
-	{ "pound",   L'\x00a3' },
-	{ "euro",    L'\x20ac' },
-	{ "section", L'\x00a7' },
-	{ "dot",     L'\x00b7' },
-	{ "mult",    L'\x00d7' },
-	{ "copy",    L'\x00a9' },
-	{ "reg",     L'\x00ae' },
-	{ "deg",     L'\x00b0' },
-	{ "pm",      L'\x00b1' },
-	{ "ne",      L'\x2260' },
-	{ "approx",  L'\x2248' },
-
-	{ wxEmptyString, 0 },
-};
-
-class wxPLPlot::text_layout
-{
-
-	struct text_piece
-	{
-		text_piece() : text(wxEmptyString), state(NORMAL), origin(0, 0), size(0, 0), aligned_x(0) {  }
-
-		enum TextState { NORMAL, SUPERSCRIPT, SUBSCRIPT }; 
-		wxString text;
-		TextState state;
-		wxRealPoint origin;
-		wxRealPoint size;
-		double aligned_x;
-	};
-
-	std::vector< std::vector<text_piece> > m_lines;
-	wxRealPoint m_bounds;
-
-	static const int FontPointAdjust = 2;
-
-public:
-	enum TextAlignment { LEFT, CENTER, RIGHT };
-
-	text_layout( wxPLOutputDevice &dc, const wxString &text, TextAlignment ta = LEFT )
-		: m_bounds(0, 0)
-	{
-		if ( text.IsEmpty() ) return;
-
-		double fontPoints = 0;
-		bool fontBold = false;
-		
-		// get current font state for subsequent relative adjustments
-		dc.Font( &fontPoints, &fontBold );
-
-		// split text into lines, and parse each one into text pieces after resolving escape sequences
-		wxArrayString lines = wxStringTokenize( text, "\r\n" );
-		for (size_t i=0;i<lines.Count();i++)
-			m_lines.push_back( parse( escape(lines[i]) ) );
-
-		if ( m_lines.size() == 0 ) return;
-		
-		// compute extents of each text piece with the right font
-		for ( size_t i=0;i<m_lines.size(); i++ )
-		{
-			for ( size_t j=0;j<m_lines[i].size(); j++ )
-			{
-				text_piece &tp = m_lines[i][j];
-				double width, height;
-				dc.Font( tp.state == text_piece::NORMAL ? fontPoints : fontPoints-FontPointAdjust, fontBold );
-				dc.Measure( tp.text, &width, &height );
-				tp.size.x = width;
-				tp.size.y = height;
-			}
-		}
-
-		// obtain the approximate heights for normal and small text
-		dc.Font( fontPoints-FontPointAdjust, fontBold );
-		double height_small = fontPoints-FontPointAdjust;
-		dc.Measure( "0", NULL, &height_small );
-
-		dc.Font( fontPoints, fontBold );
-		double height_normal = fontPoints;
-		dc.Measure( "0", NULL, &height_normal );
-
-		// sequentially calculate the origins of each text piece
-		
-		const double offset = 0.25*height_small; // amount to raise/lower super/sub-scripts
-		double y = 0;
-		
-		for ( size_t i=0;i<m_lines.size(); i++ )
-		{
-			double x = 0;
-			bool has_sup = false, has_sub = false;
-			// layout this line's X positions, keep track of whether it has super/subs
-			for ( size_t j=0; j< m_lines[i].size(); j++ )
-			{
-				text_piece &tp = m_lines[i][j];
-				if ( tp.state == text_piece::SUPERSCRIPT ) has_sup = true;
-				else if (tp.state == text_piece::SUBSCRIPT ) has_sub = true;
-				
-				// save original relative alignment from x 
-				// allows future realignment of text pieces if needed
-				tp.aligned_x = x;
-
-				tp.origin.x = x;
-				x += tp.size.x;
-
-			}
-
-			// save the line width as the maximum bounds
-			if ( x > m_bounds.x )
-				m_bounds.x = x;
-
-			// layout this line's Y positions
-			if ( has_sup ) y += offset;
-			for ( size_t j=0;j<m_lines[i].size(); j++ )
-			{
-				text_piece &tp = m_lines[i][j];
-				if ( tp.state == text_piece::NORMAL )
-					tp.origin.y = y;
-				else if (tp.state == text_piece::SUPERSCRIPT )
-					tp.origin.y = y - offset;
-				else if (tp.state == text_piece::SUBSCRIPT )
-					tp.origin.y = y + height_normal - 3*offset;
-			}
-
-			y += height_normal + offset/3;
-		}
-
-		if ( ta != LEFT )
-			align( ta );
-
-		// save the final y position as the maximum height
-		m_bounds.y = y;
-	}
-
-	void align( int ta )
-	{
-		// realign x offsets for differently aligned text
-		// now that we know the total bounds width
-		// note: does not require recalculating text sizes since they are cached
-		for ( size_t i=0;i<m_lines.size();i++ )
-		{
-			double line_width = 0;
-			for ( size_t j=0;j<m_lines[i].size();j++ )
-			{
-				// restore original aligned positions for each text piece
-				m_lines[i][j].origin.x = m_lines[i][j].aligned_x;
-				line_width += m_lines[i][j].size.x;
-			}
-
-			double offset = 0;
-			if ( ta == CENTER ) offset = 0.5*(m_bounds.x - line_width);
-			else if ( ta == RIGHT ) offset = m_bounds.x - line_width;
-
-			if ( offset != 0 ) // only do this for center/right alignments
-				for ( size_t j=0;j<m_lines[i].size();j++ )
-					m_lines[i][j].origin.x += offset;
-		}
-	}
-
-	void render( wxPLOutputDevice &dc, double x, double y, double rotationDegrees = 0.0, bool draw_bounds = false )
-	{
-		if ( m_lines.size() == 0 ) return;
-
-		double fontPoints = 0;
-		bool fontBold = false;
-		dc.Font( &fontPoints, &fontBold );
-
-		if ( draw_bounds )
-		{
-			dc.Pen( *wxLIGHT_GREY, 0.5 );
-			dc.NoBrush();
-		}
-
-		// layout has already been calculated, assuming the same font.
-		// render the text directly given the starting coordinates
-		if ( rotationDegrees == 0.0 )
-		{
-			for ( size_t i=0;i<m_lines.size();i++ )
-			{
-				for ( size_t j=0;j<m_lines[i].size();j++ )
-				{
-					text_piece &tp = m_lines[i][j];
-					dc.Font( tp.state == text_piece::NORMAL ? fontPoints : fontPoints-FontPointAdjust, fontBold );
-					dc.Text( tp.text, x + tp.origin.x, y + tp.origin.y );				
-					if ( draw_bounds )
-						dc.Rect( x+tp.origin.x, y+tp.origin.y, tp.size.x, tp.size.y );
-				}
-			}
-		}
-		else
-		{
-			double theta = -M_PI/180*rotationDegrees;
-			double sintheta = sin(theta);
-			double costheta = cos(theta);
-			for ( size_t i=0;i<m_lines.size();i++ )
-			{
-				for ( size_t j=0;j<m_lines[i].size();j++ )
-				{
-					text_piece &tp = m_lines[i][j];
-					dc.Font( tp.state == text_piece::NORMAL ? fontPoints : fontPoints-FontPointAdjust, fontBold );
-					double rotx = tp.origin.x*costheta - tp.origin.y*sintheta;
-					double roty = tp.origin.x*sintheta + tp.origin.y*costheta;
-					dc.Text( tp.text, x + rotx, y + roty, rotationDegrees );
-				}
-			}
-		}
-
-		// restore font state
-		dc.Font( fontPoints, fontBold );
-	}
-
-	wxString escape( const wxString &text )
-	{
-		wxString result;
-		result.Alloc( text.Length() ); 
-
-		bool last_char_slash = false;
-		wxString::const_iterator it = text.begin();
-		while( it != text.end() )
-		{
-			if ( *it == '\\'  && !last_char_slash )
-			{
-				++it; // skip the slash
-				wxString code;
-				while ( it != text.end()
-					&& (*it) != '\\'
-					&& wxIsalpha( (*it) ) )
-				{
-					code += *it;
-					++it;
-				}
-
-				last_char_slash = ( it != text.end() 
-					&& code.Len() == 0 
-					&& *it == '\\' );
-
-				if ( it != text.end()  
-					&& (*it == ' ' || *it == '\t' ) )
-					it++; // skip next space if it exists.  assume is for delineating codes
-
-								
-				wxUniChar value( 0 );
-				size_t idx = 0;
-				while ( ::escape_codes[idx].value != 0 )
-				{
-					if ( ::escape_codes[idx].code == code )
-					{
-						value = ::escape_codes[idx].value;
-						break;
-					}
-					else idx++;
-				}
-
-				if ( value != 0 ) result += value;
-				else if ( !last_char_slash ) result << L'\x275a';
-			}
-			else
-			{
-				last_char_slash = false;
-				result += *it;
-				++it;
-			}
-		}
-
-		return result;
-	}
-
-	std::vector<text_piece> parse( const wxString &text )
-	{
-		std::vector<text_piece> list;
-
-		text_piece tp;
-
-		wxString::const_iterator it = text.begin();
-		while( it != text.end() )
-		{
-			if ( *it == '^' || *it == '_' )
-			{
-				wxUniChar modifier = *it;
-				it++; // skip modifier to get the next character
-				if ( it == text.end() || *it == modifier )
-				{
-					// if we have a double modifier,
-					// simply add it as normal text
-					tp.text += *it;
-				}
-				else 
-				{
-					if ( !tp.text.IsEmpty() )
-					{
-						tp.state = text_piece::NORMAL;
-						list.push_back( tp );
-						tp.text.clear();
-					}
-				
-					tp.state = (modifier == '^') ? text_piece::SUPERSCRIPT : text_piece::SUBSCRIPT;
-					if ( it != text.end() && *it == '{' )
-					{
-						it++; // skip the {
-						while ( it != text.end() && *it != '}' )
-						{
-							tp.text += *it;
-							it++;
-						}
-					
-						// go until } encountered
-						if ( it != text.end() && *it == '}' )
-							it++;
-					}
-					else
-					{
-						while ( it != text.end() 
-							&& *it != ' ' 
-							&& *it != '/'
-							&& *it != '\t'
-							&& *it != '^'
-							&& *it != '_'
-							&& *it != '('
-							&& *it != '{'
-							&& *it != '['
-							&& *it != '='
-							&& *it != ','
-							&& *it != ';' )
-						{
-							tp.text += *it;
-							it++;
-						}
-
-						if ( it != text.end() && *it != ' ' )
-							--it; // return the character that ended the current mode
-					}
-
-					if ( tp.text.Len() > 0 )
-					{
-						list.push_back( tp );
-						tp.text.clear();
-					}
-				}
-			}
-			else
-			{
-				tp.text += *it;
-			}
-
-			if ( it != text.end() )
-				++it;
-		}
-
-		// push back final text piece if needed		
-		if ( !tp.text.IsEmpty() )
-		{
-			tp.state = text_piece::NORMAL;
-			list.push_back( tp );
-		}
-
-		return list;
-	}
-
-	inline double width() { return m_bounds.x; }
-	inline double height() { return m_bounds.y; }
-};
-
 class wxPLPlot::axis_layout
 {
 private:
@@ -699,11 +278,11 @@ private:
 	struct tick_layout
 	{
 		tick_layout( wxPLOutputDevice &dc, const wxPLAxis::TickData &td )
-			: text( dc, td.label, text_layout::CENTER ), world( td.world ), 
+			: text( dc, td.label, wxPLTextLayout::CENTER ), world( td.world ), 
 			  tick_size( td.size ), 
 			  text_angle(0.0) {  }
 				
-		text_layout text;
+		wxPLTextLayout text;
 		double world;
 		wxPLAxis::TickData::TickSize tick_size;
 		double text_angle;
@@ -727,19 +306,19 @@ private:
 			wxRealPoint pt1( cntr + wxRealPoint((radius - tick_length)*cos(angle), (radius - tick_length)*sin(angle)) );
 			dc.Line(pt0, pt1);
 
-			if (ti.text.width() > 0)
+			if (ti.text.Width() > 0)
 			{
 				// text is place via upper left corner of text box, which only works for the bottom right
 				// quadrant of the polar plot.  so, text must be placed based on quadrant
 				
 				if (pt0.x < pt1.x && pt0.y >= pt1.y) // bottom left quadrant
-					ti.text.render(dc, pt0.x - ti.text.width() - text_space, pt0.y, 0, false);
+					ti.text.Render(dc, pt0.x - ti.text.Width() - text_space, pt0.y, 0, false);
 				else if (pt0.x < pt1.x && pt0.y < pt1.y) // top left quadrant
-					ti.text.render(dc, pt0.x - ti.text.width() - text_space, pt0.y-ti.text.height(), 0, false);
+					ti.text.Render(dc, pt0.x - ti.text.Width() - text_space, pt0.y-ti.text.Height(), 0, false);
 				else if (pt0.x >= pt1.x && pt0.y < pt1.y) // top right quadrant
-					ti.text.render(dc, pt0.x + text_space, pt0.y-ti.text.height(), 0, false);
+					ti.text.Render(dc, pt0.x + text_space, pt0.y-ti.text.Height(), 0, false);
 				else
-					ti.text.render(dc, pt0.x + text_space, pt0.y, 0, false);
+					ti.text.Render(dc, pt0.x + text_space, pt0.y, 0, false);
 			}
 
 		}
@@ -784,12 +363,12 @@ public:
 			{
 				tick_layout &ti = m_tickList[i];
 				double phys = axis->WorldToPhysical( ti.world, phys_min, phys_max );
-				if ( phys-ti.text.width()/2 < xmin )
-					xmin = phys-ti.text.width()/2;
-				if ( phys+ti.text.width()/2 > xmax )
-					xmax = phys+ti.text.width()/2;
-				if ( ti.text.height() > ymax )
-					ymax = ti.text.height();
+				if ( phys-ti.text.Width()/2 < xmin )
+					xmin = phys-ti.text.Width()/2;
+				if ( phys+ti.text.Width()/2 > xmax )
+					xmax = phys+ti.text.Width()/2;
+				if ( ti.text.Height() > ymax )
+					ymax = ti.text.Height();
 			}
 
 			m_bounds.x = xmax-xmin;
@@ -807,7 +386,7 @@ public:
 			
 			std::vector< tick_layout* > labeledTicks;
 			for ( size_t i=0; i < m_tickList.size(); i++ )
-				if ( m_tickList[i].text.width() > 0 )
+				if ( m_tickList[i].text.Width() > 0 )
 					labeledTicks.push_back( &m_tickList[i] );
 			if ( labeledTicks.size() > 2 )
 			{
@@ -820,9 +399,9 @@ public:
 				double width = 0;
 				for ( size_t j = 0; j < labeledTicks.size(); j++ )
 				{
-					if ( labeledTicks[j]->text.width() > width )
+					if ( labeledTicks[j]->text.Width() > width )
 					{
-						width = labeledTicks[j]->text.width();
+						width = labeledTicks[j]->text.Width();
 						index = j;
 					}
 				}
@@ -841,13 +420,13 @@ public:
 				bool rotate = false;
 				if ( !axis->IsReversed() )
 				{
-					rotate = (phys - center.text.width()/2 - tick_label_space < phys_left + left.text.width()/2)
-						|| (phys + center.text.width()/2 + tick_label_space > phys_right - right.text.width()/2);
+					rotate = (phys - center.text.Width()/2 - tick_label_space < phys_left + left.text.Width()/2)
+						|| (phys + center.text.Width()/2 + tick_label_space > phys_right - right.text.Width()/2);
 				}
 				else
 				{
-					rotate = (phys + center.text.width()/2 + tick_label_space > phys_left - left.text.width()/2)
-						|| (phys - center.text.width()/2 - tick_label_space < phys_right + right.text.width()/2);
+					rotate = (phys + center.text.Width()/2 + tick_label_space > phys_left - left.text.Width()/2)
+						|| (phys - center.text.Width()/2 - tick_label_space < phys_right + right.text.Width()/2);
 				}
 
 				if ( rotate )
@@ -862,12 +441,12 @@ public:
 						// text bounding rect corners line up with point on axis
 
 						// realign text layout due to rotation (better look for multi-line tick labels)
-						m_tickList[j].text.align( ap == X_TOP ? text_layout::LEFT : text_layout::RIGHT );
+						m_tickList[j].text.Align( ap == X_TOP ? wxPLTextLayout::LEFT : wxPLTextLayout::RIGHT );
 					}
 
 					// recalculate bound height to rotated text
-					m_bounds.y = labeledTicks[index]->text.height()
-						+ fabs( labeledTicks[index]->text.width() * sin( M_PI/180*textAngle ) );
+					m_bounds.y = labeledTicks[index]->text.Height()
+						+ fabs( labeledTicks[index]->text.Width() * sin( M_PI/180*textAngle ) );
 				}
 			}
 		}
@@ -880,12 +459,12 @@ public:
 			{
 				tick_layout &ti = m_tickList[i];
 				double phys = axis->WorldToPhysical( ti.world, phys_min, phys_max );
-				if ( phys-ti.text.height()/2 < ymin )
-					ymin = phys-ti.text.height()/2;
-				if ( phys+ti.text.height()/2 > ymax )
-					ymax = phys+ti.text.height()/2;				
-				if ( ti.text.width() > xmax )
-					xmax = ti.text.width();
+				if ( phys-ti.text.Height()/2 < ymin )
+					ymin = phys-ti.text.Height()/2;
+				if ( phys+ti.text.Height()/2 > ymax )
+					ymax = phys+ti.text.Height()/2;				
+				if ( ti.text.Width() > xmax )
+					xmax = ti.text.Width();
 			}
 
 			m_bounds.x = xmax;
@@ -953,49 +532,49 @@ public:
 				}
 			}
 
-			if ( ti.text.width() > 0 )
+			if ( ti.text.Width() > 0 )
 			{
 				double text_x = 0, text_y = 0;
 				if ( m_axisPos ==  X_BOTTOM )
 				{
 					if ( ti.text_angle == 0.0 )
 					{
-						text_x = physical - ti.text.width()/2;
+						text_x = physical - ti.text.Width()/2;
 						text_y = ordinate + TextAxisOffset;
 					}
 					else
 					{
 						double angleRad = -M_PI/180*ti.text_angle;
-						text_x = physical - ti.text.width()*cos(angleRad);
-						text_y = ordinate + TextAxisOffset - ti.text.width()*sin(angleRad);
+						text_x = physical - ti.text.Width()*cos(angleRad);
+						text_y = ordinate + TextAxisOffset - ti.text.Width()*sin(angleRad);
 					}
 				}
 				else if ( m_axisPos == X_TOP )
 				{
 					if ( ti.text_angle == 0.0 )
 					{
-						text_x = physical - ti.text.width()/2;
-						text_y = ordinate - TextAxisOffset - ti.text.height();
+						text_x = physical - ti.text.Width()/2;
+						text_y = ordinate - TextAxisOffset - ti.text.Height();
 					}
 					else
 					{
 						double angleRad = -M_PI/180*ti.text_angle;
-						text_x = physical + ti.text.height()*sin(angleRad);
-						text_y = ordinate - TextAxisOffset - ti.text.height()*cos(angleRad);
+						text_x = physical + ti.text.Height()*sin(angleRad);
+						text_y = ordinate - TextAxisOffset - ti.text.Height()*cos(angleRad);
 					}
 				}
 				else if ( m_axisPos == Y_LEFT )
 				{
-					text_x = ordinate - ti.text.width() - TextAxisOffset;
-					text_y = physical - ti.text.height()/2;
+					text_x = ordinate - ti.text.Width() - TextAxisOffset;
+					text_y = physical - ti.text.Height()/2;
 				}
 				else
 				{ // Y_RIGHT
 					text_x = ordinate + TextAxisOffset;
-					text_y = physical - ti.text.height()/2;
+					text_y = physical - ti.text.Height()/2;
 				}
 			
-				ti.text.render( dc, 
+				ti.text.Render( dc, 
 					text_x, text_y, ti.text_angle, false );			
 			}
 		}
@@ -1487,11 +1066,11 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 	{
 		TITLE_FONT(dc);
 		if ( m_titleLayout == 0 )
-			m_titleLayout = new text_layout( dc, m_title, text_layout::CENTER );
+			m_titleLayout = new wxPLTextLayout( dc, m_title, wxPLTextLayout::CENTER );
 
-		m_titleLayout->render( dc, box.x+box.width/2-m_titleLayout->width()/2, box.y, 0, false );
-		box.y += m_titleLayout->height() + text_space;
-		box.height -= m_titleLayout->height() + text_space;
+		m_titleLayout->Render( dc, box.x+box.width/2-m_titleLayout->Width()/2, box.y, 0, false );
+		box.y += m_titleLayout->Height() + text_space;
+		box.height -= m_titleLayout->Height() + text_space;
 	}
 	else
 	{
@@ -1513,18 +1092,18 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 	if ( m_x2.axis && m_x2.axis->IsLabelVisible() && !m_x2.axis->GetLabel().IsEmpty() )
 	{
 		if ( m_x2.label == 0 )
-			m_x2.label = new text_layout( dc, m_x2.axis->GetLabel(), text_layout::CENTER );
+			m_x2.label = new wxPLTextLayout( dc, m_x2.axis->GetLabel(), wxPLTextLayout::CENTER );
 
-		box.y += m_x2.label->height() + text_space;
-		box.height -= m_x2.label->height() + text_space;
+		box.y += m_x2.label->Height() + text_space;
+		box.height -= m_x2.label->Height() + text_space;
 	}
 
 	if ( m_x1.axis && m_x1.axis->IsLabelVisible() && !m_x1.axis->GetLabel().IsEmpty() )
 	{
 		if ( m_x1.label == 0 )
-			m_x1.label = new text_layout( dc, m_x1.axis->GetLabel(), text_layout::CENTER );
+			m_x1.label = new wxPLTextLayout( dc, m_x1.axis->GetLabel(), wxPLTextLayout::CENTER );
 
-		box.height -= m_x1.label->height() + 2*text_space;
+		box.height -= m_x1.label->Height() + 2*text_space;
 	}
 
 	double yleft_max_label_width = 0, yright_max_label_width = 0;
@@ -1533,19 +1112,19 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 		if (m_y1[pp].axis && m_y1[pp].axis->IsLabelVisible() && !m_y1[pp].axis->GetLabel().IsEmpty() )
 		{
 			if ( m_y1[pp].label == 0 )
-				m_y1[pp].label = new text_layout( dc, m_y1[pp].axis->GetLabel(), text_layout::CENTER );
+				m_y1[pp].label = new wxPLTextLayout( dc, m_y1[pp].axis->GetLabel(), wxPLTextLayout::CENTER );
 
-			if ( m_y1[pp].label->height() > yleft_max_label_width )
-				yleft_max_label_width = m_y1[pp].label->height();
+			if ( m_y1[pp].label->Height() > yleft_max_label_width )
+				yleft_max_label_width = m_y1[pp].label->Height();
 		}
 
 		if (m_y2[pp].axis && m_y2[pp].axis->IsLabelVisible() && !m_y2[pp].axis->GetLabel().IsEmpty() )
 		{
 			if ( m_y2[pp].label == 0 )
-				m_y2[pp].label = new text_layout( dc, m_y2[pp].axis->GetLabel(), text_layout::CENTER );
+				m_y2[pp].label = new wxPLTextLayout( dc, m_y2[pp].axis->GetLabel(), wxPLTextLayout::CENTER );
 
-			if ( m_y2[pp].label->height() > yright_max_label_width )
-				yright_max_label_width = m_y2[pp].label->height();
+			if ( m_y2[pp].label->Height() > yright_max_label_width )
+				yright_max_label_width = m_y2[pp].label->Height();
 		}
 	}
 
@@ -1798,31 +1377,31 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 	AXIS_FONT(dc);
 	if (m_x1.axis && m_x1.axis->IsLabelVisible() && !m_x1.axis->GetLabel().IsEmpty()) {
 		if (is_cartesian)
-			m_x1.label->render(dc, box.x + box.width / 2 - m_x1.label->width() / 2, plotbox.y + plotbox.height - m_x1.label->height() - text_space, 0, false);
+			m_x1.label->Render(dc, box.x + box.width / 2 - m_x1.label->Width() / 2, plotbox.y + plotbox.height - m_x1.label->Height() - text_space, 0, false);
 		else {
 			double dist = sqrt(pow(pp_radius, 2) / 2.0);
-			m_x1.label->render(dc, pp_center.x + dist, pp_center.y - dist - m_x1.layout->bounds().y - m_x1.label->height() - text_space, 0, false);
+			m_x1.label->Render(dc, pp_center.x + dist, pp_center.y - dist - m_x1.layout->bounds().y - m_x1.label->Height() - text_space, 0, false);
 		}
 	}
 	
 	if ( m_x2.axis && m_x2.axis->IsLabelVisible() && !m_x2.axis->GetLabel().IsEmpty() )
-		m_x2.label->render( dc, box.x+box.width/2-m_x2.label->width()/2, plotbox.y, 0, false );
+		m_x2.label->Render( dc, box.x+box.width/2-m_x2.label->Width()/2, plotbox.y, 0, false );
 
 	for ( size_t pp = 0; pp<nyaxes; pp++ )
 	{
 		if (m_y1[pp].axis && m_y1[pp].axis->IsLabelVisible() && !m_y1[pp].axis->GetLabel().IsEmpty()) {
 			if (is_cartesian) {
-				m_y1[pp].label->render(dc, plotbox.x + yleft_max_label_width - m_y1[pp].label->height(),
-					m_plotRects[pp].y + m_plotRects[pp].height / 2 + m_y1[pp].label->width() / 2, 90, false);
+				m_y1[pp].label->Render(dc, plotbox.x + yleft_max_label_width - m_y1[pp].label->Height(),
+					m_plotRects[pp].y + m_plotRects[pp].height / 2 + m_y1[pp].label->Width() / 2, 90, false);
 			}
 			else {
-				m_y1[pp].label->render(dc, pp_center.x, pp_center.y - pp_radius + m_y1[pp].label->width()+text_space, 90, false);
+				m_y1[pp].label->Render(dc, pp_center.x, pp_center.y - pp_radius + m_y1[pp].label->Width()+text_space, 90, false);
 			}
 		}
 
 		if (m_y2[pp].axis && m_y2[pp].axis->IsLabelVisible() && !m_y2[pp].axis->GetLabel().IsEmpty() )
-			m_y2[pp].label->render( dc, plotbox.x+plotbox.width - yright_max_label_width + m_y2[pp].label->height(),
-				m_plotRects[pp].y + m_plotRects[pp].height/2 - m_y2[pp].label->width()/2, -90, false );
+			m_y2[pp].label->Render( dc, plotbox.x+plotbox.width - yright_max_label_width + m_y2[pp].label->Height(),
+				m_plotRects[pp].y + m_plotRects[pp].height/2 - m_y2[pp].label->Width()/2, -90, false );
 	}
 
 	LEGEND_FONT(dc);
@@ -1919,9 +1498,9 @@ void wxPLPlot::DrawPolarGrid( wxPLOutputDevice &dc, wxPLAxis::TickData::TickSize
 wxPLPlot::legend_item::legend_item( wxPLOutputDevice &dc, wxPLPlottable *p )
 {
 	plot = p;
-	text = new text_layout( dc, p->GetLabel() );
-	width = legend_item_box.x + text_space + text->width();
-	height = text->height();
+	text = new wxPLTextLayout( dc, p->GetLabel() );
+	width = legend_item_box.x + text_space + text->Width();
+	height = text->Height();
 	if ( height < legend_item_box.y ) height = legend_item_box.y;
 }
 
@@ -2080,11 +1659,11 @@ void wxPLPlot::DrawLegend( wxPLOutputDevice &dc, const wxPLRealRect& geom )
 	{
 		legend_item &li = *m_legendItems[ m_reverseLegend ? m_legendItems.size() - i - 1 : i ];
 				
-		double yoff_text = li.height/2 - li.text->height()/2;
+		double yoff_text = li.height/2 - li.text->Height()/2;
 		if ( layout == wxHORIZONTAL )
-			yoff_text = (max_item_height - li.text->height())/2;
+			yoff_text = (max_item_height - li.text->Height())/2;
 
-		li.text->render( dc, 
+		li.text->Render( dc, 
 			x + legend_item_box.x + text_space, 
 			y + yoff_text );
 
@@ -2469,156 +2048,3 @@ if (dc.Ok())
 }
 */
 
-#ifdef TEXTLAYOUT_DEMO
-
-#include <wx/dc.h>
-
-BEGIN_EVENT_TABLE( TextLayoutDemo, wxWindow )
-	EVT_PAINT( TextLayoutDemo::OnPaint )
-	EVT_SIZE( TextLayoutDemo::OnSize )
-END_EVENT_TABLE()
-
-
-TextLayoutDemo::TextLayoutDemo( wxWindow *parent )
-	: wxWindow( parent, wxID_ANY )
-{
-	SetBackgroundStyle( wxBG_STYLE_CUSTOM );
-}
-
-std::vector<double> TextLayoutDemo::Draw( wxDC &scdc, const wxPLRealRect &geom )
-{
-	std::vector<double> vlines;
-	scdc.SetClippingRegion( geom );
-	
-	// test 1
-	{
-		scdc.SetFont( *wxNORMAL_FONT );
-		wxDCOutputDevice dc(scdc);
-		wxPLPlot::text_layout t1( dc, "basic text, nothing special" );
-		t1.render( dc, geom.x+20, geom.y+20, 0.0, true );
-		vlines.push_back( geom.x+20 );
-		vlines.push_back( geom.x+20+t1.width() );
-	}
-
-	// test 2
-	{
-		scdc.SetFont( wxFont(18, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Century Schoolbook") );
-		wxDCOutputDevice dc(scdc);
-		wxPLPlot::text_layout t2( dc, "escape^sup_sub \\\\  \\  \\euro \\badcode \\Omega~\\Phi\\ne\\delta, but\n\\Kappa\\approx\\zeta \\emph\\qmark, and this is the end of the text!. Cost was 10 \\pound, or 13.2\\cent" );
-		t2.render( dc, geom.x+20, geom.y+120, 0.0, true );
-	}
-	
-	// test 3
-	{
-		scdc.SetFont( wxFont(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Consolas") );
-		wxDCOutputDevice dc(scdc);
-		wxPLPlot::text_layout t3( dc, "super^2 ,not_\\rho\\gamma f hing_{special,great,best}\n\\alpha^^\\beta c^\\delta  efjhijkl__mnO^25 pq_0 r\\Sigma tuvwxyz\nABCDEFGHIJKL^^MNOPQRSTUVWXZY" );
-		t3.render( dc, geom.x+20, geom.y+420, 90, true );
-		t3.render( dc, geom.x+200, geom.y+350, 45.0, true );
-		t3.render( dc, geom.x+400, geom.y+300, 0.0, true );
-		vlines.push_back( geom.x+400 );
-		vlines.push_back( geom.x+400+t3.width() );
-	}
-	
-	// test 4
-	{
-		scdc.SetFont( wxFont(16, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL) );
-		wxDCOutputDevice dc(scdc);
-		wxPLPlot::text_layout t4( dc, "x_1^2_3 abc=y_2^4" );
-		t4.render( dc, geom.x+200, geom.y+70, 0, false );
-	}
-
-	// test 5
-	{
-		scdc.SetFont( wxFont(7, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL) );
-		wxDCOutputDevice dc(scdc);
-		wxPLPlot::text_layout t5( dc, "small (7): x_1^2_3 abc=y_2^4" );
-		t5.render( dc, geom.x+500, geom.y+60, 0, false );
-	}
-	
-	// test 6
-	{
-		scdc.SetFont( wxFont(8, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL) );
-		wxDCOutputDevice dc(scdc);
-		wxPLPlot::text_layout t6( dc, "small (8): x_1^2_3 abc=y_2^4" );
-		t6.render( dc, geom.x+500, geom.y+80, 0, false );
-	}
-	
-	// test 7
-	{
-		scdc.SetFont( wxFont(9, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL) );
-		wxDCOutputDevice dc(scdc);
-		wxPLPlot::text_layout t7( dc, "small (9): x_1^2_3 abc=y_2^4" );
-		t7.render( dc, geom.x+500, geom.y+100, 0, false );
-	}
-	
-	// test 8
-	{
-		scdc.SetFont( wxFont(10, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL) );
-		wxDCOutputDevice dc(scdc);
-		wxPLPlot::text_layout t8( dc, "small (10): x_1^2_3 abc=y_2^4" );
-		t8.render( dc, geom.x+500, geom.y+120, 0, false );
-	}
-
-	vlines.push_back( geom.x+500 );
-
-	scdc.DestroyClippingRegion();
-	scdc.SetPen( *wxBLUE_PEN );
-	scdc.SetBrush( *wxTRANSPARENT_BRUSH );
-	scdc.DrawRectangle( geom );
-
-	return vlines;
-}
-
-void TextLayoutDemo::OnPaint( wxPaintEvent & )
-{
-	wxAutoBufferedPaintDC pdc( this );
-	
-	int width, height;
-	GetClientSize( &width, &height );
-
-	pdc.SetBackground( *wxWHITE_BRUSH );
-	pdc.Clear();
-
-	wxGCDC gdc1(pdc);
-
-#ifdef __WXMSW__
-//	gdc1.GetGraphicsContext()->MSWSetStringFormat( wxGraphicsContext::Format_Normal );
-#endif
-
-	Draw( gdc1, wxPLRealRect( 0, 0, width, height/2 ) );
-
-	wxGCDC gdc2(pdc);
-
-#ifdef __WXMSW__
-//	gdc2.GetGraphicsContext()->MSWSetStringFormat( wxGraphicsContext::Format_OptimizeForSmallFont );
-#endif
-	
-	Draw( gdc2, wxPLRealRect( 0, height/2, width, height/2 ) );
-	/*
-	std::vector<int> vlines = Draw(pdc, wxPLRealRect( 0, 0, width, height/2 ) );
-
-	
-	wxGCDC gdc2(pdc);
-	Draw( gdc2, wxPLRealRect( 0, height/2, width, height/2 ) );
-
-	pdc.SetPen( *wxGREEN_PEN );
-	pdc.SetBrush( *wxTRANSPARENT_BRUSH );
-
-	for ( size_t i=0;i<vlines.size();i++ )
-		pdc.DrawLine( vlines[i], 0, vlines[i], height );
-
-	pdc.SetFont( wxFont(14, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL) );
-	pdc.SetTextForeground( *wxRED );
-	pdc.DrawText( wxT("Using wxAutoBufferedPaintDC"), width/3, 10 );
-	pdc.DrawText( wxT("green lines for showing text extent issues (compare top & bottom)"), width/3, 10+pdc.GetCharHeight() );
-	pdc.DrawText( wxT("CowxPLRealRected using wxGCDC. Modified wxWidgets:graphics.cpp"), width/3, height/2+10 );
-	pdc.DrawText( wxT("This time using StringFormat::GenericTypographic()"), width/3, height/2+10+pdc.GetCharHeight() );
-	*/
-}
-
-void TextLayoutDemo::OnSize( wxSizeEvent & )
-{
-	Refresh();
-}
-#endif

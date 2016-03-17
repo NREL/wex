@@ -8,6 +8,7 @@
 
 #include "wex/plot/plaxis.h"
 #include "wex/plot/ploutdev.h"
+#include "wex/plot/pltext.h"
 
 class wxPLPlot;
 
@@ -180,7 +181,6 @@ public:
 	static bool SetPdfDefaultFont( const wxString &face, double points );
 	bool RenderPdf( const wxString &file, double width, double height );
 
-	class text_layout;
 	class axis_layout;
 protected:
 
@@ -238,7 +238,7 @@ private:
 		legend_item( wxPLOutputDevice &dc, wxPLPlottable *p );
 		~legend_item();
 		wxPLPlottable *plot;
-		text_layout *text;
+		wxPLTextLayout *text;
 		double width, height;
 	};
 
@@ -254,28 +254,12 @@ private:
 
 		wxPLAxis *axis;
 		axis_layout *layout;
-		text_layout *label;
+		wxPLTextLayout *label;
 	};
 	
-	text_layout *m_titleLayout;
+	wxPLTextLayout *m_titleLayout;
 	axis_data m_x1, m_x2, m_y1[NPLOTPOS], m_y2[NPLOTPOS]; // m_x1 used for angular axis on polar plots, m_y1[0] used for radial axis
 };
-
-
-#ifdef TEXTLAYOUT_DEMO
-#include <wx/window.h>
-class TextLayoutDemo : public wxWindow
-{
-public:
-	TextLayoutDemo( wxWindow *parent );
-
-	std::vector<double> Draw( wxDC &dc, const wxRect &geom );
-	void OnPaint( wxPaintEvent & );
-	void OnSize( wxSizeEvent & );
-
-	DECLARE_EVENT_TABLE();
-};
-#endif
 
 #endif
 
