@@ -599,6 +599,8 @@ void TestFormDesigner()
 	frm->Show();
 }
 
+#include <wex/gleasy.h>
+
 class MyApp : public wxApp
 {
 	wxLocale m_locale;
@@ -609,9 +611,14 @@ public:
 			return false;
 		
 		wxInitAllImageHandlers();
-		TestPLPlot( 0 );
-		TestPLPolarPlot(0);
-		TestPLBarPlot(0);
+		//TestPLPlot( 0 );
+		//TestPLPolarPlot(0);
+		//TestPLBarPlot(0);
+
+		wxFrame *frmgl = new wxFrame( NULL, wxID_ANY, "GL Easy Test", wxDefaultPosition, wxSize(700,700) );
+		new wxGLEasyCanvasTest( frmgl );
+		frmgl->Show();
+
 		return true;
 
 		//TestFormDesigner();

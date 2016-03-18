@@ -12,6 +12,7 @@ LIBNAME = wexuxwx3
 TARGET = ../$(LIBNAME).a
 	
 OBJECTS = \
+	gleasy.o \
 	easycurl.o \
 	snaplay.o \
 	pagelayout.o \
