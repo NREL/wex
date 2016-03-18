@@ -13,34 +13,59 @@ struct wxGLPoint3D
 	float x, y, z;
 };
 
+
+class wxGLTrackball
+{
+protected:
+	float m_quat[4];
+	float m_lastX, m_lastY;
+public:
+	wxGLTrackball();
+
+	// call this every time when mouse moves
+	void Mouse( float mx, float my );
+
+	// call this when mouse moves and you want to rotate the scene,
+	void Spin( float mx, float my, float win_width, float win_height );
+
+	// call this for a rotation matrix to use with glMultMatrixf()
+	void GetRotationMatrix( GLfloat m[4][4] );
+};
+
 class wxGLEasyCanvas : public wxGLCanvas
 {
 public:
 	wxGLEasyCanvas( wxWindow *parent, int id, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize );
 	virtual ~wxGLEasyCanvas();
 
-	void SetView( const wxGLPoint3D &min, const wxGLPoint3D &max );
+	void SetMinMax( const wxGLPoint3D &min, const wxGLPoint3D &max );
+	void ShowAxes( float len );
 protected:
 	virtual void OnRender();
 
 	void Color( const wxColour &c );
+	void PointSize( float p );
 	void Point( float x, float y, float z );
 	void Point( const wxGLPoint3D &p );
 	void BeginPoints(); // optional optimization for rendering lots of points
 	void EndPoints();
 	void Points( const std::vector<wxGLPoint3D> &list );
+	void LineWidth( float w );
 	void Line( const wxGLPoint3D &p1, const wxGLPoint3D &p2 );
 	void Lines( const std::vector<wxGLPoint3D> &list );
 	void Text( const wxGLPoint3D &p, const wxString &text );
 
-
-	void SetupProjectionMode();
-
-
 	wxGLContext m_glContext;
 	bool m_pointListMode;
-	float m_xrot, m_yrot, m_lastX, m_lastY, m_scale;
+	float m_lastX, m_lastY, m_scale;
+	wxGLTrackball m_trackball;
+	wxGLPoint3D m_offset;
 	wxGLPoint3D m_min, m_max;
+	float m_axesLength;
+	struct {
+		float left, right, top, bottom, znear, zfar;
+	} m_orth;
+	wxGLPoint3D m_last3D;
 	
 	void OnChar( wxKeyEvent & );
 	void OnMouse( wxMouseEvent & );
@@ -64,5 +89,6 @@ protected:
 	std::vector<wxGLPoint3D> m_data;
 	DECLARE_EVENT_TABLE();
 };
+
 
 #endif
