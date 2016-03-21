@@ -38,8 +38,11 @@ public:
 	wxGLEasyCanvas( wxWindow *parent, int id, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize );
 	virtual ~wxGLEasyCanvas();
 
-	void SetMinMax( const wxGLPoint3D &min, const wxGLPoint3D &max );
-	void ShowAxes( float len );
+	void ShowAxes( float len ) { m_axesLength = len; }
+	void SetScale( float x, float y, float z ) { m_scale.x = x; m_scale.y = y; m_scale.z = z; }
+	void SetZoomRange( float min, float max ) { m_zoomMin = min; m_zoomMax = max; }
+	void SetAntiAliasing( bool aa ) { m_antiAliasing = aa; }
+
 protected:
 	virtual void OnRender();
 
@@ -56,10 +59,10 @@ protected:
 	void Text( const wxGLPoint3D &p, const wxString &text );
 
 	wxGLContext m_glContext;
-	bool m_pointListMode;
-	float m_lastX, m_lastY, m_scale;
+	bool m_pointListMode, m_antiAliasing;
+	float m_lastX, m_lastY, m_zoom, m_zoomMin, m_zoomMax;
 	wxGLTrackball m_trackball;
-	wxGLPoint3D m_offset;
+	wxGLPoint3D m_offset, m_scale;
 	wxGLPoint3D m_min, m_max;
 	float m_axesLength;
 	struct {

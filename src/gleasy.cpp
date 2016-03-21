@@ -10,6 +10,11 @@
 
 #include <wex/gleasy.h>
 
+template <typename T> T CLAMP(T value, T low, T high)
+{
+    return (value < low) ? low : ((value > high) ? high : value);
+}
+
 
 BEGIN_EVENT_TABLE( wxGLEasyCanvas, wxGLCanvas )
     EVT_SIZE(wxGLEasyCanvas::OnSize)
@@ -21,9 +26,15 @@ END_EVENT_TABLE()
 wxGLEasyCanvas::wxGLEasyCanvas( wxWindow *parent, int id, const wxPoint &pos, const wxSize &size )
 	: wxGLCanvas( parent, id, NULL, pos, size, wxBORDER_NONE ), m_glContext( this )
 {
+	SetBackgroundColour( *wxWHITE );
+
+	m_antiAliasing = false;
 	m_pointListMode = false;
 	m_lastX = m_lastY = 0;
-	m_scale = 1.0f;
+	m_scale.x = m_scale.y = m_scale.z = 1.0f;
+	m_zoom = 1.0f;
+	m_zoomMin = 0.001f;
+	m_zoomMax = 100.0f;
 	m_axesLength = 100.0f;
 	m_orth.left = -1;
 	m_orth.right = 1;
@@ -38,18 +49,11 @@ wxGLEasyCanvas::~wxGLEasyCanvas()
 	// nothing to do (yet)
 }
 
-	
 void wxGLEasyCanvas::OnRender()
 {
 	// nothing to do here
 }
 
-void wxGLEasyCanvas::SetMinMax( const wxGLPoint3D &min, const wxGLPoint3D &max )
-{
-	m_min = min;
-	m_max = max;
-	Refresh( false );
-}
 
 
 void wxGLEasyCanvas::Color( const wxColour &c )
@@ -162,14 +166,14 @@ void wxGLEasyCanvas::OnMouse( wxMouseEvent &evt )
 	double pz = m_orth.znear;
 	
 	SetCurrent( m_glContext );
-	
+		
 	if ( evt.Dragging() && evt.ControlDown() )
 	{
 		// zoom in/out
 		int dy = m_lastY - evt.GetY();
-		m_scale  += (float)(dy) / 500.0f;
-		if ( m_scale < 0.001f ) m_scale = 0.001f;
-		if ( m_scale > 100.0f ) m_scale = 100.0f;
+		float ds = ((float)dy) / 500.0f;
+		m_zoom = CLAMP( m_zoom+ds, m_zoomMin, m_zoomMax );
+
 		Refresh(false);
 	}
 	else if ( evt.Dragging() && evt.ShiftDown() )
@@ -199,6 +203,13 @@ void wxGLEasyCanvas::OnMouse( wxMouseEvent &evt )
 	// allow descendents to handle mouse events too
 	evt.Skip();
 }
+static void get_gl_rgba( const wxColour &c, float glc[4] )
+{
+	glc[0] = float(c.Red())/255.0f;
+	glc[1] = float(c.Green())/255.0f; 
+	glc[2] = float(c.Blue())/255.0f;
+	glc[3] = float(c.Alpha())/255.0f;
+}
 
 void wxGLEasyCanvas::OnPaint( wxPaintEvent & )
 {
@@ -213,13 +224,19 @@ void wxGLEasyCanvas::OnPaint( wxPaintEvent & )
     // or more than one wxGLContext in the application.
     SetCurrent( m_glContext );
 	
-    glClearColor( 1.0f, 1.0f, 1.0f, 1.0f );
+	float color[4];
+	get_gl_rgba( GetBackgroundColour(), color );
+    glClearColor( color[0], color[1], color[2], color[3] );
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-	glEnable (GL_LINE_SMOOTH);
-	glEnable (GL_BLEND);
-	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glHint (GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
+	
+	if ( m_antiAliasing )
+	{
+		glEnable( GL_LINE_SMOOTH );
+		glEnable( GL_BLEND );
+		glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+		glHint( GL_LINE_SMOOTH_HINT, GL_FASTEST );
+	}
 	
     // It's up to the application code to update the OpenGL viewport settings.
     // In order to avoid extensive context switching, consider doing this in
@@ -247,9 +264,8 @@ void wxGLEasyCanvas::OnPaint( wxPaintEvent & )
 	GLfloat M[4][4];
 	m_trackball.GetRotationMatrix( M );
 	glMultMatrixf( &M[0][0] );
-	glScalef( m_scale, m_scale, m_scale );	
-	
-	
+	glScalef( m_scale.x*m_zoom, m_scale.y*m_zoom, m_scale.z*m_zoom );	
+		
 	if ( m_axesLength > 0 )
 	{
 			// xyz axes
@@ -325,8 +341,7 @@ void wxGLEasyCanvasTest::OnMenu( wxCommandEvent &evt )
 					if ( p.z > max.z ) max.z = p.z;
 				}
 				fclose(fp);
-				
-				SetMinMax( min, max );
+
 				// NOTE: for some reason under wxGTK the following is required to avoid that
 				//       the surface gets rendered in a small rectangle in the top-left corner of the frame
 				PostSizeEventToParent();
