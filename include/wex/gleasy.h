@@ -42,7 +42,7 @@ public:
 	void SetScale( float x, float y, float z ) { m_scale.x = x; m_scale.y = y; m_scale.z = z; }
 	void SetZoomRange( float min, float max ) { m_zoomMin = min; m_zoomMax = max; }
 	void SetAntiAliasing( bool aa ) { m_antiAliasing = aa; }
-
+	
 protected:
 	virtual void OnRender();
 
@@ -65,10 +65,14 @@ protected:
 	wxGLPoint3D m_offset, m_scale;
 	wxGLPoint3D m_min, m_max;
 	float m_axesLength;
+	unsigned int m_fontOffset;
 	struct {
 		float left, right, top, bottom, znear, zfar;
 	} m_orth;
 	wxGLPoint3D m_last3D;
+
+	void makeRasterFont();
+	void printString( const char *s );
 	
 	void OnChar( wxKeyEvent & );
 	void OnMouse( wxMouseEvent & );
