@@ -6,6 +6,7 @@
 #include <wx/menu.h>
 #include <wx/dc.h>
 #include <wx/dcbuffer.h>
+#include <wx/dcgraph.h>
 #include <wx/msgdlg.h>
 
 #include <wex/gleasy.h>
@@ -87,7 +88,7 @@ wxGLEasyCanvas::wxGLEasyCanvas( wxWindow *parent, int id, const wxPoint &pos, co
 {
 	SetBackgroundColour( *wxWHITE );
 
-	m_antiAliasing = false;
+	m_antiAliasing = true;
 	m_pointListMode = false;
 	m_lastX = m_lastY = 0;
 	m_scale.x = m_scale.y = m_scale.z = 1.0f;
@@ -196,38 +197,69 @@ void wxGLEasyCanvas::Lines( const std::vector<wxGLPoint3D> &list )
 }
 
 
-void wxGLEasyCanvas::Text( const wxGLPoint3D &p, const wxString &text )
+void wxGLEasyCanvas::Text( const wxGLPoint3D &p, const wxString &text, 
+		const wxColour &textcolor, const wxBrush &back, const wxFont *font )
 {
 	if ( text.IsEmpty() ) return;
 
 	wxClientDC cdc( this );
-	cdc.SetFont( GetFont() );
+	cdc.SetFont( font ? *font : GetFont() );
 	wxSize sz = cdc.GetTextExtent( text );
 	
 	wxBitmap bmp( sz );
+	bmp.UseAlpha();
+
 	wxMemoryDC dc( bmp );
-	dc.SetFont( GetFont() );
-	dc.SetBrush( *wxWHITE_BRUSH );
+	wxGCDC gdc(dc);
+	dc.SetFont( font ? *font : GetFont() );
+	bool transp = back.IsTransparent();
+	
+	if ( transp )
+	{
+		dc.SetBackground( *wxWHITE_BRUSH );
+		dc.SetTextForeground( *wxBLACK );
+	}
+	else
+	{
+		dc.SetBackground( back );
+		dc.SetTextForeground( textcolor );
+	}
+
 	dc.Clear();
-	dc.SetTextForeground( *wxBLACK );
 	dc.DrawText( text, 0, 0 );
 
 	wxImage img( bmp.ConvertToImage() );
-    GLubyte *bitmapData=img.GetData();
-    
+    GLubyte *bitmapData = img.GetData();   
     const int BPP = 4;
     GLubyte *imageData=(GLubyte *)malloc(sz.x * sz.y * BPP);
 	if ( !imageData ) return;
 
+
     for(int y=0; y<sz.y; y++)
     {
         for(int x=0; x<sz.x; x++)
-        {			
-            imageData[(x+y*sz.x)*BPP+0] = bitmapData[( x+(sz.y-y-1)*sz.x)*3+0];
-            imageData[(x+y*sz.x)*BPP+1] = bitmapData[( x+(sz.y-y-1)*sz.x)*3+1];
-            imageData[(x+y*sz.x)*BPP+2] = bitmapData[( x+(sz.y-y-1)*sz.x)*3+2];
-            // add alpha channel
-            imageData[(x+y*sz.x)*BPP+3] = 255;//255 - bitmapData[( x+(sz.y-y-1)*sz.x)*3];
+        {	
+			GLubyte red = bitmapData[( x+(sz.y-y-1)*sz.x)*3+0];
+			GLubyte green = bitmapData[( x+(sz.y-y-1)*sz.x)*3+1];
+			GLubyte blue = bitmapData[( x+(sz.y-y-1)*sz.x)*3+2];
+			GLubyte alpha = 255;
+			
+			if ( transp )
+			{
+				float scale = 1.0f - ( (((float)red)+((float)green)+((float)blue) )/3.0f ) / 255.0f;
+
+				// pass in desired text color scaled by intensity
+				red = textcolor.Red();
+				green = textcolor.Green();
+				blue = textcolor.Blue();
+				alpha = (GLubyte)(255.0f*scale);
+			}
+
+			imageData[(x+y*sz.x)*BPP+0] = red;
+			imageData[(x+y*sz.x)*BPP+1] = green;
+			imageData[(x+y*sz.x)*BPP+2] = blue;
+			imageData[(x+y*sz.x)*BPP+3] = alpha;
+
         }
     }
 	
@@ -236,7 +268,6 @@ void wxGLEasyCanvas::Text( const wxGLPoint3D &p, const wxString &text )
 	glGetBooleanv( GL_CURRENT_RASTER_POSITION_VALID, &ok );
 	if ( ok ) 
 	{
-		glDisable( GL_LIGHTING );
 		glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
 		glPixelZoom( 1.0f, 1.0f );
 		glDrawPixels( sz.x, sz.y, GL_RGBA, GL_UNSIGNED_BYTE, imageData );
@@ -417,6 +448,9 @@ END_EVENT_TABLE()
 wxGLEasyCanvasTest::wxGLEasyCanvasTest( wxWindow *parent )
 	: wxGLEasyCanvas( parent, wxID_ANY )
 {
+	wxFont font(*wxNORMAL_FONT);
+	font.SetPointSize( 18 );
+	SetFont(font);
 }
 
 void wxGLEasyCanvasTest::OnMenu( wxCommandEvent &evt )
@@ -465,12 +499,9 @@ void wxGLEasyCanvasTest::OnRender()
 {
 	float len = 50.0f;
 	ShowAxes( len );
-	Color( *wxRED );
-	Text( wxGLPoint3D( len, 0, 0 ), "X axis (50)" );
-	Color( *wxGREEN );
-	Text( wxGLPoint3D( 0, len, 0 ), "Y axis (50)" );
-	Color( *wxBLUE );
-	Text( wxGLPoint3D( 0, 0, len ), "Z axis (50)" );
+	Text( wxGLPoint3D( len, 0, 0 ), "X axis (50)", *wxWHITE, *wxRED_BRUSH, wxSMALL_FONT );
+	Text( wxGLPoint3D( 0, len, 0 ), "Y axis (50)", *wxGREEN );
+	Text( wxGLPoint3D( 0, 0, len ), "Z axis (50)", *wxBLUE );
 
 	if ( m_data.size() > 0 )
 	{

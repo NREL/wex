@@ -4,6 +4,7 @@
 #include <vector>
 #include <wx/window.h>
 #include <wx/glcanvas.h>
+#include <wx/gdicmn.h>
 
 struct wxGLPoint3D
 {
@@ -56,7 +57,9 @@ protected:
 	void LineWidth( float w );
 	void Line( const wxGLPoint3D &p1, const wxGLPoint3D &p2 );
 	void Lines( const std::vector<wxGLPoint3D> &list );
-	void Text( const wxGLPoint3D &p, const wxString &text );
+	void Text( const wxGLPoint3D &p, const wxString &text, 
+		const wxColour &c = *wxBLACK, 
+		const wxBrush &back=*wxTRANSPARENT_BRUSH, const wxFont *font = 0 );
 
 	wxGLContext m_glContext;
 	bool m_pointListMode, m_antiAliasing;
