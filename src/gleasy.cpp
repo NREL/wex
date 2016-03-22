@@ -10,7 +10,8 @@
 #include <wx/msgdlg.h>
 #include <wx/stopwatch.h>
 
-
+#include <wex/plot/plaxis.h>
+#include <wex/plot/plplot.h>
 #include <wex/gleasy.h>
 
 #ifdef __WXMSW__
@@ -127,10 +128,9 @@ wxGLEasyCanvas::wxGLEasyCanvas( wxWindow *parent, int id, const wxPoint &pos, co
 	m_scale.x = m_scale.y = m_scale.z = 1.0f;
 	m_zoom = 1.0f;
 	m_zoomMin = 0.001f;
-	m_zoomMax = 100.0f;
+	m_zoomMax = 1000.0f;
 	m_zoomRate = 0.1f;
-	m_axesLength = 100.0f;
-
+	
 	m_orth.top = 100.0f;
 	m_orth.left = -m_orth.top;
 	m_orth.right = m_orth.top;
@@ -252,6 +252,16 @@ void wxGLEasyCanvas::Text( const wxGLPoint3D &p, const wxString &text,
 			return; // unsupported glWindowPos2f
 	}
 #endif
+	
+	if ( std::isfinite( p.z ) )
+		glRasterPos3f( p.x, p.y, p.z );
+	else
+		glWindowPos2f( p.x, p.y );
+
+	GLboolean ok = false;
+	glGetBooleanv( GL_CURRENT_RASTER_POSITION_VALID, &ok );
+	if ( !ok )
+		return; // don't bother rendering the text if raster position is invalid
 
 	wxClientDC cdc( this );
 	cdc.SetFont( font ? *font : GetFont() );
@@ -313,21 +323,112 @@ void wxGLEasyCanvas::Text( const wxGLPoint3D &p, const wxString &text,
         }
     }
 
-	if ( std::isfinite( p.z ) )
-		glRasterPos3f( p.x, p.y, p.z );
-	else
-		glWindowPos2f( p.x, p.y );
+	glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+	glPixelZoom( 1.0f, 1.0f );
+	glDrawPixels( sz.x, sz.y, GL_RGBA, GL_UNSIGNED_BYTE, imageData );
+	
+    free(imageData);
+}
 
-	GLboolean ok = false;
-	glGetBooleanv( GL_CURRENT_RASTER_POSITION_VALID, &ok );
-	if ( ok ) 
+void wxGLEasyCanvas::Axes( const wxGLPoint3D &min, const wxGLPoint3D &max, 
+	float ticksizepx, bool extend,
+	const wxString &xlabel, const wxString &ylabel, const wxString &zlabel, wxFont *font )
+{
+
+static wxColour xcolor( *wxRED );
+static wxColour ycolor( "forest green" );
+static wxColour zcolor( *wxBLUE );
+	
+	wxSize client( GetClientSize() );
+	float world_size = m_orth.right - m_orth.left;
+	float pixel_to_world = (world_size/((float)client.x))/m_zoom;
+
+	float fontsize = font ? font->GetPointSize() : GetFont().GetPointSize();
+
+	float ticksize = ticksizepx*pixel_to_world;
+	float axis_label_offset = 7*pixel_to_world;
+
+
+	// ------- x axis -------
+	Color( xcolor );
+	std::vector<wxPLAxis::TickData> list;
+	double dmin = min.x, dmax = max.x;
+	if( extend ) wxPLAxis::ExtendBoundsToNiceNumber( &dmax, &dmin );
+	if ( ticksize > 0.0f )
 	{
-		glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
-		glPixelZoom( 1.0f, 1.0f );
-		glDrawPixels( sz.x, sz.y, GL_RGBA, GL_UNSIGNED_BYTE, imageData );
+		float physx = 0.1f/fontsize * world_size * m_zoom * m_scale.x * (max.x - min.x);
+		wxPLLinearAxis xax( dmin, dmax );
+		xax.GetAxisTicks( 0, physx, list );
+		for( size_t i=0;i<list.size();i++ )
+		{
+			if ( list[i].size != wxPLAxis::TickData::NONE )
+			{
+				float sz = list[i].size == wxPLAxis::TickData::LARGE ? ticksize : 0.5f*ticksize;
+				Line( wxGLPoint3D( list[i].world, 0, 0 ), 
+					wxGLPoint3D( list[i].world, sz, 0 ) );
+			}
+
+			if ( !list[i].label.IsEmpty() && fabs(list[i].world) > 1.0e-14 )
+				Text( wxGLPoint3D( list[i].world, ticksize, 0 ), list[i].label, xcolor, *wxTRANSPARENT_BRUSH, font );
+		}
+	}
+	Line( wxGLPoint3D( dmin, 0, 0 ), wxGLPoint3D( dmax, 0, 0 ) );
+	Text( wxGLPoint3D( dmax+axis_label_offset, 0, 0 ), xlabel, xcolor, *wxTRANSPARENT_BRUSH, font );
+
+	// ------- y axis -------
+	Color( ycolor );
+	dmin = min.y;
+	dmax = max.y;
+	if( extend ) wxPLAxis::ExtendBoundsToNiceNumber( &dmax, &dmin );
+	if ( ticksize > 0.0f )
+	{
+		float physy = 0.1f/fontsize * world_size * m_zoom * m_scale.y * (max.y - min.y);
+		wxPLLinearAxis yax( dmin, dmax );
+		list.clear();
+		yax.GetAxisTicks( 0, physy, list );
+		for( size_t i=0;i<list.size();i++ )
+		{
+			if ( list[i].size != wxPLAxis::TickData::NONE )
+			{
+				float sz = list[i].size == wxPLAxis::TickData::LARGE ? ticksize : 0.5f*ticksize;
+				Line( wxGLPoint3D( 0, list[i].world, 0 ), 
+					wxGLPoint3D( sz, list[i].world, 0 ) );
+			}
+
+			if ( !list[i].label.IsEmpty() && fabs(list[i].world) > 1.0e-14 )
+				Text( wxGLPoint3D( ticksize, list[i].world, 0 ), list[i].label, ycolor, *wxTRANSPARENT_BRUSH, font );
+		}
+	}
+	Line( wxGLPoint3D( 0, dmin, 0 ), wxGLPoint3D( 0, dmax, 0 ) );
+	Text( wxGLPoint3D( 0, dmax+axis_label_offset, 0 ), ylabel, ycolor, *wxTRANSPARENT_BRUSH, font );
+		
+	// ------- z axis -------
+	Color( zcolor );
+	dmin = min.z;
+	dmax = max.z;
+	if( extend ) wxPLAxis::ExtendBoundsToNiceNumber( &dmax, &dmin );
+	if ( ticksize > 0.0f )
+	{
+		float physz = 0.1f/fontsize * world_size * m_zoom * m_scale.z * (max.z - min.z);
+		wxPLLinearAxis zax( dmin, dmax );
+		list.clear();
+		zax.GetAxisTicks( 0, physz, list );
+		for( size_t i=0;i<list.size();i++ )
+		{
+			if ( list[i].size != wxPLAxis::TickData::NONE )
+			{
+				float sz = list[i].size == wxPLAxis::TickData::LARGE ? ticksize : 0.5f*ticksize;
+				Line( wxGLPoint3D( 0, 0, list[i].world ), 
+					wxGLPoint3D( 0, sz, list[i].world ) );
+			}
+
+			if ( !list[i].label.IsEmpty() && fabs(list[i].world) > 1.0e-14 )
+				Text( wxGLPoint3D( 0, ticksize, list[i].world ), list[i].label, zcolor, *wxTRANSPARENT_BRUSH, font );
+		}
 	}
 
-    free(imageData);
+	Line( wxGLPoint3D( 0, 0, dmin ), wxGLPoint3D( 0, 0 , dmax) );
+	Text( wxGLPoint3D( 0, 0, dmax+axis_label_offset ), zlabel, zcolor, *wxTRANSPARENT_BRUSH, font );
 }
 
 void wxGLEasyCanvas::OnChar( wxKeyEvent &evt )
@@ -460,28 +561,6 @@ void wxGLEasyCanvas::OnPaint( wxPaintEvent & )
 	glMultMatrixf( &M[0][0] );
 	glScalef( m_scale.x*m_zoom, m_scale.y*m_zoom, m_scale.z*m_zoom );	
 		
-	if ( m_axesLength > 0 )
-	{
-			// xyz axes
-		glLineWidth( 2.0f );
-		glColor3f( 1, 0, 0 );
-		glBegin( GL_LINES );
-			glVertex3f( 0, 0, 0 );
-			glVertex3f( m_axesLength, 0, 0 );
-		glEnd();
-		glColor3f( 0, 1, 0 );
-		glBegin( GL_LINES );
-			glVertex3f( 0, 0, 0 );
-			glVertex3f( 0, m_axesLength, 0 );
-		glEnd();
-		glColor3f( 0, 0, 1 );
-		glBegin( GL_LINES );
-			glVertex3f( 0, 0, 0 );
-			glVertex3f( 0, 0, m_axesLength );
-		glEnd();
-		glLineWidth( 1.0f );
-	}
-	
 	OnRender();
 
 	if ( m_showStatus )
@@ -514,9 +593,9 @@ wxGLEasyCanvasTest::wxGLEasyCanvasTest( wxWindow *parent )
 	: wxGLEasyCanvas( parent, wxID_ANY )
 {
 	m_showStatus = true;
-	wxFont font(*wxNORMAL_FONT);
-	font.SetPointSize( 14 );
-	SetFont(font);
+	//wxFont font(*wxNORMAL_FONT);
+	//font.SetPointSize( 14 );
+	//SetFont(font);
 }
 
 void wxGLEasyCanvasTest::OnMenu( wxCommandEvent &evt )
@@ -564,7 +643,6 @@ void wxGLEasyCanvasTest::OnMenu( wxCommandEvent &evt )
 void wxGLEasyCanvasTest::OnRender()
 {
 	float len = 50.0f;
-	ShowAxes( len );
 	Text( wxGLPoint3D( len, 0, 0 ), "X axis (50)", *wxWHITE, *wxRED_BRUSH, wxSMALL_FONT );
 	Text( wxGLPoint3D( 0, len, 0 ), "Y axis (50)", *wxGREEN );
 	Text( wxGLPoint3D( 0, 0, len ), "Z axis (50)", *wxBLUE );
@@ -575,6 +653,8 @@ void wxGLEasyCanvasTest::OnRender()
 		Color( *wxBLACK );
 		Points( m_data );
 	}
+
+	Axes(wxGLPoint3D(-3,-10,0), wxGLPoint3D(4,7,1) );
 }
 
 void wxGLEasyCanvasTest::OnRightDown( wxMouseEvent &evt )

@@ -40,7 +40,6 @@ public:
 	virtual ~wxGLEasyCanvas();
 
 	void ShowStatus( bool b ) { m_showStatus = b; }
-	void ShowAxes( float len ) { m_axesLength = len; }
 	void SetScale( float x, float y, float z ) { m_scale.x = x; m_scale.y = y; m_scale.z = z; }
 	void SetZoomRate( float zr ) { m_zoomRate = 1.0f/zr; }
 	void SetZoomRange( float min, float max ) { m_zoomMin = min; m_zoomMax = max; }
@@ -68,14 +67,21 @@ protected:
 	void Text( int x, int y, const wxString &text, 
 		const wxColour &c = *wxBLACK, 
 		const wxBrush &back=*wxTRANSPARENT_BRUSH, const wxFont *font = 0 );
+	void Axes(	const wxGLPoint3D &min=wxGLPoint3D(0,0,0), 
+				const wxGLPoint3D &max=wxGLPoint3D(1,1,1),
+				float ticksizepx=9.0f, // in screen pixels
+				bool extend=false,
+				const wxString &xlabel="X", 
+				const wxString &ylabel="Y", 
+				const wxString &zlabel="Z",
+				wxFont *font = 0 );
+
 
 	wxGLContext m_glContext;
 	bool m_pointListMode, m_antiAliasing, m_showStatus;
 	float m_lastX, m_lastY, m_zoom, m_zoomMin, m_zoomMax, m_zoomRate;
 	wxGLTrackball m_trackball;
 	wxGLPoint3D m_offset, m_scale;
-	wxGLPoint3D m_min, m_max;
-	float m_axesLength;
 	unsigned int m_fontOffset;
 	struct {
 		float left, right, top, bottom, znear, zfar;
