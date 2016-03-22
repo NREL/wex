@@ -39,10 +39,15 @@ public:
 	wxGLEasyCanvas( wxWindow *parent, int id, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize );
 	virtual ~wxGLEasyCanvas();
 
+	void ShowStatus( bool b ) { m_showStatus = b; }
 	void ShowAxes( float len ) { m_axesLength = len; }
 	void SetScale( float x, float y, float z ) { m_scale.x = x; m_scale.y = y; m_scale.z = z; }
+	void SetZoomRate( float zr ) { m_zoomRate = 1.0f/zr; }
 	void SetZoomRange( float min, float max ) { m_zoomMin = min; m_zoomMax = max; }
 	void SetAntiAliasing( bool aa ) { m_antiAliasing = aa; }
+
+	void SetViewSize( float size ) { m_orth.top = size; }
+	void SetViewZ( float znear, float zfar ) { m_orth.znear = znear; m_orth.zfar = zfar; }
 	
 protected:
 	virtual void OnRender();
@@ -60,10 +65,13 @@ protected:
 	void Text( const wxGLPoint3D &p, const wxString &text, 
 		const wxColour &c = *wxBLACK, 
 		const wxBrush &back=*wxTRANSPARENT_BRUSH, const wxFont *font = 0 );
+	void Text( int x, int y, const wxString &text, 
+		const wxColour &c = *wxBLACK, 
+		const wxBrush &back=*wxTRANSPARENT_BRUSH, const wxFont *font = 0 );
 
 	wxGLContext m_glContext;
-	bool m_pointListMode, m_antiAliasing;
-	float m_lastX, m_lastY, m_zoom, m_zoomMin, m_zoomMax;
+	bool m_pointListMode, m_antiAliasing, m_showStatus;
+	float m_lastX, m_lastY, m_zoom, m_zoomMin, m_zoomMax, m_zoomRate;
 	wxGLTrackball m_trackball;
 	wxGLPoint3D m_offset, m_scale;
 	wxGLPoint3D m_min, m_max;

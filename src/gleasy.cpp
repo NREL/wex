@@ -8,10 +8,42 @@
 #include <wx/dcbuffer.h>
 #include <wx/dcgraph.h>
 #include <wx/msgdlg.h>
+#include <wx/stopwatch.h>
+
 
 #include <wex/gleasy.h>
 
+#ifdef __WXMSW__
 
+static void *GetGLFuncAddress( const char *name )
+{
+  void *p = (void *)wglGetProcAddress(name);
+
+  if(p == 0 ||
+    (p == (void*)0x1) || (p == (void*)0x2) || (p == (void*)0x3) ||
+    (p == (void*)-1) )
+  {
+    HMODULE module = LoadLibraryA("opengl32.dll");
+    p = (void *)GetProcAddress(module, name);
+  }
+
+  return p;
+}
+
+#ifndef APIENTRY
+#define APIENTRY
+#endif
+#ifndef APIENTRYP
+#define APIENTRYP APIENTRY *
+#endif
+#ifndef GLAPI
+#define GLAPI extern
+#endif
+
+typedef void (APIENTRYP PFNGLWINDOWPOS2FPROC) (GLfloat x, GLfloat y);
+static PFNGLWINDOWPOS2FPROC glWindowPos2f = NULL;
+
+#endif
 /*
 GLubyte space[] =
     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -88,6 +120,7 @@ wxGLEasyCanvas::wxGLEasyCanvas( wxWindow *parent, int id, const wxPoint &pos, co
 {
 	SetBackgroundColour( *wxWHITE );
 
+	m_showStatus = false;
 	m_antiAliasing = true;
 	m_pointListMode = false;
 	m_lastX = m_lastY = 0;
@@ -95,13 +128,15 @@ wxGLEasyCanvas::wxGLEasyCanvas( wxWindow *parent, int id, const wxPoint &pos, co
 	m_zoom = 1.0f;
 	m_zoomMin = 0.001f;
 	m_zoomMax = 100.0f;
+	m_zoomRate = 0.1f;
 	m_axesLength = 100.0f;
-	m_orth.left = -1;
-	m_orth.right = 1;
-	m_orth.bottom = -1;
-	m_orth.top = 1;
-	m_orth.znear = -1;
-	m_orth.zfar = 1;
+
+	m_orth.top = 100.0f;
+	m_orth.left = -m_orth.top;
+	m_orth.right = m_orth.top;
+	m_orth.bottom = -m_orth.top;
+	m_orth.znear = -1e37;
+	m_orth.zfar = 1e37;
 }
 
 wxGLEasyCanvas::~wxGLEasyCanvas()
@@ -196,11 +231,27 @@ void wxGLEasyCanvas::Lines( const std::vector<wxGLPoint3D> &list )
 	glEnd();
 }
 
+void wxGLEasyCanvas::Text( int x, int y, const wxString &text, 
+		const wxColour &textcolor, const wxBrush &back, const wxFont *font )
+{
+	wxGLPoint3D p( x, y, std::numeric_limits<float>::quiet_NaN() );
+	Text( p, text, textcolor, back, font );
+}
+
 
 void wxGLEasyCanvas::Text( const wxGLPoint3D &p, const wxString &text, 
 		const wxColour &textcolor, const wxBrush &back, const wxFont *font )
 {
 	if ( text.IsEmpty() ) return;
+	
+#ifdef _WIN32
+	if ( !std::isfinite( p.z ) && glWindowPos2f == NULL )
+	{
+		glWindowPos2f = (PFNGLWINDOWPOS2FPROC) GetGLFuncAddress( "glWindowPos2f" );
+		if ( !glWindowPos2f )
+			return; // unsupported glWindowPos2f
+	}
+#endif
 
 	wxClientDC cdc( this );
 	cdc.SetFont( font ? *font : GetFont() );
@@ -210,7 +261,6 @@ void wxGLEasyCanvas::Text( const wxGLPoint3D &p, const wxString &text,
 	bmp.UseAlpha();
 
 	wxMemoryDC dc( bmp );
-	wxGCDC gdc(dc);
 	dc.SetFont( font ? *font : GetFont() );
 	bool transp = back.IsTransparent();
 	
@@ -262,8 +312,12 @@ void wxGLEasyCanvas::Text( const wxGLPoint3D &p, const wxString &text,
 
         }
     }
-	
-	glRasterPos3f( p.x, p.y, p.z );
+
+	if ( std::isfinite( p.z ) )
+		glRasterPos3f( p.x, p.y, p.z );
+	else
+		glWindowPos2f( p.x, p.y );
+
 	GLboolean ok = false;
 	glGetBooleanv( GL_CURRENT_RASTER_POSITION_VALID, &ok );
 	if ( ok ) 
@@ -306,7 +360,7 @@ void wxGLEasyCanvas::OnMouse( wxMouseEvent &evt )
 	{
 		// zoom in/out
 		int dy = m_lastY - evt.GetY();
-		float ds = ((float)dy) / 500.0f;
+		float ds = ((float)dy) * m_zoomRate;
 		m_zoom = CLAMP( m_zoom+ds, m_zoomMin, m_zoomMax );
 
 		Refresh(false);
@@ -352,8 +406,14 @@ void wxGLEasyCanvas::OnPaint( wxPaintEvent & )
     // OnPaint handlers must always create a wxPaintDC.
     wxPaintDC dc(this);
 
+	wxStopWatch sw;
+
     int w, h;
     GetClientSize(&w, &h);
+
+	// reasonable limits on width/height
+	if ( w < 10 ) w = 10;
+	if ( h < 10 ) h = 10;
 
     // This is normally only necessary if there is more than one wxGLCanvas
     // or more than one wxGLContext in the application.
@@ -377,20 +437,16 @@ void wxGLEasyCanvas::OnPaint( wxPaintEvent & )
 	}
 	
     // It's up to the application code to update the OpenGL viewport settings.
-    // In order to avoid extensive context switching, consider doing this in
-    // OnPaint() rather than here, though.
     glViewport(0, 0, (GLint) w, (GLint) h);
-
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-
-	m_orth.top    =  1.0f;
-    m_orth.bottom = -1.0f;
-    m_orth.left   = -(double)w/(double)h;
+	
+	// m_orth.top doesn't change unless set by user in SetViewSize()
+	// znear and zfar are set at constructor time or by SetViewZ();
+    m_orth.bottom = -m_orth.top;
+    m_orth.left   = -(double)w/(double)h*m_orth.top;
     m_orth.right  = -m_orth.left;
 	
-	m_orth.znear =  -1e38;
-	m_orth.zfar =    1e38;
 
 	glOrtho( m_orth.left, m_orth.right, m_orth.bottom, m_orth.top, m_orth.znear, m_orth.zfar );
 	
@@ -428,6 +484,15 @@ void wxGLEasyCanvas::OnPaint( wxPaintEvent & )
 	
 	OnRender();
 
+	if ( m_showStatus )
+	{
+		long ms = sw.Time();
+		Text( 0, 0, 
+			wxString::Format("rendering(%d ms) offset(%g %g %g) zoom(%g) scale(%g %g %g)", 
+				ms, m_offset.x, m_offset.y, m_offset.z, m_zoom, m_scale.x, m_scale.y, m_scale.z ), 
+			*wxWHITE, *wxBLUE_BRUSH, wxSMALL_FONT );
+	}
+
 	glFlush();
 
     SwapBuffers();
@@ -448,8 +513,9 @@ END_EVENT_TABLE()
 wxGLEasyCanvasTest::wxGLEasyCanvasTest( wxWindow *parent )
 	: wxGLEasyCanvas( parent, wxID_ANY )
 {
+	m_showStatus = true;
 	wxFont font(*wxNORMAL_FONT);
-	font.SetPointSize( 18 );
+	font.SetPointSize( 14 );
 	SetFont(font);
 }
 
