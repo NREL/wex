@@ -1,5 +1,8 @@
 #include <math.h>
+#include <cmath>
 #include <algorithm>
+#include <numeric>
+#include <limits>
 
 #include <wx/window.h>
 #include <wx/filedlg.h>
@@ -268,8 +271,6 @@ void wxGLEasyCanvas::Text( const wxGLPoint3D &p, const wxString &text,
 	wxSize sz = cdc.GetTextExtent( text );
 	
 	wxBitmap bmp( sz );
-	bmp.UseAlpha();
-
 	wxMemoryDC dc( bmp );
 	dc.SetFont( font ? *font : GetFont() );
 	bool transp = back.IsTransparent();

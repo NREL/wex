@@ -107,10 +107,8 @@ OBJECTS = \
 $(TARGET) : $(OBJECTS)
 	ar rs $@ $^
 
-DEPENDS = $(OBJECTS:.o=.d)
 
-clean:
-	rm -rf $(OBJECTS) $(DEPENDS) $(TARGET) 
+DEPENDS = $(OBJECTS:.o=.d)
 
 -include $(DEPENDS)
 
@@ -121,3 +119,5 @@ clean:
 	  sed -e 's/^ *//' -e 's/$$/:/' >> $*.d
 	@rm -f $*.d.tmp
 
+clean:
+	rm -rf $(TARGET) $(OBJECTS) 
