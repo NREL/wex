@@ -41,6 +41,9 @@ public:
 
 	void ShowStatus( bool b ) { m_showStatus = b; }
 	void SetScale( float x, float y, float z ) { m_scale.x = x; m_scale.y = y; m_scale.z = z; }
+	void SetScaleX( float x ) { m_scale.x = x; }
+	void SetScaleY( float y ) { m_scale.y = y; }
+	void SetScaleZ( float z ) { m_scale.z = z; }
 	void SetZoomRate( float zr ) { m_zoomRate = 1.0f/zr; }
 	void SetZoomRange( float min, float max ) { m_zoomMin = min; m_zoomMax = max; }
 	void SetAntiAliasing( bool aa ) { m_antiAliasing = aa; }
