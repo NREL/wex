@@ -49,7 +49,6 @@ static PFNGLWINDOWPOS2FPROC glWindowPos2f = NULL;
 
 #elif defined(__WXGTK__)
 
-typedef void ( PFNGLWINDOWPOS2FPROC) ( GLfloat x, GLfloat y );
 static PFNGLWINDOWPOS2FPROC glWindowPos2f = NULL;
 
 #endif
@@ -263,7 +262,7 @@ void wxGLEasyCanvas::Text( const wxGLPoint3D &p, const wxString &text,
 #elif defined(__WXGTK__)
 	if ( !std::isfinite( p.z ) && glWindowPos2f == NULL )
 	{
-		glWindowPos2f = (PFNGLWINDOWPOS2FPROC) glXGetProcAddress( "glWindowPos2f" );
+		glWindowPos2f = (PFNGLWINDOWPOS2FPROC) glXGetProcAddress( (const GLubyte*)"glWindowPos2f" );
 		if ( !glWindowPos2f )
 			return; // unsupported glWindowPos2f
 	}
