@@ -47,7 +47,13 @@ static void *GetGLFuncAddress( const char *name )
 typedef void (APIENTRYP PFNGLWINDOWPOS2FPROC) (GLfloat x, GLfloat y);
 static PFNGLWINDOWPOS2FPROC glWindowPos2f = NULL;
 
+#elif defined(__WXGTK__)
+
+typedef void ( PFNGLWINDOWPOS2FPROC) ( GLfloat x, GLfloat y );
+static PFNGLWINDOWPOS2FPROC glWindowPos2f = NULL;
+
 #endif
+
 /*
 GLubyte space[] =
     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -251,6 +257,13 @@ void wxGLEasyCanvas::Text( const wxGLPoint3D &p, const wxString &text,
 	if ( !std::isfinite( p.z ) && glWindowPos2f == NULL )
 	{
 		glWindowPos2f = (PFNGLWINDOWPOS2FPROC) GetGLFuncAddress( "glWindowPos2f" );
+		if ( !glWindowPos2f )
+			return; // unsupported glWindowPos2f
+	}
+#elif defined(__WXGTK__)
+	if ( !std::isfinite( p.z ) && glWindowPos2f == NULL )
+	{
+		glWindowPos2f = (PFNGLWINDOWPOS2FPROC) glXGetProcAddress( "glWindowPos2f" );
 		if ( !glWindowPos2f )
 			return; // unsupported glWindowPos2f
 	}
