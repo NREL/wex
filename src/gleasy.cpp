@@ -541,7 +541,7 @@ void wxGLEasyCanvas::OnPaint( wxPaintEvent & )
 	glEnable(GL_COLOR_MATERIAL);
     glEnable(GL_BLEND);
     glDisable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_TEST);
+    //glDisable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
  
 	if ( m_antiAliasing )
