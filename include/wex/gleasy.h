@@ -54,6 +54,8 @@ public:
 
 	void SetViewZ( float znear, float zfar ) { m_orth.znear = znear; m_orth.zfar = zfar; }
 	
+	wxBitmap GetBitmap();
+
 protected:
 	virtual void OnRender();
 
@@ -97,6 +99,7 @@ protected:
 	void makeRasterFont();
 	void printString( const char *s );
 	
+	void OnMenu( wxCommandEvent & );
 	void OnChar( wxKeyEvent & );
 	void OnMouse( wxMouseEvent & );
 	void OnPaint( wxPaintEvent & );

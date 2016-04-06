@@ -12,6 +12,8 @@
 #include <wx/dcgraph.h>
 #include <wx/msgdlg.h>
 #include <wx/stopwatch.h>
+#include <wx/clipbrd.h>
+#include <wx/busyinfo.h>
 
 #include <wex/plot/plaxis.h>
 #include <wex/plot/plplot.h>
@@ -122,6 +124,8 @@ BEGIN_EVENT_TABLE( wxGLEasyCanvas, wxGLCanvas )
     EVT_PAINT(wxGLEasyCanvas::OnPaint)
     EVT_CHAR(wxGLEasyCanvas::OnChar)
     EVT_MOUSE_EVENTS(wxGLEasyCanvas::OnMouse)
+	EVT_MENU( wxID_COPY, wxGLEasyCanvas::OnMenu )
+	EVT_MENU( wxID_SAVE, wxGLEasyCanvas::OnMenu )
 END_EVENT_TABLE()
 
 wxGLEasyCanvas::wxGLEasyCanvas( wxWindow *parent, int id, const wxPoint &pos, const wxSize &size )
@@ -151,6 +155,29 @@ wxGLEasyCanvas::~wxGLEasyCanvas()
 {
 	// nothing to do (yet)
 }
+
+
+wxBitmap wxGLEasyCanvas::GetBitmap()
+{
+	SetCurrent( m_glContext );
+
+	// Read the OpenGL image into a pixel array 
+	GLint view[4]; 
+	glGetIntegerv(GL_VIEWPORT, view); 
+	void* pixels = malloc(3 * view[2] * view[3]); // must use malloc 
+	
+	glPixelStorei(GL_PACK_ALIGNMENT, 1); 
+	glReadBuffer( GL_BACK_LEFT ); 	
+	glReadPixels(0, 0, view[2], view[3], GL_RGB, GL_UNSIGNED_BYTE, pixels); 
+  
+	// Put the image into a wxImage 
+	wxImage image((int) view[2], (int) view[3]); 
+	image.SetData((unsigned char*) pixels); 
+
+	image = image.Mirror(false); 
+	return wxBitmap(image);
+}
+
 
 void wxGLEasyCanvas::OnRender()
 {
@@ -450,6 +477,32 @@ void wxGLEasyCanvas::OnChar( wxKeyEvent &evt )
 	evt.Skip();
 }
 
+void wxGLEasyCanvas::OnMenu( wxCommandEvent &evt )
+{
+	switch( evt.GetId() )
+	{
+	case wxID_COPY:		
+		if ( wxTheClipboard->Open() )
+		{
+			wxBusyInfo info( "Copying image to clipboard...", this );
+			wxTheClipboard->SetData( new wxBitmapDataObject( GetBitmap() ) );
+			wxTheClipboard->Close();
+			wxMilliSleep( 50 );
+		}
+		break;
+	case wxID_SAVE:
+	{
+		wxFileDialog dlg( this, "Save image to file", wxEmptyString, "image.png", "PNG Files (*.png)|*.png", wxFD_SAVE|wxFD_OVERWRITE_PROMPT );
+		if ( dlg.ShowModal() == wxID_OK )
+		{
+			wxBitmap bit( GetBitmap() );
+			if ( !bit.SaveFile( dlg.GetPath(), wxBITMAP_TYPE_PNG ) )
+				wxMessageBox("Error saving to file:\n\n" + dlg.GetPath() );
+		}
+	}
+		break;
+	}
+}
 
 void wxGLEasyCanvas::OnMouse( wxMouseEvent &evt )
 {
@@ -503,8 +556,19 @@ void wxGLEasyCanvas::OnMouse( wxMouseEvent &evt )
 
 	m_trackball.Mouse( m_lastX, m_lastY );
 
-	// allow descendents to handle mouse events too
-	evt.Skip();
+	if ( evt.GetEventType() == wxEVT_RIGHT_DOWN )
+	{
+		wxMenu menu;
+		menu.Append( wxID_COPY, "Copy to clipboard" );
+		menu.Append( wxID_SAVE, "Save to image file..." );
+		PopupMenu( &menu );
+
+	}
+	else
+	{
+		// allow descendents to handle mouse events too
+		evt.Skip();
+	}
 }
 static void get_gl_rgba( const wxColour &c, float glc[4] )
 {
@@ -597,7 +661,7 @@ void wxGLEasyCanvas::OnSize( wxSizeEvent &evt )
 
 
 BEGIN_EVENT_TABLE( wxGLEasyCanvasTest, wxGLEasyCanvas )
-	EVT_RIGHT_DOWN( wxGLEasyCanvasTest::OnRightDown )
+//	EVT_RIGHT_DOWN( wxGLEasyCanvasTest::OnRightDown )
 	EVT_MENU( wxID_OPEN, wxGLEasyCanvasTest::OnMenu )
 END_EVENT_TABLE()
 
