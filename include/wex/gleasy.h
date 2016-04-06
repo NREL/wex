@@ -47,8 +47,11 @@ public:
 	void SetZoomRate( float zr ) { m_zoomRate = 1.0f/zr; }
 	void SetZoomRange( float min, float max ) { m_zoomMin = min; m_zoomMax = max; }
 	void SetAntiAliasing( bool aa ) { m_antiAliasing = aa; }
-
+	void SetZoom( float z ) { m_zoom = z; }
+	float GetZoom() const { return m_zoom; }
 	void SetViewSize( float size ) { m_orth.top = size; }
+	float GetViewSize() const { return m_orth.top; }
+
 	void SetViewZ( float znear, float zfar ) { m_orth.znear = znear; m_orth.zfar = zfar; }
 	
 protected:

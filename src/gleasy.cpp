@@ -137,14 +137,14 @@ wxGLEasyCanvas::wxGLEasyCanvas( wxWindow *parent, int id, const wxPoint &pos, co
 	m_zoom = 1.0f;
 	m_zoomMin = 0.001f;
 	m_zoomMax = 1000.0f;
-	m_zoomRate = 0.1f;
+	m_zoomRate = 0.05f;
 	
 	m_orth.top = 100.0f;
 	m_orth.left = -m_orth.top;
 	m_orth.right = m_orth.top;
 	m_orth.bottom = -m_orth.top;
-	m_orth.znear = -1e37;
-	m_orth.zfar = 1e37;
+	m_orth.znear = -1e10;
+	m_orth.zfar = 1e10;
 }
 
 wxGLEasyCanvas::~wxGLEasyCanvas()
@@ -539,11 +539,10 @@ void wxGLEasyCanvas::OnPaint( wxPaintEvent & )
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	
 	glEnable(GL_COLOR_MATERIAL);
-    glEnable(GL_BLEND);
     glDisable(GL_CULL_FACE);
-    //glDisable(GL_DEPTH_TEST);
-    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
- 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+     
 	if ( m_antiAliasing )
 	{
 		glEnable( GL_LINE_SMOOTH );
