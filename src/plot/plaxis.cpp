@@ -35,6 +35,7 @@ wxPLAxis::wxPLAxis( const wxPLAxis &rhs )
 	m_showTickText = rhs.m_showTickText;
 	m_smallTickSize = rhs.m_smallTickSize;
 	m_largeTickSize = rhs.m_largeTickSize;
+	m_reversed = rhs.m_reversed;
 }
 
 void wxPLAxis::Init()
