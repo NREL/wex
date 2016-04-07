@@ -95,6 +95,7 @@ void wxPLPdfOutputDevice::Brush( const wxColour &c, Style sty ) {
 
 	// currently, hatch and other patterns not supported
 	m_pdf.SetFillColour( c );
+	m_brush = true;
 }
 
 void wxPLPdfOutputDevice::Line( double x1, double y1, double x2, double y2 )	{
