@@ -461,13 +461,16 @@ void wxDVPnCdfCtrl::OnShowZerosClick(wxCommandEvent& e)
 	m_pdfPlot->SetIgnoreZeros(ignoreZeros);
 	m_cdfPlot->SetIgnoreZeros(ignoreZeros);
 
-	m_cdfPlotData[m_selectedDataSetIndex]->clear();
-	ReadCdfFrom(*m_dataSets[m_selectedDataSetIndex], m_cdfPlotData[m_selectedDataSetIndex]);
-	m_cdfPlot->SetData( *m_cdfPlotData[m_selectedDataSetIndex] );
+	if (m_selectedDataSetIndex > -1 && m_selectedDataSetIndex < m_cdfPlotData.size())
+	{
+		m_cdfPlotData[m_selectedDataSetIndex]->clear();
+		ReadCdfFrom(*m_dataSets[m_selectedDataSetIndex], m_cdfPlotData[m_selectedDataSetIndex]);
+		m_cdfPlot->SetData(*m_cdfPlotData[m_selectedDataSetIndex]);
 
-	m_plotSurface->GetYAxis1()->SetWorldMax( m_pdfPlot->GetNiceYMax() );
-	m_maxTextBox->SetValue(wxString::Format("%lg", m_pdfPlot->GetNiceYMax()));
-	InvalidatePlot();
+		m_plotSurface->GetYAxis1()->SetWorldMax(m_pdfPlot->GetNiceYMax());
+		m_maxTextBox->SetValue(wxString::Format("%lg", m_pdfPlot->GetNiceYMax()));
+		InvalidatePlot();
+	}
 }
 
 void wxDVPnCdfCtrl::OnPlotTypeSelection(wxCommandEvent& e)
