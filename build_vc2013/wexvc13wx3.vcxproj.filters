@@ -384,6 +384,12 @@
     <ClInclude Include="..\include\wex\gleasy.h">
       <Filter>wex\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\wex\plot\plcontourplot.h">
+      <Filter>plot\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\wex\matrix.h">
+      <Filter>wex\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
@@ -670,6 +676,9 @@
     </ClCompile>
     <ClCompile Include="..\src\gleasy.cpp">
       <Filter>wex\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\plot\plcontourplot.cpp">
+      <Filter>plot\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

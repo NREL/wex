@@ -39,6 +39,7 @@ public:
 #include "wex/plot/plbarplot.h"
 #include "wex/plot/plscatterplot.h"
 #include "wex/plot/plwindrose.h"
+#include "wex/plot/plcontourplot.h"
 
 #include "wex/dview/dvplotctrl.h"
 #include "wex/dview/dvselectionlist.h"
@@ -270,6 +271,63 @@ void TestPLPlot( wxWindow *parent )
 }
 
 #include <wex/mtrand.h>
+#include <wex/plot/plcolourmap.h>
+#include <wex/matrix.h>
+
+wxMatrix<double> peaks( int n, double *min, double *max )
+{
+	if ( min ) *min = 1e99;
+	if ( max ) *max = -1e99;
+
+	wxMatrix<double> d(n,n);
+	for( int i=0;i<n;i++ )
+	{
+		for( int j=0;j<n;j++ )
+		{
+			double x = -3.0 + ((double)i)/((double)n-1)*6.0;
+			double y = -3.0 + ((double)j)/((double)n-1)*6.0;
+
+			double z =  3*(1-x)*(1-x)*exp(-(x*x) - (y+1)*(y+1))
+			   - 10*(x/5 - x*x*x - y*y*y*y*y)*exp(-x*x-y*y)
+			   - 1/3*exp(-(x+1)*(x+1) - y*y);
+
+			if ( min && z < *min ) *min = z;
+			if ( max && z > *max ) *max = z;
+			d(i,j) = z;
+		}
+	}
+	return d;
+}
+
+void TestContourPlot()
+{
+	wxFrame *frame = new wxFrame(0, wxID_ANY, wxT("wxPLContourPlot in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(1000, 800));
+	wxPLPlotCtrl *plot = new wxPLPlotCtrl(frame, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+	plot->SetBackgroundColour( *wxWHITE );
+	plot->SetHighlightMode( wxPLPlotCtrl::HIGHLIGHT_ZOOM );
+	int np = 20;
+	
+	double zmin=0, zmax=10;
+	wxMatrix<double> data = peaks( np, &zmin, &zmax );
+
+	if( FILE *fp = fopen("zdata.csv", "w") )
+	{
+		for( size_t i=0;i<data.Rows();i++ )
+			for( size_t j=0;j<data.Cols();j++ )
+				fprintf(fp, "%lg%c", data(data.Rows()-i-1,j), j<data.Cols()-1 ? ',' : '\n');
+
+		fclose(fp);
+	}
+	wxPLAxis::ExtendBoundsToNiceNumber( &zmax, &zmin );
+	wxPLColourMap *jet = new wxPLJetColourMap( zmin, zmax );
+	plot->SetSideWidget( jet );
+
+	plot->AddPlot( new wxPLContourPlot( data, wxEmptyString, 15, jet ) );
+	plot->SetXAxis1( new wxPLLinearAxis( -5, np+5 ) );	
+	plot->SetYAxis1( new wxPLLinearAxis( -5, np+5 ) );
+
+	frame->Show();
+}
 
 void TestPLBarPlot( wxWindow *parent )
 {
@@ -615,9 +673,11 @@ public:
 		//TestPLPolarPlot(0);
 		//TestPLBarPlot(0);
 
-		wxFrame *frmgl = new wxFrame( NULL, wxID_ANY, "GL Easy Test", wxDefaultPosition, wxSize(700,700) );
-		new wxGLEasyCanvasTest( frmgl );
-		frmgl->Show();
+		TestContourPlot();
+
+		//wxFrame *frmgl = new wxFrame( NULL, wxID_ANY, "GL Easy Test", wxDefaultPosition, wxSize(700,700) );
+		//new wxGLEasyCanvasTest( frmgl );
+		//frmgl->Show();
 
 		return true;
 
