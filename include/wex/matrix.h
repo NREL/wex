@@ -1,6 +1,8 @@
 #ifndef __wex_matrix_h
 #define __wex_matrix_h
 
+#include<assert.h>
+
 #if defined(_DEBUG) && defined(_MSC_VER) && defined(_WIN32) && !defined(_WIN64)
 #define VEC_ASSERT(x) {if(!(x)) _asm{int 0x03}}
 #else
