@@ -115,8 +115,10 @@ public:
 				if ( !cell.Trivial() && !cell.Saddle() )
 				{
 					contours->push_back( wxPLContourPlot::Contour() );
-					Follow(grid, r, c, contours->back() );
-					contours->back().level = grid.threshold;
+					wxPLContourPlot::Contour &CC = contours->back();
+					Follow(grid, r, c, CC );
+					CC.points.push_back( CC.points[0] ); // to close the line
+					CC.level = grid.threshold;
 				}
 			}
 		}
@@ -236,12 +238,10 @@ public:
 * @param c column index of the start Cell.
 * @param path a non-null GeneralPath instance to update.
 */
-	void Follow(Grid grid, int r, int c, wxPLContourPlot::Contour & path) {
+	void Follow(Grid &grid, int r, int c, wxPLContourPlot::Contour & path) {
 		Side prevSide = NONE;
 
 		Cell *start = &grid( r, c );
-		int start_r = r;
-		int start_c = c;
 
 		double x, y;
 		start->Coord(FirstSide(*start, prevSide), &x, &y);
@@ -252,11 +252,11 @@ public:
 		path.points.push_back( wxRealPoint( x, y ) );
 
 		double xPrev, yPrev;
-		start->Coord(SecondSide(*start, prevSide), &xPrev, &yPrev);
+		prevSide = SecondSide(*start, prevSide);
+		start->Coord(prevSide, &xPrev, &yPrev);
 		xPrev += c;
 		yPrev += r;
 		
-		prevSide = SecondSide(*start, prevSide);
 		switch (prevSide) {
 		case BOTTOM: r--; break;
 		case LEFT: c--; break;
@@ -269,8 +269,11 @@ public:
 		start->Clear();
 
 		Cell *currentCell = &grid(r, c);
-		while ( start_c != c && start_r != r ) { // start != currentCell
-			currentCell->Coord(SecondSide(*currentCell, prevSide), &x, &y );
+		while ( start != currentCell )
+		{
+			prevSide = SecondSide(*currentCell, prevSide);
+
+			currentCell->Coord(prevSide, &x, &y );
 			x += c;
 			y += r;
 
@@ -280,7 +283,6 @@ public:
 
 			xPrev = x;
 			yPrev = y;
-			prevSide = SecondSide(*currentCell, prevSide);
 			
 			currentCell->Clear();
 			
@@ -439,18 +441,51 @@ public:
     * @return the resulting padded matrix which will be larger by 2 in both
     * directions.
     */
-   void Pad( const wxMatrix<double> &data, double guard, wxMatrix<double> &result ) {
+   void Pad2( const wxMatrix<double> &data, double zmin, wxMatrix<double> &result ) {
+	   int rowCount = data.Rows();
+	   int colCount = data.Cols();
+	  result.Resize( data.Rows()+2, data.Cols()+2 );
+
+
+      // the middle
+	  for( int i=0;i<rowCount;i++ )
+		  for( int j=0;j<colCount;j++ )
+			  result(i+1,j+1) = data(i,j);
+      // top and bottom rows
+      for (int j = 0; j < colCount + 2; j++)
+	  {
+         result(0,j) = result(1,j);
+		 result(rowCount+1,j) = result(rowCount,j);
+	  }
+
+      // left- and right-most columns excl. top and bottom rows
+      for (int i = 1; i < rowCount + 1; i++)
+	  {
+         result(i,0) = result(i,1);
+		result(i,colCount+1) = result(i,colCount);
+	  }
+
+	  result(0,0) = 0.5*(result(0,1) + result(1,0));
+	  result(0,colCount+1) = 0.5*(result(0,colCount) + result(1,colCount+1));
+	  result(rowCount+1,0) = 0.5*(result(rowCount,0) + result(rowCount+1,1));
+	  result(rowCount+1,colCount+1) = 0.5*(result(rowCount,colCount+1) + result(rowCount+1,colCount));
+
+
+	  Write( result, "padded.csv");
+   }
+
+   void Pad( const wxMatrix<double> &data, double zmin, wxMatrix<double> &result ) {
 	   int rowCount = data.Rows();
 	   int colCount = data.Cols();
 	  result.Resize( data.Rows()+2, data.Cols()+2 );
 
       // top and bottom rows
       for (int j = 0; j < colCount + 2; j++)
-         result(0,j) = result(rowCount+1,j) = guard;
+         result(0,j) = result(rowCount+1,j) = zmin;
 
       // left- and right-most columns excl. top and bottom rows
       for (int i = 1; i < rowCount + 1; i++)
-         result(i,0) = result(i,colCount+1) = guard;
+         result(i,0) = result(i,colCount+1) = zmin;
 
       // the middle
 	  for( int i=0;i<rowCount;i++ )
@@ -479,7 +514,7 @@ public:
 		}
 	
 		// IMPORTANT: pad data to ensure resulting linear strings are closed
-		double guard = min - 1.0;
+		double guard = min - 0.1;
 
 		wxMatrix<double> data;
 		Pad( z, guard, data );
@@ -536,11 +571,11 @@ void wxPLContourPlot::Update( int levels )
 {
 	m_contours.clear();
 	MarchingSquares ms;
-	//ms.Contours( &m_contours, m_z, levels );
+	ms.Contours( &m_contours, m_z, levels );
 
-	wxMatrix<double> padded;
-	ms.Pad( m_z, -10, padded );
-	ms.ContourAtIso( padded, 0.0, &m_contours );
+	//wxMatrix<double> padded;
+	//ms.Pad( m_z, -10, padded );
+	//ms.ContourAtIso( padded, 0.0, &m_contours );
 }
 
 void wxPLContourPlot::SetColourMap( wxPLColourMap *cmap )
@@ -568,18 +603,22 @@ void wxPLContourPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 {
 	if ( !m_cmap ) return;
 
-	//dc.NoPen();
-	dc.NoBrush();
+	bool m_filled = false;
+	if ( m_filled ) dc.NoPen();
+	else dc.NoBrush();
+
 	for( size_t i=0;i<m_contours.size();i++ )
 	{
-		//dc.Brush( m_cmap->ColourForValue( m_contours[i].level ) );
-		//dc.Polygon( m_contours[i].points.size(), &m_contours[i].points[0] );
-		dc.Pen( m_cmap->ColourForValue( m_contours[i].level ), 2 );
+		if ( m_filled ) dc.Brush( m_cmap->ColourForValue( m_contours[i].level ) );
+		else dc.Pen( m_cmap->ColourForValue( m_contours[i].level ), 2 );
+
 		size_t n = m_contours[i].points.size();
 		std::vector<wxRealPoint> mapped( n );
 		for( size_t j=0;j<n;j++ )
 			mapped[j] = map.ToDevice( m_contours[i].points[j] );
-		dc.Lines( m_contours[i].points.size(), &mapped[0] ); 
+
+		if ( m_filled ) dc.Polygon( m_contours[i].points.size(), &mapped[0] );
+		else dc.Lines( m_contours[i].points.size(), &mapped[0] ); 
 	}
 }
 
