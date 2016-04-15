@@ -779,8 +779,8 @@ void wxPLContourPlot::SetLevels( int levels )
 
 wxRealPoint wxPLContourPlot::At( size_t i ) const
 {
-	return wxRealPoint( std::numeric_limits<double>::quiet_NaN(),
-		std::numeric_limits<double>::quiet_NaN() );
+	double f = ((double)i)/((double)m_z.Cells());
+	return wxRealPoint( f*m_z.Cols(), f*m_z.Rows() );
 }
 
 size_t wxPLContourPlot::Len() const
