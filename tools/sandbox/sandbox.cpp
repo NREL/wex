@@ -305,7 +305,7 @@ void TestContourPlot()
 	wxPLPlotCtrl *plot = new wxPLPlotCtrl(frame, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 	plot->SetBackgroundColour( *wxWHITE );
 	plot->SetHighlightMode( wxPLPlotCtrl::HIGHLIGHT_ZOOM );
-	int np = 100;
+	int np = 200;
 	
 	double zmin=0, zmax=10;
 	wxMatrix<double> data = peaks( np, &zmin, &zmax );
@@ -323,9 +323,9 @@ void TestContourPlot()
 	plot->SetSideWidget( jet );
 	plot->ShowGrid( false, false );
 
-	plot->AddPlot( new wxPLContourPlot( data, wxEmptyString, 20, jet ) );
-	plot->SetXAxis1( new wxPLLinearAxis( -5, np+5 ) );	
-	plot->SetYAxis1( new wxPLLinearAxis( -5, np+5 ) );
+	plot->AddPlot( new wxPLContourPlot( data, wxEmptyString, 15, jet ) );
+	plot->SetXAxis1( new wxPLLinearAxis( -2, np+2 ) );	
+	plot->SetYAxis1( new wxPLLinearAxis( -2, np+2 ) );
 
 	frame->Show();
 }
