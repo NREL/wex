@@ -89,7 +89,6 @@ public:
 	void SetOffset( double off, bool recompute_x = true );
 	
 
-protected:
 	void RecomputeXData();
 private:
 	wxString m_varLabel;

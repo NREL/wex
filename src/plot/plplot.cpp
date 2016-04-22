@@ -910,7 +910,7 @@ void wxPLPlot::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visible_
 			includeXForPlot[i] = true;
 
 			//For CDF plots there is no X data label. The closest useful label is the Y label of the companion PDF histogram plot, so we need to store for use by the CDF plot.
-			if(xDataLabel == "") { xDataLabel = m_plots[i].plot->GetYDataLabel(this); }
+			if ( xDataLabel.IsEmpty() ) { xDataLabel = m_plots[i].plot->GetYDataLabel(this); }
 		}
 		else if(histPlot = dynamic_cast<wxPLHistogramPlot*>( m_plots[i - 1].plot ))
 		{

@@ -769,12 +769,6 @@ BEGIN_EVENT_TABLE(wxDVTimeSeriesCtrl, wxPanel)
 
 	EVT_PLOT_HIGHLIGHT(ID_PLOT_SURFACE, wxDVTimeSeriesCtrl::OnHighlight)
 	
-/*
-	EVT_WPPLOT_DRAG(ID_PLOT_SURFACE, wxDVTimeSeriesCtrl::OnPlotDrag)
-	EVT_WPPLOT_DRAG_START(ID_PLOT_SURFACE, wxDVTimeSeriesCtrl::OnPlotDragStart)
-	EVT_WPPLOT_DRAG_END(ID_PLOT_SURFACE, wxDVTimeSeriesCtrl::OnPlotDragEnd)
-*/
-
 	EVT_DVSELECTIONLIST(ID_DATA_CHANNEL_SELECTOR, wxDVTimeSeriesCtrl::OnDataChannelSelection)
 
 	EVT_COMMAND_SCROLL_THUMBTRACK(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrl::OnGraphScroll)
