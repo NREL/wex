@@ -274,16 +274,38 @@ public:
 	{
 		return n_cols;
 	}
-		
+	
+	bool Empty() const
+	{
+		return ( 0 == n_rows*n_cols );
+	}
+
 	inline T *Data()
 	{
 		return t_array;
+	}
+	
+	inline T &RawIndex(size_t idx)
+	{
+#ifdef _DEBUG
+		VEC_ASSERT( idx < n_rows*n_cols );
+#endif
+		return t_array[idx];
+	}
+
+	inline const T &RawIndex(size_t idx) const
+	{
+#ifdef _DEBUG
+		VEC_ASSERT( idx < n_rows*n_cols );
+#endif
+		return t_array[idx];
 	}
 
 	inline T Value() const
 	{
 		return t_array[0];
 	}
+
 };
 
 #endif

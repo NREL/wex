@@ -10,7 +10,11 @@ class wxPLContourPlot : public wxPLPlottable
 {
 public:
 	wxPLContourPlot();
-	wxPLContourPlot( const wxMatrix<double> &z,
+	wxPLContourPlot( 
+		const wxMatrix<double> &x,
+		const wxMatrix<double> &y,
+		const wxMatrix<double> &z,
+		bool filled,
 		const wxString &label = wxEmptyString,
 		int levels = 10,
 		wxPLColourMap *cmap = 0 );
@@ -26,19 +30,26 @@ public:
 	virtual void Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map );
 	virtual void DrawInLegend( wxPLOutputDevice &dc, const wxPLRealRect &rct);
 
+protected:
+	wxMatrix<double> m_x, m_y, m_z;
+	wxPLColourMap *m_cmap;
+	bool m_filled;
+
+	void Update( int levels );
 	
-	struct Contour
-	{
-		double level;
-		std::vector<wxRealPoint> points;
+	struct C_pt {
+		C_pt( double _x, double _y, char _a=0 ) : x(_x), y(_y), act(_a) { }
+		double x, y;
+		char act;
+	};
+	
+	struct C_poly {
+		std::vector< C_pt > pts;
+		double z, zmax;
 	};
 
-protected:
-	wxMatrix<double> m_z;
-	wxPLColourMap *m_cmap;
-	
-	void Update( int levels );
-	std::vector<Contour> m_contours;	
+	std::vector<C_poly> m_cPolys;
+
 };
 
 

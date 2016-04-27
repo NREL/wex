@@ -390,6 +390,9 @@
     <ClInclude Include="..\include\wex\matrix.h">
       <Filter>wex\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\plot\mplcontour.h">
+      <Filter>plot\Sources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
@@ -678,6 +681,9 @@
       <Filter>wex\Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\src\plot\plcontourplot.cpp">
+      <Filter>plot\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\plot\mplcontour.cpp">
       <Filter>plot\Sources</Filter>
     </ClCompile>
   </ItemGroup>

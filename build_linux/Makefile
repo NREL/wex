@@ -35,6 +35,7 @@ OBJECTS = \
 	jsonwriter.o \
 	md5.o \
 	numeric.o \
+	mplcontour.o \
 	dvstatisticstablectrl.o \
 	dvautocolourassigner.o \
 	pltext.o \

@@ -338,6 +338,7 @@ public:
 };
 */
 
+/*
 class MarchingSquares
 {
 public:
@@ -430,13 +431,12 @@ public:
 		}
 	}
 
-/**
-* <p>Return the first side that should be used in a CCW traversal.</p>
-*
-* @param cell the Cell to process.
-* @param prev previous side, only used for saddle cells.
-* @return the 1st side of the line segment of the designated cell.
-*/
+
+//* <p>Return the first side that should be used in a CCW traversal.</p>
+//*
+//* @param cell the Cell to process.
+//* @param prev previous side, only used for saddle cells.
+//* @return the 1st side of the line segment of the designated cell.
 	Side FirstSide( Cell &cell, Side prev ) {
 		switch (cell.Id())
 		{
@@ -477,13 +477,12 @@ public:
 		}
 	}
 
-/**
-* <p>Return the second side that should be used in a CCW traversal.</p>
-*
-* @param cell the Cell to process.
-* @param prev previous side, only used for saddle cells.
-* @return the 2nd side of the line segment of the designated cell.
-*/
+
+//* <p>Return the second side that should be used in a CCW traversal.</p>
+//*
+//* @param cell the Cell to process.
+//* @param prev previous side, only used for saddle cells.
+//* @return the 2nd side of the line segment of the designated cell.
 	Side SecondSide( Cell &cell, Side prev) {
 		switch (cell.Id()) {
 		case 8:
@@ -524,26 +523,26 @@ public:
 	}
 }
 
-/**
-* <p>A given contour can be made up of multiple disconnected regions, each
-* potentially having multiple holes. Both regions and holes are captured as
-* individual sub-paths.</p>
-*
-* <p>The process is iterative. It starts w/ an empty GeneralPath instance
-* and continues until all Cells are processed. With every invocation the
-* GeneralPath object is updated to reflect the new sub-path(s).</p>
-*
-* <p>Once a non-saddle cell is used it is cleared so as to ensure it will
-* not be re-used when finding sub-paths w/in the original path.</p>
-*
-* @param grid on input the matrix of cells representing a given contour.
-* Note that the process will alter the Cells, so on output the original
-* Grid instance _will_ be modified. In other words this method is NOT
-* idempotent when using the same object references and values.
-* @param r row index of the start Cell.
-* @param c column index of the start Cell.
-* @param path a non-null GeneralPath instance to update.
-*/
+
+//* <p>A given contour can be made up of multiple disconnected regions, each
+//* potentially having multiple holes. Both regions and holes are captured as
+//* individual sub-paths.</p>
+//*
+//* <p>The process is iterative. It starts w/ an empty GeneralPath instance
+//* and continues until all Cells are processed. With every invocation the
+//* GeneralPath object is updated to reflect the new sub-path(s).</p>
+//*
+//* <p>Once a non-saddle cell is used it is cleared so as to ensure it will
+//* not be re-used when finding sub-paths w/in the original path.</p>
+//*
+//* @param grid on input the matrix of cells representing a given contour.
+//* Note that the process will alter the Cells, so on output the original
+//* Grid instance _will_ be modified. In other words this method is NOT
+//* idempotent when using the same object references and values.
+//* @param r row index of the start Cell.
+//* @param c column index of the start Cell.
+//* @param path a non-null GeneralPath instance to update.
+
 	void Follow( wxMatrix<Cell> &grid, int r, int c, wxPLContourPlot::Contour & path) {
 		Side prevSide = NONE;
 
@@ -738,6 +737,7 @@ public:
 	}
 
 };
+*/
 
 wxPLContourPlot::wxPLContourPlot()
 	: wxPLPlottable()
@@ -745,9 +745,13 @@ wxPLContourPlot::wxPLContourPlot()
 	m_cmap = 0;
 }
 
-wxPLContourPlot::wxPLContourPlot( const wxMatrix<double> &z,
+wxPLContourPlot::wxPLContourPlot( 
+	const wxMatrix<double> &x,
+	const wxMatrix<double> &y,
+	const wxMatrix<double> &z,
+	bool filled,
 	const wxString &label, int levels, wxPLColourMap *cmap )
-	: wxPLPlottable( label ), m_z(z)
+	: wxPLPlottable( label ), m_x(x), m_y(y), m_z(z), m_filled(filled)
 {
 	if ( z.Cells() > 0 )
 		Update( levels );
@@ -760,11 +764,92 @@ wxPLContourPlot::~wxPLContourPlot()
 	// nothing to do
 }
 
+#include "mplcontour.h"
+
 void wxPLContourPlot::Update( int levels )
-{
-	m_contours.clear();
-	MarchingSquares ms;
-	ms.Contours( &m_contours, m_z, levels );
+{	
+	if ( m_z.Cells() == 0 ) return;
+
+	if ( m_x.Rows() != m_y.Rows() 
+		|| m_y.Rows() != m_z.Rows() ) return;
+	
+	if ( m_x.Cols() != m_y.Cols() 
+		|| m_y.Cols() != m_z.Cols() ) return;
+
+	m_cPolys.clear();
+
+	size_t nr = m_z.Rows();
+	size_t nc = m_z.Cols();
+	double min, max, here;
+	min = max = m_z(0,0);
+	wxMatrix<unsigned int> mask; // no mask currently
+	for( size_t i=0;i<nr;i++ )
+	{
+		for( size_t j=0;j<nc;j++ )
+		{
+			here = m_z(i,j);
+			if ( here < min ) min = here;
+			if ( here > max ) max = here;
+		}
+	}
+
+	// note: QCG assumes shape (ny,nx), so swap x & y for correct rendering
+	QuadContourGenerator qcg( m_y, m_x, m_z, mask, false, 0 );
+	
+	if ( !m_filled )
+	{
+		for( int k=0;k<=levels;k++ )
+		{
+			double zval =  min + ((double)k)/((double)levels)*(max-min);
+			managed_ptr_list<ContourLine> list;
+			qcg.create_contour( zval, list );
+
+		
+			for( size_t i=0;i<list.size();i++ )
+			{
+				m_cPolys.push_back( C_poly() );
+				C_poly &CC = m_cPolys.back();
+				CC.z = zval;
+				std::vector<XY> &xy = *list[i];
+				for( size_t j=0;j<xy.size();j++ )
+					CC.pts.push_back( C_pt( xy[j].x, xy[j].y ) );
+			}
+		}
+	}
+	else
+	{
+		for( int k=0;k<levels;k++ )
+		{
+			double zlow =  min + ((double)k)/((double)levels)*(max-min);
+			double zhigh =  min + ((double)k+1)/((double)levels)*(max-min);
+
+			managed_ptr_list<QuadContourGenerator::VertexCodes> list;
+			qcg.create_filled_contour( zlow, zhigh, list );
+					
+			for( size_t i=0;i<list.size();i++ )
+			{
+				QuadContourGenerator::VertexCodes &vc = *list[i];
+				if ( vc.vertices.Rows() == vc.codes.Rows() )
+				{
+					m_cPolys.push_back( C_poly() );
+					C_poly &CC = m_cPolys.back();
+					CC.z = zlow;
+					CC.zmax = zhigh;
+					for( size_t j=0;j<vc.vertices.Rows();j++ )
+					{
+						double x= vc.vertices(j,0);
+						double y = vc.vertices(j,1);
+						unsigned char code = vc.codes(j,0);
+						CC.pts.push_back( C_pt( x, y, (char)code ) );
+					}
+				}
+			}
+		}
+
+	}
+
+	//MarchingSquares ms;
+	//ms.Contours( &m_contours, m_z, levels );
 }
 
 void wxPLContourPlot::SetColourMap( wxPLColourMap *cmap )
@@ -779,13 +864,16 @@ void wxPLContourPlot::SetLevels( int levels )
 
 wxRealPoint wxPLContourPlot::At( size_t i ) const
 {
-	double f = ((double)i)/((double)m_z.Cells());
-	return wxRealPoint( f*m_z.Cols(), f*m_z.Rows() );
+	if ( i < m_x.Cells() && i < m_y.Cells() ) 
+		return wxRealPoint( m_x.RawIndex(i), m_y.RawIndex(i) );
+	else 
+		return wxRealPoint( std::numeric_limits<double>::quiet_NaN(),
+			std::numeric_limits<double>::quiet_NaN() );
 }
 
 size_t wxPLContourPlot::Len() const
 {
-	return m_z.Cells();
+	return m_x.Cells();
 }
 
 static void draw_tri_mesh( wxPLOutputDevice &dc, const wxPLDeviceMapping &map, 
@@ -810,10 +898,7 @@ static void draw_tri_mesh( wxPLOutputDevice &dc, const wxPLDeviceMapping &map,
 void wxPLContourPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 {
 	if ( !m_cmap ) return;
-
-	bool m_filled = false;
-	if ( m_filled ) dc.NoPen();
-	else dc.NoBrush();
+	
 	/*
 	MeanderingTriangles mt;
 	if ( !mt.load( m_z ) )
@@ -836,18 +921,56 @@ void wxPLContourPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 
 	draw_tri_mesh( dc, map, mt.x, mt.y, mt.tri );
 */
-	for( size_t i=0;i<m_contours.size();i++ )
+	if ( !m_filled )
 	{
-		if ( m_filled ) dc.Brush( m_cmap->ColourForValue( m_contours[i].level ) );
-		else dc.Pen( m_cmap->ColourForValue( m_contours[i].level ), 2 );
+		dc.NoBrush();
+		for( size_t i=0;i<m_cPolys.size();i++ )
+		{
+			dc.Pen( m_cmap->ColourForValue( m_cPolys[i].z ), 2 );
 
-		size_t n = m_contours[i].points.size();
-		std::vector<wxRealPoint> mapped( n );
-		for( size_t j=0;j<n;j++ )
-			mapped[j] = map.ToDevice( m_contours[i].points[j] );
+			size_t n = m_cPolys[i].pts.size();
+			std::vector<wxRealPoint> mapped( n );
+			for( size_t j=0;j<n;j++ )
+				mapped[j] = map.ToDevice( m_cPolys[i].pts[j].x, m_cPolys[i].pts[j].y );
 
-		if ( m_filled ) dc.Polygon( m_contours[i].points.size(), &mapped[0] );
-		else dc.Lines( m_contours[i].points.size(), &mapped[0] ); 
+			dc.Lines( m_cPolys[i].pts.size(), &mapped[0] ); 
+		}
+	}
+	else
+	{
+		dc.NoPen();
+
+		for( size_t i=0;i<m_cPolys.size();i++ )
+		{
+			double zmid = 0.5*(m_cPolys[i].z + m_cPolys[i].zmax );
+			wxColour color(m_cmap->ColourForValue( zmid ));
+			dc.Pen( color, 2 );
+			dc.Brush( color );
+
+			size_t n = m_cPolys[i].pts.size();
+			std::vector<wxRealPoint> mapped( n );
+
+			size_t idx = 0;
+			for( size_t j=0;j<n;j++ )
+			{
+				C_pt &p = m_cPolys[i].pts[j];
+				if ( p.act == MOVETO )
+				{
+					idx=0;
+					mapped[idx++] = map.ToDevice( p.x, p.y );
+				}
+				else if ( p.act == LINETO )
+				{
+					mapped[idx++] = map.ToDevice( p.x, p.y );
+				}
+				else if ( p.act == CLOSEPOLY )
+				{
+					mapped[idx++] = map.ToDevice( p.x, p.y );
+					dc.Polygon( idx, &mapped[0], wxPLOutputDevice::WIND );
+					idx = 0;
+				}
+			}
+		}
 	}
 }
 

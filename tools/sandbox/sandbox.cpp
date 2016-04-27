@@ -274,12 +274,16 @@ void TestPLPlot( wxWindow *parent )
 #include <wex/plot/plcolourmap.h>
 #include <wex/matrix.h>
 
-wxMatrix<double> peaks( int n, double *min, double *max )
+void peaks( int n, double *min, double *max,
+	wxMatrix<double> &xx, wxMatrix<double> &yy, wxMatrix<double> &zz )
 {
 	if ( min ) *min = 1e99;
 	if ( max ) *max = -1e99;
 
-	wxMatrix<double> d(n,n);
+	xx.Resize( n, n );
+	yy.Resize( n, n );
+	zz.Resize( n, n );
+
 	for( int i=0;i<n;i++ )
 	{
 		for( int j=0;j<n;j++ )
@@ -293,39 +297,35 @@ wxMatrix<double> peaks( int n, double *min, double *max )
 
 			if ( min && z < *min ) *min = z;
 			if ( max && z > *max ) *max = z;
-			d(i,j) = z;
+			
+			xx(i,j) = x;
+			yy(i,j) = y;
+			zz(i,j) = z;
 		}
 	}
-	return d;
 }
 
 void TestContourPlot()
 {
-	wxFrame *frame = new wxFrame(0, wxID_ANY, wxT("wxPLContourPlot in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(1000, 800));
+	wxFrame *frame = new wxFrame(0, wxID_ANY, wxT("wxPLContourPlot in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(600, 500));
 	wxPLPlotCtrl *plot = new wxPLPlotCtrl(frame, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 	plot->SetBackgroundColour( *wxWHITE );
 	plot->SetHighlightMode( wxPLPlotCtrl::HIGHLIGHT_ZOOM );
-	int np = 200;
+	int np = 100;
 	
 	double zmin=0, zmax=10;
-	wxMatrix<double> data = peaks( np, &zmin, &zmax );
+	wxMatrix<double> XX, YY, ZZ;
+	peaks( np, &zmin, &zmax, 
+		XX, YY, ZZ );
 
-	if( FILE *fp = fopen("zdata.csv", "w") )
-	{
-		for( size_t i=0;i<data.Rows();i++ )
-			for( size_t j=0;j<data.Cols();j++ )
-				fprintf(fp, "%lg%c", data(data.Rows()-i-1,j), j<data.Cols()-1 ? ',' : '\n');
-
-		fclose(fp);
-	}
 	wxPLAxis::ExtendBoundsToNiceNumber( &zmax, &zmin );
 	wxPLColourMap *jet = new wxPLJetColourMap( zmin, zmax );
 	plot->SetSideWidget( jet );
 	plot->ShowGrid( false, false );
 
-	plot->AddPlot( new wxPLContourPlot( data, wxEmptyString, 15, jet ) );
-	plot->SetXAxis1( new wxPLLinearAxis( -2, np+2 ) );	
-	plot->SetYAxis1( new wxPLLinearAxis( -2, np+2 ) );
+	plot->AddPlot( new wxPLContourPlot( XX, YY, ZZ, true, wxEmptyString, 10, jet ) );
+	//plot->SetXAxis1( new wxPLLinearAxis( 0, np ) );	
+	//plot->SetYAxis1( new wxPLLinearAxis( 0, np ) );
 
 	frame->Show();
 }
