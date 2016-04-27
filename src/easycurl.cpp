@@ -419,7 +419,7 @@ bool wxEasyCurl::Ok()
 
 wxString wxEasyCurl::GetLastError()
 {
-	return m_thread!=0 ? m_thread->GetError() : wxEmptyString;
+	return m_thread!=0 ? m_thread->GetError() : (wxString)wxEmptyString;
 }
 
 bool wxEasyCurl::IsStarted()
@@ -429,7 +429,7 @@ bool wxEasyCurl::IsStarted()
 
 wxString wxEasyCurl::GetDataAsString()
 {
-	return m_thread ? m_thread->GetDataAsString() : wxEmptyString;
+	return m_thread ? m_thread->GetDataAsString() : (wxString)wxEmptyString;
 }
 
 wxImage wxEasyCurl::GetDataAsImage( wxBitmapType bittype )
