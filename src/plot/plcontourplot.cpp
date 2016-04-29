@@ -3,6 +3,8 @@
 #include "wex/plot/plcolourmap.h"
 
 #include <algorithm>
+#include <limits>
+#include <cmath>
 
 
 wxPLContourPlot::wxPLContourPlot()
