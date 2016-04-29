@@ -274,56 +274,83 @@ void TestPLPlot( wxWindow *parent )
 #include <wex/plot/plcolourmap.h>
 #include <wex/matrix.h>
 
-void peaks( int n, double *min, double *max,
-	wxMatrix<double> &xx, wxMatrix<double> &yy, wxMatrix<double> &zz )
-{
-	if ( min ) *min = 1e99;
-	if ( max ) *max = -1e99;
-
-	xx.Resize( n, n );
-	yy.Resize( n, n );
-	zz.Resize( n, n );
-
-	for( int i=0;i<n;i++ )
-	{
-		for( int j=0;j<n;j++ )
-		{
-			double x = -3.0 + ((double)i)/((double)n-1)*6.0;
-			double y = -3.0 + ((double)j)/((double)n-1)*6.0;
-
-			double z =  3*(1-x)*(1-x)*exp(-(x*x) - (y+1)*(y+1))
-			   - 10*(x/5 - x*x*x - y*y*y*y*y)*exp(-x*x-y*y)
-			   - 1/3*exp(-(x+1)*(x+1) - y*y);
-
-			if ( min && z < *min ) *min = z;
-			if ( max && z > *max ) *max = z;
-			
-			xx(i,j) = x;
-			yy(i,j) = y;
-			zz(i,j) = z;
-		}
-	}
-}
-
 void TestContourPlot()
 {
 	wxFrame *frame = new wxFrame(0, wxID_ANY, wxT("wxPLContourPlot in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(600, 500));
 	wxPLPlotCtrl *plot = new wxPLPlotCtrl(frame, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 	plot->SetBackgroundColour( *wxWHITE );
 	plot->SetHighlightMode( wxPLPlotCtrl::HIGHLIGHT_ZOOM );
-	int np = 100;
+	int np = 49;
 	
-	double zmin=0, zmax=10;
+	double zmin=1e99, zmax=-1e99;
 	wxMatrix<double> XX, YY, ZZ;
-	peaks( np, &zmin, &zmax, 
-		XX, YY, ZZ );
 
-	wxPLAxis::ExtendBoundsToNiceNumber( &zmax, &zmin );
-	wxPLColourMap *jet = new wxPLJetColourMap( zmin, zmax );
+	// Example 1
+	wxPLContourPlot::MeshGrid( -2, 2, 10, -2, 2, 10, XX, YY );
+	ZZ.Resize(XX.Rows(),XX.Cols());
+
+	size_t nx = XX.Cols();
+	size_t ny = XX.Rows();
+
+	for( size_t i=0;i<ny;i++ )
+	{
+		for( size_t j=0;j<nx;j++ )
+		{
+			double x = XX(i,j);
+			double y = YY(i,j);
+			ZZ(i,j) = x * exp(-x*x - y*y);
+
+			if ( ZZ(i,j) < zmin ) zmin = ZZ(i,j);
+			if ( ZZ(i,j) > zmax ) zmax = ZZ(i,j);
+		}
+	}
+
+	// Example 2
+	wxPLContourPlot::Peaks( np, XX, YY, ZZ,	&zmin, &zmax );
+
+
+	// Example 3: Interpolating data via Delaunay with NaN mask
+	std::vector<double> xdata, ydata, zdata;
+	if ( FILE *fp = fopen( "c:/users/adobos/desktop/spray.csv", "r" ) )
+	{
+		char buf[256];
+		fgets( buf, 255, fp );
+		while( !feof(fp) )
+		{
+			fgets(buf, 255, fp );
+			double xv, yv, zv;
+			sscanf( buf, "%lg,%lg,%lg", &xv, &yv, &zv );
+			xdata.push_back(xv);
+			ydata.push_back(yv);
+			zdata.push_back(zv);
+		}
+		fclose(fp);
+	}
+
+	if ( xdata.size() > 0 )
+	{
+		double xmin, xmax, ymin, ymax;
+		wxPLContourPlot::MinMax( xdata, &xmin, &xmax );
+		wxPLContourPlot::MinMax( ydata, &ymin, &ymax );
+		wxPLContourPlot::MinMax( zdata, &zmin, &zmax );
+
+		wxPLContourPlot::MeshGrid( xmin, xmax, 100, ymin, ymax, 100, XX, YY );
+		bool ok = wxPLContourPlot::GridData( xdata, ydata, zdata, XX, YY, ZZ );
+		if ( !ok )
+		{
+			wxMessageBox("Error in delaunay interpoation of data to grid");
+		}
+	}
+	else
+		wxMessageBox("Could not load spray.csv");
+
+	//wxPLAxis::ExtendBoundsToNiceNumber( &zmax, &zmin );
+	wxPLColourMap *jet = new wxPLJetColourMap( 0, 6 );
 	plot->SetSideWidget( jet );
 	plot->ShowGrid( false, false );
+	
+	plot->AddPlot( new wxPLContourPlot( XX, YY, ZZ, true, wxEmptyString, 0, 0, 25, jet ) );
 
-	plot->AddPlot( new wxPLContourPlot( XX, YY, ZZ, true, wxEmptyString, 10, jet ) );
 	//plot->SetXAxis1( new wxPLLinearAxis( 0, np ) );	
 	//plot->SetYAxis1( new wxPLLinearAxis( 0, np ) );
 

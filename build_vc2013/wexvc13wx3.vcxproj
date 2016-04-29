@@ -133,7 +133,19 @@
     <ClInclude Include="..\include\wex\uiform.h" />
     <ClInclude Include="..\include\wex\utils.h" />
     <ClInclude Include="..\src\pdf\wxmemdbg.h" />
+    <ClInclude Include="..\src\plot\delaunay.h" />
     <ClInclude Include="..\src\plot\mplcontour.h" />
+    <ClInclude Include="..\src\plot\qhull\geom.h" />
+    <ClInclude Include="..\src\plot\qhull\io.h" />
+    <ClInclude Include="..\src\plot\qhull\libqhull.h" />
+    <ClInclude Include="..\src\plot\qhull\mem.h" />
+    <ClInclude Include="..\src\plot\qhull\merge.h" />
+    <ClInclude Include="..\src\plot\qhull\poly.h" />
+    <ClInclude Include="..\src\plot\qhull\qhull_a.h" />
+    <ClInclude Include="..\src\plot\qhull\qset.h" />
+    <ClInclude Include="..\src\plot\qhull\random.h" />
+    <ClInclude Include="..\src\plot\qhull\stat.h" />
+    <ClInclude Include="..\src\plot\qhull\user.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\codeedit.cpp" />
@@ -174,6 +186,23 @@
     <ClCompile Include="..\src\plot\plplot.cpp" />
     <ClCompile Include="..\src\plot\pltext.cpp" />
     <ClCompile Include="..\src\plot\plwindrose.cpp" />
+    <ClCompile Include="..\src\plot\qhull\geom.c" />
+    <ClCompile Include="..\src\plot\qhull\geom2.c" />
+    <ClCompile Include="..\src\plot\qhull\global.c" />
+    <ClCompile Include="..\src\plot\qhull\io.c" />
+    <ClCompile Include="..\src\plot\qhull\libqhull.c" />
+    <ClCompile Include="..\src\plot\qhull\mem.c" />
+    <ClCompile Include="..\src\plot\qhull\merge.c" />
+    <ClCompile Include="..\src\plot\qhull\poly.c" />
+    <ClCompile Include="..\src\plot\qhull\poly2.c" />
+    <ClCompile Include="..\src\plot\qhull\qset.c" />
+    <ClCompile Include="..\src\plot\qhull\random.c" />
+    <ClCompile Include="..\src\plot\qhull\rboxlib.c" />
+    <ClCompile Include="..\src\plot\qhull\stat.c" />
+    <ClCompile Include="..\src\plot\qhull\user.c" />
+    <ClCompile Include="..\src\plot\qhull\usermem.c" />
+    <ClCompile Include="..\src\plot\qhull\userprintf.c" />
+    <ClCompile Include="..\src\plot\qhull\userprintf_rbox.c" />
     <ClCompile Include="..\src\radiochoice.cpp" />
     <ClCompile Include="..\src\diurnal.cpp" />
     <ClCompile Include="..\src\numeric.cpp" />
@@ -242,6 +271,9 @@
     <None Include="..\src\pdf\pdfcorefontdata.inc" />
     <None Include="..\src\pdf\pdfcorefontkerning.inc" />
     <None Include="..\src\pdf\pdfglyphnames.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\src\plot\qhull\COPYING.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectName>wexvc13wx3</ProjectName>

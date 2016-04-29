@@ -16,10 +16,34 @@ public:
 		const wxMatrix<double> &z,
 		bool filled,
 		const wxString &label = wxEmptyString,
+		double level_min=0, double level_max=0,
 		int levels = 10,
 		wxPLColourMap *cmap = 0 );
 
 	virtual ~wxPLContourPlot();
+
+	static void MinMax(	const std::vector<double> &v,
+			double *minval, double *maxval );
+
+	static bool MeshGrid( 
+			double xmin, double xmax, size_t nx,
+			double ymin, double ymax, size_t ny,
+		wxMatrix<double> &xmesh,
+		wxMatrix<double> &ymesh );
+
+	static bool GridData( 
+			const std::vector<double> &x, 
+			const std::vector<double> &y,
+			const std::vector<double> &z,
+			const wxMatrix<double> &xq,
+			const wxMatrix<double> &yq,
+		wxMatrix<double> &zinterp  );
+
+	
+	static void Peaks( size_t n,
+		wxMatrix<double> &xx, wxMatrix<double> &yy, wxMatrix<double> &zz,
+		double *min, double *max );
+
 
 	void SetLevels( int levels );
 	void SetColourMap( wxPLColourMap *cmap ); // does not take ownership of colour map
@@ -34,6 +58,7 @@ protected:
 	wxMatrix<double> m_x, m_y, m_z;
 	wxPLColourMap *m_cmap;
 	bool m_filled;
+	double m_levelMin, m_levelMax;
 
 	void Update( int levels );
 	
@@ -49,7 +74,7 @@ protected:
 	};
 
 	std::vector<C_poly> m_cPolys;
-
+	
 };
 
 

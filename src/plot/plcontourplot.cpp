@@ -4,8 +4,8 @@
 
 #include <algorithm>
 
+//#include <wex/tri/triangulation.c>
 /*
-#include <wex/tri/triangulation.c>
 
 class MeanderingTriangles
 {
@@ -750,8 +750,8 @@ wxPLContourPlot::wxPLContourPlot(
 	const wxMatrix<double> &y,
 	const wxMatrix<double> &z,
 	bool filled,
-	const wxString &label, int levels, wxPLColourMap *cmap )
-	: wxPLPlottable( label ), m_x(x), m_y(y), m_z(z), m_filled(filled)
+	const wxString &label, double lmin, double lmax, int levels, wxPLColourMap *cmap )
+	: wxPLPlottable( label ), m_x(x), m_y(y), m_z(z), m_levelMin(lmin), m_levelMax(lmax), m_filled(filled)
 {
 	if ( z.Cells() > 0 )
 		Update( levels );
@@ -778,29 +778,50 @@ void wxPLContourPlot::Update( int levels )
 
 	m_cPolys.clear();
 
-	size_t nr = m_z.Rows();
-	size_t nc = m_z.Cols();
-	double min, max, here;
-	min = max = m_z(0,0);
+	size_t ny = m_z.Rows();
+	size_t nx = m_z.Cols();
+	double min=1e99, max=-1e99, here;
+	
 	wxMatrix<unsigned int> mask; // no mask currently
-	for( size_t i=0;i<nr;i++ )
+	for( size_t i=0;i<ny;i++ )
 	{
-		for( size_t j=0;j<nc;j++ )
+		for( size_t j=0;j<nx;j++ )
 		{
 			here = m_z(i,j);
-			if ( here < min ) min = here;
-			if ( here > max ) max = here;
+			
+			// create the mask if needed (i.e. if NaNs or Infs in the z data)
+			if ( !std::isfinite( here ) )
+			{
+				if ( mask.Empty() )
+					mask.ResizeFill( ny, nx, 0 );
+
+				// mask out this cell if not finite
+				mask(i,j) = 1;
+			}
+			else
+			{				
+				if ( here < min ) min = here;
+				if ( here > max ) max = here;
+			}
 		}
 	}
 
-	// note: QCG assumes shape (ny,nx), so swap x & y for correct rendering
-	QuadContourGenerator qcg( m_y, m_x, m_z, mask, false, 0 );
-	
+	if ( max <= min ) return;
+
+	if ( m_levelMin < m_levelMax )
+	{
+		min = m_levelMin;
+		max = m_levelMax;
+	}
+
+	// note: QCG expects shape(ny,nx) so swap y and x for correct rendering
+	QuadContourGenerator qcg( m_x, m_y, m_z, mask, true, 0 );	
 	if ( !m_filled )
 	{
-		for( int k=0;k<=levels;k++ )
+		double zstep = (max-min)/levels;
+		for( int k=0;k<levels;k++ )
 		{
-			double zval =  min + ((double)k)/((double)levels)*(max-min);
+			double zval =  min + zstep/2 + k*zstep;
 			managed_ptr_list<ContourLine> list;
 			qcg.create_contour( zval, list );
 
@@ -876,20 +897,23 @@ size_t wxPLContourPlot::Len() const
 	return m_x.Cells();
 }
 
-static void draw_tri_mesh( wxPLOutputDevice &dc, const wxPLDeviceMapping &map, 
-	const wxMatrix<double> &x, const wxMatrix<double> &y, const wxMatrix<int> &tri )
+std::vector<double> data_x;
+std::vector<double> data_y;
+wxMatrix<int> triangles;
+
+static void draw_tri_mesh( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 {
 	dc.Pen( wxColour(240,240,240), 0.75 );
 	dc.NoBrush();
 	
-	for( size_t i=0;i<tri.Rows();i++ )
+	for( size_t i=0;i<triangles.Rows();i++ )
 	{
 		wxRealPoint pt[3];
 		double solval = 0;
 		for (int k=0;k<3;k++ )
 		{
-			int idx = tri(i,k);
-			pt[k] = map.ToDevice( x[idx], y[idx] );
+			int idx = triangles(i,k);
+			pt[k] = map.ToDevice( data_x[idx], data_y[idx] );
 		}
 		dc.Polygon( 3, pt );
 	}
@@ -966,15 +990,355 @@ void wxPLContourPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 				else if ( p.act == CLOSEPOLY )
 				{
 					mapped[idx++] = map.ToDevice( p.x, p.y );
-					dc.Polygon( idx, &mapped[0], wxPLOutputDevice::WIND );
+					dc.Polygon( idx, &mapped[0] );
 					idx = 0;
 				}
 			}
 		}
 	}
+
+	draw_tri_mesh( dc, map );
 }
 
 void wxPLContourPlot::DrawInLegend( wxPLOutputDevice &dc, const wxPLRealRect &rct)
 {
 	// currently nothing to show in legend...? 
+}
+
+
+void wxPLContourPlot::MinMax(	const std::vector<double> &v,
+		double *minval, double *maxval )
+{
+	double min = 1e99, max = -1e99;
+	for( size_t i=0;i<v.size();i++ )
+	{
+		if ( std::isfinite( v[i] ) )
+		{
+			if ( v[i] < min ) min = v[i];
+			if ( v[i] > max ) max = v[i];
+		}
+	}
+
+	if ( minval ) *minval = min;
+	if ( maxval ) *maxval = max;
+}
+
+bool wxPLContourPlot::MeshGrid( 
+		double xmin, double xmax, size_t nx,
+		double ymin, double ymax, size_t ny,
+	wxMatrix<double> &xmesh,
+	wxMatrix<double> &ymesh )
+{
+	if ( xmax <= xmin || ymax <= ymin || nx < 2  || ny < 2 ) return false;
+
+	double xstep = (xmax-xmin)/(nx-1);
+	double ystep = (ymax-ymin)/(ny-1);
+
+	xmesh.Resize( ny, nx );
+	ymesh.Resize( ny, nx );
+
+	for( size_t i=0;i<ny;i++ )
+	{
+		for( size_t j=0;j<nx;j++ )
+		{
+			xmesh(i,j) = xmin + j*xstep;
+			ymesh(i,j) = ymin + i*ystep;
+		}
+	}
+
+	return true;
+}
+
+
+void wxPLContourPlot::Peaks( size_t n,
+	wxMatrix<double> &xx, wxMatrix<double> &yy, wxMatrix<double> &zz, 
+	double *min, double *max )
+{
+	if ( min ) *min = 1e99;
+	if ( max ) *max = -1e99;
+
+	xx.Resize( n, n );
+	yy.Resize( n, n );
+	zz.Resize( n, n );
+
+	for( size_t i=0;i<n;i++ )
+	{
+		for( size_t j=0;j<n;j++ )
+		{
+			double y = -3.0 + ((double)i)/((double)n-1)*6.0;
+			double x = -3.0 + ((double)j)/((double)n-1)*6.0;
+
+			double z =  3*(1-x)*(1-x)*exp(-(x*x) - (y+1)*(y+1))
+			   - 10*(x/5 - x*x*x - y*y*y*y*y)*exp(-x*x-y*y)
+			   - 1/3*exp(-(x+1)*(x+1) - y*y);
+
+			if ( min && z < *min ) *min = z;
+			if ( max && z > *max ) *max = z;
+			
+			xx(j,i) = x;
+			yy(j,i) = y;
+			zz(j,i) = z;
+		}
+	}
+}
+
+
+//#include "delaunay.h"
+extern "C" {
+	#include "qhull/qhull_a.h"
+}
+
+static int qhull_last_error = 0;
+static const char* qhull_error_msg[6] = {
+    "no error",             /* 0 = qh_ERRnone */
+    "input inconsistency",  /* 1 = qh_ERRinput */
+    "singular input data",  /* 2 = qh_ERRsingular */
+    "precision error",      /* 3 = qh_ERRprec */
+    "insufficient memory",  /* 4 = qh_ERRmem */
+    "internal error"};      /* 5 = qh_ERRqhull */
+
+
+/* Return the indices of the 3 vertices that comprise the specified facet (i.e.
+ * triangle). */
+static void get_facet_vertices(const facetT* facet, int indices[3])
+{
+    vertexT *vertex, **vertexp;
+    FOREACHvertex_(facet->vertices)
+        *indices++ = qh_pointid(vertex->point);
+}
+
+/* Return the indices of the 3 triangles that are neighbors of the specified
+ * facet (triangle). */
+static void get_facet_neighbours(const facetT* facet, const int* tri_indices,
+                     int indices[3])
+{
+    facetT *neighbor, **neighborp;
+    FOREACHneighbor_(facet)
+        *indices++ = (neighbor->upperdelaunay ? -1 : tri_indices[neighbor->id]);
+}
+
+/* Delaunay implementation methyod.  If hide_qhull_errors is 1 then qhull error
+ * messages are discarded; if it is 0 then they are written to stderr. */
+static bool qhull_delaunay(int npoints, const double* x, const double* y,
+			  wxMatrix<int> &triangles,
+			  wxMatrix<int> &neighbors )
+{
+    coordT* points = NULL;
+    facetT* facet;
+    int i, ntri, max_facet_id;
+    int exitcode;               /* Value returned from qh_new_qhull(). */
+    int* tri_indices = NULL;    /* Maps qhull facet id to triangle index. */
+    int indices[3];
+    int curlong, totlong;       /* Memory remaining after qh_memfreeshort. */
+    const int ndim = 2;
+    int* triangles_ptr;
+    int* neighbors_ptr;
+
+    /* Allocate points. */
+    points = (coordT*)malloc(npoints*ndim*sizeof(coordT));
+    if (points == NULL) {
+        fprintf( stderr, "Could not allocate points array in qhull.delaunay" );
+        goto error_before_qhull;
+    }
+
+    /* Prepare points array to pass to qhull. */
+    for (i = 0; i < npoints; ++i) {
+        points[2*i  ] = x[i];
+        points[2*i+1] = y[i];
+    }
+    
+    /* Perform Delaunay triangulation. */
+	/* qhull expects a FILE* to write errors to, use stderr */
+    exitcode = qh_new_qhull(ndim, npoints, points, False,
+                            "qhull d Qt Qbb Qc Qz", NULL, stderr);
+    if (exitcode != qh_ERRnone) {
+		qhull_last_error = exitcode;
+        fprintf( stderr,
+                     "Error in qhull Delaunay triangulation calculation: %s (exitcode=%d)",
+                     qhull_error_msg[exitcode], exitcode );
+        goto error;
+    }
+
+    /* Split facets so that they only have 3 points each. */
+    qh_triangulate();
+
+    /* Determine ntri and max_facet_id.
+       Note that libqhull uses macros to iterate through collections. */
+    ntri = 0;
+    FORALLfacets {
+        if (!facet->upperdelaunay)
+            ++ntri;
+    }
+
+    max_facet_id = qh facet_id - 1;
+
+    /* Create array to map facet id to triangle index. */
+    tri_indices = (int*)malloc((max_facet_id+1)*sizeof(int));
+    if (tri_indices == NULL) {
+		fprintf( stderr,"Could not allocate triangle map in qhull.delaunay");
+        goto error;
+    }
+
+    /* Allocate python arrays to return. */
+	triangles.Resize( ntri, 3 );
+	neighbors.Resize( ntri, 3 );
+
+    triangles_ptr = triangles.Data();
+    neighbors_ptr = neighbors.Data();
+
+    /* Determine triangles array and set tri_indices array. */
+    i = 0;
+    FORALLfacets {
+        if (!facet->upperdelaunay) {
+            tri_indices[facet->id] = i++;
+            get_facet_vertices(facet, indices);
+            *triangles_ptr++ = (facet->toporient ? indices[0] : indices[2]);
+            *triangles_ptr++ = indices[1];
+            *triangles_ptr++ = (facet->toporient ? indices[2] : indices[0]);
+        }
+        else
+            tri_indices[facet->id] = -1;
+    }
+
+    /* Determine neighbors array. */
+    FORALLfacets {
+        if (!facet->upperdelaunay) {
+            get_facet_neighbours(facet, tri_indices, indices);
+            *neighbors_ptr++ = (facet->toporient ? indices[2] : indices[0]);
+            *neighbors_ptr++ = (facet->toporient ? indices[0] : indices[2]);
+            *neighbors_ptr++ = indices[1];
+        }
+    }
+
+	data_x.resize( npoints );
+	data_y.resize( npoints );
+	for( int i=0;i<npoints;i++ )
+	{
+		data_x[i] = x[i];
+		data_y[i] = y[i];
+	}
+
+    /* Clean up. */
+    qh_freeqhull(!qh_ALL);
+    qh_memfreeshort(&curlong, &totlong);
+    if (curlong || totlong)
+        fprintf( stderr, "Qhull could not free all allocated memory", 1);
+
+    free(tri_indices);
+    free(points);
+
+	return true;
+
+error:
+    qh_freeqhull(!qh_ALL);
+    qh_memfreeshort(&curlong, &totlong);
+    free(tri_indices);
+
+error_before_qhull:
+    free(points);
+
+    return NULL;
+}
+
+static int search( const wxMatrix<int> &tri, const std::vector<double> &x, const std::vector<double> &y, double xq, double yq )
+{
+	// TODO: http://www.geom.uiuc.edu/~bradb/qhull3.1/html/qh-faq.htm#vclosest
+	// this is a naive search - faster methods available for delaunay triangulation using the neighbors information
+	for( size_t i=0;i<tri.Rows();i++ )
+	{
+		/*
+		Get the vertices of triangle TRIANGLE.
+		*/
+		int a = tri(i,0);
+		int b = tri(i,1);
+		int c = tri(i,2);
+		/*
+		Using vertex C as a base, compute the distances to vertices A and B,
+		and the point (X,Y).
+		*/
+		double dxa = x[a] - x[c];
+		double dya = y[a] - y[c];
+
+		double dxb = x[b] - x[c];
+		double dyb = y[b] - y[c];
+
+		double dxp = xq - x[c];
+		double dyp = yq - y[c];
+
+		double det = dxa * dyb - dya * dxb;
+		/*
+		Compute the barycentric coordinates of the point (X,Y) with respect
+		to this triangle.
+		*/
+		double alpha = ( dxp * dyb - dyp * dxb ) / det;
+		double beta =  ( dxa * dyp - dya * dxp ) / det;
+		double gamma = 1.0 - alpha - beta;
+		/*
+		If the barycentric coordinates are all positive, then the point
+		is inside the triangle and we're done.
+		*/
+		if ( 0.0 <= alpha &&
+			0.0 <= beta  &&
+			0.0 <= gamma )
+		{
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+#include <wx/msgdlg.h>
+
+bool wxPLContourPlot::GridData( 
+			const std::vector<double> &x, 
+			const std::vector<double> &y,
+			const std::vector<double> &z,
+			const wxMatrix<double> &xq,
+			const wxMatrix<double> &yq,
+		wxMatrix<double> &zinterp )
+{
+	if ( x.size() != y.size() || y.size() != z.size() ) return false;
+	if ( xq.Rows() != yq.Rows() || xq.Cols() != yq.Cols() ) return false;
+
+	size_t len = x.size();
+
+	wxMatrix<int> neighbors;
+	if ( !qhull_delaunay( len, &x[0], &y[0], triangles, neighbors ) )
+	{
+		wxMessageBox( "Error in qhull delaunay" + wxString(qhull_error_msg[ qhull_last_error ]) );
+		return false;
+	}
+
+	zinterp.Resize( xq.Rows(), xq.Cols() );
+
+	for( size_t i=0;i<xq.Rows();i++ )
+	{
+		for( size_t j=0;j<xq.Cols();j++ )
+		{
+			double xqq = xq(i,j);
+			double yqq = yq(i,j);
+
+			int index = search( triangles, x, y, xqq, yqq );
+			if ( index >= 0 )
+			{
+				int a = triangles(index,0);
+				int b = triangles(index,1);
+				int c = triangles(index,2);
+
+				double d1 = sqrt( pow( xqq - x[a], 2 ) + pow( yqq - y[a], 2 ) );
+				double d2 = sqrt( pow( xqq - x[b], 2 ) + pow( yqq - y[b], 2 ) );
+				double d3 = sqrt( pow( xqq - x[c], 2 ) + pow( yqq - y[c], 2 ) );
+				
+				// calculate interpolated Z value
+				double zi = ( d1*z[a] + d2*z[b] + d3*z[c] ) / ( d1 + d2 + d3 );
+				zinterp(i,j) = zi;
+
+			}
+			else
+				zinterp(i,j) = std::numeric_limits<double>::quiet_NaN();
+		}
+	}
+
+	return true;
 }
