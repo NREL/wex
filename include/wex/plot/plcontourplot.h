@@ -16,7 +16,6 @@ public:
 		const wxMatrix<double> &z,
 		bool filled,
 		const wxString &label = wxEmptyString,
-		double level_min=0, double level_max=0,
 		int levels = 10,
 		wxPLColourMap *cmap = 0 );
 
@@ -45,7 +44,8 @@ public:
 		double *min, double *max );
 
 
-	void SetLevels( int levels );
+	void SetLevels( int levels, double min = 0, double max = 0 );
+	void SetLevels( const std::vector<double> &lev );
 	void SetColourMap( wxPLColourMap *cmap ); // does not take ownership of colour map
 
 	virtual wxRealPoint At( size_t i ) const;
@@ -56,11 +56,15 @@ public:
 
 protected:
 	wxMatrix<double> m_x, m_y, m_z;
+	wxMatrix<unsigned int> m_mask;
+	double m_zMin, m_zMax;
 	wxPLColourMap *m_cmap;
 	bool m_filled;
-	double m_levelMin, m_levelMax;
+	std::vector<double> m_levels;
 
-	void Update( int levels );
+	void RebuildMask();
+	void RebuildLevels( int n, double min=0, double max=0 );
+	void RebuildContours();
 	
 	struct C_pt {
 		C_pt( double _x, double _y, char _a=0 ) : x(_x), y(_y), act(_a) { }
@@ -74,7 +78,6 @@ protected:
 	};
 
 	std::vector<C_poly> m_cPolys;
-	
 };
 
 

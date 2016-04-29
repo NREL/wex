@@ -309,6 +309,7 @@ void TestContourPlot()
 	wxPLContourPlot::Peaks( np, XX, YY, ZZ,	&zmin, &zmax );
 
 
+	/*
 	// Example 3: Interpolating data via Delaunay with NaN mask
 	std::vector<double> xdata, ydata, zdata;
 	if ( FILE *fp = fopen( "c:/users/adobos/desktop/spray.csv", "r" ) )
@@ -320,6 +321,8 @@ void TestContourPlot()
 			fgets(buf, 255, fp );
 			double xv, yv, zv;
 			sscanf( buf, "%lg,%lg,%lg", &xv, &yv, &zv );
+			if ( zv < 0 ) zv = 0;
+			if ( zv > 10 ) zv = 10;
 			xdata.push_back(xv);
 			ydata.push_back(yv);
 			zdata.push_back(zv);
@@ -334,7 +337,9 @@ void TestContourPlot()
 		wxPLContourPlot::MinMax( ydata, &ymin, &ymax );
 		wxPLContourPlot::MinMax( zdata, &zmin, &zmax );
 
-		wxPLContourPlot::MeshGrid( xmin, xmax, 100, ymin, ymax, 100, XX, YY );
+		int ngrid = 50;
+
+		wxPLContourPlot::MeshGrid( xmin, xmax, ngrid, ymin, ymax, ngrid, XX, YY );
 		bool ok = wxPLContourPlot::GridData( xdata, ydata, zdata, XX, YY, ZZ );
 		if ( !ok )
 		{
@@ -343,13 +348,14 @@ void TestContourPlot()
 	}
 	else
 		wxMessageBox("Could not load spray.csv");
+		*/
 
 	//wxPLAxis::ExtendBoundsToNiceNumber( &zmax, &zmin );
-	wxPLColourMap *jet = new wxPLJetColourMap( 0, 6 );
+	wxPLColourMap *jet = new wxPLJetColourMap( zmin, zmax );
 	plot->SetSideWidget( jet );
 	plot->ShowGrid( false, false );
 	
-	plot->AddPlot( new wxPLContourPlot( XX, YY, ZZ, true, wxEmptyString, 0, 0, 25, jet ) );
+	plot->AddPlot( new wxPLContourPlot( XX, YY, ZZ, true, wxEmptyString, 20, jet ) );
 
 	//plot->SetXAxis1( new wxPLLinearAxis( 0, np ) );	
 	//plot->SetYAxis1( new wxPLLinearAxis( 0, np ) );

@@ -93,7 +93,7 @@ public:
 
 	wxMatrix &operator=(const wxMatrix &rhs)
 	{
-		copy( rhs );
+		Copy( rhs );
 		return *this;
 	}
 		
