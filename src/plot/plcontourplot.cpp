@@ -105,7 +105,7 @@ void wxPLContourPlot::RebuildContours()
 		for( int k=0;k<m_levels.size();k++ )
 		{
 			double zval =  m_levels[k];
-			managed_ptr_list<ContourLine> list;
+			std::vector<ContourLine*> list;
 			qcg.create_contour( zval, list );
 					
 			for( size_t i=0;i<list.size();i++ )
@@ -116,6 +116,8 @@ void wxPLContourPlot::RebuildContours()
 				std::vector<XY> &xy = *list[i];
 				for( size_t j=0;j<xy.size();j++ )
 					CC.pts.push_back( C_pt( xy[j].x, xy[j].y ) );
+
+				delete list[i]; // free the contour data
 			}
 		}
 	}
@@ -126,7 +128,7 @@ void wxPLContourPlot::RebuildContours()
 			double zlow =  m_levels[k];
 			double zhigh =  m_levels[k+1];
 
-			managed_ptr_list<QuadContourGenerator::VertexCodes> list;
+			std::vector<QuadContourGenerator::VertexCodes*> list;
 			qcg.create_filled_contour( zlow, zhigh, list );
 					
 			for( size_t i=0;i<list.size();i++ )
@@ -146,6 +148,8 @@ void wxPLContourPlot::RebuildContours()
 						CC.pts.push_back( C_pt( x, y, (char)code ) );
 					}
 				}
+				
+				delete list[i]; // free the contour data
 			}
 		}
 	}

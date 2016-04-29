@@ -471,7 +471,7 @@ long QuadContourGenerator::calc_chunk_count(long point_count) const
 }
 
 void QuadContourGenerator::create_contour(const double& level, 
-		managed_ptr_list<ContourLine> &vertices_list)
+		std::vector<ContourLine*> &vertices_list)
 {
     init_cache_levels(level, level);
 	
@@ -556,7 +556,7 @@ void QuadContourGenerator::create_contour(const double& level,
 
 void QuadContourGenerator::create_filled_contour(const double& lower_level,
                                                       const double& upper_level,
-		managed_ptr_list<VertexCodes> &list )
+		std::vector<VertexCodes*> &list )
 {
     init_cache_levels(lower_level, upper_level);
 

@@ -6,9 +6,9 @@ LKLIB = $(LKDIR)/lkosxwx3.a
 
 CC = gcc
 CXX = g++
-CFLAGS = -g -I. -I../include `wx-config-3 --cflags` -I$(LKDIR)
+CFLAGS = -g -I. -I../include `wx-config-3 --cflags` -I$(LKDIR)/include
 CXXFLAGS = $(CFLAGS)
-LDFLAGS = `wx-config-3 --libs` `wx-config-3 --libs aui` `wx-config-3 --libs stc` -lm  $(WEXLIB) $(LKLIB)
+LDFLAGS = `wx-config-3 --libs` `wx-config-3 --libs aui` `wx-config-3 --libs stc` `wx-config-3 --libs gl` -lm  $(WEXLIB) $(LKLIB)
 OBJECTS  = sandbox.o
 TARGET = Sandbox
 

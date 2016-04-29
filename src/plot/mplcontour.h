@@ -263,18 +263,6 @@ private:
 
 #include <wex/matrix.h>
 
-template<typename T> class managed_ptr_list : public std::vector<T*>
-{
-public:
-	virtual ~managed_ptr_list()
-	{
-		for( std::vector<T*>::iterator it = begin();
-			it != end();
-			++it )
-			delete *it;
-	}
-};
-
 // 'kind' codes.
 #define MOVETO 1
 #define LINETO 2
@@ -307,7 +295,7 @@ public:
     // Create and return polygons for a line (i.e. non-filled) contour at the
     // specified level.
     void create_contour(const double& level, 
-		managed_ptr_list<ContourLine> &vertices_list);
+		std::vector<ContourLine*> &vertices_list);
 
 	
 	struct VertexCodes {
@@ -319,7 +307,7 @@ public:
     // Create and return polygons for a filled contour between the two
     // specified levels.
     void create_filled_contour(const double& lower_level, const double& upper_level,
-		managed_ptr_list<VertexCodes> &list );
+		std::vector<VertexCodes*> &list );
 
 private:
     // Typedef for following either a boundary of the domain or the interior;
