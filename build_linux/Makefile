@@ -1,4 +1,4 @@
-VPATH = ../src/dview ../src/plot ../src/pdf ../src
+VPATH = ../src/plot/qhull ../src/dview ../src/plot ../src/pdf ../src
 
 LKDIR = ../../lk
 LKLIB = lkuxwx3.a
@@ -36,6 +36,7 @@ OBJECTS = \
 	md5.o \
 	numeric.o \
 	mplcontour.o \
+	plcontourplot.o \
 	dvstatisticstablectrl.o \
 	dvautocolourassigner.o \
 	pltext.o \
@@ -102,7 +103,24 @@ OBJECTS = \
 	pdfrijndael.o \
 	pdftemplate.o \
 	pdfutility.o \
-	pdfxml.o
+	pdfxml.o \
+	geom.o \
+	geom2.o \
+	global.o \
+	io.o \
+	libqhull.o \
+	mem.o \
+	merge.o \
+	poly.o \
+	poly2.o \
+	qset.o \
+	random.o \
+	rboxlib.o \
+	stat.o \
+	user.o \
+	usermem.o \
+	userprintf.o \
+	userprintf_rbox.o
 
 
 $(TARGET) : $(OBJECTS)
