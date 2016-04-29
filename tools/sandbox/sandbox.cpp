@@ -306,7 +306,7 @@ void TestContourPlot()
 	}
 
 	// Example 2
-	wxPLContourPlot::Peaks( np, XX, YY, ZZ,	&zmin, &zmax );
+	wxPLContourPlot::Peaks( 20, XX, YY, ZZ,	&zmin, &zmax );
 
 
 	/*
@@ -355,7 +355,7 @@ void TestContourPlot()
 	plot->SetSideWidget( jet );
 	plot->ShowGrid( false, false );
 	
-	plot->AddPlot( new wxPLContourPlot( XX, YY, ZZ, true, wxEmptyString, 20, jet ) );
+	plot->AddPlot( new wxPLContourPlot( XX, YY, ZZ, false, wxEmptyString, 4, jet ) );
 
 	//plot->SetXAxis1( new wxPLLinearAxis( 0, np ) );	
 	//plot->SetYAxis1( new wxPLLinearAxis( 0, np ) );

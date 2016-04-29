@@ -49,6 +49,15 @@
     <Filter Include="plot\qhull">
       <UniqueIdentifier>{12e7d52b-edc2-483f-a92f-8f7a7334d2a6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="clipper">
+      <UniqueIdentifier>{11454845-d10d-4a16-a8bc-bc79f49b8dee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="clipper\Headers">
+      <UniqueIdentifier>{15f1b905-8099-40e8-8ce8-4437cd70e91a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="clipper\Sources">
+      <UniqueIdentifier>{972810ee-8249-4ece-b307-54faeb6161fc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\pdf\wxmemdbg.h">
@@ -432,6 +441,9 @@
     <ClInclude Include="..\src\plot\qhull\user.h">
       <Filter>plot\qhull</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\wex\clipper\clipper.h">
+      <Filter>clipper\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
@@ -775,6 +787,9 @@
     </ClCompile>
     <ClCompile Include="..\src\plot\qhull\userprintf_rbox.c">
       <Filter>plot\qhull</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\clipper\clipper.cpp">
+      <Filter>clipper\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

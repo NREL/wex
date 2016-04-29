@@ -1,6 +1,8 @@
+#include <wx/msgdlg.h>
 
 #include "wex/plot/plcontourplot.h"
 #include "wex/plot/plcolourmap.h"
+#include "wex/clipper/clipper.h"
 
 #include <algorithm>
 #include <limits>
@@ -117,7 +119,7 @@ void wxPLContourPlot::RebuildContours()
 				CC.z = zval;
 				std::vector<XY> &xy = *list[i];
 				for( size_t j=0;j<xy.size();j++ )
-					CC.pts.push_back( C_pt( xy[j].x, xy[j].y ) );
+					CC.pts.push_back( wxRealPoint( xy[j].x, xy[j].y ) );
 
 				delete list[i]; // free the contour data
 			}
@@ -125,6 +127,17 @@ void wxPLContourPlot::RebuildContours()
 	}
 	else
 	{
+		double xmin, xmax, ymin, ymax;
+		MinMax( m_x, &xmin, &xmax );
+		MinMax( m_y, &ymin, &ymax );
+		/*
+		ClipperLib::Path clip;
+		clip.push_back( ClipperLib::IntPoint( (int)(1000.0*xmin), (int)(1000.0*ymin) ) );
+		clip.push_back( ClipperLib::IntPoint( (int)(1000.0*xmin), (int)(1000.0*ymax) ) );
+		clip.push_back( ClipperLib::IntPoint( (int)(1000.0*xmax), (int)(1000.0*ymax) ) );
+		clip.push_back( ClipperLib::IntPoint( (int)(1000.0*xmax), (int)(1000.0*ymin) ) );
+		*/
+
 		for( int k=0;k<m_levels.size()-1;k++ )
 		{
 			double zlow =  m_levels[k];
@@ -136,23 +149,57 @@ void wxPLContourPlot::RebuildContours()
 			for( size_t i=0;i<list.size();i++ )
 			{
 				QuadContourGenerator::VertexCodes &vc = *list[i];
-				if ( vc.vertices.Rows() == vc.codes.Rows() )
+				if ( vc.vertices.Rows() != vc.codes.Rows() ) continue;
+
+				ClipperLib::Clipper cl;	
+				ClipperLib::Path path;
+				ClipperLib::Paths paths;
+				std::vector<bool> holes;
+				for( size_t j=0;j<vc.vertices.Rows();j++ )
 				{
-					m_cPolys.push_back( C_poly() );
-					C_poly &CC = m_cPolys.back();
-					CC.z = zlow;
-					CC.zmax = zhigh;
-					for( size_t j=0;j<vc.vertices.Rows();j++ )
+					unsigned char code = vc.codes(j,0);
+					double x = vc.vertices(j,0);
+					double y = vc.vertices(j,1);
+					ClipperLib::IntPoint ip( (int)(1000.0*x), (int)(1000.0*y) );
+
+					if ( code == MOVETO )
 					{
-						double x= vc.vertices(j,0);
-						double y = vc.vertices(j,1);
-						unsigned char code = vc.codes(j,0);
-						CC.pts.push_back( C_pt( x, y, (char)code ) );
+						path.clear();
+						path.push_back( ip );
+					}
+					else if ( code == LINETO )
+					{
+						path.push_back( ip );
+					}
+					else if ( code == CLOSEPOLY )
+					{
+						path.push_back( ip );
+						bool hole = ClipperLib::Orientation( path ); // true = is_hole
+						cl.AddPath( path, hole ? ClipperLib::ptClip : ClipperLib::ptSubject, true );
+						paths.push_back( path );
+						holes.push_back( hole );
+					}
+				}
+					
+				ClipperLib::Paths soln;
+				if ( cl.Execute( ClipperLib::ctDifference, soln, ClipperLib::pftNonZero, ClipperLib::pftNonZero ) )
+				{
+					for( size_t k=0;k<soln.size();k++ )
+					{
+						m_cPolys.push_back( C_poly() );
+						C_poly &CC = m_cPolys.back();
+						CC.z = zlow;
+						CC.zmax = zhigh;
+
+						for( size_t n=0;n<soln[k].size();n++ )
+							CC.pts.push_back( wxRealPoint( 0.001*soln[k][n].X, 0.001*soln[k][n].Y ) );
 					}
 				}
 				
 				delete list[i]; // free the contour data
+
 			}
+				
 		}
 	}
 }
@@ -238,6 +285,7 @@ void wxPLContourPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 	{
 		dc.NoPen();
 
+		int ipoly = 0;
 		for( size_t i=0;i<m_cPolys.size();i++ )
 		{
 			double zmid = 0.5*(m_cPolys[i].z + m_cPolys[i].zmax );
@@ -247,27 +295,12 @@ void wxPLContourPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 
 			size_t n = m_cPolys[i].pts.size();
 			std::vector<wxRealPoint> mapped( n );
-
-			size_t idx = 0;
 			for( size_t j=0;j<n;j++ )
-			{
-				C_pt &p = m_cPolys[i].pts[j];
-				if ( p.act == MOVETO )
-				{
-					idx=0;
-					mapped[idx++] = map.ToDevice( p.x, p.y );
-				}
-				else if ( p.act == LINETO )
-				{
-					mapped[idx++] = map.ToDevice( p.x, p.y );
-				}
-				else if ( p.act == CLOSEPOLY )
-				{
-					mapped[idx++] = map.ToDevice( p.x, p.y );
-					dc.Polygon( idx, &mapped[0] );
-					idx = 0;
-				}
-			}
+				mapped[j] = map.ToDevice( m_cPolys[i].pts[j] );
+
+			//dc.Polygon( mapped.size(), &mapped[0], wxPLOutputDevice::WIND );
+			dc.Lines( mapped.size(), &mapped[0] );
+			dc.Text( wxString::Format("%d", ++ipoly), mapped[0] );
 		}
 	}
 
@@ -292,6 +325,27 @@ void wxPLContourPlot::MinMax(	const std::vector<double> &v,
 		{
 			if ( v[i] < min ) min = v[i];
 			if ( v[i] > max ) max = v[i];
+		}
+	}
+
+	if ( minval ) *minval = min;
+	if ( maxval ) *maxval = max;
+}
+
+void wxPLContourPlot::MinMax(	const wxMatrix<double> &v,
+		double *minval, double *maxval )
+{
+	double min = 1e99, max = -1e99;
+	for( size_t i=0;i<v.Rows();i++ )
+	{
+		for( size_t j=0;j<v.Cols();j++ )
+		{
+			double here = v(i,j);
+			if ( std::isfinite( here ) )
+			{
+				if ( here < min ) min = here;
+				if ( here > max ) max = here;
+			}
 		}
 	}
 

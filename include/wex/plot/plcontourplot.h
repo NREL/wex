@@ -23,6 +23,8 @@ public:
 
 	static void MinMax(	const std::vector<double> &v,
 			double *minval, double *maxval );
+	static void MinMax(	const wxMatrix<double> &v,
+			double *minval, double *maxval );
 
 	static bool MeshGrid( 
 			double xmin, double xmax, size_t nx,
@@ -66,14 +68,8 @@ protected:
 	void RebuildLevels( int n, double min=0, double max=0 );
 	void RebuildContours();
 	
-	struct C_pt {
-		C_pt( double _x, double _y, char _a=0 ) : x(_x), y(_y), act(_a) { }
-		double x, y;
-		char act;
-	};
-	
 	struct C_poly {
-		std::vector< C_pt > pts;
+		std::vector< wxRealPoint > pts;
 		double z, zmax;
 	};
 

@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\wex\clipper\clipper.h" />
     <ClInclude Include="..\include\wex\codeedit.h" />
     <ClInclude Include="..\include\wex\csv.h" />
     <ClInclude Include="..\include\wex\dclatex.h" />
@@ -148,6 +149,7 @@
     <ClInclude Include="..\src\plot\qhull\user.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\clipper\clipper.cpp" />
     <ClCompile Include="..\src\codeedit.cpp" />
     <ClCompile Include="..\src\csv.cpp" />
     <ClCompile Include="..\src\dclatex.cpp" />
