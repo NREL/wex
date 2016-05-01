@@ -276,7 +276,8 @@ void TestPLPlot( wxWindow *parent )
 
 void TestContourPlot()
 {
-	wxFrame *frame = new wxFrame(0, wxID_ANY, wxT("wxPLContourPlot in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(600, 500));
+	wxFrame *frame = new wxFrame(0, wxID_ANY, wxT("wxPLContourPlot in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, 
+		wxScaleSize(600, 500));
 	wxPLPlotCtrl *plot = new wxPLPlotCtrl(frame, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 	plot->SetBackgroundColour( *wxWHITE );
 	plot->SetHighlightMode( wxPLPlotCtrl::HIGHLIGHT_ZOOM );
@@ -306,7 +307,7 @@ void TestContourPlot()
 	}
 
 	// Example 2
-	wxPLContourPlot::Peaks( 20, XX, YY, ZZ,	&zmin, &zmax );
+	wxPLContourPlot::Peaks( 100, XX, YY, ZZ,	&zmin, &zmax );
 
 
 	/*
@@ -355,7 +356,7 @@ void TestContourPlot()
 	plot->SetSideWidget( jet );
 	plot->ShowGrid( false, false );
 	
-	plot->AddPlot( new wxPLContourPlot( XX, YY, ZZ, false, wxEmptyString, 4, jet ) );
+	plot->AddPlot( new wxPLContourPlot( XX, YY, ZZ, true, wxEmptyString, 24, jet ) );
 
 	//plot->SetXAxis1( new wxPLLinearAxis( 0, np ) );	
 	//plot->SetYAxis1( new wxPLLinearAxis( 0, np ) );

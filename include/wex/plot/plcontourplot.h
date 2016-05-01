@@ -70,6 +70,7 @@ protected:
 	
 	struct C_poly {
 		std::vector< wxRealPoint > pts;
+		std::vector< unsigned char > act;
 		double z, zmax;
 	};
 

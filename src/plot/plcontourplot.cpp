@@ -4,6 +4,9 @@
 #include "wex/plot/plcolourmap.h"
 #include "wex/clipper/clipper.h"
 
+#include <wex/pdf/pdfdoc.h>
+#include <wex/pdf/pdfshape.h>
+
 #include <algorithm>
 #include <limits>
 #include <cmath>
@@ -21,7 +24,7 @@ wxPLContourPlot::wxPLContourPlot(
 	const wxMatrix<double> &z,
 	bool filled,
 	const wxString &label, int levels, wxPLColourMap *cmap )
-	: wxPLPlottable( label ), m_x(x), m_y(y), m_z(z), m_filled(filled)
+	: wxPLPlottable( label ), m_x(x), m_y(y), m_z(z), m_filled(filled), m_cmap(cmap)
 {
 	m_zMin = m_zMax = std::numeric_limits<double>::quiet_NaN();
 
@@ -31,8 +34,6 @@ wxPLContourPlot::wxPLContourPlot(
 		RebuildLevels( levels );
 		RebuildContours();
 	}
-	
-	m_cmap = cmap;
 }
 
 wxPLContourPlot::~wxPLContourPlot()
@@ -127,16 +128,11 @@ void wxPLContourPlot::RebuildContours()
 	}
 	else
 	{
-		double xmin, xmax, ymin, ymax;
-		MinMax( m_x, &xmin, &xmax );
-		MinMax( m_y, &ymin, &ymax );
-		/*
-		ClipperLib::Path clip;
-		clip.push_back( ClipperLib::IntPoint( (int)(1000.0*xmin), (int)(1000.0*ymin) ) );
-		clip.push_back( ClipperLib::IntPoint( (int)(1000.0*xmin), (int)(1000.0*ymax) ) );
-		clip.push_back( ClipperLib::IntPoint( (int)(1000.0*xmax), (int)(1000.0*ymax) ) );
-		clip.push_back( ClipperLib::IntPoint( (int)(1000.0*xmax), (int)(1000.0*ymin) ) );
-		*/
+		double OFF = 250;
+		double SCAL = 50.0;
+		wxPdfDocument pdfdoc( wxLANDSCAPE, "pt", wxPAPER_A4 );
+		pdfdoc.AddPage();
+		pdfdoc.SetFillingRule( wxWINDING_RULE );
 
 		for( int k=0;k<m_levels.size()-1;k++ )
 		{
@@ -145,16 +141,20 @@ void wxPLContourPlot::RebuildContours()
 
 			std::vector<QuadContourGenerator::VertexCodes*> list;
 			qcg.create_filled_contour( zlow, zhigh, list );
-					
+								
 			for( size_t i=0;i<list.size();i++ )
 			{
 				QuadContourGenerator::VertexCodes &vc = *list[i];
 				if ( vc.vertices.Rows() != vc.codes.Rows() ) continue;
 
 				ClipperLib::Clipper cl;	
+				cl.StrictlySimple( true );
+
 				ClipperLib::Path path;
 				ClipperLib::Paths paths;
 				std::vector<bool> holes;
+
+				wxPdfShape shape;
 				for( size_t j=0;j<vc.vertices.Rows();j++ )
 				{
 					unsigned char code = vc.codes(j,0);
@@ -166,23 +166,37 @@ void wxPLContourPlot::RebuildContours()
 					{
 						path.clear();
 						path.push_back( ip );
+
+						shape.MoveTo( OFF+SCAL*x, OFF+SCAL*y );
+						
 					}
 					else if ( code == LINETO )
 					{
 						path.push_back( ip );
+
+						shape.LineTo( OFF+SCAL*x, OFF+SCAL*y );
 					}
 					else if ( code == CLOSEPOLY )
 					{
 						path.push_back( ip );
+
 						bool hole = ClipperLib::Orientation( path ); // true = is_hole
 						cl.AddPath( path, hole ? ClipperLib::ptClip : ClipperLib::ptSubject, true );
 						paths.push_back( path );
 						holes.push_back( hole );
+						
+						shape.LineTo( OFF+SCAL*x, OFF+SCAL*y );
+						shape.ClosePath();
 					}
 				}
+
+				pdfdoc.SetFillColour( m_cmap->ColourForValue( 0.5*(zlow+zhigh) ) );
+				pdfdoc.Shape( shape, wxPDF_STYLE_FILL );
+
 					
+				/*
 				ClipperLib::Paths soln;
-				if ( cl.Execute( ClipperLib::ctDifference, soln, ClipperLib::pftNonZero, ClipperLib::pftNonZero ) )
+				if ( cl.Execute( ClipperLib::ctUnion, soln, ClipperLib::pftNonZero, ClipperLib::pftNonZero ) )
 				{
 					for( size_t k=0;k<soln.size();k++ )
 					{
@@ -195,12 +209,17 @@ void wxPLContourPlot::RebuildContours()
 							CC.pts.push_back( wxRealPoint( 0.001*soln[k][n].X, 0.001*soln[k][n].Y ) );
 					}
 				}
+				*/
 				
 				delete list[i]; // free the contour data
 
 			}
+			
 				
 		}
+		
+		pdfdoc.SaveAsFile( "c:/users/arond/desktop/shape.pdf" );
+	
 	}
 }
 
@@ -261,6 +280,7 @@ static void draw_tri_mesh( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 	}
 }
 #endif
+
 	
 void wxPLContourPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 {
@@ -298,9 +318,10 @@ void wxPLContourPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 			for( size_t j=0;j<n;j++ )
 				mapped[j] = map.ToDevice( m_cPolys[i].pts[j] );
 
-			//dc.Polygon( mapped.size(), &mapped[0], wxPLOutputDevice::WIND );
-			dc.Lines( mapped.size(), &mapped[0] );
+			dc.Polygon( mapped.size(), &mapped[0], wxPLOutputDevice::WIND );
+			//dc.Lines( mapped.size(), &mapped[0] );
 			dc.Text( wxString::Format("%d", ++ipoly), mapped[0] );
+
 		}
 	}
 
