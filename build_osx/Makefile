@@ -1,4 +1,4 @@
-VPATH = ../src/plot/qhull ../src/dview ../src/plot ../src/pdf ../src
+VPATH = ../src/plot/qhull ../src/dview ../src/plot ../src/pdf ../src/clipper ../src
 
 LKDIR = ../../lk
 LKLIB = lkosxwx3.a
@@ -13,6 +13,7 @@ LIBNAME = wexosxwx3
 TARGET = ../$(LIBNAME).a
 	
 OBJECTS = \
+	clipper.o\
 	gleasy.o \
 	easycurl.o \
 	snaplay.o \
