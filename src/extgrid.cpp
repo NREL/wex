@@ -172,7 +172,7 @@ wxGridCellAttr *wxExtGridCellAttrProvider::GetAttr(int row, int col,
 
 
 BEGIN_EVENT_TABLE(wxExtGridCtrl, wxGrid)
-	EVT_GRID_CELL_CHANGE( wxExtGridCtrl::OnGridCellChange)
+	EVT_GRID_CELL_CHANGED( wxExtGridCtrl::OnGridCellChange)
 	EVT_GRID_SELECT_CELL( wxExtGridCtrl::OnGridCellSelect)
 	EVT_GRID_RANGE_SELECT( wxExtGridCtrl::OnGridRangeSelect)
 	EVT_GRID_EDITOR_HIDDEN( wxExtGridCtrl::OnGridEditorHidden)
@@ -427,8 +427,8 @@ void wxExtGridCtrl::Paste( PasteMode mode )
 		}
 		if (data.IsEmpty()) return;
 
-		int currow = GetCursorRow();
-		int curcol = GetCursorColumn();
+		int currow = GetGridCursorRow();
+		int curcol = GetGridCursorCol();
 
 		if ( mode == PASTE_ALL
 			|| mode == PASTE_ALL_RESIZE
@@ -463,7 +463,7 @@ void wxExtGridCtrl::Paste( PasteMode mode )
 
 		if (m_sendPasteEvent)
 		{
-			wxGridEvent evt(this->GetId(), ::wxEVT_GRID_CELL_CHANGE, this, -1, -1);
+			wxGridEvent evt(this->GetId(), ::wxEVT_GRID_CELL_CHANGED, this, -1, -1);
 			this->ProcessEvent(evt);
 		}
 	}

@@ -594,8 +594,7 @@ bool wxDecompressFile(const wxString &archive, const wxString &target)
 	}
 	else if (archive.Right(7).Lower() == ".tar.gz")
 	{
-		wxString tempfile;
-		if (!wxGetTempFileName("gunzip", tempfile)) return false;
+		wxString tempfile( wxFileName::CreateTempFileName( "gunzip" ) );
 		if (!wxGunzipFile( archive, tempfile )) return false;
 		return wxUntarFile(tempfile, target);
 	}
