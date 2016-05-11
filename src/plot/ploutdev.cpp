@@ -120,10 +120,10 @@ int wxPLPdfOutputDevice::GetDrawingStyle()
 	return style;
 }
 
-void wxPLPdfOutputDevice::Polygon( size_t n, const wxRealPoint *pts, Style winding ) {		
+void wxPLPdfOutputDevice::Polygon( size_t n, const wxRealPoint *pts, FillRule rule ) {		
 	if ( n == 0 ) return;
 	int saveFillingRule = m_pdf.GetFillingRule();
-	m_pdf.SetFillingRule( winding==ODDEVEN ? wxODDEVEN_RULE : wxWINDING_RULE );
+	m_pdf.SetFillingRule( rule==ODD_EVEN_RULE ? wxODDEVEN_RULE : wxWINDING_RULE );
 	wxPdfArrayDouble xp(n, 0.0), yp(n, 0.0);
 	for( size_t i=0;i<n;i++ )
 	{
@@ -140,6 +140,31 @@ void wxPLPdfOutputDevice::Rect( double x, double y, double width, double height 
 void wxPLPdfOutputDevice::Circle( double x, double y, double radius ) {
 	m_pdf.Circle( x, y, radius, 0.0, 360.0, GetDrawingStyle() );
 }
+
+void wxPLPdfOutputDevice::MoveTo( double x, double y )
+{
+	m_shape.MoveTo( x, y );
+}
+
+void wxPLPdfOutputDevice::LineTo( double x, double y )
+{
+	m_shape.LineTo( x, y );
+}
+
+void wxPLPdfOutputDevice::CloseSubPath()
+{
+	m_shape.ClosePath();
+}
+
+void wxPLPdfOutputDevice::Path( FillRule rule )
+{
+	int saveFillingRule = m_pdf.GetFillingRule();
+	m_pdf.SetFillingRule( rule==ODD_EVEN_RULE ? wxODDEVEN_RULE : wxWINDING_RULE );
+	m_pdf.Shape( m_shape, GetDrawingStyle() );
+	m_shape = wxPdfShape(); // clear the path for next one
+	m_pdf.SetFillingRule( saveFillingRule );
+}
+
 	
 void wxPLPdfOutputDevice::Font( double relpt, bool bold ) {
 	m_pdf.SetFontSize( m_fontPoint0 + relpt );
@@ -179,6 +204,46 @@ void wxPLPdfOutputDevice::Measure( const wxString &text, double *width, double *
 
 #define CAST(x) ((int)wxRound(m_scale*(x)))
 
+static void TranslateBrush( wxBrush *b, const wxColour &c, wxPLOutputDevice::Style sty )
+{
+	b->SetColour( c );
+	switch( sty )
+	{
+	case wxPLOutputDevice::NONE: *b = *wxTRANSPARENT_BRUSH; break;
+	case wxPLOutputDevice::HATCH: b->SetStyle(wxCROSSDIAG_HATCH); break;
+	default: b->SetStyle( wxSOLID ); break;
+	}
+}
+
+static void TranslatePen( wxPen *p, const wxColour &c, double size, 
+	wxPLOutputDevice::Style line, wxPLOutputDevice::Style join, wxPLOutputDevice::Style cap )
+{	
+	p->SetColour( c );
+	p->SetWidth( size < 1.0 ? 1 : ((int)size) );
+	switch( join )
+	{
+	case wxPLOutputDevice::MITER: p->SetJoin( wxJOIN_MITER ); break;
+	case wxPLOutputDevice::BEVEL: p->SetJoin( wxJOIN_BEVEL ); break;
+	default: p->SetJoin( wxJOIN_ROUND ); break;
+	}
+	switch( cap )
+	{
+	case wxPLOutputDevice::ROUND: p->SetCap( wxCAP_ROUND ); break;
+	case wxPLOutputDevice::MITER: p->SetCap( wxCAP_PROJECTING ); break;
+	default: p->SetCap( wxCAP_BUTT );
+	}
+	switch( line )
+	{
+	case wxPLOutputDevice::NONE: *p = *wxTRANSPARENT_PEN; break;
+	case wxPLOutputDevice::DOT: p->SetStyle( wxDOT ); break;
+	case wxPLOutputDevice::DASH: p->SetStyle( wxSHORT_DASH ); break;
+	case wxPLOutputDevice::DOTDASH: p->SetStyle( wxDOT_DASH ); break;
+	default: p->SetStyle( wxSOLID ); break;
+	}
+}
+
+
+/*
 wxPLDCOutputDevice::wxPLDCOutputDevice( wxDC *dc, wxDC *aadc, double scale ) 
 	: wxPLOutputDevice(), m_dc(dc), m_aadc(aadc), m_curdc(dc),
 		m_pen( *wxBLACK_PEN ), m_brush( *wxBLACK_BRUSH ), 
@@ -223,45 +288,6 @@ void wxPLDCOutputDevice::Clip( double x, double y, double width, double height )
 void wxPLDCOutputDevice::Unclip() {
 	m_curdc->DestroyClippingRegion();
 }
-
-static void TranslateBrush( wxBrush *b, const wxColour &c, wxPLDCOutputDevice::Style sty )
-{
-	b->SetColour( c );
-	switch( sty )
-	{
-	case wxPLDCOutputDevice::NONE: *b = *wxTRANSPARENT_BRUSH; break;
-	case wxPLDCOutputDevice::HATCH: b->SetStyle(wxCROSSDIAG_HATCH); break;
-	default: b->SetStyle( wxSOLID ); break;
-	}
-}
-
-static void TranslatePen( wxPen *p, const wxColour &c, double size, 
-	wxPLDCOutputDevice::Style line, wxPLDCOutputDevice::Style join, wxPLDCOutputDevice::Style cap )
-{	
-	p->SetColour( c );
-	p->SetWidth( size < 1.0 ? 1 : ((int)size) );
-	switch( join )
-	{
-	case wxPLDCOutputDevice::MITER: p->SetJoin( wxJOIN_MITER ); break;
-	case wxPLDCOutputDevice::BEVEL: p->SetJoin( wxJOIN_BEVEL ); break;
-	default: p->SetJoin( wxJOIN_ROUND ); break;
-	}
-	switch( cap )
-	{
-	case wxPLDCOutputDevice::ROUND: p->SetCap( wxCAP_ROUND ); break;
-	case wxPLDCOutputDevice::MITER: p->SetCap( wxCAP_PROJECTING ); break;
-	default: p->SetCap( wxCAP_BUTT );
-	}
-	switch( line )
-	{
-	case wxPLDCOutputDevice::NONE: *p = *wxTRANSPARENT_PEN; break;
-	case wxPLDCOutputDevice::DOT: p->SetStyle( wxDOT ); break;
-	case wxPLDCOutputDevice::DASH: p->SetStyle( wxSHORT_DASH ); break;
-	case wxPLDCOutputDevice::DOTDASH: p->SetStyle( wxDOT_DASH ); break;
-	default: p->SetStyle( wxSOLID ); break;
-	}
-}
-
 
 void wxPLDCOutputDevice::Brush( const wxColour &c, Style sty ) { 
 
@@ -329,6 +355,7 @@ void wxPLDCOutputDevice::Measure( const wxString &text, double *width, double *h
 	if ( width )  *width = (double)sz.x/m_scale;
 	if ( height ) *height = (double)sz.y/m_scale;
 }
+*/
 
 
 
@@ -345,6 +372,7 @@ wxPLGraphicsOutputDevice::wxPLGraphicsOutputDevice( wxGraphicsContext *gc, const
 	m_pen = m_brush = true;
 	Pen( *wxBLACK, 1, SOLID );
 	Brush( *wxBLACK, SOLID );
+	m_path = gc->CreatePath();
 }
 	
 void wxPLGraphicsOutputDevice::SetAntiAliasing( bool b )
@@ -402,7 +430,7 @@ void wxPLGraphicsOutputDevice::Lines( size_t n, const wxRealPoint *pts )
     delete[] pointsD;
 }
 
-void wxPLGraphicsOutputDevice::Polygon( size_t n, const wxRealPoint *pts, Style sty )
+void wxPLGraphicsOutputDevice::Polygon( size_t n, const wxRealPoint *pts, FillRule sty )
 {
     bool closeIt = false;
     if (pts[n-1] != pts[0])
@@ -416,9 +444,9 @@ void wxPLGraphicsOutputDevice::Polygon( size_t n, const wxRealPoint *pts, Style 
     }
     if ( closeIt )
         pointsD[n] = pointsD[0];
-
-    m_gc->DrawLines( n+(closeIt?1:0) , pointsD, sty==ODDEVEN ?  wxODDEVEN_RULE : wxWINDING_RULE );
-    delete[] pointsD;
+	
+	m_gc->DrawLines( n+(closeIt?1:0), pointsD, sty==ODD_EVEN_RULE ?  wxODDEVEN_RULE : wxWINDING_RULE );
+	delete[] pointsD;
 }
 
 void wxPLGraphicsOutputDevice::Rect( double x, double y, double width, double height )
@@ -431,6 +459,30 @@ void wxPLGraphicsOutputDevice::Circle( double x, double y, double radius )
 	wxGraphicsPath path = m_gc->CreatePath();
 	path.AddCircle( SCALE(x), SCALE(y), SCALE(radius) );
 	m_gc->DrawPath( path );
+}
+
+void wxPLGraphicsOutputDevice::MoveTo( double x, double y )
+{
+	m_path.MoveToPoint( SCALE(x), SCALE(y) );
+}
+
+void wxPLGraphicsOutputDevice::LineTo( double x, double y )
+{
+	m_path.AddLineToPoint( SCALE(x), SCALE(y) );
+}
+
+void wxPLGraphicsOutputDevice::CloseSubPath()
+{
+	m_path.CloseSubpath();
+}
+
+void wxPLGraphicsOutputDevice::Path( FillRule rule )
+{
+	if ( m_brush && m_pen ) m_gc->DrawPath( m_path, rule == WINDING_RULE ? wxWINDING_RULE : wxODDEVEN_RULE );
+	else if ( m_pen ) m_gc->StrokePath( m_path );
+	else if ( m_brush ) m_gc->FillPath( m_path, rule == WINDING_RULE ? wxWINDING_RULE : wxODDEVEN_RULE );
+
+	m_path = m_gc->CreatePath();
 }
 
 void wxPLGraphicsOutputDevice::Font( double relpt, bool bold )

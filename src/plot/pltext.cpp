@@ -418,14 +418,14 @@ wxPLTextLayoutDemo::wxPLTextLayoutDemo( wxWindow *parent )
 	SetBackgroundStyle( wxBG_STYLE_CUSTOM );
 }
 
-std::vector<double> wxPLTextLayoutDemo::Draw( wxDC &scdc, const wxPLRealRect &geom )
+std::vector<double> wxPLTextLayoutDemo::Draw( wxGraphicsContext *gc, const wxPLRealRect &geom )
 {
 	std::vector<double> vlines;
 	
 	// test 1
 	{
-		scdc.SetFont( *wxNORMAL_FONT );
-		wxPLDCOutputDevice dc( &scdc );
+		gc->SetFont( *wxNORMAL_FONT, *wxBLACK );
+		wxPLGraphicsOutputDevice dc( gc );
 		wxPLTextLayout t1( dc, "basic text, nothing special" );
 		t1.Render( dc, geom.x+20, geom.y+20, 0.0, true );
 		vlines.push_back( geom.x+20 );
@@ -434,16 +434,16 @@ std::vector<double> wxPLTextLayoutDemo::Draw( wxDC &scdc, const wxPLRealRect &ge
 
 	// test 2
 	{
-		scdc.SetFont( wxFont(18, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Century Schoolbook") );
-		wxPLDCOutputDevice dc( &scdc );
+		gc->SetFont( wxFont(18, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Century Schoolbook"), *wxBLACK );
+		wxPLGraphicsOutputDevice dc( gc );
 		wxPLTextLayout t2( dc, "escape^sup_sub \\\\  \\  \\euro \\badcode \\Omega~\\Phi\\ne\\delta, but\n\\Kappa\\approx\\zeta \\emph\\qmark, and this is the end of the text!. Cost was 10 \\pound, or 13.2\\cent" );
 		t2.Render( dc, geom.x+20, geom.y+120, 0.0, true );
 	}
 	
 	// test 3
 	{
-		scdc.SetFont( wxFont(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Consolas") );
-		wxPLDCOutputDevice dc( &scdc );
+		gc->SetFont( wxFont(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Consolas"), *wxBLACK );
+		wxPLGraphicsOutputDevice dc( gc );
 		wxPLTextLayout t3( dc, "super^2 ,not_\\rho\\gamma f hing_{special,great,best}\n\\alpha^^\\beta c^\\delta  efjhijkl__mnO^25 pq_0 r\\Sigma tuvwxyz\nABCDEFGHIJKL^^MNOPQRSTUVWXZY" );
 		t3.Render( dc, geom.x+20, geom.y+420, 90, true );
 		t3.Render( dc, geom.x+200, geom.y+350, 45.0, true );
@@ -454,40 +454,40 @@ std::vector<double> wxPLTextLayoutDemo::Draw( wxDC &scdc, const wxPLRealRect &ge
 	
 	// test 4
 	{
-		scdc.SetFont( wxFont(16, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL) );
-		wxPLDCOutputDevice dc( &scdc );
+		gc->SetFont( wxFont(16, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL), *wxBLACK );
+		wxPLGraphicsOutputDevice dc( gc );
 		wxPLTextLayout t4( dc, "x_1^2_3 abc=y_2^4" );
 		t4.Render( dc, geom.x+200, geom.y+70, 0, false );
 	}
 
 	// test 5
 	{
-		scdc.SetFont( wxFont(7, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL) );
-		wxPLDCOutputDevice dc( &scdc );
+		gc->SetFont( wxFont(7, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL), *wxBLACK );
+		wxPLGraphicsOutputDevice dc( gc );
 		wxPLTextLayout t5( dc, "small (7): x_1^2_3 abc=y_2^4" );
 		t5.Render( dc, geom.x+500, geom.y+60, 0, false );
 	}
 	
 	// test 6
 	{
-		scdc.SetFont( wxFont(8, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL) );
-		wxPLDCOutputDevice dc( &scdc );
+		gc->SetFont( wxFont(8, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL), *wxBLACK );
+		wxPLGraphicsOutputDevice dc( gc );
 		wxPLTextLayout t6( dc, "small (8): x_1^2_3 abc=y_2^4" );
 		t6.Render( dc, geom.x+500, geom.y+80, 0, false );
 	}
 	
 	// test 7
 	{
-		scdc.SetFont( wxFont(9, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL) );
-		wxPLDCOutputDevice dc( &scdc );
+		gc->SetFont( wxFont(9, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL), *wxBLACK );
+		wxPLGraphicsOutputDevice dc( gc );
 		wxPLTextLayout t7( dc, "small (9): x_1^2_3 abc=y_2^4" );
 		t7.Render( dc, geom.x+500, geom.y+100, 0, false );
 	}
 	
 	// test 8
 	{
-		scdc.SetFont( wxFont(10, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL) );
-		wxPLDCOutputDevice dc( &scdc );
+		gc->SetFont( wxFont(10, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL), *wxBLACK );
+		wxPLGraphicsOutputDevice dc( gc );
 		wxPLTextLayout t8( dc, "small (10): x_1^2_3 abc=y_2^4" );
 		t8.Render( dc, geom.x+500, geom.y+120, 0, false );
 	}
@@ -507,21 +507,24 @@ void wxPLTextLayoutDemo::OnPaint( wxPaintEvent & )
 	pdc.SetBackground( *wxWHITE_BRUSH );
 	pdc.Clear();
 
-	wxGCDC gdc1(pdc);
+	wxGraphicsContext *gc = wxGraphicsContext::Create( pdc );
 
 #ifdef __WXMSW__
-//	gdc1.GetGraphicsContext()->MSWSetStringFormat( wxGraphicsContext::Format_Normal );
+//	gc->GetGraphicsContext()->MSWSetStringFormat( wxGraphicsContext::Format_Normal );
 #endif
 
-	Draw( gdc1, wxPLRealRect( 0, 0, width, height/2 ) );
+	Draw( gc, wxPLRealRect( 0, 0, width, height/2 ) );
+	delete gc;
 
-	wxGCDC gdc2(pdc);
+
+	gc = wxGraphicsContext::Create( pdc );
 
 #ifdef __WXMSW__
-//	gdc2.GetGraphicsContext()->MSWSetStringFormat( wxGraphicsContext::Format_OptimizeForSmallFont );
+//	gc->GetGraphicsContext()->MSWSetStringFormat( wxGraphicsContext::Format_OptimizeForSmallFont );
 #endif
 	
-	Draw( gdc2, wxPLRealRect( 0, height/2, width, height/2 ) );
+	Draw( gc, wxPLRealRect( 0, height/2, width, height/2 ) );
+	delete gc;
 	/*
 	std::vector<int> vlines = Draw(pdc, wxPLRealRect( 0, 0, width, height/2 ) );
 

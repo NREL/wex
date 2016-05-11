@@ -306,11 +306,12 @@ void TestContourPlot()
 		}
 	}
 
+	
 	// Example 2
 	wxPLContourPlot::Peaks( 100, XX, YY, ZZ,	&zmin, &zmax );
 
 
-	/*
+	
 	// Example 3: Interpolating data via Delaunay with NaN mask
 	std::vector<double> xdata, ydata, zdata;
 	if ( FILE *fp = fopen( "c:/users/adobos/desktop/spray.csv", "r" ) )
@@ -349,7 +350,8 @@ void TestContourPlot()
 	}
 	else
 		wxMessageBox("Could not load spray.csv");
-		*/
+		
+	
 
 	//wxPLAxis::ExtendBoundsToNiceNumber( &zmax, &zmin );
 	wxPLColourMap *jet = new wxPLJetColourMap( zmin, zmax );
@@ -704,7 +706,7 @@ public:
 			return false;
 		
 		wxInitAllImageHandlers();
-		//TestPLPlot( 0 );
+		TestPLPlot( 0 );
 		//TestPLPolarPlot(0);
 		//TestPLBarPlot(0);
 

@@ -244,7 +244,7 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 				
 				dc.Pen( *wxBLACK, 0, wxPLOutputDevice::NONE );
 				dc.Brush( m_colour );
-				dc.Polygon( points.size(), &points[0], wxPLOutputDevice::WIND );
+				dc.Polygon( points.size(), &points[0], wxPLOutputDevice::WINDING_RULE );
 			}
 			else
 			{

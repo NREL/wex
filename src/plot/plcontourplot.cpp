@@ -128,12 +128,6 @@ void wxPLContourPlot::RebuildContours()
 	}
 	else
 	{
-		double OFF = 250;
-		double SCAL = 50.0;
-		wxPdfDocument pdfdoc( wxLANDSCAPE, "pt", wxPAPER_A4 );
-		pdfdoc.AddPage();
-		pdfdoc.SetFillingRule( wxWINDING_RULE );
-
 		for( int k=0;k<m_levels.size()-1;k++ )
 		{
 			double zlow =  m_levels[k];
@@ -146,80 +140,24 @@ void wxPLContourPlot::RebuildContours()
 			{
 				QuadContourGenerator::VertexCodes &vc = *list[i];
 				if ( vc.vertices.Rows() != vc.codes.Rows() ) continue;
-
-				ClipperLib::Clipper cl;	
-				cl.StrictlySimple( true );
-
-				ClipperLib::Path path;
-				ClipperLib::Paths paths;
-				std::vector<bool> holes;
-
-				wxPdfShape shape;
-				for( size_t j=0;j<vc.vertices.Rows();j++ )
-				{
-					unsigned char code = vc.codes(j,0);
-					double x = vc.vertices(j,0);
-					double y = vc.vertices(j,1);
-					ClipperLib::IntPoint ip( (int)(1000.0*x), (int)(1000.0*y) );
-
-					if ( code == MOVETO )
-					{
-						path.clear();
-						path.push_back( ip );
-
-						shape.MoveTo( OFF+SCAL*x, OFF+SCAL*y );
-						
-					}
-					else if ( code == LINETO )
-					{
-						path.push_back( ip );
-
-						shape.LineTo( OFF+SCAL*x, OFF+SCAL*y );
-					}
-					else if ( code == CLOSEPOLY )
-					{
-						path.push_back( ip );
-
-						bool hole = ClipperLib::Orientation( path ); // true = is_hole
-						cl.AddPath( path, hole ? ClipperLib::ptClip : ClipperLib::ptSubject, true );
-						paths.push_back( path );
-						holes.push_back( hole );
-						
-						shape.LineTo( OFF+SCAL*x, OFF+SCAL*y );
-						shape.ClosePath();
-					}
-				}
-
-				pdfdoc.SetFillColour( m_cmap->ColourForValue( 0.5*(zlow+zhigh) ) );
-				pdfdoc.Shape( shape, wxPDF_STYLE_FILL );
-
-					
-				/*
-				ClipperLib::Paths soln;
-				if ( cl.Execute( ClipperLib::ctUnion, soln, ClipperLib::pftNonZero, ClipperLib::pftNonZero ) )
-				{
-					for( size_t k=0;k<soln.size();k++ )
-					{
-						m_cPolys.push_back( C_poly() );
-						C_poly &CC = m_cPolys.back();
-						CC.z = zlow;
-						CC.zmax = zhigh;
-
-						for( size_t n=0;n<soln[k].size();n++ )
-							CC.pts.push_back( wxRealPoint( 0.001*soln[k][n].X, 0.001*soln[k][n].Y ) );
-					}
-				}
-				*/
 				
+				m_cPolys.push_back( C_poly() );
+				C_poly &CC = m_cPolys.back();
+				CC.z = zlow;
+				CC.zmax = zhigh;
+				size_t len = vc.vertices.Rows();
+				CC.pts.reserve( len );
+				CC.act.reserve( len );
+				for( size_t j=0;j<len;j++ )
+				{
+					CC.pts.push_back( wxRealPoint( vc.vertices(j,0), vc.vertices(j,1) ) );
+					CC.act.push_back( vc.codes(j,0) );
+				}
+
 				delete list[i]; // free the contour data
 
 			}
-			
-				
 		}
-		
-		pdfdoc.SaveAsFile( "c:/users/arond/desktop/shape.pdf" );
-	
 	}
 }
 
@@ -314,14 +252,25 @@ void wxPLContourPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 			dc.Brush( color );
 
 			size_t n = m_cPolys[i].pts.size();
-			std::vector<wxRealPoint> mapped( n );
 			for( size_t j=0;j<n;j++ )
-				mapped[j] = map.ToDevice( m_cPolys[i].pts[j] );
+			{
+				wxRealPoint mapped = map.ToDevice( m_cPolys[i].pts[j] );
+				switch( m_cPolys[i].act[j] )
+				{
+				case MOVETO: 
+					dc.MoveTo( mapped.x, mapped.y );
+					break;
+				case LINETO:
+					dc.LineTo( mapped.x, mapped.y );
+					break;
+				case CLOSEPOLY:
+					dc.LineTo( mapped.x, mapped.y );
+					dc.CloseSubPath();
+					break;
+				}
+			}
 
-			dc.Polygon( mapped.size(), &mapped[0], wxPLOutputDevice::WIND );
-			//dc.Lines( mapped.size(), &mapped[0] );
-			dc.Text( wxString::Format("%d", ++ipoly), mapped[0] );
-
+			dc.Path( wxPLOutputDevice::WINDING_RULE );
 		}
 	}
 

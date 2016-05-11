@@ -36,6 +36,8 @@
 #include "wex/plot/pllineplot.h"
 #include "wex/plot/plscatterplot.h"
 #include "wex/plot/plwindrose.h"
+#include "wex/plot/plcontourplot.h"
+#include "wex/plot/plcolourmap.h"
 
 enum { BAR, HBAR, LINE, SCATTER, WINDROSE };
 static void CreatePlot( wxPLPlotCtrl *plot, double *x, double *y, int len, double thick, wxColour &col, int type,
@@ -593,6 +595,174 @@ void fcall_axis( lk::invoke_t &cxt )
 	}
 }
 
+static void to_stdvec( lk::vardata_t &v, std::vector<double> &vec )
+{
+	if ( v.type() != lk::vardata_t::VECTOR ) return;
+	size_t len = v.length();
+	if ( len == 0 ) { vec.clear(); return; }
+	vec.resize( len );
+	for( size_t i=0;i<len;i++ )
+		vec[i] = v.index(i)->as_number();
+}
+
+static void to_matrix( lk::vardata_t &v, wxMatrix<double> &mat )
+{
+	mat.Clear();
+	if ( v.type() != lk::vardata_t::VECTOR ) return;
+
+	size_t rows = v.length();
+	size_t cols = 0;
+	for( size_t i=0;i<rows;i++ )
+	{
+		if ( v.index(i)->deref().type() == lk::vardata_t::VECTOR )
+		{
+			size_t len = v.index(i)->deref().length();
+			if ( len > cols ) cols = len;
+		}
+	}
+
+	if ( rows == 0 || cols == 0 ) return;
+
+	mat.ResizeFill( rows, cols, std::numeric_limits<double>::quiet_NaN() );
+	for( size_t r=0;r<rows;r++ )
+	{
+		for( size_t c=0;c<cols;c++ )
+		{
+			if ( v.index(r)->deref().type() == lk::vardata_t::VECTOR 
+				&& c < v.index(r)->deref().length() )
+			{
+				mat(r,c) = v.index(r)->deref().index(c)->as_number();
+			}
+		}
+	}
+}
+
+static void to_lk_matrix( wxMatrix<double> &mat, lk::vardata_t &v )
+{
+	v.empty_vector();
+	if ( mat.Cells() == 0 ) return;
+
+	v.resize( mat.Rows() );
+	for( size_t r=0;r<mat.Rows();r++ )
+	{
+		v.index(r)->empty_vector();
+		v.index(r)->resize( mat.Cols() );
+		for( size_t c=0;c<mat.Cols();c++ )
+			v.index(r)->index(c)->assign( mat(r,c) );
+	}
+}
+
+
+void fcall_peaks( lk::invoke_t &cxt )
+{
+	LK_DOC( "peaks", "Sample data for contour plotting.", "( number:n ):table" );
+	
+	wxMatrix<double> x, y, z;
+	double min, max;
+	wxPLContourPlot::Peaks( cxt.arg(0).as_unsigned(), x, y, z, &min, &max );
+	cxt.result().empty_hash();
+	to_lk_matrix( x, cxt.result().hash_item( "x" ) );
+	to_lk_matrix( y, cxt.result().hash_item( "y" ) );
+	to_lk_matrix( z, cxt.result().hash_item( "z" ) );
+	cxt.result().hash_item( "min" ).assign( min );
+	cxt.result().hash_item( "max" ).assign( max );
+}
+
+void fcall_meshgrid( lk::invoke_t &cxt )
+{
+	LK_DOC( "meshgrid", "Creates a regularly spaced grid of x,y coordinates.", "()" );
+	wxMatrix<double> xq, yq;
+	wxPLContourPlot::MeshGrid( 
+
+		cxt.arg(0).as_number(),
+		cxt.arg(1).as_number(),
+		cxt.arg(2).as_unsigned(),
+
+		cxt.arg(3).as_number(),
+		cxt.arg(4).as_number(),
+		cxt.arg(5).as_unsigned(),
+
+		xq, yq );
+
+	cxt.result().empty_hash();
+	to_lk_matrix( xq, cxt.result().hash_item( "xq" ) );
+	to_lk_matrix( yq, cxt.result().hash_item( "yq" ) );
+}
+
+void fcall_griddata( lk::invoke_t &cxt )
+{
+	LK_DOC( "griddata", "Interpolates X,Y,Z data onto a regular Xq,Yq mesh.", "( array:x, array:y, array:z, matrix:xq, matrix:yq ):matrix" );
+
+	std::vector<double> x, y, z;
+	to_stdvec( cxt.arg(0).deref(), x );
+	to_stdvec( cxt.arg(1).deref(), y );
+	to_stdvec( cxt.arg(2).deref(), z );
+
+	wxMatrix<double> xq, yq, zq;
+	to_matrix( cxt.arg(3).deref(), xq );
+	to_matrix( cxt.arg(4).deref(), yq );
+
+	wxPLContourPlot::GridData( x, y, z, xq, yq, zq );
+
+	to_lk_matrix( zq, cxt.result() );
+}
+
+void fcall_contour( lk::invoke_t &cxt )
+{
+	LK_DOC( "contour", "Creates a contour plot from gridded x,y,z data. Options are filled,colormap", "( matrix:x, matrix:y, matrix:z, { table:options } ):none" );
+	
+	wxPLPlotCtrl *plot = GetPlotSurface( 
+		(s_curToplevelParent!=0)
+			? s_curToplevelParent 
+			: GetCurrentTopLevelWindow() );
+	
+	wxString cmap_name;
+	bool filled = false;
+	size_t levels = 10;
+	wxString label;
+	if ( cxt.arg_count() > 3 )
+	{
+		lk::vardata_t &opt = cxt.arg(3);
+		if ( lk::vardata_t *o = opt.lookup( "colormap" ) )
+			cmap_name = o->as_string().Lower();
+		if ( lk::vardata_t *o = opt.lookup( "filled" ) )
+			filled = o->as_boolean();
+		if ( lk::vardata_t *o = opt.lookup( "levels" ) )
+			levels = o->as_unsigned();
+		if ( lk::vardata_t *o = opt.lookup( "label" ) )
+			label = o->as_string();
+	}
+
+	wxMatrix<double> x, y, z;
+	to_matrix( cxt.arg(0), x );
+	to_matrix( cxt.arg(1), y );
+	to_matrix( cxt.arg(2), z );
+
+	double min, max;
+	wxPLContourPlot::MinMax( z, &min, &max );
+	wxPLAxis::ExtendBoundsToNiceNumber( &max, &min );
+
+	wxPLColourMap *cmap = dynamic_cast<wxPLColourMap*>( plot->GetSideWidget( wxPLPlot::Y_RIGHT ) );
+	if ( 0 == cmap || !cmap_name.IsEmpty() )
+	{
+		if ( cmap_name=="grayscale") cmap = new wxPLGrayscaleColourMap( min, max );
+		else cmap =new wxPLJetColourMap( min, max );
+		
+		plot->SetSideWidget( cmap, wxPLPlot::Y_RIGHT );
+
+		for( size_t i=0;i<plot->GetPlotCount();i++ )
+			if ( wxPLContourPlot *cp = dynamic_cast<wxPLContourPlot*>( plot->GetPlot(i) ) )
+				cp->SetColourMap( cmap );
+	}
+
+	if ( min < cmap->GetScaleMin() ) cmap->SetScaleMin( min );
+	if ( max > cmap->GetScaleMax() ) cmap->SetScaleMax( max );
+
+	wxPLContourPlot *contour = new wxPLContourPlot( x, y, z, filled, label, (int)levels, cmap );
+	plot->AddPlot( contour );
+}
+
+
 void fcall_csvconv( lk::invoke_t &cxt )
 {
 	LK_DOC( "csvconv", "Convert arrays to CSV text and vice-versa."
@@ -1002,6 +1172,10 @@ lk::fcall_t* wxLKPlotFunctions()
 		fcall_plotopt,
 		fcall_plotout,
 		fcall_axis, 
+		fcall_meshgrid,
+		fcall_peaks,
+		fcall_griddata,
+		fcall_contour,
 		0 };
 		
 	return (lk::fcall_t*)vec;

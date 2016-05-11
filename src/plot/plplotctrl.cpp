@@ -282,12 +282,13 @@ wxBitmap wxPLPlotCtrl::GetBitmap( int width, int height )
 			// estimate legend size and add it to exported bitmap size
 			wxBitmap bittemp( 10, 10 );
 			wxMemoryDC dctemp( bittemp );
-			dctemp.SetFont( GetFont() );
-			wxPLDCOutputDevice odev( &dctemp, 0, wxGetScreenHDScale() );
+			wxGraphicsContext *gc = wxGraphicsContext::Create( dctemp );
+			wxPLGraphicsOutputDevice odev( gc, GetFont(), wxGetScreenHDScale() );
 			CalculateLegendLayout( odev );
 			InvalidateLegend(); // keep legend invalidated for subsequent render
 
 			width += GetLegendRect().width;
+			delete gc;
 		}
 
 		Invalidate(); // force recalc of layout
@@ -373,8 +374,6 @@ wxSize wxPLPlotCtrl::DoGetBestSize() const
 	return wxScaleSize( 500, 400 ); // default plot size
 }
 
-#define USE_MIXED_DC_GC 1
-
 void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 {
 	wxFont font_normal( dc.GetFont() );
@@ -389,32 +388,29 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 	dc.SetFont( font_normal );
 	
 	double scale = wxGetScreenHDScale();
+	
+	wxGraphicsRenderer *renderer = 0;
+#ifdef __WXMSW__
+	renderer = wxGraphicsRenderer::GetDirect2DRenderer();
+#endif
+	if ( !renderer )
+		renderer = wxGraphicsRenderer::GetDefaultRenderer();
 
-#ifdef USE_MIXED_DC_GC
-	wxGCDC *gcdc = 0;
-	if ( wxMemoryDC *memdc = dynamic_cast<wxMemoryDC*>( &dc ) )
-		gcdc = new wxGCDC( *memdc );
-	else if ( wxWindowDC *windc = dynamic_cast<wxWindowDC*>( &dc ) )
-		gcdc = new wxGCDC( *windc );
-	else if ( wxPrinterDC *prindc = dynamic_cast<wxPrinterDC*>( &dc ) )
-		gcdc = new wxGCDC( *prindc );
-
-	wxDC &aadc = gcdc ? *gcdc : dc;
-	wxPLDCOutputDevice odev( &dc, &aadc, scale );
-#else
 	wxGraphicsContext *gc = 0;
 	if ( wxMemoryDC *memdc = dynamic_cast<wxMemoryDC*>( &dc ) )
-		gc = wxGraphicsContext::Create( *memdc );
+		gc = renderer->CreateContext( *memdc );
 	else if ( wxWindowDC *windc = dynamic_cast<wxWindowDC*>( &dc ) )
-		gc = wxGraphicsContext::Create( *windc );
+		gc = renderer->CreateContext( *windc );
 	else if ( wxPrinterDC *prindc = dynamic_cast<wxPrinterDC*>( &dc ) )
-		gc = wxGraphicsContext::Create( *prindc );
+		gc = renderer->CreateContext( *prindc );
 
 	if ( !gc ) return;
 
 	gc->SetInterpolationQuality( wxINTERPOLATION_FAST );
+
+	wxString type = renderer->GetName();
+
 	wxPLGraphicsOutputDevice odev( gc, font_normal, scale );
-#endif
 
 	wxPLRealRect rr;
 	rr.x = geom.x/scale;
