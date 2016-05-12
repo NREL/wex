@@ -45,8 +45,7 @@ DEFINE_EVENT_TYPE( wxEVT_PLOT_DRAG_END )
 enum { ID_COPY_DATA_CLIP = wxID_HIGHEST + 1251, 
 		ID_SAVE_DATA_CSV, ID_SEND_EXCEL, 
 		ID_TO_CLIP_SCREEN, ID_TO_CLIP_SMALL, ID_TO_CLIP_NORMAL, 
-		ID_EXPORT_SCREEN, ID_EXPORT_SMALL, ID_EXPORT_NORMAL, ID_EXPORT_PDF,
-		ID_EXPORT_SVG };
+		ID_EXPORT_SCREEN, ID_EXPORT_SMALL, ID_EXPORT_NORMAL, ID_EXPORT_PDF };
 
 BEGIN_EVENT_TABLE( wxPLPlotCtrl, wxWindow )
 	EVT_PAINT( wxPLPlotCtrl::OnPaint )
@@ -58,7 +57,7 @@ BEGIN_EVENT_TABLE( wxPLPlotCtrl, wxWindow )
 	EVT_MOTION( wxPLPlotCtrl::OnMotion )	
 	EVT_MOUSE_CAPTURE_LOST( wxPLPlotCtrl::OnMouseCaptureLost )
 	
-	EVT_MENU_RANGE( ID_COPY_DATA_CLIP, ID_EXPORT_SVG, wxPLPlotCtrl::OnPopupMenu )
+	EVT_MENU_RANGE( ID_COPY_DATA_CLIP, ID_EXPORT_PDF, wxPLPlotCtrl::OnPopupMenu )
 END_EVENT_TABLE()
 
 wxPLPlotCtrl::wxPLPlotCtrl(wxWindow *parent, int id, const wxPoint &pos, const wxSize &size)
@@ -97,7 +96,6 @@ wxPLPlotCtrl::wxPLPlotCtrl(wxWindow *parent, int id, const wxPoint &pos, const w
 	m_contextMenu.Append( ID_EXPORT_NORMAL, "Export (800x600)..." );
 	m_contextMenu.AppendSeparator();
 	m_contextMenu.Append( ID_EXPORT_PDF, "Export as PDF..." );
-	m_contextMenu.Append( ID_EXPORT_SVG, "Export as SVG..." );
 }
 
 wxPLPlotCtrl::~wxPLPlotCtrl()
@@ -189,15 +187,6 @@ void wxPLPlotCtrl::OnPopupMenu( wxCommandEvent &evt )
 					wxMessageBox("PDF encountered an error: \n" + fdlg.GetPath());
 		}
 		break;
-	case ID_EXPORT_SVG:
-		{
-			wxFileDialog fdlg(this, "Export as SVG", wxEmptyString, "graph",
-				"SVG File (*.svg)|*.svg", wxFD_SAVE | wxFD_OVERWRITE_PROMPT );
-			if ( fdlg.ShowModal() == wxID_OK )
-				if ( !ExportSvg( fdlg.GetPath() ) )
-					wxMessageBox("Failed to write SVG: " + fdlg.GetPath());
-		}
-		break;
 	case ID_TO_CLIP_SCREEN:
 	case ID_TO_CLIP_SMALL:
 	case ID_TO_CLIP_NORMAL:
@@ -249,7 +238,6 @@ wxString wxPLPlotCtrl::ShowExportDialog( )
 			ext.MakeLower();
 
 			int filt = fdlg.GetFilterIndex();
-			wxLogStatus("FILTER IDX=%d\n", filt);
 			switch( filt )
 			{
 			case 0: if (ext != "bmp") fn += ".bmp"; break;
@@ -298,15 +286,27 @@ wxBitmap wxPLPlotCtrl::GetBitmap( int width, int height )
 
 	wxBitmap bitmap( imgSize.GetWidth(), imgSize.GetHeight(), 32 );
 	wxMemoryDC memdc( bitmap );
-	wxGCDC gdc( memdc );
 
-	// initialize font and background
-	gdc.SetFont( GetFont() );
-	gdc.SetBackground( *wxWHITE_BRUSH );
-	gdc.Clear();
-	
-	wxRect rect(0, 0, imgSize.GetWidth(), imgSize.GetHeight());
-	Render( gdc, rect );
+	wxGraphicsRenderer *renderer = 0;
+#ifdef __WXMSW__
+	//renderer = wxGraphicsRenderer::GetDirect2DRenderer();
+#endif
+	if ( !renderer )
+		renderer = wxGraphicsRenderer::GetDefaultRenderer();
+
+	if ( wxGraphicsContext *gc = renderer->CreateContext( memdc ) )
+	{
+		// initialize font and background
+		gc->SetFont( GetFont(), *wxBLACK );
+		gc->SetBrush( *wxWHITE_BRUSH );
+		gc->SetPen( *wxWHITE_PEN );
+		gc->DrawRectangle( 0, 0, imgSize.GetWidth(), imgSize.GetHeight() );
+
+		wxRect rect(0, 0, imgSize.GetWidth(), imgSize.GetHeight());
+		Render( *gc, GetFont(), rect );
+
+		delete gc;
+	}
 
 	memdc.SelectObject( wxNullBitmap );
 
@@ -327,7 +327,6 @@ bool wxPLPlotCtrl::Export( const wxString &file, int width, int height )
 	wxFileName fn(file);
 	wxString ext( fn.GetExt().Lower() );
 	if ( ext == "pdf" ) return ExportPdf( file );
-	else if ( ext == "svg" ) return ExportSvg( file );
 	else {
 		wxBitmapType type( wxBITMAP_TYPE_INVALID );
 
@@ -351,32 +350,14 @@ bool wxPLPlotCtrl::ExportPdf( const wxString &file )
 	return RenderPdf( file, width*72.0/ppi, height*72.0/ppi );
 }
 
-bool wxPLPlotCtrl::ExportSvg( const wxString &file )
-{
-	wxSize imgSize = GetClientSize();			
-	wxSVGFileDC svgdc( file, imgSize.GetWidth(), imgSize.GetHeight() );
-	if ( !svgdc.IsOk() ) return false;
-				
-	// initialize font and background
-	svgdc.SetFont( GetFont() );
-	svgdc.SetBackground( *wxWHITE_BRUSH );
-	svgdc.Clear();
-	wxRect rect(0, 0, imgSize.GetWidth(), imgSize.GetHeight());
-	Invalidate();
-	Render( svgdc, rect );
-	Invalidate();
-	Refresh(); // redraw on-screen version to recompute layout
-	return true;
-}
-
 wxSize wxPLPlotCtrl::DoGetBestSize() const
 {
 	return wxScaleSize( 500, 400 ); // default plot size
 }
 
-void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
+void wxPLPlotCtrl::Render( wxGraphicsContext &gc, const wxFont &font, wxRect geom )
 {
-	wxFont font_normal( dc.GetFont() );
+	wxFont font_normal( font );
 	if ( m_scaleTextSize )
 	{
 		// scale text according to geometry width, within limits
@@ -385,32 +366,9 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 		if ( point_size < 7 ) point_size = 7;
 		font_normal.SetPointSize( (int)point_size );
 	}
-	dc.SetFont( font_normal );
+	gc.SetFont( font_normal, *wxBLACK );
 	
 	double scale = wxGetScreenHDScale();
-	
-	wxGraphicsRenderer *renderer = 0;
-#ifdef __WXMSW__
-	renderer = wxGraphicsRenderer::GetDirect2DRenderer();
-#endif
-	if ( !renderer )
-		renderer = wxGraphicsRenderer::GetDefaultRenderer();
-
-	wxGraphicsContext *gc = 0;
-	if ( wxMemoryDC *memdc = dynamic_cast<wxMemoryDC*>( &dc ) )
-		gc = renderer->CreateContext( *memdc );
-	else if ( wxWindowDC *windc = dynamic_cast<wxWindowDC*>( &dc ) )
-		gc = renderer->CreateContext( *windc );
-	else if ( wxPrinterDC *prindc = dynamic_cast<wxPrinterDC*>( &dc ) )
-		gc = renderer->CreateContext( *prindc );
-
-	if ( !gc ) return;
-
-	gc->SetInterpolationQuality( wxINTERPOLATION_FAST );
-
-	wxString type = renderer->GetName();
-
-	wxPLGraphicsOutputDevice odev( gc, font_normal, scale );
 
 	wxPLRealRect rr;
 	rr.x = geom.x/scale;
@@ -418,27 +376,51 @@ void wxPLPlotCtrl::Render( wxDC &dc, wxRect geom )
 	rr.width = geom.width/scale;
 	rr.height = geom.height/scale;
 
+	wxPLGraphicsOutputDevice odev( &gc, font_normal, scale );
 	wxPLPlot::Render( odev, rr );
-
-#ifdef USE_MIXED_DC_GC
-	if ( gcdc ) delete gcdc;
-#else
-	delete gc;
-#endif
-
 }
+
+//#define SHOW_RENDERER_INFO 1
 
 void wxPLPlotCtrl::OnPaint( wxPaintEvent & )
 {
 	wxAutoBufferedPaintDC pdc( this );
 	
-	pdc.SetFont( GetFont() ); // initialze font and background
-	pdc.SetBackground( wxBrush( GetBackgroundColour(), wxBRUSHSTYLE_SOLID ) );
-	pdc.Clear();
+	wxGraphicsRenderer *renderer = 0;
+#ifdef __WXMSW__
+	//renderer = wxGraphicsRenderer::GetDirect2DRenderer();
+#endif
+	if ( !renderer )
+		renderer = wxGraphicsRenderer::GetDefaultRenderer();
+	
 
-	int width, height;
-	GetClientSize( &width, &height );
-	Render( pdc, wxRect(0, 0, width, height) );
+	if ( wxGraphicsContext *gc = renderer->CreateContext( pdc ) )
+	{
+#ifdef SHOW_RENDERER_INFO
+		wxStopWatch sw;
+#endif
+		int width, height;
+		GetClientSize( &width, &height );
+
+		gc->SetFont( GetFont(), *wxBLACK ); // initialze font and background
+		gc->SetPen( *wxWHITE_PEN );
+		gc->SetBrush( *wxWHITE_BRUSH );
+		gc->DrawRectangle( 0, 0, width, height );
+
+		Render( *gc, GetFont(), wxRect(0, 0, width, height) );
+
+#ifdef SHOW_RENDERER_INFO
+		gc->DrawText( "Using " + renderer->GetName() + wxString::Format( " in %d ms.", sw.Time() ), 2, 2 );
+#endif
+		delete gc;
+	}
+	else
+	{
+		pdc.SetBackground( wxBrush( GetBackgroundColour(), wxBRUSHSTYLE_SOLID ) );
+		pdc.Clear();
+		pdc.SetFont( *wxNORMAL_FONT );
+		pdc.DrawText( "Could not initialize 2D graphics subsystem.", 2, 2 );
+	}
 }
 
 void wxPLPlotCtrl::OnSize( wxSizeEvent & )

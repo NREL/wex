@@ -3,11 +3,6 @@
 #include <wex/pdf/pdffont.h>
 #include <wex/plot/ploutdev.h>
 
-void wxPLOutputDevice::SetAntiAliasing( bool )
-{
-	// nothing to do in base class...
-}
-
 wxPLPdfOutputDevice::wxPLPdfOutputDevice( wxPdfDocument &doc ) 
 	: wxPLOutputDevice(), m_pdf(doc)	
 {
@@ -17,7 +12,11 @@ wxPLPdfOutputDevice::wxPLPdfOutputDevice( wxPdfDocument &doc )
 	m_pen = m_brush = true;
 }
 
-	// Pure virtuals, to be implemented
+void wxPLPdfOutputDevice::SetAntiAliasing( bool )
+{
+	// nothing to do here for PDFs...
+}
+
 bool wxPLPdfOutputDevice::Equals( double a, double b ) const
 {
 	return ( wxRound(10.0*a) == wxRound(10.0*b) );
@@ -220,6 +219,7 @@ static void TranslatePen( wxPen *p, const wxColour &c, double size,
 {	
 	p->SetColour( c );
 	p->SetWidth( size < 1.0 ? 1 : ((int)size) );
+
 	switch( join )
 	{
 	case wxPLOutputDevice::MITER: p->SetJoin( wxJOIN_MITER ); break;
@@ -234,11 +234,11 @@ static void TranslatePen( wxPen *p, const wxColour &c, double size,
 	}
 	switch( line )
 	{
-	case wxPLOutputDevice::NONE: *p = *wxTRANSPARENT_PEN; break;
-	case wxPLOutputDevice::DOT: p->SetStyle( wxDOT ); break;
-	case wxPLOutputDevice::DASH: p->SetStyle( wxSHORT_DASH ); break;
-	case wxPLOutputDevice::DOTDASH: p->SetStyle( wxDOT_DASH ); break;
-	default: p->SetStyle( wxSOLID ); break;
+	case wxPLOutputDevice::NONE: p->SetStyle( wxPENSTYLE_TRANSPARENT ); break;
+	case wxPLOutputDevice::DOT: p->SetStyle( wxPENSTYLE_DOT ); break;
+	case wxPLOutputDevice::DASH: p->SetStyle( wxPENSTYLE_SHORT_DASH ); break;
+	case wxPLOutputDevice::DOTDASH: p->SetStyle( wxPENSTYLE_DOT_DASH ); break;
+	default: p->SetStyle( wxPENSTYLE_SOLID ); break;
 	}
 }
 
@@ -373,6 +373,7 @@ wxPLGraphicsOutputDevice::wxPLGraphicsOutputDevice( wxGraphicsContext *gc, const
 	Pen( *wxBLACK, 1, SOLID );
 	Brush( *wxBLACK, SOLID );
 	m_path = gc->CreatePath();
+	gc->SetFont( m_font0, *wxBLACK );
 }
 	
 void wxPLGraphicsOutputDevice::SetAntiAliasing( bool b )
@@ -382,7 +383,7 @@ void wxPLGraphicsOutputDevice::SetAntiAliasing( bool b )
 
 bool wxPLGraphicsOutputDevice::Equals( double a, double b ) const
 {
-	return ( wxRound(a) == wxRound(b) );
+	return ( wxRound(2.0*a) == wxRound(2.0*b) );
 }
 
 void wxPLGraphicsOutputDevice::Clip( double x, double y, double width, double height )
@@ -408,6 +409,12 @@ void wxPLGraphicsOutputDevice::Pen( const wxColour &c, double size,
 {
 	wxPen pen;
 	TranslatePen( &pen, c, m_scale*size, line, join, cap );
+
+	// smallest line in pixels supported by Direct2D graphics backend
+	// ref: http://trac.wxwidgets.org/changeset/77694/svn-wx
+	if ( line!=NONE && pen.GetWidth() < 1 ) 
+		pen.SetWidth( 1 );
+
 	m_gc->SetPen( pen );
 	m_pen = (line!=NONE);
 }

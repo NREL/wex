@@ -35,7 +35,7 @@ public:
 	enum Style { NONE, SOLID, DOT, DASH, DOTDASH, MITER, BEVEL, ROUND, BUTT, HATCH };
 	enum FillRule { ODD_EVEN_RULE, WINDING_RULE };
 
-	virtual void SetAntiAliasing( bool b );
+	virtual void SetAntiAliasing( bool b ) = 0;
 
 	// Pure virtuals, to be implemented
 	virtual bool Equals( double a, double b ) const = 0; // determine if two positions are equal for display purposes at native device resolution
@@ -81,6 +81,7 @@ class wxPLPdfOutputDevice : public wxPLOutputDevice
 
 public:
 	wxPLPdfOutputDevice( wxPdfDocument &doc );
+	virtual void SetAntiAliasing( bool );
 	virtual bool Equals( double a, double b ) const;
 	virtual void Clip( double x, double y, double width, double height );
 	virtual void Unclip();

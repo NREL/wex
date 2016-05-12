@@ -5,6 +5,7 @@
 #include <wx/window.h>
 #include <wx/menu.h>
 #include <wx/stream.h>
+#include <wx/graphics.h>
 
 #ifdef __WXOSX__
 #define PL_USE_OVERLAY 1
@@ -55,10 +56,9 @@ public:
 	// handle pdf,svg,bmp,jpg,png,xpm,tiff
 	bool Export( const wxString &file, int width=-1, int height=-1 );
 	bool ExportPdf( const wxString &file );
-	bool ExportSvg( const wxString &file );
 	wxBitmap GetBitmap( int width=-1, int height=-1 );
 	
-	void Render( wxDC &dc, wxRect geom );
+	void Render( wxGraphicsContext &gc, const wxFont &font, wxRect geom );
 
 protected:
 	virtual wxSize DoGetBestSize() const;

@@ -1060,11 +1060,12 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 			box.width -= m_legendRect.width;
 		}
 	}
+	
+	TITLE_FONT(dc);
 
 	// position and render title using cached layout if possible
 	if ( m_showTitle && !m_title.IsEmpty() )
 	{
-		TITLE_FONT(dc);
 		if ( m_titleLayout == 0 )
 			m_titleLayout = new wxPLTextLayout( dc, m_title, wxPLTextLayout::CENTER );
 
@@ -1272,7 +1273,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 		dc.Pen( m_gridColour, 0.5, 
 			wxPLOutputDevice::SOLID, wxPLOutputDevice::MITER, wxPLOutputDevice::BUTT );
 
-		if (is_cartesian)	DrawGrid( dc, wxPLAxis::TickData::LARGE );
+		if (is_cartesian) DrawGrid( dc, wxPLAxis::TickData::LARGE );
 		else DrawPolarGrid(dc, wxPLAxis::TickData::LARGE);
 	}
 
@@ -1413,7 +1414,9 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 void wxPLPlot::DrawGrid( wxPLOutputDevice &dc, wxPLAxis::TickData::TickSize size )
 {
 	if ( m_plotRects.size() < 1 ) return;
-	
+
+	dc.SetAntiAliasing( false );
+
 	axis_data *xgrid_axis = 0;
 	if ( m_x1.axis != 0 ) xgrid_axis = &m_x1;
 	else if (m_x2.axis != 0 ) xgrid_axis = &m_x2;
@@ -1450,7 +1453,7 @@ void wxPLPlot::DrawGrid( wxPLOutputDevice &dc, wxPLAxis::TickData::TickSize size
 					m_plotRects[0].x + m_plotRects[0].width, ypos );
 			}
 		}
-	}
+	}	
 }
 
 void wxPLPlot::DrawPolarGrid( wxPLOutputDevice &dc, wxPLAxis::TickData::TickSize size)

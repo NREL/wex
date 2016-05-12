@@ -457,7 +457,7 @@ void fcall_plotopt( lk::invoke_t &cxt )
 
 void fcall_plotout( lk::invoke_t &cxt )
 {
-	LK_DOC( "plotout", "Output the current plot to a file. Valid formats are png, bmp, jpg, xpm, pdf, svg.", "(string:file name):boolean" );
+	LK_DOC( "plotout", "Output the current plot to a file. Valid formats are png, bmp, jpg, pdf.", "(string:file name):boolean" );
 	wxPLPlotCtrl *plot = s_curPlot;
 	if (!plot) return;
 	
@@ -468,8 +468,6 @@ void fcall_plotout( lk::invoke_t &cxt )
 	bool ok = false;
 	if ( format == "pdf" ) 
 		ok = plot->ExportPdf( file );
-	else if ( format == "svg" )
-		ok = plot->ExportSvg( file );
 	else if ( format == "bmp" )
 		ok = plot->Export( file, wxBITMAP_TYPE_BMP );
 	else if ( format == "jpg" )
