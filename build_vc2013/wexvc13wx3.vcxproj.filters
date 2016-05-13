@@ -444,6 +444,9 @@
     <ClInclude Include="..\include\wex\clipper\clipper.h">
       <Filter>clipper\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\wex\plot\plsectorplot.h">
+      <Filter>plot\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
@@ -790,6 +793,9 @@
     </ClCompile>
     <ClCompile Include="..\src\clipper\clipper.cpp">
       <Filter>clipper\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\plot\plsectorplot.cpp">
+      <Filter>plot\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

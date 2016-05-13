@@ -38,6 +38,7 @@ OBJECTS = \
 	md5.o \
 	numeric.o \
 	mplcontour.o \
+	plsectorplot.o \
 	plcontourplot.o \
 	dvstatisticstablectrl.o \
 	dvautocolourassigner.o \

@@ -550,9 +550,9 @@ public:
 		int deci = Property("Decimals").GetInteger();
 		int pf = Property("Format").GetInteger();
 		
-		if( pf == 1 ) deci = wxNumericCtrl::GENERIC;
-		else if( pf == 2 ) deci = wxNumericCtrl::EXPONENTIAL;
-		else if( pf == 3 ) deci = wxNumericCtrl::HEXADECIMAL;
+		if( pf == 1 ) deci = wxNUMERIC_GENERIC;
+		else if( pf == 2 ) deci = wxNUMERIC_EXPONENTIAL;
+		else if( pf == 3 ) deci = wxNUMERIC_HEXADECIMAL;
 
 		return deci;
 	}
@@ -564,7 +564,7 @@ public:
 	}
 	virtual wxWindow *CreateNative( wxWindow *parent ) {		
 		wxNumericCtrl *num = new wxNumericCtrl( parent, wxID_ANY, Property("Value").GetDouble(), 
-			Property("Mode").GetInteger() == 0 ? wxNumericCtrl::INTEGER : wxNumericCtrl::REAL,
+			Property("Mode").GetInteger() == 0 ? wxNUMERIC_INTEGER : wxNUMERIC_REAL,
 			GetPosition(), GetSize() );
 		UpdateFormat( num );
 		num->SetForegroundColour( Property("ForeColour").GetColour() );
@@ -577,7 +577,7 @@ public:
 		if ( wxNumericCtrl *num = GetNative<wxNumericCtrl>() )
 		{
 			if ( id == "Value" ) num->SetValue( p->GetDouble() );
-			else if ( id == "Mode" ) num->SetMode( p->GetInteger()==0 ? wxNumericCtrl::INTEGER : wxNumericCtrl::REAL );
+			else if ( id == "Mode" ) num->SetMode( p->GetInteger()==0 ? wxNUMERIC_INTEGER : wxNUMERIC_REAL );
 			else if ( id == "Format" || id == "Decimals" || id == "Prefix" || id == "Suffix" || id == "ThousandsSep" ) UpdateFormat( num );
 			else if ( id == "ForeColour" ) num->SetForegroundColour( p->GetColour() );
 			else if ( id == "BackColour" ) num->SetBackgroundColour( p->GetColour() );
@@ -591,8 +591,8 @@ public:
 		dc.DrawRectangle( geom );
 		dc.SetFont( *wxNORMAL_FONT );
 		dc.SetTextForeground( Property("ForeColour").GetColour() );
-		wxString text = wxNumericCtrl::Format( Property("Value").GetDouble(),
-			Property("Mode").GetInteger() == 0 ? wxNumericCtrl::INTEGER : wxNumericCtrl::REAL,
+		wxString text = wxNumericFormat( Property("Value").GetDouble(),
+			Property("Mode").GetInteger() == 0 ? wxNUMERIC_INTEGER : wxNUMERIC_REAL,
 			GetDecimals(), Property("ThousandsSep").GetBoolean(),
 			Property("Prefix").GetString(), Property("Suffix").GetString() );
 
@@ -1522,13 +1522,13 @@ void wxUIPropertyEditor::SetObject( wxUIObject *obj )
 		switch( p.GetType() )
 		{
 		case wxUIProperty::DOUBLE:
-			editor = new wxNumericCtrl( this, wxID_ANY, 0.0, wxNumericCtrl::REAL );
+			editor = new wxNumericCtrl( this, wxID_ANY, 0.0, wxNUMERIC_REAL );
 			break;
 		case wxUIProperty::INTEGER:
 			if ( p.GetNamedOptions().Count() > 0 )
 				editor = new wxComboBox( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, p.GetNamedOptions(), wxCB_READONLY );
 			else
-				editor = new wxNumericCtrl( this, wxID_ANY, 0.0, wxNumericCtrl::INTEGER );
+				editor = new wxNumericCtrl( this, wxID_ANY, 0.0, wxNUMERIC_INTEGER );
 			break;
 		case wxUIProperty::STRING:
 			editor = new wxTextCtrl( this, wxID_ANY, wxEmptyString );

@@ -54,10 +54,12 @@ public:
 	void SetTickSizes( int smallsz, int largesz ) { m_smallTickSize = smallsz; m_largeTickSize = largesz; }
 	void GetTickSizes( int *smallsz, int *largesz ) { if (smallsz) *smallsz = m_smallTickSize; if (largesz) *largesz = m_largeTickSize; }
 
+	void Show( bool b ) { m_shown = b; }
+	bool IsShown() { return m_shown; }
 	void ShowLabel( bool label ) { m_showLabel = label; }
 	void ShowTickText( bool ticktext ) { m_showTickText = ticktext; }
-	bool IsLabelVisible() { return m_showLabel; }
-	bool IsTickTextVisible() { return m_showTickText; }
+	bool IsLabelVisible() { return m_shown&&m_showLabel; }
+	bool IsTickTextVisible() { return m_shown&&m_showTickText; }
 	
 	void SetReversed( bool rev ) { m_reversed = rev; }
 	bool IsReversed() const { return m_reversed; }
@@ -81,6 +83,7 @@ protected:
 	int m_smallTickSize;
 	int m_largeTickSize;
 	bool m_reversed;
+	bool m_shown;
 };
 
 

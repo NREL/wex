@@ -140,6 +140,10 @@ void wxPLPdfOutputDevice::Circle( double x, double y, double radius ) {
 	m_pdf.Circle( x, y, radius, 0.0, 360.0, GetDrawingStyle() );
 }
 
+void wxPLPdfOutputDevice::Sector( double x, double y, double radius, double angle1, double angle2 ) {
+	m_pdf.Sector( x, y, radius, angle1, angle2, GetDrawingStyle(), true, 90.0 );
+}
+
 void wxPLPdfOutputDevice::MoveTo( double x, double y )
 {
 	m_shape.MoveTo( x, y );
@@ -165,8 +169,9 @@ void wxPLPdfOutputDevice::Path( FillRule rule )
 }
 
 	
-void wxPLPdfOutputDevice::Font( double relpt, bool bold ) {
+void wxPLPdfOutputDevice::Font( double relpt, bool bold, const wxColour &col ) {
 	m_pdf.SetFontSize( m_fontPoint0 + relpt );
+	m_pdf.SetTextColour( col );
 	m_fontPoint = relpt;
 	m_fontBold = bold;
 }
@@ -468,6 +473,18 @@ void wxPLGraphicsOutputDevice::Circle( double x, double y, double radius )
 	m_gc->DrawPath( path );
 }
 
+void wxPLGraphicsOutputDevice::Sector( double x, double y, double radius, double angle1, double angle2 )
+{
+	double sa = (angle1-90.0)*M_PI/180.0;
+	double ea = (angle2-90.0)*M_PI/180.0;
+
+	wxGraphicsPath path = m_gc->CreatePath();
+	path.AddArc( SCALE(x), SCALE(y), SCALE(radius), sa, ea, true );
+	path.AddLineToPoint( SCALE(x), SCALE(y) );
+	m_gc->DrawPath( path );
+}
+
+
 void wxPLGraphicsOutputDevice::MoveTo( double x, double y )
 {
 	m_path.MoveToPoint( SCALE(x), SCALE(y) );
@@ -492,12 +509,12 @@ void wxPLGraphicsOutputDevice::Path( FillRule rule )
 	m_path = m_gc->CreatePath();
 }
 
-void wxPLGraphicsOutputDevice::Font( double relpt, bool bold )
+void wxPLGraphicsOutputDevice::Font( double relpt, bool bold, const wxColour &color )
 {
 	wxFont font( m_font0 );
 	if ( relpt != 0 ) font.SetPointSize( font.GetPointSize() + SCALE(relpt) );
 	font.SetWeight( bold ? wxFONTWEIGHT_BOLD : wxFONTWEIGHT_NORMAL );
-	m_gc->SetFont( font, *wxBLACK );
+	m_gc->SetFont( font, color );
 	m_fontSize = relpt;
 	m_fontBold = bold;
 }

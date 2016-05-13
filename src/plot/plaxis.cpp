@@ -27,6 +27,7 @@ wxPLAxis::wxPLAxis( double min, double max, const wxString &label )
 
 wxPLAxis::wxPLAxis( const wxPLAxis &rhs )
 {
+	m_shown = rhs.m_shown;
 	m_min = rhs.m_min;
 	m_max = rhs.m_max;
 	m_label = rhs.m_label;
@@ -40,6 +41,7 @@ wxPLAxis::wxPLAxis( const wxPLAxis &rhs )
 
 void wxPLAxis::Init()
 {
+	m_shown = true;
 	m_min = m_max = std::numeric_limits<double>::quiet_NaN();
 	m_showLabel = m_showTickText = true;
 	m_smallTickSize = 2;

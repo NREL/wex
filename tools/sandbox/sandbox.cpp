@@ -40,6 +40,7 @@ public:
 #include "wex/plot/plscatterplot.h"
 #include "wex/plot/plwindrose.h"
 #include "wex/plot/plcontourplot.h"
+#include "wex/plot/plsectorplot.h"
 
 #include "wex/dview/dvplotctrl.h"
 #include "wex/dview/dvselectionlist.h"
@@ -363,6 +364,37 @@ void TestContourPlot()
 	//plot->SetXAxis1( new wxPLLinearAxis( 0, np ) );	
 	//plot->SetYAxis1( new wxPLLinearAxis( 0, np ) );
 
+	frame->Show();
+}	
+void TestSectorPlot( wxWindow *parent )
+{
+	wxFrame *frame = new wxFrame(parent, wxID_ANY, wxT("Sector plots in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(500, 400));
+	wxPLPlotCtrl *plot = new wxPLPlotCtrl(frame, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+	//plot->SetBackgroundColour( *wxWHITE );
+	plot->SetTitle(wxT("Example sector plot for wind technologies in SAM"));
+	plot->ShowGrid( false, false );
+
+	wxPLSectorPlot *sec = new wxPLSectorPlot();
+	sec->AddSector( 17, "Rotor" );
+	sec->AddSector( 41, "Nacelle" );
+	sec->AddSector( 13, "Tower" );
+	sec->AddSector(  2, "Development" );
+	sec->AddSector(  1, "Engineering management" );
+	sec->AddSector(  3, "Foundation" );
+	sec->AddSector(  3, "Site access and staging" );
+	sec->AddSector(  2, "Assembly and installation" );
+	sec->AddSector(  9, "Electric infrastracture" );
+	sec->AddSector(  6, "Contingency" );
+	sec->AddSector(  3, "Construction finance" );
+
+	sec->AddInnerSector( 71, "Turbine\n71 %" );
+	sec->AddInnerSector( 20, "Balance\nof System\n20 %" );
+	sec->AddInnerSector(  9, "Financial\n9 %" );
+
+	sec->SetFormat( wxNUMERIC_REAL, wxNUMERIC_GENERIC, false, wxEmptyString, " %" );
+	plot->AddPlot( sec );
+	plot->ShowAxes( false );
+	plot->SetBorderWidth( 0 );
 	frame->Show();
 }
 
@@ -706,11 +738,11 @@ public:
 			return false;
 		
 		wxInitAllImageHandlers();
-		TestPLPlot( 0 );
+		//TestPLPlot( 0 );
 		//TestPLPolarPlot(0);
 		//TestPLBarPlot(0);
-
-		TestContourPlot();
+		TestSectorPlot(0);
+		//TestContourPlot();
 
 		//wxFrame *frmgl = new wxFrame( NULL, wxID_ANY, "GL Easy Test", wxDefaultPosition, wxSize(700,700) );
 		//new wxGLEasyCanvasTest( frmgl );
@@ -742,7 +774,7 @@ public:
 		rad->Add("Choice 2 ----- x ");
 		wxBoxSizer *sizer2 = new wxBoxSizer( wxHORIZONTAL );
 		sizer2->Add( rad, 1, wxALL|wxEXPAND, 10 );
-		sizer2->Add( new wxNumericCtrl( frame2, wxID_ANY, 1000000, wxNumericCtrl::UNSIGNED ), 0, wxALL|wxEXPAND, 10 );
+		sizer2->Add( new wxNumericCtrl( frame2, wxID_ANY, 1000000, wxNUMERIC_UNSIGNED ), 0, wxALL|wxEXPAND, 10 );
 		frame2->SetSizerAndFit( sizer2 );
 		frame2->Show();
 		wxSize size2( rad->GetBestSize() );

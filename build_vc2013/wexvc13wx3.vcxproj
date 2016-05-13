@@ -57,6 +57,7 @@
     <ClInclude Include="..\include\wex\plot\plcontourplot.h" />
     <ClInclude Include="..\include\wex\plot\ploutdev.h" />
     <ClInclude Include="..\include\wex\plot\plplot.h" />
+    <ClInclude Include="..\include\wex\plot\plsectorplot.h" />
     <ClInclude Include="..\include\wex\plot\pltext.h" />
     <ClInclude Include="..\include\wex\plot\plwindrose.h" />
     <ClInclude Include="..\include\wex\radiochoice.h" />
@@ -186,6 +187,7 @@
     <ClCompile Include="..\src\plot\plcontourplot.cpp" />
     <ClCompile Include="..\src\plot\ploutdev.cpp" />
     <ClCompile Include="..\src\plot\plplot.cpp" />
+    <ClCompile Include="..\src\plot\plsectorplot.cpp" />
     <ClCompile Include="..\src\plot\pltext.cpp" />
     <ClCompile Include="..\src\plot\plwindrose.cpp" />
     <ClCompile Include="..\src\plot\qhull\geom.c" />

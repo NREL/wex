@@ -616,6 +616,7 @@ wxPLPlot::wxPLPlot()
 	for ( size_t i=0;i<4;i++ )
 		m_sideWidgets[i] = 0;
 
+	m_borderWidth = 0.5;
 	m_showLegend = true;
 	m_showLegendBorder = true;
 	m_showCoarseGrid = true;
@@ -996,6 +997,20 @@ void wxPLPlot::WriteDataAsText( wxUniChar sep, wxOutputStream &os, bool visible_
 	}
 }
 
+void wxPLPlot::ShowAxes( bool b )
+{
+	if ( m_x1.axis ) m_x1.axis->Show( b );
+	if ( m_x2.axis ) m_x2.axis->Show( b );
+	
+	for ( size_t pp = 0; pp < NPLOTPOS; pp++ )
+	{
+		if ( m_y1[pp].axis ) m_y1[pp].axis->Show( b );
+		if ( m_y2[pp].axis ) m_y2[pp].axis->Show( b );
+	}
+
+	Invalidate();
+}
+
 
 void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 {
@@ -1090,7 +1105,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 
 	// determine sizes of axis labels
 
-	if ( m_x2.axis && m_x2.axis->IsLabelVisible() && !m_x2.axis->GetLabel().IsEmpty() )
+	if ( m_x2.axis && m_x2.axis->IsShown() && m_x2.axis->IsLabelVisible() && !m_x2.axis->GetLabel().IsEmpty() )
 	{
 		if ( m_x2.label == 0 )
 			m_x2.label = new wxPLTextLayout( dc, m_x2.axis->GetLabel(), wxPLTextLayout::CENTER );
@@ -1099,7 +1114,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 		box.height -= m_x2.label->Height() + text_space;
 	}
 
-	if ( m_x1.axis && m_x1.axis->IsLabelVisible() && !m_x1.axis->GetLabel().IsEmpty() )
+	if ( m_x1.axis && m_x1.axis->IsShown() && m_x1.axis->IsLabelVisible() && !m_x1.axis->GetLabel().IsEmpty() )
 	{
 		if ( m_x1.label == 0 )
 			m_x1.label = new wxPLTextLayout( dc, m_x1.axis->GetLabel(), wxPLTextLayout::CENTER );
@@ -1110,7 +1125,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 	double yleft_max_label_width = 0, yright_max_label_width = 0;
 	for ( size_t pp = 0; pp < NPLOTPOS; pp++ )
 	{
-		if (m_y1[pp].axis && m_y1[pp].axis->IsLabelVisible() && !m_y1[pp].axis->GetLabel().IsEmpty() )
+		if (m_y1[pp].axis && m_y1[pp].axis->IsShown() && m_y1[pp].axis->IsLabelVisible() && !m_y1[pp].axis->GetLabel().IsEmpty() )
 		{
 			if ( m_y1[pp].label == 0 )
 				m_y1[pp].label = new wxPLTextLayout( dc, m_y1[pp].axis->GetLabel(), wxPLTextLayout::CENTER );
@@ -1119,7 +1134,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 				yleft_max_label_width = m_y1[pp].label->Height();
 		}
 
-		if (m_y2[pp].axis && m_y2[pp].axis->IsLabelVisible() && !m_y2[pp].axis->GetLabel().IsEmpty() )
+		if (m_y2[pp].axis && m_y2[pp].axis->IsShown() && m_y2[pp].axis->IsLabelVisible() && !m_y2[pp].axis->GetLabel().IsEmpty() )
 		{
 			if ( m_y2[pp].label == 0 )
 				m_y2[pp].label = new wxPLTextLayout( dc, m_y2[pp].axis->GetLabel(), wxPLTextLayout::CENTER );
@@ -1146,7 +1161,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 	// invalidated on a resize even.t, or when an axis is changed
 
 	AXIS_FONT(dc);	
-	if ( m_x2.axis != 0 )
+	if ( m_x2.axis != 0 && m_x2.axis->IsShown() )
 	{
 		if ( m_x2.layout == 0 )
 			m_x2.layout = new axis_layout( X_TOP, dc, m_x2.axis, box.x, box.x+box.width );
@@ -1176,7 +1191,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 		is_cartesian = false;
 
 
-	if ( m_x1.axis != 0 )
+	if ( m_x1.axis != 0 && m_x1.axis->IsShown() )
 	{
 		if (is_cartesian) {
 			if (m_x1.layout == 0)
@@ -1200,7 +1215,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 	double yleft_max_axis_width = 0, yright_max_axis_width = 0;
 	for ( size_t pp=0;pp<NPLOTPOS;pp++)
 	{
-		if ( m_y1[pp].axis != 0 )
+		if ( m_y1[pp].axis != 0 && m_y1[pp].axis->IsShown() )
 		{
 			if (m_y1[pp].layout == 0) {
 				if (is_cartesian)
@@ -1217,7 +1232,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 				yleft_max_axis_width = m_y1[pp].layout->bounds().x;
 		}
 
-		if ( m_y2[pp].axis != 0 )
+		if ( m_y2[pp].axis != 0 && m_y1[pp].axis->IsShown() )
 		{
 			if ( m_y2[pp].layout == 0 )
 				m_y2[pp].layout = new axis_layout( Y_RIGHT, dc, m_y2[pp].axis, box.y+box.height, box.y );
@@ -1315,7 +1330,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 	// draw some axes
 	AXIS_FONT(dc);
 	dc.Pen( m_axisColour, 0.5 );	
-	if ( m_x2.axis )
+	if ( m_x2.axis && m_x2.axis->IsShown() )
 		m_x2.layout->render( dc, m_plotRects[0].y, m_x2.axis, 
 			box.x, box.x+box.width, 
 			m_x1.axis == 0 ? m_plotRects[nyaxes-1].y+m_plotRects[nyaxes-1].height : -1 );
@@ -1328,7 +1343,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 	// render y axes
 	for ( size_t pp=0;pp<nyaxes; pp++ )
 	{
-		if (m_y1[pp].axis != 0) {
+		if (m_y1[pp].axis != 0 && m_y1[pp].axis->IsShown() ) {
 			if (is_cartesian)
 				m_y1[pp].layout->render( dc, box.x, m_y1[pp].axis, 
 					m_plotRects[pp].y + m_plotRects[pp].height,  m_plotRects[pp].y,
@@ -1339,14 +1354,14 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 					-1 );
 		}
 		
-		if ( m_y2[pp].axis != 0 )
+		if ( m_y2[pp].axis != 0 && m_y2[pp].axis->IsShown() )
 			m_y2[pp].layout->render( dc, box.x+box.width, m_y2[pp].axis, 
 				m_plotRects[pp].y + m_plotRects[pp].height,  m_plotRects[pp].y,
 				-1 /* m_y1[pp].axis == 0 ? box.x : -1 */ );
 	}
 
 	// render x1 axis (or angular axis on polar plots)
-	if (m_x1.axis) {
+	if (m_x1.axis && m_x1.axis->IsShown() ) {
 		if (is_cartesian)
 			m_x1.layout->render(dc, m_plotRects[nyaxes - 1].y + m_plotRects[nyaxes - 1].height, m_x1.axis,
 				box.x, box.x + box.width,
@@ -1355,22 +1370,26 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 			m_x1.layout->render(dc, pp_radius, m_x1.axis, pp_center.x, pp_center.y, -1);
 	}
 
-	// draw boundaries around plots
-	if (is_cartesian) {
-		for (size_t pp = 0; pp < nyaxes; pp++)
-		{
-			dc.Line(m_plotRects[pp].x, m_plotRects[pp].y, m_plotRects[pp].x + m_plotRects[pp].width, m_plotRects[pp].y);
-			dc.Line(m_plotRects[pp].x, m_plotRects[pp].y, m_plotRects[pp].x, m_plotRects[pp].y + m_plotRects[pp].height);
-			dc.Line(m_plotRects[pp].x, m_plotRects[pp].y + m_plotRects[pp].height, m_plotRects[pp].x + m_plotRects[pp].width, m_plotRects[pp].y + m_plotRects[pp].height);
-			dc.Line(m_plotRects[pp].x + m_plotRects[pp].width, m_plotRects[pp].y, m_plotRects[pp].x + m_plotRects[pp].width, m_plotRects[pp].y + m_plotRects[pp].height);
+	if ( m_borderWidth > 0 )
+	{
+		dc.Pen( m_axisColour, m_borderWidth );
+		// draw boundaries around plots
+		if (is_cartesian) {
+			for (size_t pp = 0; pp < nyaxes; pp++)
+			{
+				dc.Line(m_plotRects[pp].x, m_plotRects[pp].y, m_plotRects[pp].x + m_plotRects[pp].width, m_plotRects[pp].y);
+				dc.Line(m_plotRects[pp].x, m_plotRects[pp].y, m_plotRects[pp].x, m_plotRects[pp].y + m_plotRects[pp].height);
+				dc.Line(m_plotRects[pp].x, m_plotRects[pp].y + m_plotRects[pp].height, m_plotRects[pp].x + m_plotRects[pp].width, m_plotRects[pp].y + m_plotRects[pp].height);
+				dc.Line(m_plotRects[pp].x + m_plotRects[pp].width, m_plotRects[pp].y, m_plotRects[pp].x + m_plotRects[pp].width, m_plotRects[pp].y + m_plotRects[pp].height);
+			}
 		}
-	}
-	else {
-		dc.Line(pp_center.x-pp_radius,pp_center.y,pp_center.x+pp_radius,pp_center.y);
-		dc.Line(pp_center.x, pp_center.y + pp_radius, pp_center.x, pp_center.y - pp_radius);
+		else {
+			dc.Line(pp_center.x-pp_radius,pp_center.y,pp_center.x+pp_radius,pp_center.y);
+			dc.Line(pp_center.x, pp_center.y + pp_radius, pp_center.x, pp_center.y - pp_radius);
 
-		dc.NoBrush();
-		dc.Circle(pp_center, pp_radius);
+			dc.NoBrush();
+			dc.Circle(pp_center, pp_radius);
+		}
 	}
 
 
@@ -1958,7 +1977,7 @@ wxArrayString wxPLPlot::ListAvailablePdfFonts()
 }
 
 static wxString s_pdfDefaultFontFace("Helvetica");
-static double s_pdfDefaultFontPoints = 12.0;
+static double s_pdfDefaultFontPoints = 10.0;
 
 static void EnsureStandardPdfFontPaths()
 {
@@ -2022,7 +2041,7 @@ bool wxPLPlot::RenderPdf( const wxString &file, double width, double height )
 	Invalidate();
 
 	wxPLPdfOutputDevice dc(doc);
-	Render( dc, wxPLRealRect( 3, 3, width-6, height-6 ) );
+	Render( dc, wxPLRealRect( 2, 2, width-4, height-4 ) );
 		
 	Invalidate();
 		

@@ -5,24 +5,29 @@
 
 #define EVT_NUMERIC(id, func) EVT_TEXT_ENTER(id, func)
 
+enum wxNumericMode { wxNUMERIC_INTEGER, wxNUMERIC_UNSIGNED, wxNUMERIC_REAL };
+#define wxNUMERIC_GENERIC (-1)
+#define wxNUMERIC_EXPONENTIAL (-2)
+#define wxNUMERIC_HEXADECIMAL (-3) // only integer mode
+
+wxString wxNumericFormat( double val, wxNumericMode m, int deci, 
+	bool thousep, const wxString &pre, const wxString &post );
+
+
 class wxNumericCtrl : public wxTextCtrl
 {
 public:
 	// restrict to integers if desired
-	enum Mode { INTEGER, UNSIGNED, REAL };
 
 	// formatting decimals
-	static const int GENERIC = -1;
-	static const int EXPONENTIAL = -2;
-	static const int HEXADECIMAL = -3; // only integer mode
 
 	wxNumericCtrl( wxWindow *parent, int id = wxID_ANY, 
-		double value = 0.0, Mode m = REAL,
+		double value = 0.0, wxNumericMode m = wxNUMERIC_REAL,
 		const wxPoint &pos = wxDefaultPosition,
 		const wxSize &size = wxDefaultSize );
 
-	void SetMode( Mode m );
-	Mode GetMode() const { return m_mode; }
+	void SetMode( wxNumericMode m );
+	wxNumericMode GetMode() const { return m_mode; }
 	
 	void SetValue( int val );
 	void SetValue( size_t val );
@@ -49,8 +54,6 @@ public:
 	wxString GetPrefixText() const { return m_preText; }
 	wxString GetSuffixText() const { return m_postText; }
 
-	static wxString Format( double val, Mode m, int deci, bool thousep, const wxString &pre, const wxString &post );
-
 private:
 	void OnTextEnter( wxCommandEvent & );
 	void OnSetFocus( wxFocusEvent & );
@@ -60,7 +63,7 @@ private:
 	void Translate();
 	void SetupValidator();
 	
-	Mode m_mode;
+	wxNumericMode m_mode;
 	int m_decimals;
 	bool m_thouSep;
 	wxString m_preText;

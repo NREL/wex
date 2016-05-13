@@ -10,7 +10,7 @@ BEGIN_EVENT_TABLE( wxNumericCtrl, wxTextCtrl )
 END_EVENT_TABLE()
 
 wxNumericCtrl::wxNumericCtrl( wxWindow *parent, int id, 
-		double value, Mode m,
+		double value, wxNumericMode m,
 		const wxPoint &pos,
 		const wxSize &size )
 	: wxTextCtrl(parent, id, wxEmptyString, pos, size, 
@@ -18,7 +18,7 @@ wxNumericCtrl::wxNumericCtrl( wxWindow *parent, int id,
 {
 	m_min = m_max = 0.0;
 	m_mode = m;
-	m_decimals = GENERIC;
+	m_decimals = wxNUMERIC_GENERIC;
 	m_thouSep = false;
 	
 	SetupValidator();
@@ -62,14 +62,14 @@ void wxNumericCtrl::SetupValidator()
 	wxArrayString excludes;
 	excludes.Add( wxString(wxChar(',')) ); // thousands separator
 
-	if ( m_mode == INTEGER || m_mode == UNSIGNED )
+	if ( m_mode == wxNUMERIC_INTEGER || m_mode == wxNUMERIC_UNSIGNED )
 	{
 		excludes.Add("+");
 		excludes.Add("e");
 		excludes.Add("E");
 		excludes.Add(".");
 		
-		if ( m_mode == UNSIGNED )
+		if ( m_mode == wxNUMERIC_UNSIGNED )
 			excludes.Add( '-' );
 	}
 
@@ -79,10 +79,10 @@ void wxNumericCtrl::SetupValidator()
 	SetValidator( val );
 }
 
-static bool is_valid_char( wxNumericCtrl::Mode mode, wxUniChar c, bool additional, wxUniChar c1 )
+static bool is_valid_char( wxNumericMode mode, wxUniChar c, bool additional, wxUniChar c1 )
 {
-	if ( mode == wxNumericCtrl::INTEGER ) return wxIsdigit(c) || c == '-' || c=='+' || (additional && c == c1);
-	else if ( mode == wxNumericCtrl::UNSIGNED ) return wxIsdigit(c) || (additional && c == c1);
+	if ( mode == wxNUMERIC_INTEGER ) return wxIsdigit(c) || c == '-' || c=='+' || (additional && c == c1);
+	else if ( mode == wxNUMERIC_UNSIGNED ) return wxIsdigit(c) || (additional && c == c1);
 	else return wxIsdigit(c) || c == '-' || c=='+' || c == '.' || c == 'e' || c == 'E' || (additional && c == c1);
 }
 
@@ -97,7 +97,7 @@ void wxNumericCtrl::Translate()
 
 	// find start of number (all numbers start like integers or a dot)
 	i=0;
-	while(i<len && !is_valid_char( m_mode == UNSIGNED ? UNSIGNED : INTEGER,
+	while(i<len && !is_valid_char( m_mode == wxNUMERIC_UNSIGNED ? wxNUMERIC_UNSIGNED : wxNUMERIC_INTEGER,
 									strval[i], true, decimsep) )
 		i++;
 	
@@ -110,8 +110,8 @@ void wxNumericCtrl::Translate()
 		i++;
 	}
 
-	if ( m_mode == INTEGER ) SetValue( (int)wxAtoi(buf) );
-	else if ( m_mode == UNSIGNED )
+	if ( m_mode == wxNUMERIC_INTEGER ) SetValue( (int)wxAtoi(buf) );
+	else if ( m_mode == wxNUMERIC_UNSIGNED )
 	{
 		char *pEnd = 0;
 		unsigned long long xval = strtoull( buf.c_str(), &pEnd, 10 );
@@ -150,23 +150,23 @@ static void AddThousandsSeparators(wxString& s)
     }
 }
 
-template<typename T> static wxString format_number( T val, wxNumericCtrl::Mode mode, int deci, bool thousep, const wxString &pre, const wxString &post )
+template<typename T> static wxString format_number( T val, wxNumericMode mode, int deci, bool thousep, const wxString &pre, const wxString &post )
 {
 	wxString buf;
 
 
-	if ( mode == wxNumericCtrl::INTEGER )
+	if ( mode == wxNUMERIC_INTEGER )
 	{
-		if ( deci == wxNumericCtrl::HEXADECIMAL ) buf.Printf( "0x%llx", (unsigned long long)val );
+		if ( deci == wxNUMERIC_HEXADECIMAL ) buf.Printf( "0x%llx", (unsigned long long)val );
 		else
 		{
 			buf.Printf( "%d", (int)val );
 			if ( thousep ) AddThousandsSeparators( buf );
 		}
 	}
-	else if ( mode == wxNumericCtrl::UNSIGNED )
+	else if ( mode == wxNUMERIC_UNSIGNED )
 	{
-		if ( deci == wxNumericCtrl::HEXADECIMAL ) buf.Printf( "0x%llx", (unsigned long long)val );
+		if ( deci == wxNUMERIC_HEXADECIMAL ) buf.Printf( "0x%llx", (unsigned long long)val );
 		else
 		{
 			buf.Printf( "%llu", (unsigned long long)val );
@@ -177,8 +177,8 @@ template<typename T> static wxString format_number( T val, wxNumericCtrl::Mode m
 	{
 		if ( std::isnan((double)val) ) return "NaN";
 		if ( std::isinf((double)val) ) return "Inf";
-		if ( deci == wxNumericCtrl::GENERIC ) buf.Printf( "%lg", (double)val );
-		else if ( deci == wxNumericCtrl::EXPONENTIAL ) buf.Printf( "%le", (double)val );
+		if ( deci == wxNUMERIC_GENERIC ) buf.Printf( "%lg", (double)val );
+		else if ( deci == wxNUMERIC_EXPONENTIAL ) buf.Printf( "%le", (double)val );
 		else
 		{
 			wxString fmt;
@@ -191,7 +191,7 @@ template<typename T> static wxString format_number( T val, wxNumericCtrl::Mode m
 	return pre + buf + post;
 }
 
-wxString wxNumericCtrl::Format( double val, Mode mode, int deci, bool thousep, const wxString &pre, const wxString &post )
+wxString wxNumericFormat( double val, wxNumericMode mode, int deci, bool thousep, const wxString &pre, const wxString &post )
 {
 	return format_number<double>( val, mode, deci, thousep, pre, post );
 }
@@ -199,8 +199,8 @@ wxString wxNumericCtrl::Format( double val, Mode mode, int deci, bool thousep, c
 void wxNumericCtrl::DoFormat()
 {	
 	wxString text;
-	if ( m_mode == INTEGER ) text = format_number<int>( m_value.Int, m_mode, m_decimals, m_thouSep, m_preText, m_postText);
-	else if ( m_mode == UNSIGNED ) text = format_number<size_t>( m_value.Unsigned, m_mode, m_decimals, m_thouSep, m_preText, m_postText );
+	if ( m_mode == wxNUMERIC_INTEGER ) text = format_number<int>( m_value.Int, m_mode, m_decimals, m_thouSep, m_preText, m_postText);
+	else if ( m_mode == wxNUMERIC_UNSIGNED ) text = format_number<size_t>( m_value.Unsigned, m_mode, m_decimals, m_thouSep, m_preText, m_postText );
 	else text = format_number<double>( m_value.Real, m_mode, m_decimals, m_thouSep, m_preText, m_postText );
 
 	ChangeValue( text );
@@ -210,8 +210,8 @@ void wxNumericCtrl::SetRange( double min, double max )
 {
 	m_min = min;
 	m_max = max;
-	if ( m_mode == INTEGER ) SetValue( m_value.Int );
-	else if ( m_mode == UNSIGNED ) SetValue( m_value.Unsigned );
+	if ( m_mode == wxNUMERIC_INTEGER ) SetValue( m_value.Int );
+	else if ( m_mode == wxNUMERIC_UNSIGNED ) SetValue( m_value.Unsigned );
 	else SetValue( m_value.Real );
 }
 
@@ -226,8 +226,8 @@ template<typename T> static void set_clamp( T &val, T newval, double min, double
 	}
 }
 
-#define DO_SET_VALUE 	if ( m_mode == INTEGER ) set_clamp<int>( m_value.Int, (int)val, m_min, m_max ); \
-						else if ( m_mode == UNSIGNED ) set_clamp<size_t>( m_value.Unsigned, (size_t)val, m_min, m_max ); \
+#define DO_SET_VALUE 	if ( m_mode == wxNUMERIC_INTEGER ) set_clamp<int>( m_value.Int, (int)val, m_min, m_max ); \
+						else if ( m_mode == wxNUMERIC_UNSIGNED ) set_clamp<size_t>( m_value.Unsigned, (size_t)val, m_min, m_max ); \
 						else set_clamp<double>( m_value.Real, (double)val, m_min, m_max ); \
 						DoFormat();
 
@@ -254,45 +254,45 @@ double wxNumericCtrl::Value() const
 
 double wxNumericCtrl::AsDouble() const
 {
-	if ( m_mode == INTEGER ) return (double)m_value.Int;
-	else if ( m_mode == UNSIGNED ) return (double)m_value.Unsigned;
+	if ( m_mode == wxNUMERIC_INTEGER ) return (double)m_value.Int;
+	else if ( m_mode == wxNUMERIC_UNSIGNED ) return (double)m_value.Unsigned;
 	else return m_value.Real;
 }
 
 int wxNumericCtrl::AsInteger() const
 {
-	if ( m_mode == INTEGER ) return m_value.Int;
-	else if ( m_mode == UNSIGNED ) return (int)m_value.Unsigned;
+	if ( m_mode == wxNUMERIC_INTEGER ) return m_value.Int;
+	else if ( m_mode == wxNUMERIC_UNSIGNED ) return (int)m_value.Unsigned;
 	else return (int)m_value.Real;
 }
 
 size_t wxNumericCtrl::AsUnsigned() const
 {
-	if ( m_mode == INTEGER ) return (size_t)m_value.Int;
-	else if ( m_mode == UNSIGNED ) return m_value.Unsigned;
+	if ( m_mode == wxNUMERIC_INTEGER ) return (size_t)m_value.Int;
+	else if ( m_mode == wxNUMERIC_UNSIGNED ) return m_value.Unsigned;
 	else return (size_t)m_value.Real;
 }
 
-void wxNumericCtrl::SetMode( Mode m )
+void wxNumericCtrl::SetMode( wxNumericMode m )
 {
 	if ( m == m_mode ) return;
 
 	ValueType old = m_value;
 
-	if ( m_mode == INTEGER )
+	if ( m_mode == wxNUMERIC_INTEGER )
 	{
-		if ( m == UNSIGNED ) m_value.Unsigned = (size_t)old.Int;
-		else if ( m == REAL ) m_value.Real = (double)old.Int;
+		if ( m == wxNUMERIC_UNSIGNED ) m_value.Unsigned = (size_t)old.Int;
+		else if ( m == wxNUMERIC_REAL ) m_value.Real = (double)old.Int;
 	}
-	else if ( m_mode == UNSIGNED )
+	else if ( m_mode == wxNUMERIC_UNSIGNED )
 	{
-		if ( m == INTEGER ) m_value.Int = (int)old.Unsigned;
-		else if ( m == REAL ) m_value.Real = (double)old.Unsigned;
+		if ( m == wxNUMERIC_INTEGER ) m_value.Int = (int)old.Unsigned;
+		else if ( m == wxNUMERIC_REAL ) m_value.Real = (double)old.Unsigned;
 	}
 	else 
 	{
-		if ( m == INTEGER ) m_value.Int = (int)old.Real;
-		else if ( m == UNSIGNED ) m_value.Unsigned = (size_t)old.Real;
+		if ( m == wxNUMERIC_INTEGER ) m_value.Int = (int)old.Real;
+		else if ( m == wxNUMERIC_UNSIGNED ) m_value.Unsigned = (size_t)old.Real;
 	}
 
 	m_mode = m;

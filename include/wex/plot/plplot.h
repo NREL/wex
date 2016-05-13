@@ -136,6 +136,8 @@ public:
 	void SetAxis( wxPLAxis *a, AxisPos axispos, PlotPos ppos = PLOT_TOP );
 	
 	
+	void SetBorderWidth( double b=0.5 ) { m_borderWidth = b; } // zero is OK to hide plot borders
+	void ShowAxes( bool b );
 	void ShowGrid( bool coarse, bool fine ) { m_showCoarseGrid = coarse; m_showFineGrid = fine; }
 	void ShowCoarseGrid( bool coarse ) { m_showCoarseGrid = coarse; }
 	void ShowFineGrid( bool fine ) { m_showFineGrid = fine; }
@@ -198,7 +200,7 @@ private:
 	void DrawPolarGrid(wxPLOutputDevice &dc, wxPLAxis::TickData::TickSize size);
 
 
-
+	double m_borderWidth;
 	bool m_showLegend;
 	bool m_showLegendBorder;
 	bool m_showCoarseGrid;

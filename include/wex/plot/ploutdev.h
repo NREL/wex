@@ -49,13 +49,14 @@ public:
 	virtual void Polygon( size_t n, const wxRealPoint *pts, FillRule rule = ODD_EVEN_RULE ) = 0;
 	virtual void Rect( double x, double y, double width, double height )  = 0;	
 	virtual void Circle( double x, double y, double radius ) = 0;
+	virtual void Sector( double x, double y, double radius, double angle1, double angle2 ) = 0;
 
 	virtual void MoveTo( double x, double y ) = 0;
 	virtual void LineTo( double x, double y ) = 0;
 	virtual void CloseSubPath() = 0;
 	virtual void Path( FillRule rule = WINDING_RULE ) = 0;
 	
-	virtual void Font( double relpt = 0, bool bold = false ) = 0;
+	virtual void Font( double relpt = 0, bool bold = false, const wxColour &c = *wxBLACK ) = 0;
 	virtual void Font( double *rel, bool *bld ) const = 0;
 	virtual void Text( const wxString &text, double x, double y,  double angle=0 ) = 0;
 	virtual void Measure( const wxString &text, double *width, double *height ) = 0;
@@ -91,12 +92,13 @@ public:
 	virtual void Lines( size_t n, const wxRealPoint *pts );
 	virtual void Polygon( size_t n, const wxRealPoint *pts, FillRule rule = ODD_EVEN_RULE );
 	virtual void Rect( double x, double y, double width, double height );
-	virtual void Circle( double x, double y, double radius );	
+	virtual void Circle( double x, double y, double radius );
+	virtual void Sector( double x, double y, double radius, double angle1, double angle2 );
 	virtual void MoveTo( double x, double y );
 	virtual void LineTo( double x, double y );
 	virtual void CloseSubPath();
 	virtual void Path( FillRule rule = WINDING_RULE );
-	virtual void Font( double relpt = 0, bool bold = false );
+	virtual void Font( double relpt = 0, bool bold = false, const wxColour &c = *wxBLACK );
 	virtual void Font( double *rel, bool *bld ) const;
 	virtual void Text( const wxString &text, double x, double y,  double angle=0 );
 	virtual void Measure( const wxString &text, double *width, double *height );
@@ -165,11 +167,12 @@ public:
 	virtual void Polygon( size_t n, const wxRealPoint *pts, FillRule rule = ODD_EVEN_RULE );
 	virtual void Rect( double x, double y, double width, double height );
 	virtual void Circle( double x, double y, double radius );
+	virtual void Sector( double x, double y, double radius, double angle1, double angle2 );
 	virtual void MoveTo( double x, double y );
 	virtual void LineTo( double x, double y );
 	virtual void CloseSubPath();
 	virtual void Path( FillRule rule = WINDING_RULE );
-	virtual void Font( double relpt = 0, bool bold = false );
+	virtual void Font( double relpt = 0, bool bold = false, const wxColour &c = *wxBLACK );
 	virtual void Font( double *rel, bool *bld ) const;
 	virtual void Text( const wxString &text, double x, double y, double angle=0 );
 	virtual void Measure( const wxString &text, double *width, double *height );
