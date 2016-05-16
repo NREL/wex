@@ -1,4 +1,5 @@
 #include <vector>
+#include <math.h>
 #include <wex/pdf/pdfdoc.h>
 #include <wex/pdf/pdffont.h>
 #include <wex/plot/ploutdev.h>
@@ -6,7 +7,7 @@
 wxPLPdfOutputDevice::wxPLPdfOutputDevice( wxPdfDocument &doc ) 
 	: wxPLOutputDevice(), m_pdf(doc)	
 {
-	m_fontPoint = 0;
+	m_fontRelSize = 0;
 	m_fontPoint0 = m_pdf.GetFontSize();
 	m_fontBold = (m_pdf.GetFontStyles() & wxPDF_FONTSTYLE_BOLD) ? true : false;
 	m_pen = m_brush = true;
@@ -172,12 +173,12 @@ void wxPLPdfOutputDevice::Path( FillRule rule )
 void wxPLPdfOutputDevice::Font( double relpt, bool bold, const wxColour &col ) {
 	m_pdf.SetFontSize( m_fontPoint0 + relpt );
 	m_pdf.SetTextColour( col );
-	m_fontPoint = relpt;
+	m_fontRelSize = relpt;
 	m_fontBold = bold;
 }
 
 void wxPLPdfOutputDevice::Font( double *rel, bool *bld ) const {
-	if ( rel ) *rel = m_fontPoint;
+	if ( rel ) *rel = m_fontRelSize;
 	if ( bld ) *bld = m_fontBold;
 }
 
@@ -538,7 +539,7 @@ void wxPLGraphicsOutputDevice::Measure( const wxString &text, double *width, dou
     m_gc->GetTextExtent( text, &w, &h, &d, &e );
 
     if ( height )
-        *height = (wxCoord)(h+0.5);
+        *height = (wxCoord)(h+0.5)/m_scale;
     
 	//if ( descent )
     //    *descent = (wxCoord)(d+0.5);
@@ -546,5 +547,5 @@ void wxPLGraphicsOutputDevice::Measure( const wxString &text, double *width, dou
     //    *externalLeading = (wxCoord)(e+0.5);
 
     if ( width )
-        *width = (wxCoord)(w+0.5);
+        *width = (wxCoord)(w+0.5)/m_scale;
 }

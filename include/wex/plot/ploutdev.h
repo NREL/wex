@@ -74,7 +74,7 @@ public:
 
 class wxPLPdfOutputDevice : public wxPLOutputDevice
 {
-	double m_fontPoint0, m_fontPoint;
+	double m_fontPoint0, m_fontRelSize;
 	bool m_fontBold;
 	bool m_pen, m_brush;
 	wxPdfDocument &m_pdf;

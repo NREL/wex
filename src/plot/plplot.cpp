@@ -2027,6 +2027,7 @@ bool wxPLPlot::RenderPdf( const wxString &file, double width, double height )
 
 	wxPdfDocument doc( wxPORTRAIT, "pt", wxPAPER_A5 );
 	doc.AddPage( wxPORTRAIT, width, height );
+	double scale = doc.GetScaleFactor();
 
 	if ( !IsBuiltinPdfFont( s_pdfDefaultFontFace ) )
 	{
@@ -2038,6 +2039,8 @@ bool wxPLPlot::RenderPdf( const wxString &file, double width, double height )
 	else
 		doc.SetFont( s_pdfDefaultFontFace, wxPDF_FONTSTYLE_REGULAR, s_pdfDefaultFontPoints );
 	
+	doc.SetFontSize( s_pdfDefaultFontPoints );
+
 	Invalidate();
 
 	wxPLPdfOutputDevice dc(doc);

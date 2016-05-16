@@ -6,6 +6,7 @@
 #include <wx/numformatter.h>
 #include <wx/grid.h>
 #include <wx/zstream.h>
+#include <wx/dynlib.h>
 
 #include "wex/icons/time.cpng"
 #include "wex/icons/dmap.cpng"
@@ -736,6 +737,15 @@ public:
 	{
 		if ( !wxApp::OnInit() )
 			return false;
+
+#ifdef __WXMSW__
+		typedef BOOL (WINAPI *SetProcessDPIAware_t)(void); 
+		wxDynamicLibrary dllUser32(wxT("user32.dll")); 
+		SetProcessDPIAware_t pfnSetProcessDPIAware = 
+			(SetProcessDPIAware_t)dllUser32.RawGetSymbol(wxT("SetProcessDPIAware")); 
+		if ( pfnSetProcessDPIAware ) 
+			pfnSetProcessDPIAware(); 
+#endif
 		
 		wxInitAllImageHandlers();
 		//TestPLPlot( 0 );
