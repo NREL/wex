@@ -144,9 +144,35 @@ void wxPLLinePlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 	for ( size_t i = 0; i<len; i++ )
 	{
 		wxRealPoint pt( At(i) );
+
+		bool has_next = ( i+1 < len );
+		wxRealPoint next;
+		if ( has_next )
+		{
+			next = At(i+1);
+			if ( wxIsNaN( next.x ) )
+				has_next = false;
+		}
+
+		bool has_prev = ( i > 0 );
+		wxRealPoint prev;
+		if ( has_prev )
+		{
+			prev = At(i-1);
+			if ( wxIsNaN( prev.x ) )
+				has_prev = false;
+		}
+
 		bool nanval = wxIsNaN( pt.x ) || wxIsNaN( pt.y );
-		if ( !nanval && pt.x >= wmin.x && pt.x <= wmax.x )
-			points.push_back(map.ToDevice( At(i) ));
+		if ( !nanval )
+		{
+			if (	( has_next && pt.x < wmin.x && next.x >= wmin.x )  // straddles left boundary
+				||	( has_prev && prev.x < wmax.x && pt.x >= wmax.x ) // straddles right boundary
+				||	( pt.x >= wmin.x && pt.x <= wmax.x ) ) // within world min/max
+			{
+				points.push_back(map.ToDevice( At(i) ));
+			}
+		}
 
 		if ( nanval && points.size() > 1 )
 		{

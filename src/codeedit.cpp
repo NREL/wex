@@ -385,6 +385,7 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
 	if ( lang == CPP || lang == C || lang == LK )
 	{
 		SetLexer( wxSTC_LEX_CPP );
+		StyleSetFont( wxSTC_C_DEFAULT, font );
 
 		/*
 		// folding
@@ -407,7 +408,6 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
 		StyleSetForeground(wxSTC_C_COMMENTLINE, wxColour(0x00, 0xaf, 0x00));
 		StyleSetForeground(wxSTC_C_COMMENTDOC, wxColour(0xaf, 0xaf, 0xaf));
 	
-		StyleSetFont( wxSTC_STYLE_DEFAULT, font );
 		StyleSetFont( wxSTC_C_DEFAULT, font );
 		StyleSetFont( wxSTC_C_COMMENT, fontslant );
 		StyleSetFont( wxSTC_C_COMMENTLINE, fontslant );
@@ -450,6 +450,7 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
 	else if ( lang == VBA )
 	{
 		SetLexer( wxSTC_LEX_VB );
+		StyleSetFont( wxSTC_B_DEFAULT, font );
 	
 		StyleSetForeground(  wxSTC_B_DEFAULT, *wxBLACK );
 		StyleSetForeground(  wxSTC_B_COMMENT, wxColour(0,190,0));
@@ -485,6 +486,7 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
 	else if ( lang == HTML )
 	{
 		SetLexer(wxSTC_LEX_HTML);
+		StyleSetFont( wxSTC_H_DEFAULT, font );
 		
 		wxColour cPhpFore(0, 0, 0);
 		wxColour cPhpBack(253, 255, 223);
@@ -493,7 +495,6 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
 		StyleSetForeground (wxSTC_STYLE_LINENUMBER, wxColour (_T("DARK GREY")));
 		StyleSetBackground (wxSTC_STYLE_LINENUMBER, wxColour (_T("WHITE")));
 		
-		StyleSetFont(wxSTC_H_DEFAULT, font);
 		StyleSetForeground( wxSTC_H_DEFAULT, wxColour("black"));
 		StyleSetForeground( wxSTC_H_TAG, wxColour("blue"));
 		StyleSetForeground( wxSTC_H_TAGUNKNOWN, wxColour("blue"));
@@ -560,11 +561,13 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
 	else if ( lang == TEXT )
 	{
 		SetLexer( wxSTC_LEX_NULL );
+		StyleSetFont( wxSTC_STYLE_DEFAULT, font );
 		m_lang = TEXT;
 	}
 	else if ( lang == TRNSYS )
 	{
 		SetLexer( wxSTC_LEX_SPICE );
+		StyleSetFont( wxSTC_SPICE_DEFAULT, font );
 		
 		StyleSetForeground(  wxSTC_SPICE_DEFAULT, *wxBLACK );
 		StyleSetForeground(  wxSTC_SPICE_COMMENTLINE, wxColour(0,190,0));
@@ -593,6 +596,7 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
 	else if ( lang == PYTHON )
 	{	
 		SetLexer (wxSTC_LEX_PYTHON);
+		StyleSetFont( wxSTC_P_DEFAULT, font );
 			
 		// folding
 		/*
