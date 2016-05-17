@@ -383,6 +383,11 @@ void wxPLGraphicsOutputDevice::SetAntiAliasing( bool b )
 	m_gc->SetAntialiasMode( b ? wxANTIALIAS_DEFAULT : wxANTIALIAS_NONE );
 }
 
+bool wxPLGraphicsOutputDevice::GetAntiAliasing() const
+{
+	return m_gc->GetAntialiasMode() != wxANTIALIAS_NONE;
+}
+
 bool wxPLGraphicsOutputDevice::Equals( double a, double b ) const
 {
 	return ( wxRound(2.0*a) == wxRound(2.0*b) );

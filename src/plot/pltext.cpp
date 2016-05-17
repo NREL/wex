@@ -200,6 +200,9 @@ void wxPLTextLayout::Render( wxPLOutputDevice &dc, double x, double y, double ro
 {
 	if ( m_lines.size() == 0 ) return;
 
+	bool aa = dc.GetAntiAliasing();
+	if ( drawBounds ) dc.SetAntiAliasing( false );
+
 	double fontPoints = dc.Font();
 
 	if ( drawBounds )
@@ -244,6 +247,7 @@ void wxPLTextLayout::Render( wxPLOutputDevice &dc, double x, double y, double ro
 
 	// restore font state
 	dc.Font( fontPoints );
+	if ( drawBounds ) dc.SetAntiAliasing( aa );
 }
 
 wxString wxPLTextLayout::Escape( const wxString &text )
@@ -459,7 +463,7 @@ std::vector<double> wxPLTextLayoutDemo::Draw( wxPLOutputDevice &dc, const wxPLRe
 		dc.Font(+3 );
 		//gc->SetFont( wxFont(7, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL), *wxBLACK );
 		wxPLTextLayout t5( dc, "small (7): x_1^2_3 abc=y_2^4" );
-		t5.Render( dc, geom.x+500, geom.y+60, 0, false );
+		t5.Render( dc, geom.x+500, geom.y+50, 0, true );
 	}
 	
 	// test 6

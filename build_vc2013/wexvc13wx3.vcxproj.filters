@@ -58,6 +58,9 @@
     <Filter Include="clipper\Sources">
       <UniqueIdentifier>{972810ee-8249-4ece-b307-54faeb6161fc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="freetype">
+      <UniqueIdentifier>{011546af-c084-4bd7-9795-541dc656e5c5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\pdf\wxmemdbg.h">
@@ -796,6 +799,69 @@
     </ClCompile>
     <ClCompile Include="..\src\plot\plsectorplot.cpp">
       <Filter>plot\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\freetype\src\cff\cff.c">
+      <Filter>freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\freetype\src\base\ftbase.c">
+      <Filter>freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\freetype\src\base\ftbbox.c">
+      <Filter>freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\freetype\src\base\ftbitmap.c">
+      <Filter>freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\freetype\src\base\ftfntfmt.c">
+      <Filter>freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\freetype\src\base\ftgasp.c">
+      <Filter>freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\freetype\src\base\ftglyph.c">
+      <Filter>freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\freetype\src\base\ftinit.c">
+      <Filter>freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\freetype\src\base\ftstroke.c">
+      <Filter>freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\freetype\src\base\ftsynth.c">
+      <Filter>freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\freetype\src\base\ftsystem.c">
+      <Filter>freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\freetype\src\base\fttype1.c">
+      <Filter>freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\freetype\src\psaux\psaux.c">
+      <Filter>freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\freetype\src\pshinter\pshinter.c">
+      <Filter>freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\freetype\src\psnames\psnames.c">
+      <Filter>freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\freetype\src\raster\raster.c">
+      <Filter>freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\freetype\src\sfnt\sfnt.c">
+      <Filter>freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\freetype\src\smooth\smooth.c">
+      <Filter>freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\freetype\src\truetype\truetype.c">
+      <Filter>freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\freetype\src\type1\type1.c">
+      <Filter>freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\freetype\src\cid\type1cid.c">
+      <Filter>freetype</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
