@@ -320,7 +320,7 @@ void fcall_plot( lk::invoke_t &cxt )
 void fcall_plotopt( lk::invoke_t &cxt )
 {
 	LK_DOC("plotopt", 
-		"Modifies the current plot properties like title, coarse, fine, legend, legendpos, legendborder, scale, font, window, pdffontface, pdffontsize, pdffontdir", 
+		"Modifies the current plot properties like title, coarse, fine, legend, legendpos, legendborder, scale, font, window, border, showaxes, pdffontface, pdffontsize, pdffontdir", 
 		"(table:options):boolean");
 	
 	cxt.result().assign( 1.0 );
@@ -366,6 +366,18 @@ void fcall_plotopt( lk::invoke_t &cxt )
 	if ( lk::vardata_t *arg = cxt.arg(0).lookup("legend") )
 	{
 		plot->ShowLegend( arg->as_boolean() );
+		mod = true;
+	}
+
+	if ( lk::vardata_t *arg = cxt.arg(0).lookup("border") )
+	{
+		plot->SetBorderWidth( arg->as_number() );
+		mod = true;
+	}
+
+	if ( lk::vardata_t *arg = cxt.arg(0).lookup("showaxes") )
+	{
+		plot->ShowAxes( arg->as_boolean() );
 		mod = true;
 	}
 
@@ -480,7 +492,7 @@ void fcall_plotout( lk::invoke_t &cxt )
 
 void fcall_axis( lk::invoke_t &cxt )
 {
-	LK_DOC("axis", "Modifies axis properties (type, label, labels[2D array for 'label' axis type], showlabel, min, max, ticklabels) on the current plot.", "(string:axis name 'x1' 'y1' 'x2' 'y2', table:options):void");
+	LK_DOC("axis", "Modifies axis properties (type, label, labels[2D array for 'label' axis type], show, showlabel, min, max, ticklabels) on the current plot.", "(string:axis name 'x1' 'y1' 'x2' 'y2', table:options):void");
 	lk_string axname = cxt.arg(0).as_string();
 	wxPLPlotCtrl *plot = s_curPlot;
 	if (!plot) return;
@@ -554,6 +566,12 @@ void fcall_axis( lk::invoke_t &cxt )
 	if ( lk::vardata_t *arg = cxt.arg(1).lookup("label") )
 	{
 		axis->SetLabel( arg->as_string() );
+		mod = true;
+	}
+
+	if ( lk::vardata_t *arg = cxt.arg(1).lookup("show") )
+	{
+		axis->Show( arg->as_boolean() );
 		mod = true;
 	}
 
@@ -707,7 +725,7 @@ void fcall_griddata( lk::invoke_t &cxt )
 
 void fcall_contour( lk::invoke_t &cxt )
 {
-	LK_DOC( "contour", "Creates a contour plot from gridded x,y,z data. Options are filled,colormap", "( matrix:x, matrix:y, matrix:z, { table:options } ):none" );
+	LK_DOC( "contour", "Creates a contour plot from gridded x,y,z data. Options are filled, colormap, levels, min, max", "( matrix:x, matrix:y, matrix:z, { table:options } ):none" );
 	
 	wxPLPlotCtrl *plot = GetPlotSurface( 
 		(s_curToplevelParent!=0)
@@ -717,6 +735,8 @@ void fcall_contour( lk::invoke_t &cxt )
 	wxString cmap_name;
 	bool filled = false;
 	size_t levels = 10;
+	double min, max;
+	min=max=std::numeric_limits<double>::quiet_NaN();
 	wxString label;
 	if ( cxt.arg_count() > 3 )
 	{
@@ -727,6 +747,10 @@ void fcall_contour( lk::invoke_t &cxt )
 			filled = o->as_boolean();
 		if ( lk::vardata_t *o = opt.lookup( "levels" ) )
 			levels = o->as_unsigned();
+		if ( lk::vardata_t *o = opt.lookup( "min" ) )
+			min = o->as_number();
+		if ( lk::vardata_t *o = opt.lookup( "max" ) )
+			max = o->as_number();
 		if ( lk::vardata_t *o = opt.lookup( "label" ) )
 			label = o->as_string();
 	}
@@ -736,15 +760,17 @@ void fcall_contour( lk::invoke_t &cxt )
 	to_matrix( cxt.arg(1), y );
 	to_matrix( cxt.arg(2), z );
 
-	double min, max;
-	wxPLContourPlot::MinMax( z, &min, &max );
-	wxPLAxis::ExtendBoundsToNiceNumber( &max, &min );
+	if ( !std::isfinite( min ) || !std::isfinite( max ) )
+		wxPLContourPlot::MinMax( z, &min, &max );
 
 	wxPLColourMap *cmap = dynamic_cast<wxPLColourMap*>( plot->GetSideWidget( wxPLPlot::Y_RIGHT ) );
 	if ( 0 == cmap || !cmap_name.IsEmpty() )
 	{
-		if ( cmap_name=="grayscale") cmap = new wxPLGrayscaleColourMap( min, max );
-		else cmap =new wxPLJetColourMap( min, max );
+		if ( cmap_name=="grayscale" || cmap_name == "greyscale" 
+			|| cmap_name == "grey" || cmap_name == "gray" ) 
+			cmap = new wxPLGrayscaleColourMap( min, max );
+		else 
+			cmap = new wxPLJetColourMap( min, max );
 		
 		plot->SetSideWidget( cmap, wxPLPlot::Y_RIGHT );
 

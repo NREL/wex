@@ -1461,7 +1461,7 @@ void wxPLPlot::DrawGrid( wxPLOutputDevice &dc, wxPLAxis::TickData::TickSize size
 		if (m_y1[pp].axis != 0 ) ygrid_axis = &m_y1[pp];
 		else if ( m_y2[pp].axis != 0 ) ygrid_axis = &m_y2[pp];
 
-		if ( ygrid_axis != 0 )
+		if ( ygrid_axis != 0 && ygrid_axis->layout != 0 )
 		{
 			std::vector<double> ticks = ygrid_axis->layout->ticks( size );
 			for ( size_t j=0;j<ticks.size();j++)
