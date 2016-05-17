@@ -516,3 +516,80 @@ void wxPLTextLayoutDemo::OnSize( wxSizeEvent & )
 {
 	Refresh();
 }
+
+
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
+
+static FT_Library    library = 0;
+static FT_Face       face = 0;
+
+void wxFreeTypeDrawText( 
+	const wxString &font_file, 
+	const wxString &text, 
+	double points, 
+	int dpi, 
+	const wxColour &colour, 
+	const wxPoint &pos, 
+	wxImage &img )
+{
+	FT_Error err;
+	if ( !library )
+	{
+		err = FT_Init_FreeType( &library );
+	}
+
+	if ( face != 0 ) {
+		FT_Done_Face( face );
+		face = 0;
+	}
+
+	err = FT_New_Face( library, font_file.c_str(), 0, &face );
+
+	err = FT_Set_Char_Size( face, (int)(points*64.0), 0, dpi, 0 );
+
+	FT_GlyphSlot slot = face->glyph;
+	FT_Vector pen;
+	pen.x = pos.x;
+	pen.y = pos.y;
+
+
+	size_t width = img.GetWidth();
+	size_t height = img.GetHeight();
+	unsigned char *data = img.GetData();
+	unsigned char *alpha = img.GetAlpha();
+
+	for( wxString::const_iterator it = text.begin(); it != text.end(); ++it )
+	{
+		err = FT_Load_Char( face, (FT_ULong) (*it), FT_LOAD_RENDER );
+		if ( err ) continue;
+
+		FT_Bitmap *bitmap = &slot->bitmap;
+
+		FT_Int x = slot->bitmap_left;
+		FT_Int y = img.GetHeight() - slot->bitmap_top;
+
+		FT_Int  i, j, p, q;
+		FT_Int  x_max = x + bitmap->width;
+		FT_Int  y_max = y + bitmap->rows;
+
+		for ( i = x, p = 0; i < x_max; i++, p++ )
+		{
+			for ( j = y, q = 0; j < y_max; j++, q++ )
+			{
+				if ( i < 0      || j < 0       ||
+					i >= width || j >= height )
+				continue;
+
+				unsigned char pixelalpha = bitmap->buffer[q * bitmap->width + p];
+				data[ i*width + j     ] = 0; // red
+				data[ i*width + j + 1 ] = 0; // green
+				data[ i*width + j + 2 ] = 0; // blue
+				alpha[ i*width + j ] = pixelalpha;
+			}
+		}	
+		pen.x += slot->advance.x;
+		pen.y += slot->advance.y;
+	}
+}
