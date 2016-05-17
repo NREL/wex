@@ -48,7 +48,8 @@ class wxPLTextLayoutDemo : public wxWindow
 public:
 	wxPLTextLayoutDemo( wxWindow *parent );
 
-	std::vector<double> Draw( wxGraphicsContext *gc, const wxPLRealRect &geom );
+	std::vector<double> Draw( wxPLOutputDevice &dc, const wxPLRealRect &geom );
+
 	void OnPaint( wxPaintEvent & );
 	void OnSize( wxSizeEvent & );
 

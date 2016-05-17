@@ -1014,10 +1014,10 @@ void wxPLPlot::ShowAxes( bool b )
 
 void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 {
-#define NORMAL_FONT(dc)  dc.Font( 0, false )
-#define TITLE_FONT(dc)   dc.Font( +1, false )
-#define LEGEND_FONT(dc)  dc.Font( -1, false )
-#define AXIS_FONT(dc)    dc.Font( 0, false )
+#define NORMAL_FONT(dc)  dc.Font( 0 )
+#define TITLE_FONT(dc)   dc.Font( +1 )
+#define LEGEND_FONT(dc)  dc.Font( -1 )
+#define AXIS_FONT(dc)    dc.Font( 0 )
 
 	// ensure plots have the axes they need to be rendered
 	for ( size_t i = 0; i< m_plots.size(); i++ )
@@ -1977,7 +1977,7 @@ wxArrayString wxPLPlot::ListAvailablePdfFonts()
 }
 
 static wxString s_pdfDefaultFontFace("Helvetica");
-static double s_pdfDefaultFontPoints = 10.0;
+static double s_pdfDefaultFontPoints = 11.0;
 
 static void EnsureStandardPdfFontPaths()
 {
@@ -2027,7 +2027,6 @@ bool wxPLPlot::RenderPdf( const wxString &file, double width, double height )
 
 	wxPdfDocument doc( wxPORTRAIT, "pt", wxPAPER_A5 );
 	doc.AddPage( wxPORTRAIT, width, height );
-	double scale = doc.GetScaleFactor();
 
 	if ( !IsBuiltinPdfFont( s_pdfDefaultFontFace ) )
 	{

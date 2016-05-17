@@ -141,14 +141,17 @@ void wxPLSectorPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 	CalculateAngles( m_sectors );
 
 	// calculate all the text layouts
-	dc.Font( 0, false ); // ensure default normal font
+	dc.Font( 0 ); // ensure default normal font
+
 	for( size_t i=0;i<m_sectors.size();i++ )
 	{
 		sector &S = m_sectors[i];
 		double midangle = S.start + 0.5*S.angle;
 
-		if ( S.layout == 0 ) 
-			S.layout = new wxPLTextLayout( dc, S.label, (midangle >= 0 && midangle <= 180 ) ? wxPLTextLayout::LEFT : wxPLTextLayout::RIGHT );
+		// don't cache text layouts.  the sector plot
+		// doesn't know its render state and whether the font has changed
+		if ( S.layout != 0 ) delete S.layout;		
+		S.layout = new wxPLTextLayout( dc, S.label, (midangle >= 0 && midangle <= 180 ) ? wxPLTextLayout::LEFT : wxPLTextLayout::RIGHT );
 		
 		S.textsize.x = S.layout->Width();
 		S.textsize.y = S.layout->Height();
@@ -194,7 +197,7 @@ void wxPLSectorPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 	if ( m_labelValues )
 	{
 		// calculate and draw label inside sector with the value
-		dc.Font( -1, false, wxColour(240,240,240) );
+		dc.Font( -1, wxColour(240,240,240) );
 		for( size_t i=0;i<m_sectors.size();i++ )
 		{
 			double f = 0.5*(1.0 + m_holeFraction);
@@ -222,14 +225,14 @@ void wxPLSectorPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 	if ( m_holeFraction > 0 && m_inner.size() > 0 )
 	{
 		dc.Pen( *wxLIGHT_GREY, 0.5 );
-		dc.Font( -1, false );
+		dc.Font( -1 );
 
 		CalculateAngles( m_inner );
 		for( size_t i=0;i<m_inner.size();i++ )
 		{
 			sector &S = m_inner[i];
-			if ( S.layout == 0 )
-				S.layout = new wxPLTextLayout( dc, S.label, wxPLTextLayout::CENTER );
+			if ( S.layout != 0 ) delete S.layout;			
+			S.layout = new wxPLTextLayout( dc, S.label, wxPLTextLayout::CENTER );
 
 			double f = m_holeFraction * 0.666;
 

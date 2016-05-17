@@ -183,8 +183,12 @@ void wxPLPlotCtrl::OnPopupMenu( wxCommandEvent &evt )
 			wxFileDialog fdlg(this, "Export as PDF", wxEmptyString, "graph",
 				"PDF Document (*.pdf)|*.pdf", wxFD_SAVE | wxFD_OVERWRITE_PROMPT );
 			if ( fdlg.ShowModal() == wxID_OK )
-				if( !ExportPdf( fdlg.GetPath() ) )
+			{
+				if( ExportPdf( fdlg.GetPath() ) )
+					wxLaunchDefaultBrowser( fdlg.GetPath() );
+				else
 					wxMessageBox("PDF encountered an error: \n" + fdlg.GetPath());
+			}
 		}
 		break;
 	case ID_TO_CLIP_SCREEN:

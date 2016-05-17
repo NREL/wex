@@ -9,7 +9,6 @@ wxPLPdfOutputDevice::wxPLPdfOutputDevice( wxPdfDocument &doc )
 {
 	m_fontRelSize = 0;
 	m_fontPoint0 = m_pdf.GetFontSize();
-	m_fontBold = (m_pdf.GetFontStyles() & wxPDF_FONTSTYLE_BOLD) ? true : false;
 	m_pen = m_brush = true;
 }
 
@@ -170,16 +169,13 @@ void wxPLPdfOutputDevice::Path( FillRule rule )
 }
 
 	
-void wxPLPdfOutputDevice::Font( double relpt, bool bold, const wxColour &col ) {
-	m_pdf.SetFontSize( m_fontPoint0 + relpt );
+void wxPLPdfOutputDevice::Font( double relpt, const wxColour &col ) {
 	m_pdf.SetTextColour( col );
 	m_fontRelSize = relpt;
-	m_fontBold = bold;
 }
 
-void wxPLPdfOutputDevice::Font( double *rel, bool *bld ) const {
-	if ( rel ) *rel = m_fontRelSize;
-	if ( bld ) *bld = m_fontBold;
+double wxPLPdfOutputDevice::Font( ) const {
+	return m_fontRelSize;
 }
 
 void wxPLPdfOutputDevice::Text( const wxString &text, double x, double y,  double angle ) {		
@@ -510,20 +506,17 @@ void wxPLGraphicsOutputDevice::Path( FillRule rule )
 	m_path = m_gc->CreatePath();
 }
 
-void wxPLGraphicsOutputDevice::Font( double relpt, bool bold, const wxColour &color )
+void wxPLGraphicsOutputDevice::Font( double relpt, const wxColour &color )
 {
 	wxFont font( m_font0 );
 	if ( relpt != 0 ) font.SetPointSize( font.GetPointSize() + SCALE(relpt) );
-	font.SetWeight( bold ? wxFONTWEIGHT_BOLD : wxFONTWEIGHT_NORMAL );
 	m_gc->SetFont( font, color );
 	m_fontSize = relpt;
-	m_fontBold = bold;
 }
 
-void wxPLGraphicsOutputDevice::Font( double *rel, bool *bld ) const
+double wxPLGraphicsOutputDevice::Font() const
 {
-	*rel = m_fontSize;
-	*bld = m_fontBold;
+	return m_fontSize;
 }
 
 void wxPLGraphicsOutputDevice::Text( const wxString &text, double x, double y, double angle )

@@ -14,7 +14,7 @@
 #include "wex/icons/barchart.cpng"
 #include "wex/icons/curve.cpng"
 #include "wex/icons/scatter.cpng"
-
+#include "wex/pdf/pdfdoc.h"
 #include "wex/radiochoice.h"
 
 class PngTestApp : public wxApp
@@ -115,14 +115,7 @@ void TestSnapLayout( wxWindow *parent )
 
 void TestPLPlot( wxWindow *parent )
 {
-	wxString wexdir;
-	if ( wxGetEnv("WEXDIR", &wexdir) )
-	{
-		if (!wxPLPlot::AddPdfFontDir( wexdir + "/pdffonts" ))
-			wxMessageBox("Could not add font dir: " + wexdir + "/pdffonts" );
-		if (!wxPLPlot::SetPdfDefaultFont( "ComputerModernSansSerifRegular", 12.0 ) )
-			wxMessageBox("Could not set default pdf font to Computer Modern Sans Serif Regular" );
-	}
+
 
 	wxFrame *frame = new wxFrame( parent, wxID_ANY, wxT("wxPLPlotCtrl in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(850,500) );
 #ifdef __WXMSW__
@@ -266,10 +259,58 @@ void TestPLPlot( wxWindow *parent )
 				
 	frame->Show();
 
+}
 
-	frame = new wxFrame( 0, -1, "Text layout", wxDefaultPosition, wxSize(600,600) );
-	new wxPLTextLayoutDemo( frame );
-	frame->Show();
+#include <wx/wfstream.h>
+
+class TextLayoutFrame : public wxFrame
+{
+	wxPLTextLayoutDemo *m_layout;
+public: TextLayoutFrame() : wxFrame( 0, -1, "Text layout", wxDefaultPosition, wxSize(750,550) )
+	{
+		wxBoxSizer *sizer = new wxBoxSizer( wxVERTICAL );
+		sizer->Add( new wxButton( this, wxID_SAVE, "Export to pdf" ), 0, wxALL|wxEXPAND, 3 );
+		m_layout = new wxPLTextLayoutDemo ( this );
+		sizer->Add( m_layout, 1, wxALL|wxEXPAND, 3 );
+		SetSizer(sizer);
+
+		Show();
+	}
+	
+	void OnSave( wxCommandEvent & )
+	{
+		int width, height;
+		GetClientSize( &width, &height );
+		wxPdfDocument doc( wxPORTRAIT, "pt", wxPAPER_A5 );
+		doc.AddPage( wxPORTRAIT, width, height );
+		doc.SetFont( "Helvetica", wxPDF_FONTSTYLE_REGULAR, 12.0 );
+		doc.SetTextColour( *wxBLACK );
+
+		wxPLPdfOutputDevice pdfdc( doc );
+		m_layout->Draw( pdfdc, wxPLRealRect(0,0,width,height) );
+
+		wxString file( wxFileName::GetHomeDir() + "/graph.pdf" );
+		
+		const wxMemoryOutputStream &data = doc.CloseAndGetBuffer();
+		wxFileOutputStream fp( file );
+		if (!fp.IsOk()) return;
+
+		wxMemoryInputStream tmpis( data );
+		fp.Write( tmpis );
+		fp.Close();
+
+		wxLaunchDefaultBrowser( file );
+	}
+	DECLARE_EVENT_TABLE();
+};
+
+BEGIN_EVENT_TABLE( TextLayoutFrame, wxFrame )
+	EVT_BUTTON( wxID_SAVE, TextLayoutFrame::OnSave )
+END_EVENT_TABLE()
+
+void TestTextLayout()
+{
+	new TextLayoutFrame;
 }
 
 #include <wex/mtrand.h>
@@ -748,11 +789,23 @@ public:
 #endif
 		
 		wxInitAllImageHandlers();
-		//TestPLPlot( 0 );
+
+		wxString wexdir;
+		if ( wxGetEnv("WEXDIR", &wexdir) )
+		{
+			if (!wxPLPlot::AddPdfFontDir( wexdir + "/pdffonts" ))
+				wxMessageBox("Could not add font dir: " + wexdir + "/pdffonts" );
+			if (!wxPLPlot::SetPdfDefaultFont( "ComputerModernSansSerifRegular", 11.0 ) )
+				wxMessageBox("Could not set default pdf font to Computer Modern Sans Serif Regular" );
+		}
+
+		TestPLPlot( 0 );
 		//TestPLPolarPlot(0);
 		//TestPLBarPlot(0);
-		TestSectorPlot(0);
+		
 		//TestContourPlot();
+		TestSectorPlot(0);
+		TestTextLayout();
 
 		//wxFrame *frmgl = new wxFrame( NULL, wxID_ANY, "GL Easy Test", wxDefaultPosition, wxSize(700,700) );
 		//new wxGLEasyCanvasTest( frmgl );

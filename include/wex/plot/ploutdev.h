@@ -56,8 +56,8 @@ public:
 	virtual void CloseSubPath() = 0;
 	virtual void Path( FillRule rule = WINDING_RULE ) = 0;
 	
-	virtual void Font( double relpt = 0, bool bold = false, const wxColour &c = *wxBLACK ) = 0;
-	virtual void Font( double *rel, bool *bld ) const = 0;
+	virtual void Font( double relpt, const wxColour &c = *wxBLACK ) = 0;
+	virtual double Font() const = 0;
 	virtual void Text( const wxString &text, double x, double y,  double angle=0 ) = 0;
 	virtual void Measure( const wxString &text, double *width, double *height ) = 0;
 
@@ -75,7 +75,6 @@ public:
 class wxPLPdfOutputDevice : public wxPLOutputDevice
 {
 	double m_fontPoint0, m_fontRelSize;
-	bool m_fontBold;
 	bool m_pen, m_brush;
 	wxPdfDocument &m_pdf;
 	wxPdfShape m_shape;
@@ -98,8 +97,8 @@ public:
 	virtual void LineTo( double x, double y );
 	virtual void CloseSubPath();
 	virtual void Path( FillRule rule = WINDING_RULE );
-	virtual void Font( double relpt = 0, bool bold = false, const wxColour &c = *wxBLACK );
-	virtual void Font( double *rel, bool *bld ) const;
+	virtual void Font( double relpt, const wxColour &c = *wxBLACK );
+	virtual double Font() const;
 	virtual void Text( const wxString &text, double x, double y,  double angle=0 );
 	virtual void Measure( const wxString &text, double *width, double *height );
 
@@ -172,8 +171,8 @@ public:
 	virtual void LineTo( double x, double y );
 	virtual void CloseSubPath();
 	virtual void Path( FillRule rule = WINDING_RULE );
-	virtual void Font( double relpt = 0, bool bold = false, const wxColour &c = *wxBLACK );
-	virtual void Font( double *rel, bool *bld ) const;
+	virtual void Font( double relpt = 0, const wxColour &c = *wxBLACK );
+	virtual double Font() const;
 	virtual void Text( const wxString &text, double x, double y, double angle=0 );
 	virtual void Measure( const wxString &text, double *width, double *height );
 };
