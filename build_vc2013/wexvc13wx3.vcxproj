@@ -172,6 +172,7 @@
     <ClCompile Include="..\src\extgrid.cpp" />
     <ClCompile Include="..\src\exttext.cpp" />
     <ClCompile Include="..\src\exttree.cpp" />
+    <ClCompile Include="..\src\freetype\src\base\ftlcdfil.c" />
     <ClCompile Include="..\src\gleasy.cpp" />
     <ClCompile Include="..\src\jsonreader.cpp" />
     <ClCompile Include="..\src\jsonval.cpp" />

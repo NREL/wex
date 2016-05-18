@@ -863,6 +863,9 @@
     <ClCompile Include="..\src\freetype\src\cid\type1cid.c">
       <Filter>freetype</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\freetype\src\base\ftlcdfil.c">
+      <Filter>freetype</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\pdf\pdfcjkfontdata.inc">

@@ -283,7 +283,12 @@ public: TextLayoutFrame() : wxFrame( 0, -1, "Text layout", wxDefaultPosition, wx
 		GetClientSize( &width, &height );
 		wxPdfDocument doc( wxPORTRAIT, "pt", wxPAPER_A5 );
 		doc.AddPage( wxPORTRAIT, width, height );
-		doc.SetFont( "Helvetica", wxPDF_FONTSTYLE_REGULAR, 12.0 );
+
+		wxString xml( "C:\\Users\\adobos\\Projects\\wex\\pdffonts\\ComputerModernSerifRegular.xml" );
+		if ( !doc.AddFont( "CMSSR", wxEmptyString, xml ) 
+			|| !doc.SetFont( "CMSSR", wxPDF_FONTSTYLE_REGULAR, 12 ) )
+			doc.SetFont( "Helvetica", wxPDF_FONTSTYLE_REGULAR, 12 );
+
 		doc.SetTextColour( *wxBLACK );
 
 		wxPLPdfOutputDevice pdfdc( doc );
@@ -311,6 +316,13 @@ END_EVENT_TABLE()
 void TestTextLayout()
 {
 	new TextLayoutFrame;
+}
+
+void TestFreeTypeText()
+{
+	wxFrame *frame = new wxFrame( 0, wxID_ANY, "FreeType text output", wxDefaultPosition, wxSize(800,400) );
+	new wxFreeTypeDemo( frame );
+	frame->Show();
 }
 
 #include <wex/mtrand.h>
@@ -799,13 +811,14 @@ public:
 				wxMessageBox("Could not set default pdf font to Computer Modern Sans Serif Regular" );
 		}
 
-		TestPLPlot( 0 );
+		//TestPLPlot( 0 );
 		//TestPLPolarPlot(0);
 		//TestPLBarPlot(0);
 		
 		//TestContourPlot();
-		TestSectorPlot(0);
-		TestTextLayout();
+		//TestSectorPlot(0);
+		//TestTextLayout();
+		TestFreeTypeText();
 
 		//wxFrame *frmgl = new wxFrame( NULL, wxID_ANY, "GL Easy Test", wxDefaultPosition, wxSize(700,700) );
 		//new wxGLEasyCanvasTest( frmgl );

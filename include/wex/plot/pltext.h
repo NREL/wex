@@ -20,6 +20,8 @@ public:
 	
 	inline double Width() { return m_bounds.x; }
 	inline double Height() { return m_bounds.y; }
+	
+	static wxString Escape( const wxString &text );
 
 protected:
 	struct text_piece
@@ -37,7 +39,7 @@ protected:
 	std::vector< std::vector<text_piece> > m_lines;
 	wxRealPoint m_bounds;
 	
-	wxString Escape( const wxString &text );
+	
 	std::vector<text_piece> Parse( const wxString &text );
 };
 
@@ -53,6 +55,23 @@ public:
 	void OnPaint( wxPaintEvent & );
 	void OnSize( wxSizeEvent & );
 
+	DECLARE_EVENT_TABLE();
+};
+
+int wxFreeTypeLoadFont( const wxString &font_file );
+wxArrayString wxFreeTypeListFonts();
+wxString wxFreeTypeFontName( int ifnt );
+int wxFreeTypeFindFont( const wxString &font );
+wxSize wxFreeTypeMeasure( int ifnt, double points, unsigned int dpi, const wxString &text );
+wxImage wxFreeTypeDraw( int ifnt, double points, unsigned int dpi, const wxString &text, const wxColour &c=*wxBLACK, wxSize *measure = 0 );
+
+class wxFreeTypeDemo : public wxWindow
+{
+	int face1, face2;
+public:
+	wxFreeTypeDemo( wxWindow *parent );
+	void OnPaint( wxPaintEvent & );
+	void OnSize( wxSizeEvent & );
 	DECLARE_EVENT_TABLE();
 };
 
