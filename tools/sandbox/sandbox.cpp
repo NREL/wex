@@ -420,6 +420,36 @@ void TestContourPlot()
 
 	frame->Show();
 }	
+
+void TestPlotAnnotations( wxWindow *parent )
+{
+	wxFrame *frame = new wxFrame(parent, wxID_ANY, wxT("Plots with annotations in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(500, 400));
+	wxPLPlotCtrl *plot = new wxPLPlotCtrl(frame, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+	//plot->SetBackgroundColour( *wxWHITE );
+	plot->SetTitle(wxT("Example annotations plot for wind technologies in SAM"));
+	plot->ShowGrid( false, false );
+	std::vector<wxRealPoint> data;
+	for( size_t i=0;i<20;i++ )
+		data.push_back( wxRealPoint( i, 20*sin(i*14.1) ) );
+
+	plot->AddPlot( new wxPLBarPlot( data, "Test data", wxColour("Forest green" ) ) );
+
+	plot->AddAnnotation( new wxPLTextAnnotation( "Annotation \\phi\\Phi \nhere^2", wxRealPoint( 10, 0 ), 2, 0, *wxRED, wxPLTextLayout::RIGHT ), wxPLAnnotationMapping::AXIS );
+	plot->AddAnnotation( new wxPLTextAnnotation( "Origin_{0,0}", wxRealPoint( 0, 0 ), -1, 0, *wxBLUE ), wxPLAnnotationMapping::FRACTIONAL );
+	plot->AddAnnotation( new wxPLTextAnnotation( "((175pt 175pt))", wxRealPoint( 175, 175 ), 0, 90, *wxBLACK ), wxPLAnnotationMapping::POINTS );
+
+	std::vector<wxRealPoint> line1;
+	line1.push_back( wxRealPoint( 5, 10 ) );
+	line1.push_back( wxRealPoint( 10, 0 ) );
+	plot->AddAnnotation( new wxPLLineAnnotation( line1, 2, *wxLIGHT_GREY ), wxPLAnnotationMapping::AXIS );
+	line1.clear();
+	line1.push_back( wxRealPoint( 10, 10 ) );
+	line1.push_back( wxRealPoint( 17, 3 ) );
+	plot->AddAnnotation( new wxPLLineAnnotation( line1, 0.5, *wxBLACK, wxPLOutputDevice::DOT ), wxPLAnnotationMapping::AXIS );
+
+	frame->Show();
+}
+
 void TestSectorPlot( wxWindow *parent )
 {
 	wxFrame *frame = new wxFrame(parent, wxID_ANY, wxT("Sector plots in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(500, 400));
@@ -811,14 +841,14 @@ public:
 				wxMessageBox("Could not set default pdf font to Computer Modern Sans Serif Regular" );
 		}
 
-		//TestPLPlot( 0 );
+		TestPLPlot( 0 );
 		//TestPLPolarPlot(0);
-		//TestPLBarPlot(0);
-		
+		TestPLBarPlot(0);		
 		//TestContourPlot();
 		//TestSectorPlot(0);
-		//TestTextLayout();
+		TestTextLayout();
 		TestFreeTypeText();
+		TestPlotAnnotations(0);
 
 		//wxFrame *frmgl = new wxFrame( NULL, wxID_ANY, "GL Easy Test", wxDefaultPosition, wxSize(700,700) );
 		//new wxGLEasyCanvasTest( frmgl );

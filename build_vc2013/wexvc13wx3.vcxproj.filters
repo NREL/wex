@@ -450,6 +450,9 @@
     <ClInclude Include="..\include\wex\plot\plsectorplot.h">
       <Filter>plot\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\wex\plot\plannotation.h">
+      <Filter>plot\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
@@ -865,6 +868,9 @@
     </ClCompile>
     <ClCompile Include="..\src\freetype\src\base\ftlcdfil.c">
       <Filter>freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\plot\plannotation.cpp">
+      <Filter>plot\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

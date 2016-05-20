@@ -58,6 +58,7 @@ OBJECTS = \
 	md5.o \
 	numeric.o \
 	mplcontour.o \
+	plannotation.o \
 	plsectorplot.o \
 	plcontourplot.o \
 	dvstatisticstablectrl.o \

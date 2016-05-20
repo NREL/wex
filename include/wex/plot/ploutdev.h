@@ -57,8 +57,10 @@ public:
 	virtual void CloseSubPath() = 0;
 	virtual void Path( FillRule rule = WINDING_RULE ) = 0;
 	
-	virtual void Font( double relpt, const wxColour &c = *wxBLACK ) = 0;
-	virtual double Font() const = 0;
+	virtual void TextPoints( double relpt ) = 0;
+	virtual double TextPoints() const = 0;
+	virtual void TextColour( const wxColour &col ) = 0;
+
 	virtual void Text( const wxString &text, double x, double y,  double angle=0 ) = 0;
 	virtual void Measure( const wxString &text, double *width, double *height ) = 0;
 
@@ -99,8 +101,9 @@ public:
 	virtual void LineTo( double x, double y );
 	virtual void CloseSubPath();
 	virtual void Path( FillRule rule = WINDING_RULE );
-	virtual void Font( double relpt, const wxColour &c = *wxBLACK );
-	virtual double Font() const;
+	virtual void TextPoints( double relpt);
+	virtual double TextPoints() const;
+	virtual void TextColour( const wxColour &c );
 	virtual void Text( const wxString &text, double x, double y,  double angle=0 );
 	virtual void Measure( const wxString &text, double *width, double *height );
 
@@ -148,10 +151,11 @@ class wxPLGraphicsOutputDevice : public wxPLOutputDevice
 	wxFont m_font0;
 	double m_scale;
 	double m_fontSize;
-	bool m_fontBold;
+	wxColour m_textColour;
 	bool m_pen, m_brush;
 	wxGraphicsPath m_path;
 
+	void UpdateFont();
 public:
 	wxPLGraphicsOutputDevice( wxGraphicsContext *gc, const wxFont &font = *wxNORMAL_FONT, double scale=1.0 );
 	
@@ -174,8 +178,9 @@ public:
 	virtual void LineTo( double x, double y );
 	virtual void CloseSubPath();
 	virtual void Path( FillRule rule = WINDING_RULE );
-	virtual void Font( double relpt = 0, const wxColour &c = *wxBLACK );
-	virtual double Font() const;
+	virtual void TextPoints( double relpt);
+	virtual double TextPoints() const;
+	virtual void TextColour( const wxColour &c );
 	virtual void Text( const wxString &text, double x, double y, double angle=0 );
 	virtual void Measure( const wxString &text, double *width, double *height );
 };

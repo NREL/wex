@@ -14,6 +14,7 @@
 #include "wex/plot/plhistplot.h"
 #include "wex/plot/plplot.h"
 #include "wex/plot/ploutdev.h"
+#include "wex/plot/plannotation.h"
 
 #ifdef __WXOSX__
 #include <cmath>
@@ -656,6 +657,30 @@ wxPLPlot::~wxPLPlot()
 	for ( size_t i=0;i<4;i++ )
 		if ( m_sideWidgets[i] != 0 )
 			delete m_sideWidgets[i];
+
+	DeleteAllAnnotations();
+}
+
+void wxPLPlot::AddAnnotation( wxPLAnnotation *an, wxPLAnnotationMapping::PositionMode pm,
+	AxisPos xap, AxisPos yap, PlotPos ppos )
+{
+	annot_data d;
+	d.ann = an;
+	d.posm = pm;
+	d.xap = xap;
+	d.yap = yap;
+	d.ppos = ppos;
+	m_annotations.push_back( d );
+}
+
+void wxPLPlot::DeleteAllAnnotations()
+{
+	for( std::vector<annot_data>::iterator it = m_annotations.begin();
+		it != m_annotations.end();
+		++it )
+		delete it->ann;
+
+	m_annotations.clear();
 }
 
 void wxPLPlot::AddPlot( wxPLPlottable *p, AxisPos xap, AxisPos yap, PlotPos ppos, bool update_axes )
@@ -1012,12 +1037,54 @@ void wxPLPlot::ShowAxes( bool b )
 }
 
 
+class wxPLDefaultAnnotationMapper : public wxPLAnnotationMapping
+{
+	wxPLRealRect m_dev;
+	PositionMode m_posMode;
+	wxPLAxis *m_xax, *m_yax;
+	double m_xmin, m_xmax, m_ymin, m_ymax;
+public:
+	wxPLDefaultAnnotationMapper( PositionMode posmode, const wxPLRealRect &extent, 
+		wxPLAxis *xx, double xmin, double xmax, wxPLAxis *yy, double ymin, double ymax )
+		: m_posMode(posmode), m_dev(extent), 
+		m_xax(xx), m_xmin(xmin), m_xmax(xmax),
+		m_yax(yy), m_ymin(ymin), m_ymax(ymax)
+	{
+	}
+
+	virtual ~wxPLDefaultAnnotationMapper() { /* nothing to do */ }
+
+	wxRealPoint ToDevice( const wxRealPoint &pos ) const
+	{
+		switch( m_posMode )
+		{
+		case AXIS:
+			if ( m_xax && m_yax )
+				return wxRealPoint( m_xax->WorldToPhysical( pos.x, m_xmin, m_xmax ),
+					m_yax->WorldToPhysical( pos.y, m_ymin, m_ymax ) );
+
+		case POINTS:
+			return wxRealPoint( m_dev.x + pos.x, m_dev.y + pos.y );
+
+		case FRACTIONAL:
+		default:
+			return wxRealPoint( m_dev.x + pos.x*m_dev.width,
+				m_dev.y + pos.y*m_dev.height );
+		}
+	}
+
+
+
+};
+
 void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 {
-#define NORMAL_FONT(dc)  dc.Font( 0 )
-#define TITLE_FONT(dc)   dc.Font( +1 )
-#define LEGEND_FONT(dc)  dc.Font( -1 )
-#define AXIS_FONT(dc)    dc.Font( 0 )
+#define NORMAL_FONT(dc)  dc.TextPoints( 0 )
+#define TITLE_FONT(dc)   dc.TextPoints( +1 )
+#define LEGEND_FONT(dc)  dc.TextPoints( -1 )
+#define AXIS_FONT(dc)    dc.TextPoints( 0 )
+
+	dc.TextColour( *wxBLACK );
 
 	// ensure plots have the axes they need to be rendered
 	for ( size_t i = 0; i< m_plots.size(); i++ )
@@ -1232,7 +1299,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 				yleft_max_axis_width = m_y1[pp].layout->bounds().x;
 		}
 
-		if ( m_y2[pp].axis != 0 && m_y1[pp].axis->IsShown() )
+		if ( m_y2[pp].axis != 0 && m_y2[pp].axis->IsShown() )
 		{
 			if ( m_y2[pp].layout == 0 )
 				m_y2[pp].layout = new axis_layout( Y_RIGHT, dc, m_y2[pp].axis, box.y+box.height, box.y );
@@ -1428,6 +1495,36 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 
 	wxPLRealRect plotarea( m_plotRects[0].x, m_plotRects[0].y, m_plotRects[0].width, m_plotRects[0].height*nyaxes + (nyaxes-1)*plot_space );
 	DrawLegend( dc, (m_legendPos==FLOATING||legend_bottom||legend_right) ? geom : plotarea  );
+
+	if ( m_annotations.size() > 0 )
+	{
+		NORMAL_FONT(dc);
+		for( size_t i=0;i<m_annotations.size();i++ )
+		{
+			wxPLAxis *xax = 0; double xmin=0, xmax = 0;
+			wxPLAxis *yax = 0; double ymin=0, ymax = 0;
+			if ( m_annotations[i].posm == wxPLAnnotationMapping::AXIS )
+			{
+				xax = GetAxis( m_annotations[i].xap );
+				yax = GetAxis( m_annotations[i].yap );
+				
+				if ( m_annotations[i].ppos < m_plotRects.size() )
+				{
+					wxPLRealRect &bb = m_plotRects[ m_annotations[i].ppos ];
+					xmin = bb.x;
+					xmax = bb.x+bb.width;
+					ymin = bb.y+bb.height;
+					ymax = bb.y;
+				}
+			}
+
+			wxPLDefaultAnnotationMapper mmap( m_annotations[i].posm, plotarea, 
+				xax, xmin, xmax,
+				yax, ymin, ymax );
+			
+			m_annotations[i].ann->Draw( dc, mmap );
+		}
+	}
 }
 
 void wxPLPlot::DrawGrid( wxPLOutputDevice &dc, wxPLAxis::TickData::TickSize size )

@@ -10,6 +10,7 @@ wxPLPdfOutputDevice::wxPLPdfOutputDevice( wxPdfDocument &doc )
 	m_fontRelSize = 0;
 	m_fontPoint0 = m_pdf.GetFontSize();
 	m_pen = m_brush = true;
+	m_pdf.SetTextColour( *wxBLACK );
 }
 
 void wxPLPdfOutputDevice::SetAntiAliasing( bool )
@@ -169,13 +170,17 @@ void wxPLPdfOutputDevice::Path( FillRule rule )
 }
 
 	
-void wxPLPdfOutputDevice::Font( double relpt, const wxColour &col ) {
-	m_pdf.SetTextColour( col );
+void wxPLPdfOutputDevice::TextPoints( double relpt ) {
+	m_pdf.SetFontSize( m_fontPoint0 + relpt );
 	m_fontRelSize = relpt;
 }
 
-double wxPLPdfOutputDevice::Font( ) const {
+double wxPLPdfOutputDevice::TextPoints( ) const {
 	return m_fontRelSize;
+}
+
+void wxPLPdfOutputDevice::TextColour( const wxColour &c ) {	
+	m_pdf.SetTextColour( c );	
 }
 
 void wxPLPdfOutputDevice::Text( const wxString &text, double x, double y,  double angle ) {		
@@ -369,13 +374,13 @@ wxPLGraphicsOutputDevice::wxPLGraphicsOutputDevice( wxGraphicsContext *gc, const
 	: m_gc(gc), m_font0( font ), m_scale( scale )
 {
 	m_fontSize = 0;
-	m_fontBold = ( m_font0.GetWeight() == wxFONTWEIGHT_BOLD );
+	m_textColour = *wxBLACK;
+	UpdateFont();
 
 	m_pen = m_brush = true;
 	Pen( *wxBLACK, 1, SOLID );
 	Brush( *wxBLACK, SOLID );
 	m_path = gc->CreatePath();
-	gc->SetFont( m_font0, *wxBLACK );
 }
 	
 void wxPLGraphicsOutputDevice::SetAntiAliasing( bool b )
@@ -511,17 +516,28 @@ void wxPLGraphicsOutputDevice::Path( FillRule rule )
 	m_path = m_gc->CreatePath();
 }
 
-void wxPLGraphicsOutputDevice::Font( double relpt, const wxColour &color )
+void wxPLGraphicsOutputDevice::TextPoints( double relpt )
 {
-	wxFont font( m_font0 );
-	if ( relpt != 0 ) font.SetPointSize( font.GetPointSize() + SCALE(relpt) );
-	m_gc->SetFont( font, color );
 	m_fontSize = relpt;
+	UpdateFont();
 }
 
-double wxPLGraphicsOutputDevice::Font() const
+void wxPLGraphicsOutputDevice::UpdateFont()
+{
+	wxFont font( m_font0 );
+	if ( m_fontSize != 0 ) font.SetPointSize( font.GetPointSize() + SCALE(m_fontSize) );
+	m_gc->SetFont( font, m_textColour );
+}
+
+double wxPLGraphicsOutputDevice::TextPoints() const
 {
 	return m_fontSize;
+}
+
+void wxPLGraphicsOutputDevice::TextColour( const wxColour &c )
+{
+	m_textColour = c;
+	UpdateFont();
 }
 
 void wxPLGraphicsOutputDevice::Text( const wxString &text, double x, double y, double angle )

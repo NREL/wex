@@ -9,8 +9,10 @@
 #include "wex/plot/plaxis.h"
 #include "wex/plot/ploutdev.h"
 #include "wex/plot/pltext.h"
+#include "wex/plot/plannotation.h"
 
 class wxPLPlot;
+class wxPLAnnotation;
 
 class wxPLDeviceMapping
 {
@@ -114,6 +116,14 @@ public:
 	wxPLPlottable *GetPlotByLabel( const wxString &series );
 	bool GetPlotPosition( const wxPLPlottable *p, 
 		AxisPos *xap, AxisPos *yap, PlotPos *ppos );
+
+	void AddAnnotation( wxPLAnnotation *an, 
+		wxPLAnnotationMapping::PositionMode pm = wxPLAnnotationMapping::AXIS,
+		AxisPos xap = X_BOTTOM,
+		AxisPos yap = Y_LEFT,
+		PlotPos ppos = PLOT_TOP );
+
+	void DeleteAllAnnotations();
 
 	wxPLAxis *GetXAxis1() { return m_x1.axis; }
 	wxPLAxis &X1() { return Axis(X_BOTTOM); }
@@ -234,6 +244,16 @@ private:
 
 	std::vector<plot_data> m_plots;
 
+	struct annot_data
+	{
+		annot_data() : ann(0), posm( wxPLAnnotationMapping::FRACTIONAL ), ppos(PLOT_TOP), xap(X_BOTTOM), yap(Y_LEFT) { }
+		wxPLAnnotation *ann;
+		wxPLAnnotationMapping::PositionMode posm;
+		PlotPos ppos;
+		AxisPos xap, yap;
+	};
+
+	std::vector<annot_data> m_annotations;
 
 	struct legend_item
 	{

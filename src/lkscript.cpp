@@ -208,6 +208,21 @@ void fcall_newplot( lk::invoke_t &cxt )
 	}
 }
 
+static wxColour lk_to_colour( lk::vardata_t *arg )
+{
+	if ( arg->type() == lk::vardata_t::VECTOR
+		&& arg->length() == 3 )
+	{
+		int r = arg->index(0)->as_integer();
+		int g = arg->index(1)->as_integer();
+		int b = arg->index(2)->as_integer();
+
+		return wxColour(r,g,b);
+	}
+	else
+		return wxColour( wxString(arg->as_string().c_str()));
+}
+
 void fcall_plot( lk::invoke_t &cxt )
 {
 	LK_DOC("plot", "Creates an XY line, bar, horizontal bar, or scatter plot. Options include thick, type, color, xap, yap, xlabel, ylabel, series, baseline, stackon, style.", "(array:x, array:y, table:options):void");
@@ -261,17 +276,7 @@ void fcall_plot( lk::invoke_t &cxt )
 			
 			if (lk::vardata_t *arg = t.lookup("color") )
 			{
-				if ( arg->type() == lk::vardata_t::VECTOR
-					&& arg->length() == 3 )
-				{
-					int r = arg->index(0)->as_integer();
-					int g = arg->index(1)->as_integer();
-					int b = arg->index(2)->as_integer();
-
-					col = wxColour(r,g,b);
-				}
-				else
-					col = wxColour( wxString(arg->as_string().c_str()));
+				col = lk_to_colour( arg );
 			}
 
 			if (lk::vardata_t *arg = t.lookup("xap"))
@@ -315,6 +320,89 @@ void fcall_plot( lk::invoke_t &cxt )
 		delete [] x;
 		delete [] y;
 	}
+}
+
+void fcall_annotate( lk::invoke_t &cxt )
+{
+	LK_DOC( "annotate", "Adds an annotation (text or line) on a plot surface. Options: color, size, align{left,center,right}, angle, style{solid,dot,dash,dotdash}, position{axis,fractional,points}.", "(string or [x0 y0], [x y], table:options):none" );
+
+	wxPLPlotCtrl *plot = GetPlotSurface( 
+		(s_curToplevelParent!=0)
+			? s_curToplevelParent 
+			: GetCurrentTopLevelWindow() );
+
+	wxRealPoint pos(cxt.arg(1).index(0)->as_number(),
+			cxt.arg(1).index(1)->as_number() );
+
+	double size = 0;
+	double angle = 0;
+	wxColour color( *wxBLACK );
+	wxPLTextLayout::TextAlignment align = wxPLTextLayout::LEFT;
+	wxPLOutputDevice::Style style = wxPLOutputDevice::SOLID;
+	wxPLAnnotationMapping::PositionMode posm = wxPLAnnotationMapping::AXIS;
+
+	if ( cxt.arg_count() > 2 )
+	{
+		lk::vardata_t &opts = cxt.arg(2).deref();
+		if ( lk::vardata_t *o = opts.lookup( "color" ) )
+		{
+			color = lk_to_colour( o );
+		}
+
+		if ( lk::vardata_t *o = opts.lookup( "size" ) )
+		{
+			size = o->as_number();
+		}
+
+		if ( lk::vardata_t *o = opts.lookup( "align" ) )
+		{
+			wxString A( o->as_string().Lower() );
+			if ( A == "center" ) align = wxPLTextLayout::CENTER;
+			else if ( A == "right" ) align = wxPLTextLayout::RIGHT;
+		}
+
+		if ( lk::vardata_t *o = opts.lookup( "angle" ) )
+		{
+			angle = o->as_number();
+		}
+
+		if ( lk::vardata_t *o = opts.lookup( "style" ) )
+		{
+			wxString A( o->as_string().Lower() );
+			if ( A == "dot" || A == "dotted" ) style = wxPLOutputDevice::DOT;
+			else if ( A == "dash" || A == "dashed" ) style = wxPLOutputDevice::DASH;
+			else if ( A == "dotdash" ) style = wxPLOutputDevice::DOTDASH;
+		}
+
+		if ( lk::vardata_t *o = opts.lookup( "position" ) )
+		{
+			wxString A( o->as_string().Lower() );
+			if ( A == "fractional" ) posm = wxPLAnnotationMapping::FRACTIONAL;
+			if ( A == "points" ) posm = wxPLAnnotationMapping::POINTS;
+		}
+
+	}
+	
+
+	if ( cxt.arg(0).deref().type() == lk::vardata_t::STRING )
+	{
+		plot->AddAnnotation( new wxPLTextAnnotation( cxt.arg(0).as_string(),
+			pos, size, angle, color, align ), posm );
+	}
+	else if ( cxt.arg(0).deref().type() == lk::vardata_t::VECTOR )
+	{
+		wxRealPoint p0( cxt.arg(0).index(0)->as_number(),
+			cxt.arg(0).index(1)->as_number() );
+
+		std::vector<wxRealPoint> pts;
+		pts.push_back( pos );
+		pts.push_back( p0 );
+		if ( size <= 0 ) size = 1;
+		plot->AddAnnotation( new wxPLLineAnnotation( pts, size, color, style ), posm );
+	}
+	
+	plot->Refresh();
+
 }
 
 void fcall_plotopt( lk::invoke_t &cxt )
@@ -1194,6 +1282,7 @@ lk::fcall_t* wxLKPlotFunctions()
 		fcall_newplot,
 		fcall_plot,
 		fcall_plotopt,
+		fcall_annotate,
 		fcall_plotout,
 		fcall_axis, 
 		fcall_meshgrid,

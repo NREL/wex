@@ -87,7 +87,7 @@ wxPLTextLayout::wxPLTextLayout( wxPLOutputDevice &dc, const wxString &text, Text
 	if ( text.IsEmpty() ) return;
 
 	// get current font state for subsequent relative adjustments
-	double fontPoints = dc.Font();
+	double fontPoints = dc.TextPoints();
 
 	// split text into lines, and parse each one into text pieces after resolving escape sequences
 	wxArrayString lines = wxStringTokenize( text, "\r\n" );
@@ -103,7 +103,7 @@ wxPLTextLayout::wxPLTextLayout( wxPLOutputDevice &dc, const wxString &text, Text
 		{
 			text_piece &tp = m_lines[i][j];
 			double width, height;
-			dc.Font( tp.state == text_piece::NORMAL ? fontPoints : fontPoints-FontPointAdjust );
+			dc.TextPoints( tp.state == text_piece::NORMAL ? fontPoints : fontPoints-FontPointAdjust );
 			dc.Measure( tp.text, &width, &height );
 			tp.size.x = width;
 			tp.size.y = height;
@@ -111,11 +111,11 @@ wxPLTextLayout::wxPLTextLayout( wxPLOutputDevice &dc, const wxString &text, Text
 	}
 
 	// obtain the approximate heights for normal and small text
-	dc.Font( fontPoints-FontPointAdjust );
+	dc.TextPoints( fontPoints-FontPointAdjust );
 	double height_small = fontPoints-FontPointAdjust;
 	dc.Measure( "0", NULL, &height_small );
 
-	dc.Font( fontPoints );
+	dc.TextPoints( fontPoints );
 	double height_normal = fontPoints;
 	dc.Measure( "0", NULL, &height_normal );
 
@@ -203,7 +203,7 @@ void wxPLTextLayout::Render( wxPLOutputDevice &dc, double x, double y, double ro
 	bool aa = dc.GetAntiAliasing();
 	if ( drawBounds ) dc.SetAntiAliasing( false );
 
-	double fontPoints = dc.Font();
+	double fontPoints = dc.TextPoints();
 
 	if ( drawBounds )
 	{
@@ -220,7 +220,7 @@ void wxPLTextLayout::Render( wxPLOutputDevice &dc, double x, double y, double ro
 			for ( size_t j=0;j<m_lines[i].size();j++ )
 			{
 				text_piece &tp = m_lines[i][j];
-				dc.Font( tp.state == text_piece::NORMAL ? fontPoints : fontPoints-FontPointAdjust );
+				dc.TextPoints( tp.state == text_piece::NORMAL ? fontPoints : fontPoints-FontPointAdjust );
 				dc.Text( tp.text, x + tp.origin.x, y + tp.origin.y );				
 				if ( drawBounds )
 					dc.Rect( x+tp.origin.x, y+tp.origin.y, tp.size.x, tp.size.y );
@@ -237,7 +237,7 @@ void wxPLTextLayout::Render( wxPLOutputDevice &dc, double x, double y, double ro
 			for ( size_t j=0;j<m_lines[i].size();j++ )
 			{
 				text_piece &tp = m_lines[i][j];
-				dc.Font( tp.state == text_piece::NORMAL ? fontPoints : fontPoints-FontPointAdjust );
+				dc.TextPoints( tp.state == text_piece::NORMAL ? fontPoints : fontPoints-FontPointAdjust );
 				double rotx = tp.origin.x*costheta - tp.origin.y*sintheta;
 				double roty = tp.origin.x*sintheta + tp.origin.y*costheta;
 				dc.Text( tp.text, x + rotx, y + roty, rotationDegrees );
@@ -246,7 +246,7 @@ void wxPLTextLayout::Render( wxPLOutputDevice &dc, double x, double y, double ro
 	}
 
 	// restore font state
-	dc.Font( fontPoints );
+	dc.TextPoints( fontPoints );
 	if ( drawBounds ) dc.SetAntiAliasing( aa );
 }
 
@@ -423,7 +423,7 @@ std::vector<double> wxPLTextLayoutDemo::Draw( wxPLOutputDevice &dc, const wxPLRe
 	
 	// test 1
 	{
-		dc.Font( 0 );
+		dc.TextPoints( 0 );
 		wxPLTextLayout t1( dc, "basic text, nothing special" );
 		t1.Render( dc, geom.x+20, geom.y+20, 0.0, true );
 		vlines.push_back( geom.x+20 );
@@ -432,7 +432,7 @@ std::vector<double> wxPLTextLayoutDemo::Draw( wxPLOutputDevice &dc, const wxPLRe
 
 	// test 2
 	{
-		dc.Font( 2 );
+		dc.TextPoints( 2 );
 		//gc->SetFont( wxFont(18, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Century Schoolbook"), *wxBLACK );
 		wxPLTextLayout t2( dc, "escape^sup_sub \\\\  \\  \\euro \\badcode \\Omega~\\Phi\\ne\\delta, but\n\\Kappa\\approx\\zeta \\emph\\qmark, and this is the end of the text!. Cost was 10 \\pound, or 13.2\\cent" );
 		t2.Render( dc, geom.x+20, geom.y+120, 0.0, true );
@@ -440,7 +440,8 @@ std::vector<double> wxPLTextLayoutDemo::Draw( wxPLOutputDevice &dc, const wxPLRe
 	
 	// test 3
 	{
-		dc.Font( -1, *wxRED );
+		dc.TextPoints( -1);
+		dc.TextColour(*wxRED );
 		//gc->SetFont( wxFont(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Consolas"), *wxBLACK );
 		wxPLTextLayout t3( dc, "super^2 ,not_\\rho\\gamma f hing_{special,great,best}\n\\alpha^^\\beta c^\\delta  efjhijkl__mnO^25 pq_0 r\\Sigma tuvwxyz\nABCDEFGHIJKL^^MNOPQRSTUVWXZY" );
 		t3.Render( dc, geom.x+20, geom.y+420, 90, true );
@@ -452,7 +453,8 @@ std::vector<double> wxPLTextLayoutDemo::Draw( wxPLOutputDevice &dc, const wxPLRe
 	
 	// test 4
 	{
-		dc.Font(-2, *wxBLUE );
+		dc.TextPoints(-2);
+		dc.TextColour( *wxBLUE );
 		//gc->SetFont( wxFont(16, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL), *wxBLACK );
 		wxPLTextLayout t4( dc, "x_1^2_3 abc=y_2^4" );
 		t4.Render( dc, geom.x+200, geom.y+70, 0, false );
@@ -460,7 +462,7 @@ std::vector<double> wxPLTextLayoutDemo::Draw( wxPLOutputDevice &dc, const wxPLRe
 
 	// test 5
 	{
-		dc.Font(+3 );
+		dc.TextPoints(+3 );
 		//gc->SetFont( wxFont(7, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL), *wxBLACK );
 		wxPLTextLayout t5( dc, "small (7): x_1^2_3 abc=y_2^4" );
 		t5.Render( dc, geom.x+500, geom.y+50, 0, true );
@@ -468,7 +470,7 @@ std::vector<double> wxPLTextLayoutDemo::Draw( wxPLOutputDevice &dc, const wxPLRe
 	
 	// test 6
 	{
-		dc.Font(-3 );
+		dc.TextPoints(-3 );
 		//gc->SetFont( wxFont(8, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL), *wxBLACK );
 		wxPLTextLayout t6( dc, "small (8): x_1^2_3 abc=y_2^4" );
 		t6.Render( dc, geom.x+500, geom.y+80, 0, false );
@@ -476,7 +478,7 @@ std::vector<double> wxPLTextLayoutDemo::Draw( wxPLOutputDevice &dc, const wxPLRe
 	
 	// test 7
 	{
-		dc.Font(-2 );
+		dc.TextPoints(-2 );
 		//gc->SetFont( wxFont(9, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL), *wxBLACK );
 		wxPLTextLayout t7( dc, "small (9): x_1^2_3 abc=y_2^4" );
 		t7.Render( dc, geom.x+500, geom.y+100, 0, false );
@@ -484,7 +486,8 @@ std::vector<double> wxPLTextLayoutDemo::Draw( wxPLOutputDevice &dc, const wxPLRe
 	
 	// test 8
 	{
-		dc.Font(-1, *wxGREEN );
+		dc.TextPoints(-1);
+		dc.TextColour(*wxGREEN );
 		//gc->SetFont( wxFont(10, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL), *wxBLACK );
 		//wxPLGraphicsOutputDevice dc( gc );
 		wxPLTextLayout t8( dc, "small (10): x_1^2_3 abc=y_2^4" );
