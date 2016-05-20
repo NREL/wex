@@ -522,6 +522,7 @@ void wxPLTextLayoutDemo::OnSize( wxSizeEvent & )
 #include FT_FREETYPE_H
 
 //#define SUBPIXEL_RENDERING 1
+//#define GAMMA_CORRECTION 1
 
 #ifdef SUBPIXEL_RENDERING
 #include FT_LCD_FILTER_H
@@ -543,7 +544,7 @@ static bool check_freetype_init()
 		FT_Error err = FT_Init_FreeType( &ft_library );
 
 #ifdef SUBPIXEL_RENDERING
-		if ( err==0) FT_Library_SetLcdFilter( ft_library, FT_LCD_FILTER_DEFAULT  );
+		if ( err==0 ) FT_Library_SetLcdFilter( ft_library, FT_LCD_FILTER_DEFAULT  );
 #endif
 		return err==0;
 	}
@@ -599,6 +600,8 @@ int wxFreeTypeFindFont( const wxString &font )
 // and: https://bel.fi/alankila/lcd/alpcor.html
 // also: https://www.freetype.org/freetype2/docs/text-rendering-general.html
 
+
+#ifdef GAMMA_CORRECTION
 
 static unsigned char actable[65536] = {
 0,0,1,2,2,3,4,4,5,5,6,7,7,8,9,9,10,11,11,12,13,13,13,14,15,15,16,17,17,18,19,19,20,21,21,22,23,23,24,24,25,26,27,28,28,29,29,30,31,31,32,33,33,34,34,35,36,37,37,38,39,39,40,41,41,42,43,43,44,45,45,46,47,47,48,49,49,50,51,52,52,53,53,55,55,56,57,57,58,58,59,60,61,62,62,63,64,64,65,66,66,67,68,69,70,70,71,72,72,73,74,74,75,76,76,77,78,79,79,80,81,82,83,84,84,85,86,87,88,88,89,90,91,91,91,92,93,94,95,95,96,97,98,99,100,100,101,102,103,104,105,106,107,107,107,108,109,110,111,112,113,114,115,116,116,117,118,119,120,121,122,123,124,124,125,126,127,128,129,129,130,131,132,134,135,135,136,137,138,140,141,141,142,143,144,146,146,147,148,150,150,151,152,154,155,155,157,158,160,160,161,163,164,164,166,168,168,169,171,173,173,175,176,176,178,180,182,182,184,186,186,189,191,191,193,196,196,199,201,201,204,207,207,210,214,214,218,222,222,226,226,232,238,238,246,255,
@@ -859,9 +862,24 @@ static unsigned char actable[65536] = {
 0,5,9,13,16,19,22,24,27,29,32,34,36,38,40,42,44,46,48,50,52,54,56,57,59,61,62,64,65,67,69,70,72,73,75,76,77,79,80,82,83,84,86,87,88,90,91,92,93,95,96,97,98,100,101,102,103,104,105,107,108,109,110,111,112,113,114,115,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,140,141,142,143,144,145,146,147,148,149,150,150,151,152,153,154,155,156,157,157,158,159,160,161,162,163,163,164,165,166,167,167,168,169,170,171,171,172,173,174,175,175,176,177,178,178,179,180,181,181,182,183,184,184,185,186,187,187,188,189,190,190,191,192,193,193,194,195,195,196,197,198,198,199,200,200,201,202,202,203,204,205,205,206,207,207,208,209,209,210,211,211,212,213,213,214,215,215,216,216,217,218,218,219,220,220,221,222,222,223,224,224,225,225,226,227,227,228,229,229,230,230,231,232,232,233,233,234,235,235,236,236,237,238,238,239,239,240,241,241,242,242,243,244,244,245,245,246,247,247,248,248,249,249,250,251,251,252,252,253,253,254,254,255,
 };
 
-static unsigned char alpha_correct(unsigned char a, unsigned char foreground) {
+static unsigned char gamma_correct(unsigned char a, unsigned char foreground) {
 	return actable[(foreground << 8) | a];
 }
+#endif
+
+unsigned char scale( int alpha, int color )
+{
+	return (unsigned char)( alpha * color / 255 );
+}
+
+unsigned char blend( int alpha, int color1, int color2 )
+{
+	return (unsigned char)( ( color1 * alpha + (255-alpha)*color2 )/255 );
+}
+
+// blending uncorrected formula (same as GAMMA=1.0):
+   // double output = input1 * alpha + input2 * (1.0 - alpha);
+
 
 //#define GAMMA 1.2
 /* input1 = source color 1, 0 .. 1
@@ -875,7 +893,7 @@ static unsigned char alpha_correct(unsigned char a, unsigned char foreground) {
 // double output = pow(tmp, 1.0/GAMMA);
 
 
-static void wxFreeTypeDrawGlyph( unsigned char *rgb, unsigned char *alpha, 
+static void wxFreeTypeGlyph( unsigned char *rgb, unsigned char *alpha, 
 	size_t width, size_t height,
 	unsigned char R, unsigned char G, unsigned char B,
 	FT_Bitmap *bitmap, int x, int y )
@@ -913,83 +931,111 @@ static void wxFreeTypeDrawGlyph( unsigned char *rgb, unsigned char *alpha,
 			unsigned char f_r = bitmap->buffer[ pixpos ];
 			unsigned char f_g = bitmap->buffer[ pixpos+1 ];
 			unsigned char f_b = bitmap->buffer[ pixpos+2 ];
+			
+			// use green as alpha for overall intensity: http://alienryderflex.com/sub_pixel/
 
-			rgb[ 3*index   ] = alpha_correct( f_r, R );
-			rgb[ 3*index+1 ] = alpha_correct( f_g, G );
-			rgb[ 3*index+2 ] = alpha_correct( f_b, B );
-			alpha[index] = 255;
+#ifdef GAMMA_CORRECTION
+
+			rgb[ 3*index   ] = gamma_correct( 255-f_r, R );
+			rgb[ 3*index+1 ] = gamma_correct( 255-f_g, G );
+			rgb[ 3*index+2 ] = gamma_correct( 255-f_b, B );
+			alpha[index] =  255;
+#else
+			if ( f_g > 0 || f_g > 0 || f_b > 0 )
+			{
+#if SUBPIXEL_BLACK_TEXT_ONLY
+				// produces good looking black text on horizontally oriented LCDs.
+				rgb[ 3*index   ] = 255-f_r;
+				rgb[ 3*index+1 ] = 255-f_g;
+				rgb[ 3*index+2 ] = 255-f_b;	
+#else
+				unsigned char A = f_g;
+				// colored text looks messed up
+				rgb[ 3*index   ] = blend( 255-f_r, 255-f_r, R );
+				rgb[ 3*index+1 ] = blend( 255-f_g, 255-f_g, G );
+				rgb[ 3*index+2 ] = blend( 255-f_b, 255-f_b, B );
+#endif
+				alpha[index] =  A;
+			}
+#endif
 
 #else
 			unsigned char A = bitmap->buffer[q * bitmap->pitch + p];
-
-			rgb[ 3*index ] = R;
-			rgb[ 3*index+1 ] = G;
-			rgb[ 3*index+2 ] = B;
-			alpha[index] = A;
+			if ( A > 0 )
+			{
+				rgb[ 3*index ]   = R;
+				rgb[ 3*index+1 ] = G;
+				rgb[ 3*index+2 ] = B;
+				alpha[index]     = A;//blend( A, A, alpha[index] );
+			}
 #endif
 		}
 	}
 }
 
-// see: http://jcgt.org/published/0002/01/04/paper.pdf
-//#define HINTING_TRICK 1
+// see also : http://jcgt.org/published/0002/01/04/paper.pdf
 
-
-wxImage wxFreeTypeDraw( int ifnt, double points, unsigned int dpi, const wxString &text, const wxColour &c, wxSize *measure )
-{	
-	if ( ifnt < 0 || ifnt >= (int)ft_faces.size() || !check_freetype_init() ) 
-		return wxNullImage;
+void wxFreeTypeDraw( wxImage *img, bool init_img, const wxPoint &pos, 
+	int ifnt, double points, unsigned int dpi, 
+	const wxString &text, const wxColour &c, double angle )
+{
+	if ( text.IsEmpty() || ifnt < 0 || ifnt >= (int)ft_faces.size() || !check_freetype_init() || !img ) 
+		return;
 	
-	wxSize size;
-	if ( measure ) size = *measure;
-	else size = wxFreeTypeMeasure( ifnt, points, dpi, text );
+	wxSize size( img->GetWidth(), img->GetHeight() );
 
-	wxImage img( size.x, size.y );
-	img.InitAlpha();
+	if ( !img->HasAlpha() )
+		img->InitAlpha();
 
 	FT_Face face = ft_faces[ifnt].face;
-	
-#ifdef HINTING_TRICK
-	const double scale = 100.0;
-	FT_Matrix matrix = { (int)((1.0/scale) * 0x10000L),
-			(int)((0.0) * 0x10000L),
-			(int)((0.0) * 0x10000L),
-			(int)((1.0) * 0x10000L) };
-	FT_Set_Transform( face, &matrix, NULL );
-#else
-	const double scale = 1.0;
-#endif
-	
-	FT_Error err = FT_Set_Char_Size( face, (int)(points*64.0), 0, dpi*scale, dpi );
+	FT_Error err = FT_Set_Char_Size( face, (int)(points*64.0), 0, dpi, dpi );
 	
 	
 	unsigned char R = c.Red();
 	unsigned char G = c.Green();
 	unsigned char B = c.Blue();
+	unsigned char *rgb = img->GetData();
+	unsigned char *alpha = img->GetAlpha();
 
-	size_t width = img.GetWidth();
-	size_t height = img.GetHeight();
-	unsigned char *rgb = img.GetData();
-	unsigned char *alpha = img.GetAlpha();
-
-	// initialize rgb and alpha
-	for( size_t i=0;i<width*height;i++ )
+	if ( init_img )
 	{
-		rgb[3*i] = R;
-		rgb[3*i+1] = G;
-		rgb[3*i+2] = B;
-		alpha[i] = 0;
+		// initialize rgb and alpha
+		for( size_t i=0;i<size.x*size.y;i++ )
+		{
+			rgb[3*i] = R;
+			rgb[3*i+1] = G;
+			rgb[3*i+2] = B;
+			alpha[i] = 0;
+		}
 	}
 
-	int pen_x = 0;
-	int pen_y = 0;
+	
+
+	angle *= M_PI/180;
+
+	double pix_ascent = ((double)face->ascender)/((double)face->units_per_EM) * points * dpi/72.0;
+	
+	wxPoint origin( pos );
+
+	origin.x += (int)(pix_ascent*sin(angle));
+	origin.y += (int)(pix_ascent*cos(angle));
+	
+	FT_Matrix  matrix;
+	matrix.xx = (FT_Fixed)( cos( angle ) * 0x10000L );
+	matrix.xy = (FT_Fixed)(-sin( angle ) * 0x10000L );
+	matrix.yx = (FT_Fixed)( sin( angle ) * 0x10000L );
+	matrix.yy = (FT_Fixed)( cos( angle ) * 0x10000L );
 	
 	bool use_kerning = FT_HAS_KERNING( face );
 	FT_UInt previous = 0, glyph_index;
-	int px_ascent = ((double)face->ascender)/((double)face->units_per_EM) * points * dpi/72.0;
 	
+	FT_Vector pen;
+	pen.x = 0;
+	pen.y = 0;
 	for( wxString::const_iterator it = text.begin(); it != text.end(); ++it )
 	{
+		FT_Set_Transform( face, &matrix, &pen );
+
 		glyph_index = FT_Get_Char_Index( face, *it );
 
 		/* retrieve kerning distance and move pen position */
@@ -997,11 +1043,18 @@ wxImage wxFreeTypeDraw( int ifnt, double points, unsigned int dpi, const wxStrin
 		{
 			FT_Vector  delta;
 			FT_Get_Kerning( face, previous, glyph_index, FT_KERNING_DEFAULT, &delta );
-			pen_x += delta.x >> 6;
+			pen.x += delta.x >> 6;
 		}
 
-		err = FT_Load_Glyph( face, glyph_index, FT_LOAD_DEFAULT
-			| FT_LOAD_TARGET_LCD );
+		unsigned int mode = FT_LOAD_DEFAULT;
+
+		if ( angle != 0.0 ) // see: http://chanae.walon.org/pub/ttf/ttf_glyphs.htm
+			mode |= FT_LOAD_NO_HINTING;
+		
+#ifdef SUBPIXEL_RENDERING
+		mode |= FT_LOAD_TARGET_LCD;
+#endif
+		err = FT_Load_Glyph( face, glyph_index, mode );
 		if ( err ) continue;
 
 		err = FT_Render_Glyph( face->glyph, 
@@ -1014,19 +1067,17 @@ wxImage wxFreeTypeDraw( int ifnt, double points, unsigned int dpi, const wxStrin
 
 		if ( err ) continue;
 
-		wxFreeTypeDrawGlyph( rgb, alpha, width, height, R, G, B,
+		wxFreeTypeGlyph( rgb, alpha, size.x, size.y, R, G, B,
 			&face->glyph->bitmap, 
-			pen_x + face->glyph->bitmap_left,
-			pen_y + px_ascent - face->glyph->bitmap_top );
+			origin.x + pen.x + face->glyph->bitmap_left,
+			origin.y + pen.y - face->glyph->bitmap_top );
 
 		// increment pen pos
-		pen_x += face->glyph->advance.x >> 6;
-		pen_y += face->glyph->advance.y >> 6; // not useful for now (?)
+		pen.x += (face->glyph->advance.x >> 6);
+		pen.y -= (face->glyph->advance.y >> 6);
 
 		previous = glyph_index;
 	}
-
-	return img;
 }
 
 
@@ -1036,19 +1087,8 @@ wxSize wxFreeTypeMeasure( int fnt, double points, unsigned int dpi, const wxStri
 	if ( fnt < 0 || fnt >= (int)ft_faces.size() || !check_freetype_init() ) return wxSize( std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN() );
 
 	FT_Face face = ft_faces[fnt].face;
-
-#ifdef HINTING_TRICK
-	const double scale = 100.0;
-	FT_Matrix matrix = { (int)((1.0/scale) * 0x10000L),
-			(int)((0.0) * 0x10000L),
-			(int)((0.0) * 0x10000L),
-			(int)((1.0) * 0x10000L) };
-	FT_Set_Transform( face, &matrix, NULL );
-#else
-	const double scale = 1.0;
-#endif
 	
-	FT_Error err = FT_Set_Char_Size( face, (int)(points*64.0), 0, dpi*scale, dpi );
+	FT_Error err = FT_Set_Char_Size( face, (int)(points*64.0), 0, dpi, dpi );
 
 	FT_UInt previous, glyph_index;
 	FT_GlyphSlot slot = face->glyph;
@@ -1080,7 +1120,7 @@ wxSize wxFreeTypeMeasure( int fnt, double points, unsigned int dpi, const wxStri
 		previous = glyph_index;
 	}
 
-	return wxSize( pen_x, ((double)(face->ascender-face->descender))/((double)face->units_per_EM) * points * dpi/72.0 );
+	return wxSize( abs(pen_x), ((double)(face->ascender-face->descender))/((double)face->units_per_EM) * points * dpi/72.0 );
 }
 
 #include <wx/dcbuffer.h>
@@ -1113,16 +1153,43 @@ void wxFreeTypeDemo::OnPaint( wxPaintEvent & )
 	dc.SetBrush( *wxYELLOW_BRUSH );
 	dc.DrawRectangle( 100, 10, 100, 100 );
 
-	wxImage img1 = wxFreeTypeDraw( face1, 48, 96, text + " (" + wxFreeTypeFontName(face1) + ")", *wxBLACK );
-	dc.DrawBitmap( wxBitmap(img1), wxPoint(10,10) );
+	wxImage img( size.x, size.y );
+	int dpi = 200;
+	wxFreeTypeDraw( &img, true,  wxPoint(0,0), face1, 14,     dpi, text + " (" + wxFreeTypeFontName(face1) + ")", *wxBLACK );
+	wxFreeTypeDraw( &img, false, wxPoint(10,200),face2, 12,   dpi, text + " (" + wxFreeTypeFontName(face2) + ")", *wxRED, 45.0 );
+	wxFreeTypeDraw( &img, false, wxPoint(10,200),face1, 14,   dpi, text + " (" + wxFreeTypeFontName(face2) + ")", *wxBLACK, -45.0 );
+	wxFreeTypeDraw( &img, false, wxPoint(150,150), face1, 26, dpi, "Vertical text", *wxBLUE, 90 );
+	wxFreeTypeDraw( &img, false, wxPoint(200,200), face2, 26, dpi, "Vertical text", "Dark Green", -90 );
+	wxFreeTypeDraw( &img, false, wxPoint(300,200), face2, 16, dpi, "Flipped backwards super text", *wxCYAN, 180 );
+	
+	wxPoint p1(350,200);
+	dc.SetPen( *wxBLACK_PEN );
+	int dist = wxFreeTypeMeasure( face2, 8, dpi, "text to rotate").x;
+	for( double angle = 0;angle<=90;angle+=10 )
+	{
+		//wxPoint vec( dist*cos(angle*M_PI/180),dist*sin(-angle*M_PI/180) );
+		//dc.DrawLine( p1, p1+vec  );
+		//dc.DrawCircle( p1+vec, 3 );
+		wxFreeTypeDraw( &img, false, wxPoint(350,200), face2, 8, dpi, "text to rotate", "Forest Green", angle );
+	}
 
-	wxImage img2 = wxFreeTypeDraw( face2, 14, 72, text + " (" + wxFreeTypeFontName(face2) + ")", *wxRED );
-	dc.DrawBitmap( wxBitmap(img2), wxPoint(10,10+img1.GetHeight()) );
+	wxFreeTypeDraw( &img, false, wxPoint(0, 170), face1, 12, dpi, "Text positioning", *wxBLACK, 0 );
+	wxFreeTypeDraw( &img, false, wxPoint(350,170), face1, 12, dpi, "Text positioning", *wxBLACK, 0 );
+	wxFreeTypeDraw( &img, false, wxPoint(650,170), face1, 12, dpi, "Text positioning", *wxBLACK, 0 );
+	wxFreeTypeDraw( &img, false, wxPoint(350,570), face1, 12, dpi, "Text positioning", *wxBLACK, 0 );
+	wxFreeTypeDraw( &img, false, wxPoint(650,570), face1, 12, dpi, "Text positioning", *wxBLACK, 0 );
+	
+	dc.DrawBitmap( wxBitmap(img), wxPoint(0,0) );
 
-	dc.SetBrush( *wxTRANSPARENT_BRUSH );
-	dc.SetPen( *wxLIGHT_GREY_PEN );
-	dc.DrawRectangle( wxPoint(10,10), wxSize( img1.GetWidth(), img1.GetHeight() ) );
-	dc.DrawRectangle( wxPoint(10,10+img1.GetHeight()), wxSize( img2.GetWidth(), img2.GetHeight() ) );
+	dc.SetPen( *wxBLACK_PEN );
+	dc.SetBrush( *wxBLACK_BRUSH );
+	dc.DrawRectangle( 320,170,30,30) ;
+	dc.DrawRectangle( 620,170,30,30) ;
+	dc.DrawRectangle( 320,570,30,30) ;
+	dc.DrawRectangle( 620,570,30,30) ;
+
+	dc.SetPen( *wxCYAN_PEN );
+	dc.DrawPoint( 350,200 );
 }
 
 void wxFreeTypeDemo::OnSize( wxSizeEvent & )

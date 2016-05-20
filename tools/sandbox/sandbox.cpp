@@ -320,7 +320,7 @@ void TestTextLayout()
 
 void TestFreeTypeText()
 {
-	wxFrame *frame = new wxFrame( 0, wxID_ANY, "FreeType text output", wxDefaultPosition, wxSize(800,400) );
+	wxFrame *frame = new wxFrame( 0, wxID_ANY, "FreeType text output", wxDefaultPosition, wxSize(800,800) );
 	new wxFreeTypeDemo( frame );
 	frame->Show();
 }

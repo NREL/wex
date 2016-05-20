@@ -63,7 +63,9 @@ wxArrayString wxFreeTypeListFonts();
 wxString wxFreeTypeFontName( int ifnt );
 int wxFreeTypeFindFont( const wxString &font );
 wxSize wxFreeTypeMeasure( int ifnt, double points, unsigned int dpi, const wxString &text );
-wxImage wxFreeTypeDraw( int ifnt, double points, unsigned int dpi, const wxString &text, const wxColour &c=*wxBLACK, wxSize *measure = 0 );
+void wxFreeTypeDraw( wxImage *img, bool init_img, const wxPoint &pos, 
+	int ifnt, double points, unsigned int dpi, 
+	const wxString &text, const wxColour &c=*wxBLACK, double angle = 0.0 );
 
 class wxFreeTypeDemo : public wxWindow
 {
