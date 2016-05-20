@@ -22,10 +22,11 @@ class wxCodeEditCtrl : public wxStyledTextCtrl
 public:
 	wxCodeEditCtrl( wxWindow *parent, int id = wxID_ANY, 
 		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize );
+	
+	virtual bool SetFont(const wxFont& font);
 
 	bool ReadAscii( const wxString &file );
 	bool WriteAscii( const wxString &file );
-
 	enum Language { NONE, CPP, C, LK, VBA, HTML, TEXT, TRNSYS, PYTHON };
 
 	void SetLanguage( const wxString &fileName );

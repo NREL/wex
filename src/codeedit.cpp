@@ -287,6 +287,11 @@ void wxCodeEditCtrl::SetLanguage( const wxString &fileName )
 	SetLanguage( GetLanguage( fileName ) );
 }
 
+bool wxCodeEditCtrl::SetFont(const wxFont& font)
+{
+    StyleSetFont(wxSTC_STYLE_DEFAULT, (wxFont&)font);
+    return wxStyledTextCtrl::SetFont(font);
+}
 void wxCodeEditCtrl::SetLanguage( Language lang )
 {
 	// first, revert to standard style
@@ -304,7 +309,12 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
 		DEFAULT_FONT_FACE );
 
 	SetFont( font );
-	StyleSetFont (wxSTC_STYLE_DEFAULT, font);
+
+	// not sure why i need to do this in wx 3.1 when
+	// I didn't in wx 3.0.2.  For whatever reason the stctest app
+	// in wxwidgets does this too.  weird.  
+	for( size_t i=0;i<32;i++ )
+		StyleSetFont( i, font );
 		
 	wxFont fontslant( font );
 	fontslant.SetStyle( wxFONTSTYLE_ITALIC );
