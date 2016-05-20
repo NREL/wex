@@ -1015,10 +1015,10 @@ void wxFreeTypeDraw( wxImage *img, bool init_img, const wxPoint &pos,
 
 	double pix_ascent = ((double)face->ascender)/((double)face->units_per_EM) * points * dpi/72.0;
 	
-	wxPoint origin( pos );
+	wxRealPoint origin( pos.x, pos.y );
 
-	origin.x += (int)(pix_ascent*sin(angle));
-	origin.y += (int)(pix_ascent*cos(angle));
+	origin.x += pix_ascent*sin(angle);
+	origin.y += pix_ascent*cos(angle);
 	
 	FT_Matrix  matrix;
 	matrix.xx = (FT_Fixed)( cos( angle ) * 0x10000L );
@@ -1030,12 +1030,13 @@ void wxFreeTypeDraw( wxImage *img, bool init_img, const wxPoint &pos,
 	FT_UInt previous = 0, glyph_index;
 	
 	FT_Vector pen;
-	pen.x = 0;
-	pen.y = 0;
+	pen.x = (int)(origin.x * 64);
+	pen.y = (int)( (size.y - origin.y) * 64.0 );
+
 	for( wxString::const_iterator it = text.begin(); it != text.end(); ++it )
 	{
 		FT_Set_Transform( face, &matrix, &pen );
-
+		
 		glyph_index = FT_Get_Char_Index( face, *it );
 
 		/* retrieve kerning distance and move pen position */
@@ -1043,7 +1044,9 @@ void wxFreeTypeDraw( wxImage *img, bool init_img, const wxPoint &pos,
 		{
 			FT_Vector  delta;
 			FT_Get_Kerning( face, previous, glyph_index, FT_KERNING_DEFAULT, &delta );
+			FT_Vector_Transform( &delta, &matrix );
 			pen.x += delta.x >> 6;
+			pen.y += delta.y >> 6;
 		}
 
 		unsigned int mode = FT_LOAD_DEFAULT;
@@ -1069,12 +1072,12 @@ void wxFreeTypeDraw( wxImage *img, bool init_img, const wxPoint &pos,
 
 		wxFreeTypeGlyph( rgb, alpha, size.x, size.y, R, G, B,
 			&face->glyph->bitmap, 
-			origin.x + pen.x + face->glyph->bitmap_left,
-			origin.y + pen.y - face->glyph->bitmap_top );
+			face->glyph->bitmap_left,
+			size.y - face->glyph->bitmap_top );
 
 		// increment pen pos
-		pen.x += (face->glyph->advance.x >> 6);
-		pen.y -= (face->glyph->advance.y >> 6);
+		pen.x += face->glyph->advance.x;
+		pen.y += face->glyph->advance.y;
 
 		previous = glyph_index;
 	}
@@ -1152,28 +1155,34 @@ void wxFreeTypeDemo::OnPaint( wxPaintEvent & )
 	dc.DrawLine( wxPoint(0,0), wxPoint(size.x,size.y) );
 	dc.SetBrush( *wxYELLOW_BRUSH );
 	dc.DrawRectangle( 100, 10, 100, 100 );
+	dc.SetBrush( wxBrush( wxColour(90,90,90) ) );
+	dc.SetPen( *wxTRANSPARENT_PEN );
+	dc.DrawRectangle( 0, 140, 300, 100 );
 
 	wxImage img( size.x, size.y );
-	int dpi = 200;
-	wxFreeTypeDraw( &img, true,  wxPoint(0,0), face1, 14,     dpi, text + " (" + wxFreeTypeFontName(face1) + ")", *wxBLACK );
+	int dpi = 96;
+	wxString demotext( text + " (" + wxFreeTypeFontName(face1) + ")" );
+	wxSize bbox = wxFreeTypeMeasure( face1, 14, dpi, demotext );
+	wxFreeTypeDraw( &img, true,  wxPoint(0,0), face1, 14,     dpi, demotext, *wxBLACK );
 	wxFreeTypeDraw( &img, false, wxPoint(10,200),face2, 12,   dpi, text + " (" + wxFreeTypeFontName(face2) + ")", *wxRED, 45.0 );
 	wxFreeTypeDraw( &img, false, wxPoint(10,200),face1, 14,   dpi, text + " (" + wxFreeTypeFontName(face2) + ")", *wxBLACK, -45.0 );
 	wxFreeTypeDraw( &img, false, wxPoint(150,150), face1, 26, dpi, "Vertical text", *wxBLUE, 90 );
 	wxFreeTypeDraw( &img, false, wxPoint(200,200), face2, 26, dpi, "Vertical text", "Dark Green", -90 );
+	wxFreeTypeDraw( &img, false, wxPoint(150,150), face1, 20, dpi, "WHITE TEXT", *wxWHITE, 10 );
 	wxFreeTypeDraw( &img, false, wxPoint(300,200), face2, 16, dpi, "Flipped backwards super text", *wxCYAN, 180 );
 	
 	wxPoint p1(350,200);
 	dc.SetPen( *wxBLACK_PEN );
-	int dist = wxFreeTypeMeasure( face2, 8, dpi, "text to rotate").x;
-	for( double angle = 0;angle<=90;angle+=10 )
+	dc.SetBrush( *wxGREEN_BRUSH );
+	int dist = wxFreeTypeMeasure( face2, 12, dpi, "text to rotate").x;
+	for( double angle = 0;angle<=270;angle+=22.5 )
 	{
-		//wxPoint vec( dist*cos(angle*M_PI/180),dist*sin(-angle*M_PI/180) );
-		//dc.DrawLine( p1, p1+vec  );
-		//dc.DrawCircle( p1+vec, 3 );
-		wxFreeTypeDraw( &img, false, wxPoint(350,200), face2, 8, dpi, "text to rotate", "Forest Green", angle );
+		wxPoint vec( dist*cos(angle*M_PI/180),dist*sin(-angle*M_PI/180) );
+		dc.DrawLine( p1, p1+vec  );
+		dc.DrawCircle( p1+vec, 3 );
+		wxFreeTypeDraw( &img, false, wxPoint(350,200), face2, 12, dpi, "text to rotate", "Forest Green", angle );
 	}
 
-	wxFreeTypeDraw( &img, false, wxPoint(0, 170), face1, 12, dpi, "Text positioning", *wxBLACK, 0 );
 	wxFreeTypeDraw( &img, false, wxPoint(350,170), face1, 12, dpi, "Text positioning", *wxBLACK, 0 );
 	wxFreeTypeDraw( &img, false, wxPoint(650,170), face1, 12, dpi, "Text positioning", *wxBLACK, 0 );
 	wxFreeTypeDraw( &img, false, wxPoint(350,570), face1, 12, dpi, "Text positioning", *wxBLACK, 0 );
@@ -1190,6 +1199,9 @@ void wxFreeTypeDemo::OnPaint( wxPaintEvent & )
 
 	dc.SetPen( *wxCYAN_PEN );
 	dc.DrawPoint( 350,200 );
+	dc.SetBrush( *wxTRANSPARENT_BRUSH );
+	dc.SetPen( *wxLIGHT_GREY_PEN );
+	dc.DrawRectangle( 0, 0, bbox.x, bbox.y );
 }
 
 void wxFreeTypeDemo::OnSize( wxSizeEvent & )
