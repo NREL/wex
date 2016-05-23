@@ -10,14 +10,14 @@
 
 #include <wx/wx.h>
 
-#if defined(_MSC_VER)||defined(__APPLE__)
+//#if defined(_MSC_VER)||defined(__APPLE__)
 #include <unordered_map>
 //using std::tr1::unordered_map;
 using std::unordered_map;
-#else
-#include <tr1/unordered_map>
-using std::tr1::unordered_map;
-#endif
+//#else
+//#include <tr1/unordered_map>
+//using std::tr1::unordered_map;
+//#endif
 
 class wxDVPlotCtrlSettings
 {
