@@ -10,9 +10,10 @@
 
 #include <wx/wx.h>
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER)||defined(__APPLE__)
 #include <unordered_map>
-using std::tr1::unordered_map;
+//using std::tr1::unordered_map;
+using std::unordered_map;
 #else
 #include <tr1/unordered_map>
 using std::tr1::unordered_map;

@@ -4,8 +4,18 @@
 #include <vector>
 
 #if defined(__APPLE__)||defined(__GNUC__)
+
+#ifdef _LIBCPP_VERSION
+//using libc++
+#include <unordered_map>
+using std::unordered_map;
+#else
+// using libstdc++
 #include <tr1/unordered_map>
-using namespace std::tr1;
+using std::tr1::unordered_map;
+#endif
+
+
 #else
 #include <unordered_map>
 using namespace std;
