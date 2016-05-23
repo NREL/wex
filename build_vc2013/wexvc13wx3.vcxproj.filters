@@ -306,9 +306,6 @@
     <ClInclude Include="..\include\wex\jsonwriter.h">
       <Filter>wex\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\wex\md5.h">
-      <Filter>wex\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\wex\numeric.h">
       <Filter>wex\Headers</Filter>
     </ClInclude>
@@ -648,9 +645,6 @@
       <Filter>wex\Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\src\jsonwriter.cpp">
-      <Filter>wex\Sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\md5.cpp">
       <Filter>wex\Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\src\numeric.cpp">

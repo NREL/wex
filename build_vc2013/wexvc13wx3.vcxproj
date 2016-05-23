@@ -48,7 +48,6 @@
     <ClInclude Include="..\include\wex\label.h" />
     <ClInclude Include="..\include\wex\lkscript.h" />
     <ClInclude Include="..\include\wex\matrix.h" />
-    <ClInclude Include="..\include\wex\md5.h" />
     <ClInclude Include="..\include\wex\metro.h" />
     <ClInclude Include="..\include\wex\mswfatal.h" />
     <ClInclude Include="..\include\wex\mtrand.h" />
@@ -180,7 +179,6 @@
     <ClCompile Include="..\src\jsonwriter.cpp" />
     <ClCompile Include="..\src\label.cpp" />
     <ClCompile Include="..\src\lkscript.cpp" />
-    <ClCompile Include="..\src\md5.cpp" />
     <ClCompile Include="..\src\metro.cpp" />
     <ClCompile Include="..\src\mswfatal.cpp" />
     <ClCompile Include="..\src\pagelayout.cpp" />
