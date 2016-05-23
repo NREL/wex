@@ -5,10 +5,8 @@ LKLIB = lkuxwx3.a
 
 CC = gcc
 CXX = g++
-CFLAGS = -fPIC -std=c++0x -Wall -O2 `wx-config-3 --cflags` -I../include -I$(LKDIR)/include
-CXXFLAGS = $(CFLAGS)
-#CFLAGS = -fPIC -Wall -O2 `wx-config-3 --cflags` -I../include -I../src/freetype/include -DFT2_BUILD_LIBRARY -DOPJ_STATIC -DFT_CONFIG_MODULES_H=\"slimftmodules.h\" -DFT_CONFIG_OPTIONS_H=\"slimftoptions.h\" -I$(LKDIR)/include
-#CXXFLAGS = $(CFLAGS) -std=c++0x
+CFLAGS = -fPIC -Wall -O2 `wx-config-3 --cflags` -I../include -I../src/freetype/include -DFT2_BUILD_LIBRARY -DOPJ_STATIC -DFT_CONFIG_MODULES_H=\"slimftmodules.h\" -DFT_CONFIG_OPTIONS_H=\"slimftoptions.h\" -I$(LKDIR)/include
+CXXFLAGS = $(CFLAGS) -std=c++0x
 
 LIBNAME = wexuxwx3
 TARGET = ../$(LIBNAME).a
@@ -57,7 +55,6 @@ OBJECTS = \
 	jsonreader.o \
 	jsonval.o \
 	jsonwriter.o \
-	md5.o \
 	numeric.o \
 	mplcontour.o \
 	plannotation.o \
