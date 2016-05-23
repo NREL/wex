@@ -32,7 +32,7 @@ using std::tr1::unordered_map;
 using std::unordered_map;
 #else
 // using libstdc++
-#include <tr1/tunordered_map>
+#include <tr1/unordered_map>
 using std::tr1::unordered_map;
 #endif
 
