@@ -47,21 +47,24 @@ public:
 
 class wxPLLineAnnotation : public wxPLAnnotation
 {
-	std::vector<wxRealPoint> m_points;
-	double m_size;
-	wxColour m_colour;
-	wxPLOutputDevice::Style m_style;
-
 public:
+	enum ArrowType { NO_ARROW, FILLED_ARROW, OUTLINE_ARROW };
 	wxPLLineAnnotation( const std::vector<wxRealPoint> &pts,
 		double size = 0,
 		const wxColour &c = *wxBLACK,
-		wxPLOutputDevice::Style style = wxPLOutputDevice::SOLID );
+		wxPLOutputDevice::Style style = wxPLOutputDevice::SOLID,
+		ArrowType arrow = NO_ARROW );
 
 	virtual ~wxPLLineAnnotation();
 	
 	virtual void Draw( wxPLOutputDevice &dc, const wxPLAnnotationMapping &map );
 
+private:
+	std::vector<wxRealPoint> m_points;
+	double m_size;
+	wxColour m_colour;
+	wxPLOutputDevice::Style m_style;
+	ArrowType m_arrow;
 };
 
 #endif

@@ -312,8 +312,8 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
 
 	// not sure why i need to do this in wx 3.1 when
 	// I didn't in wx 3.0.2.  For whatever reason the stctest app
-	// in wxwidgets does this too.  weird.  
-	for( size_t i=0;i<32;i++ )
+	// in wxwidgets does this too, up to #32.  weird.  
+	for( size_t i=0;i<wxSTC_STYLE_MAX;i++ )
 		StyleSetFont( i, font );
 		
 	wxFont fontslant( font );
@@ -329,9 +329,13 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
     SetOvertype( false );
     SetReadOnly( false );
     SetWrapMode( wxSTC_WRAP_NONE );
+	
 	StyleSetForeground( wxSTC_STYLE_DEFAULT, *wxBLACK );
     StyleSetBackground( wxSTC_STYLE_DEFAULT, *wxWHITE );
-    StyleSetForeground( wxSTC_STYLE_INDENTGUIDE, *wxLIGHT_GREY );
+	StyleSetFont( wxSTC_STYLE_DEFAULT, font );
+
+    StyleSetForeground( wxSTC_STYLE_INDENTGUIDE, wxColour(240,240,240) );
+	StyleSetFont( wxSTC_STYLE_INDENTGUIDE, font );
     SetFoldFlags(0);
 
     // set spaces and indentation
@@ -345,9 +349,9 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
 	SetEdgeMode( wxSTC_EDGE_LINE );
     
     // set visibility
-    SetVisiblePolicy (wxSTC_VISIBLE_STRICT|wxSTC_VISIBLE_SLOP, 1);
-    SetXCaretPolicy (wxSTC_CARET_EVEN|wxSTC_VISIBLE_STRICT|wxSTC_CARET_SLOP, 1);
-    SetYCaretPolicy (wxSTC_CARET_EVEN|wxSTC_VISIBLE_STRICT|wxSTC_CARET_SLOP, 1);
+    SetVisiblePolicy( wxSTC_VISIBLE_STRICT|wxSTC_VISIBLE_SLOP, 10 );
+    SetXCaretPolicy( wxSTC_CARET_EVEN|wxSTC_VISIBLE_STRICT|wxSTC_CARET_SLOP, 1);
+    SetYCaretPolicy( wxSTC_CARET_EVEN|wxSTC_VISIBLE_STRICT|wxSTC_CARET_SLOP, 1);
 	
 	SetSelForeground( true, *wxWHITE );
 	SetSelBackground( true, *wxBLACK );
@@ -362,15 +366,17 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
     MarkerDefine( wxSTC_MARKNUM_FOLDERTAIL,    wxSTC_MARK_EMPTY,     *wxBLACK, *wxBLACK);
 		
 	CallTipUseStyle( 30 );
-	wxFont fontnormal (*wxNORMAL_FONT) ;
-	StyleSetFont( wxSTC_STYLE_CALLTIP, fontnormal );
 	StyleSetForeground( wxSTC_STYLE_CALLTIP, *wxBLACK );
 	StyleSetBackground( wxSTC_STYLE_CALLTIP, wxColour(247,240,210) );
+	wxFont fontnormal( *wxNORMAL_FONT );
+	StyleSetFont( wxSTC_STYLE_CALLTIP, fontnormal );
 		
 	// set up line number margin
 	SetMarginType( m_lineNumMarginId, wxSTC_MARGIN_NUMBER );
 	StyleSetForeground( wxSTC_STYLE_LINENUMBER, wxColour(80,80,80) );
-	StyleSetBackground( wxSTC_STYLE_LINENUMBER, wxColour(230,230,230) );
+	StyleSetBackground( wxSTC_STYLE_LINENUMBER, wxColour(240,240,240) );
+	StyleSetFont( wxSTC_STYLE_LINENUMBER, fontnormal );
+
     int lineNrMarginWidth = TextWidth (wxSTC_STYLE_LINENUMBER, _T("_99999"));
 	SetMarginWidth( m_lineNumMarginId, lineNrMarginWidth );
 
@@ -444,6 +450,8 @@ void wxCodeEditCtrl::SetLanguage( Language lang )
 
 		StyleSetBackground(wxSTC_STYLE_BRACELIGHT, *wxLIGHT_GREY );
 		StyleSetForeground(wxSTC_STYLE_BRACELIGHT, *wxWHITE );
+		StyleSetFont( wxSTC_STYLE_BRACEBAD, font );
+		StyleSetFont( wxSTC_STYLE_BRACELIGHT, font );
 		
 
 		if ( lang == C ) SetKeyWords(wxSTC_C_DEFAULT, CWordlist1);	

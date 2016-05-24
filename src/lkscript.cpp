@@ -324,7 +324,7 @@ void fcall_plot( lk::invoke_t &cxt )
 
 void fcall_annotate( lk::invoke_t &cxt )
 {
-	LK_DOC( "annotate", "Adds an annotation (text or line) on a plot surface. Options: color, size, align{left,center,right}, angle, style{solid,dot,dash,dotdash}, position{axis,fractional,points}.", "(string or [x0 y0], [x y], table:options):none" );
+	LK_DOC( "annotate", "Adds an annotation (text or line) on a plot surface. Options: color, size, align{left,center,right}, angle, style{solid,dot,dash,dotdash}, arrow, position{axis,fractional,points}.", "(string or [x0 y0], [x y], table:options):none" );
 
 	wxPLPlotCtrl *plot = GetPlotSurface( 
 		(s_curToplevelParent!=0)
@@ -340,6 +340,7 @@ void fcall_annotate( lk::invoke_t &cxt )
 	wxPLTextLayout::TextAlignment align = wxPLTextLayout::LEFT;
 	wxPLOutputDevice::Style style = wxPLOutputDevice::SOLID;
 	wxPLAnnotationMapping::PositionMode posm = wxPLAnnotationMapping::AXIS;
+	wxPLLineAnnotation::ArrowType arrow = wxPLLineAnnotation::NO_ARROW;
 
 	if ( cxt.arg_count() > 2 )
 	{
@@ -352,6 +353,18 @@ void fcall_annotate( lk::invoke_t &cxt )
 		if ( lk::vardata_t *o = opts.lookup( "size" ) )
 		{
 			size = o->as_number();
+		}
+
+		if ( lk::vardata_t *o = opts.lookup( "arrow" ) )
+		{
+			if ( o->type() == lk::vardata_t::STRING )
+			{
+				wxString sarr( o->as_string().Lower() );
+				if ( sarr == "filled" ) arrow = wxPLLineAnnotation::FILLED_ARROW;
+				else if ( sarr == "outline" ) arrow = wxPLLineAnnotation::OUTLINE_ARROW;
+			}
+			else
+				arrow = o->as_boolean() ? wxPLLineAnnotation::FILLED_ARROW : wxPLLineAnnotation::NO_ARROW;
 		}
 
 		if ( lk::vardata_t *o = opts.lookup( "align" ) )
@@ -398,7 +411,7 @@ void fcall_annotate( lk::invoke_t &cxt )
 		pts.push_back( pos );
 		pts.push_back( p0 );
 		if ( size <= 0 ) size = 1;
-		plot->AddAnnotation( new wxPLLineAnnotation( pts, size, color, style ), posm );
+		plot->AddAnnotation( new wxPLLineAnnotation( pts, size, color, style, arrow ), posm );
 	}
 	
 	plot->Refresh();

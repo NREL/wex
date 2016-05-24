@@ -441,11 +441,19 @@ void TestPlotAnnotations( wxWindow *parent )
 	std::vector<wxRealPoint> line1;
 	line1.push_back( wxRealPoint( 5, 10 ) );
 	line1.push_back( wxRealPoint( 10, 0 ) );
-	plot->AddAnnotation( new wxPLLineAnnotation( line1, 2, *wxLIGHT_GREY ), wxPLAnnotationMapping::AXIS );
+	line1.push_back( wxRealPoint( 15, -11 ) );
+	plot->AddAnnotation( new wxPLLineAnnotation( line1, 3, *wxBLACK ), wxPLAnnotationMapping::AXIS );
 	line1.clear();
 	line1.push_back( wxRealPoint( 10, 10 ) );
+	line1.push_back( wxRealPoint( 13, 11 ) );
 	line1.push_back( wxRealPoint( 17, 3 ) );
-	plot->AddAnnotation( new wxPLLineAnnotation( line1, 0.5, *wxBLACK, wxPLOutputDevice::DOT ), wxPLAnnotationMapping::AXIS );
+	line1.push_back( wxRealPoint( 1, -3 ) );
+	plot->AddAnnotation( new wxPLLineAnnotation( line1, 5, *wxRED, wxPLOutputDevice::DOT ), wxPLAnnotationMapping::AXIS );
+	
+	line1.clear();
+	line1.push_back( wxRealPoint( 17, 3 ) );
+	line1.push_back( wxRealPoint( 8, 9 ) );
+	plot->AddAnnotation( new wxPLLineAnnotation( line1, 0.5, *wxBLUE, wxPLOutputDevice::DOT ), wxPLAnnotationMapping::AXIS );
 
 	frame->Show();
 }
@@ -841,13 +849,13 @@ public:
 				wxMessageBox("Could not set default pdf font to Computer Modern Sans Serif Regular" );
 		}
 
-		TestPLPlot( 0 );
+		//TestPLPlot( 0 );
 		//TestPLPolarPlot(0);
-		TestPLBarPlot(0);		
+		//TestPLBarPlot(0);		
 		//TestContourPlot();
 		//TestSectorPlot(0);
-		TestTextLayout();
-		TestFreeTypeText();
+		//TestTextLayout();
+		//TestFreeTypeText();
 		TestPlotAnnotations(0);
 
 		//wxFrame *frmgl = new wxFrame( NULL, wxID_ANY, "GL Easy Test", wxDefaultPosition, wxSize(700,700) );
