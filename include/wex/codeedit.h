@@ -3,6 +3,13 @@
 
 #include <vector>
 
+
+
+#include <unordered_map>
+using std::unordered_map;
+#pragma warning(disable: 4290)  // ignore warning: 'C++ exception specification ignored except to indicate a function is not __declspec(nothrow)'
+
+/*
 #if defined(__APPLE__)||defined(__GNUC__)
 
 #ifdef _LIBCPP_VERSION
@@ -20,6 +27,8 @@ using std::tr1::unordered_map;
 #include <unordered_map>
 using namespace std;
 #endif
+*/
+
 
 #include <wx/vector.h>
 #include <wx/fdrepdlg.h>

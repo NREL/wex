@@ -6,15 +6,18 @@ LKLIB = lkuxwx3.a
 
 CC = gcc
 CXX = g++
-CFLAGS = -g -I. -I../include -I$(LKDIR)/include `wx-config-3 --cflags` -std=c++0x
+CFLAGS = -g -I. -I../include -I$(LKDIR)/include `wx-config-3 --cflags`
 CXXFLAGS = $(CFLAGS)
-LDFLAGS = -lfontconfig `wx-config-3 --libs` `wx-config-3 --libs aui` `wx-config-3 --libs stc` `wx-config-3 --libs gl` -lm -std=c++0x
+LDFLAGS = -lfontconfig `wx-config-3 --libs` `wx-config-3 --libs aui` `wx-config-3 --libs stc` `wx-config-3 --libs gl` -lm 
 OBJECTS  = sandbox.o
 TARGET = sandbox
+CXXFLAGS=-stdlib=libc++ -std=c++11 $(CFLAGS)
+OBJCXXFLAGS=-stdlib=libc++ -std=c++11
+LDFLAGS="-stdlib=libc++"
 
 
 $(TARGET): $(OBJECTS) $(WEXLIB) 
-	$(CXX) -g -o $@ $^ $(LDFLAGS)
+	$(CXX) -g $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 	
 clean:
 	rm -f $(TARGET) $(OBJECTS)

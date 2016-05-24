@@ -6,7 +6,10 @@ LKLIB = lkuxwx3.a
 CC = gcc
 CXX = g++
 CFLAGS = -fPIC -Wall -O2 `wx-config-3 --cflags` -I../include -I../src/freetype/include -DFT2_BUILD_LIBRARY -DOPJ_STATIC -DFT_CONFIG_MODULES_H=\"slimftmodules.h\" -DFT_CONFIG_OPTIONS_H=\"slimftoptions.h\" -I$(LKDIR)/include
-CXXFLAGS = -std=c++0x $(CFLAGS)
+#CXXFLAGS = -std=c++0x $(CFLAGS)
+CXXFLAGS=-stdlib=libc++ -std=c++11 $(CFLAGS)
+OBJCXXFLAGS=-stdlib=libc++ -std=c++11
+LDFLAGS="-stdlib=libc++"
 
 LIBNAME = wexuxwx3
 TARGET = ../$(LIBNAME).a

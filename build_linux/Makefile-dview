@@ -4,15 +4,19 @@ WEXLIB = ../wexuxwx3.a
 
 CC = gcc
 CXX = g++
-CFLAGS = -g -I. -I../include `wx-config-3 --cflags` -std=c++0x
-CXXFLAGS = $(CFLAGS)
-LDFLAGS = -lfontconfig `wx-config-3 --libs` `wx-config-3 --libs aui` `wx-config-3 --libs stc` -lm -std=c++0x
+CFLAGS = -g -I. -I../include `wx-config-3 --cflags`
+#CXXFLAGS = $(CFLAGS)
+CXXFLAGS=-stdlib=libc++ -std=c++11 $(CFLAGS)
+#LDFLAGS = -lfontconfig `wx-config-3 --libs` `wx-config-3 --libs aui` `wx-config-3 --libs stc` -lm 
 OBJECTS  = dview.o
+OBJCXXFLAGS=-stdlib=libc++ -std=c++11
+LDFLAGS=-lfontconfig `wx-config-3 --libs` `wx-config-3 --libs aui` `wx-config-3 --libs stc` -lm -stdlib=libc++
+
 TARGET = DView
 
 
 $(TARGET): $(OBJECTS) $(WEXLIB) 
-	$(CXX) -g -o $@ $^ $(LDFLAGS)
+	$(CXX) -g $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 	
 clean:
 	rm -f $(TARGET) $(OBJECTS)
