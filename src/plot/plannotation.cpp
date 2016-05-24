@@ -81,6 +81,11 @@ static wxRealPoint rotate2d(
 		sin(rad)*P.x + cos(rad)*P.y );
 }
 
+static wxRealPoint scalept( const wxRealPoint &p, double scale )
+{
+	return wxRealPoint( p.x*scale, p.y*scale );
+}
+
 void wxPLLineAnnotation::Draw( wxPLOutputDevice &dc, const wxPLAnnotationMapping &map )
 {
 	if ( m_points.size() < 2 ) return;
@@ -121,4 +126,52 @@ void wxPLLineAnnotation::Draw( wxPLOutputDevice &dc, const wxPLAnnotationMapping
 		else
 			dc.Lines( 3, pts+1 );
 	}
+}
+
+
+wxPLBraceAnnotation::wxPLBraceAnnotation( 
+		const wxRealPoint &p1,
+		const wxRealPoint &p2,
+		double scale, 
+		double size ,
+		const wxColour &c,
+		wxPLOutputDevice::Style style )
+		: wxPLAnnotation(),
+		m_p1(p1), m_p2(p2), m_scale(scale), m_size(size), m_colour(c), m_style(style)
+{
+}
+
+wxPLBraceAnnotation::~wxPLBraceAnnotation()
+{
+}
+
+void wxPLBraceAnnotation::Draw( wxPLOutputDevice &dc, const wxPLAnnotationMapping &map )
+{
+	wxRealPoint a( map.ToDevice(m_p1) ),
+		b( map.ToDevice(m_p2) );
+
+	wxRealPoint c( 0.5*(b.x+a.x), 0.5*(b.y+a.y) );
+	wxRealPoint d( a-b );
+	d = rotate2d( d, 90 );
+	
+	double L = sqrt(d.x*d.x + d.y*d.y);
+	if ( L == 0.0 ) return;
+
+	double sf = 12.0/L * m_scale;
+	wxRealPoint p( c+scalept(d,sf) );
+	
+	wxRealPoint x( 0.5*(c.x+p.x), 0.5*(c.y+p.y) );
+
+	std::vector<wxRealPoint> ln;
+	ln.push_back( a );
+	ln.push_back( a + scalept(rotate2d(d,7),sf*0.35) );
+	ln.push_back( x );
+	ln.push_back( p );
+	ln.push_back( x );
+	ln.push_back( b + scalept(rotate2d(d,-7),sf*0.35) );
+	ln.push_back( b );
+	
+	dc.SetAntiAliasing( true );
+	dc.Pen( m_colour, m_size, m_style );
+	dc.Lines( ln.size(), &ln[0] );
 }

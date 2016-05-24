@@ -455,6 +455,9 @@ void TestPlotAnnotations( wxWindow *parent )
 	line1.push_back( wxRealPoint( 8, 9 ) );
 	plot->AddAnnotation( new wxPLLineAnnotation( line1, 0.5, *wxBLUE, wxPLOutputDevice::DOT ), wxPLAnnotationMapping::AXIS );
 
+	plot->AddAnnotation( new wxPLBraceAnnotation( wxRealPoint(1, 9 ), wxRealPoint(3, 1 ), 1.0 ) );
+	plot->AddAnnotation( new wxPLBraceAnnotation( wxRealPoint(1, 9 ), wxRealPoint(7, 1 ), 1.0 ) );
+
 	frame->Show();
 }
 

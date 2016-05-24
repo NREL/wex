@@ -324,7 +324,7 @@ void fcall_plot( lk::invoke_t &cxt )
 
 void fcall_annotate( lk::invoke_t &cxt )
 {
-	LK_DOC( "annotate", "Adds an annotation (text or line) on a plot surface. Options: color, size, align{left,center,right}, angle, style{solid,dot,dash,dotdash}, arrow, position{axis,fractional,points}.", "(string or [x0 y0], [x y], table:options):none" );
+	LK_DOC( "annotate", "Adds an annotation (text, line) on a plot surface. Options: type{line,brace}, color, size, align{left,center,right}, angle, style{solid,dot,dash,dotdash}, arrow, position{axis,fractional,points}.", "(string or [x0 y0], [x y], table:options):none" );
 
 	wxPLPlotCtrl *plot = GetPlotSurface( 
 		(s_curToplevelParent!=0)
@@ -341,6 +341,7 @@ void fcall_annotate( lk::invoke_t &cxt )
 	wxPLOutputDevice::Style style = wxPLOutputDevice::SOLID;
 	wxPLAnnotationMapping::PositionMode posm = wxPLAnnotationMapping::AXIS;
 	wxPLLineAnnotation::ArrowType arrow = wxPLLineAnnotation::NO_ARROW;
+	bool brace = false;
 
 	if ( cxt.arg_count() > 2 )
 	{
@@ -348,6 +349,12 @@ void fcall_annotate( lk::invoke_t &cxt )
 		if ( lk::vardata_t *o = opts.lookup( "color" ) )
 		{
 			color = lk_to_colour( o );
+		}
+		
+		if ( lk::vardata_t *o = opts.lookup( "type" ) )
+		{
+			if( o->as_string().Lower() == "brace" )
+				brace = true;
 		}
 
 		if ( lk::vardata_t *o = opts.lookup( "size" ) )
@@ -411,7 +418,8 @@ void fcall_annotate( lk::invoke_t &cxt )
 		pts.push_back( pos );
 		pts.push_back( p0 );
 		if ( size <= 0 ) size = 1;
-		plot->AddAnnotation( new wxPLLineAnnotation( pts, size, color, style, arrow ), posm );
+		if ( brace ) plot->AddAnnotation( new wxPLBraceAnnotation( pos, p0, 1.0, size, color, style ), posm );
+		else plot->AddAnnotation( new wxPLLineAnnotation( pts, size, color, style, arrow ), posm );
 	}
 	
 	plot->Refresh();

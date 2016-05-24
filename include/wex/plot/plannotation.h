@@ -50,7 +50,7 @@ class wxPLLineAnnotation : public wxPLAnnotation
 public:
 	enum ArrowType { NO_ARROW, FILLED_ARROW, OUTLINE_ARROW };
 	wxPLLineAnnotation( const std::vector<wxRealPoint> &pts,
-		double size = 0,
+		double size = 1,
 		const wxColour &c = *wxBLACK,
 		wxPLOutputDevice::Style style = wxPLOutputDevice::SOLID,
 		ArrowType arrow = NO_ARROW );
@@ -65,6 +65,29 @@ private:
 	wxColour m_colour;
 	wxPLOutputDevice::Style m_style;
 	ArrowType m_arrow;
+};
+
+class wxPLBraceAnnotation : public wxPLAnnotation
+{	
+public:
+	wxPLBraceAnnotation( 
+		const wxRealPoint &p1,
+		const wxRealPoint &p2,
+		double scale,
+		double size = 1,
+		const wxColour &c = *wxBLACK,
+		wxPLOutputDevice::Style style = wxPLOutputDevice::SOLID );
+	
+	virtual ~wxPLBraceAnnotation();
+	
+	virtual void Draw( wxPLOutputDevice &dc, const wxPLAnnotationMapping &map );
+
+private:
+	wxRealPoint m_p1, m_p2;
+	double m_scale;
+	double m_size;
+	wxColour m_colour;
+	wxPLOutputDevice::Style m_style;
 };
 
 #endif
