@@ -10,7 +10,7 @@ class wxPLBarPlotBase : public wxPLPlottable
 {
 public:
 	wxPLBarPlotBase();
-	wxPLBarPlotBase( const std::vector<wxRealPoint> &data, 
+	wxPLBarPlotBase( const std::vector<wxRealPoint> &data, double baseline,
 		const wxString &label = wxEmptyString, 
 		const wxColour &col = *wxLIGHT_GREY );
 	virtual ~wxPLBarPlotBase();
@@ -27,6 +27,7 @@ public:
 protected:
 	
 	void Init();
+	double m_baseline;
 	wxColour m_colour;
 	double m_thickness;
 	std::vector< wxRealPoint > m_data;
@@ -37,7 +38,7 @@ class wxPLBarPlot : public wxPLBarPlotBase
 {
 public:
 	wxPLBarPlot();
-	wxPLBarPlot( const std::vector<wxRealPoint> &data, 
+	wxPLBarPlot( const std::vector<wxRealPoint> &data, double baseline_y = 0.0,
 		const wxString &label = wxEmptyString, 
 		const wxColour &col = *wxLIGHT_GREY );
 	virtual ~wxPLBarPlot();
@@ -77,7 +78,6 @@ protected:
 	double CalcDispBarWidth( const wxPLDeviceMapping &map );
 
 	wxPLHBarPlot *m_stackedOn;
-	double m_baselineX;
 };
 
 #endif

@@ -44,8 +44,8 @@ void wxPLAxis::Init()
 	m_shown = true;
 	m_min = m_max = std::numeric_limits<double>::quiet_NaN();
 	m_showLabel = m_showTickText = true;
-	m_smallTickSize = 2;
-	m_largeTickSize = 5;
+	m_smallTickSize = 2.0;
+	m_largeTickSize = 5.0;
 	m_colour = *wxBLACK;
 	m_reversed = false;
 }

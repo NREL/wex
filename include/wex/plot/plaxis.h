@@ -51,8 +51,8 @@ public:
 	virtual void SetColour( const wxColour &col ) { m_colour = col; }
 	virtual wxColour GetColour() { return m_colour; }
 	
-	void SetTickSizes( int smallsz, int largesz ) { m_smallTickSize = smallsz; m_largeTickSize = largesz; }
-	void GetTickSizes( int *smallsz, int *largesz ) { if (smallsz) *smallsz = m_smallTickSize; if (largesz) *largesz = m_largeTickSize; }
+	void SetTickSizes( double smallsz, double largesz ) { m_smallTickSize = smallsz; m_largeTickSize = largesz; }
+	void GetTickSizes( double *smallsz, double *largesz ) { if (smallsz) *smallsz = m_smallTickSize; if (largesz) *largesz = m_largeTickSize; }
 
 	void Show( bool b ) { m_shown = b; }
 	bool IsShown() { return m_shown; }
@@ -80,8 +80,8 @@ protected:
 	double m_max;
 	bool m_showLabel;
 	bool m_showTickText;
-	int m_smallTickSize;
-	int m_largeTickSize;
+	double m_smallTickSize;
+	double m_largeTickSize;
 	bool m_reversed;
 	bool m_shown;
 };

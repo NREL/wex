@@ -10,12 +10,13 @@ wxPLBarPlotBase::wxPLBarPlotBase()
 	Init();
 }
 
-wxPLBarPlotBase::wxPLBarPlotBase( const std::vector<wxRealPoint> &data, 
+wxPLBarPlotBase::wxPLBarPlotBase( const std::vector<wxRealPoint> &data, double baseline,
 	const wxString &label, 
 	const wxColour &col )
 	: wxPLPlottable( label )
 {
 	Init();
+	m_baseline = baseline;
 	m_colour = col;
 	m_data = data;
 }
@@ -27,6 +28,7 @@ wxPLBarPlotBase::~wxPLBarPlotBase()
 
 void wxPLBarPlotBase::Init()
 {
+	m_baseline = 0;
 	m_antiAliasing = false;
 	m_colour = *wxLIGHT_GREY;
 	m_thickness = wxPL_BAR_AUTOSIZE;
@@ -58,10 +60,10 @@ wxPLBarPlot::wxPLBarPlot()
 	m_stackedOn = 0;
 }
 
-wxPLBarPlot::wxPLBarPlot( const std::vector<wxRealPoint> &data, 
+wxPLBarPlot::wxPLBarPlot( const std::vector<wxRealPoint> &data, double baseline_y,
 	const wxString &label, 
 	const wxColour &col )
-	: wxPLBarPlotBase( data, label, col )
+	: wxPLBarPlotBase( data, baseline_y, label, col )
 {
 	m_stackedOn = 0;
 }
@@ -85,15 +87,15 @@ wxPLAxis *wxPLBarPlot::SuggestYAxis() const
 		if ( y > ymax ) ymax = y;
 	}
 
-	if ( ymin > 0 ) ymin = 0;
-	if ( ymax < 0 ) ymax = 0;
+	if ( ymin > m_baseline ) ymin = m_baseline;
+	if ( ymax < m_baseline ) ymax = m_baseline;
 
 	return new wxPLLinearAxis( ymin, ymax );
 }
 
 double wxPLBarPlot::CalcYPos(double x) const
 {
-	double y_start = 0;
+	double y_start = m_baseline;
 
 	if (m_stackedOn && m_stackedOn != this)
 		y_start += m_stackedOn->CalcYPos(x);
@@ -184,6 +186,7 @@ void wxPLBarPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 
 	double dispbar_w = CalcDispBarWidth( map );
 	
+	dc.SetAntiAliasing( false );
 	dc.Pen( m_colour );
 	dc.Brush( m_colour );
 	
@@ -191,7 +194,7 @@ void wxPLBarPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 	{
 		wxRealPoint pt = At(i);
 		double pbottom=0, ptop=0;
-		double y_start=0;
+		double y_start=m_baseline;
 		double x_start = CalcXPos( pt.x, map, dispbar_w );
 
 		if (m_stackedOn != NULL && m_stackedOn != this)
@@ -222,7 +225,7 @@ wxPLHBarPlot::wxPLHBarPlot() : wxPLBarPlotBase() { /* nothing to do */ }
 wxPLHBarPlot::wxPLHBarPlot( const std::vector<wxRealPoint> &data, double baseline_x,
 	const wxString &label,
 	const wxColour &col)
-	: wxPLBarPlotBase( data, label, col ), m_baselineX( baseline_x )
+	: wxPLBarPlotBase( data, baseline_x, label, col )
 {
 	m_stackedOn = 0;
 }
@@ -243,7 +246,7 @@ void wxPLHBarPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 	{
 		wxRealPoint pt(  At(i) );
 		double pleft=0, pright=0;
-		double x_start=m_baselineX;
+		double x_start=m_baseline;
 			
 		if ( m_stackedOn != NULL && m_stackedOn != this )
 			x_start = m_stackedOn->CalcXPos( pt.y );	
@@ -272,7 +275,7 @@ void wxPLHBarPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 	}
 	
 	wxRealPoint start,end;
-	end.x = start.x = map.ToDevice( m_baselineX, 0 ).x;
+	end.x = start.x = map.ToDevice( m_baseline, 0 ).x;
 	
 	wxRealPoint pos, size;
 	map.GetDeviceExtents( &pos, &size );
@@ -287,7 +290,7 @@ void wxPLHBarPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 	
 double wxPLHBarPlot::CalcXPos(double y) const
 {
-	double x_start = m_baselineX;
+	double x_start = m_baseline;
 
 	if (m_stackedOn && m_stackedOn != this)
 		x_start += m_stackedOn->CalcXPos(y);
@@ -342,8 +345,8 @@ wxPLAxis *wxPLHBarPlot::SuggestXAxis() const
 		if ( x > xmax ) xmax = x;
 	}
 
-	if ( xmin > m_baselineX ) xmin = m_baselineX;
-	if ( xmax < m_baselineX ) xmax = m_baselineX;
+	if ( xmin > m_baseline ) xmin = m_baseline;
+	if ( xmax < m_baseline ) xmax = m_baseline;
 
 	return new wxPLLinearAxis( xmin, xmax );
 }

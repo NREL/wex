@@ -483,17 +483,21 @@ public:
 			renderAngular(dc, ordinate, pa, phys_min, phys_max);
 			return;
 		}
+
+		double tlarge, tsmall;
+		axis->GetTickSizes( &tsmall, &tlarge );
 		
 		// draw tick marks and tick labels
 		for ( size_t i=0;i<m_tickList.size(); i++ )
 		{
 			tick_layout &ti = m_tickList[i];
+			double tick_length = ti.tick_size == wxPLAxis::TickData::LARGE ? tlarge : tsmall;
 			double physical = axis->WorldToPhysical( ti.world, phys_min, phys_max );
 
-			if ( ti.tick_size != wxPLAxis::TickData::NONE )
+			if ( ti.tick_size != wxPLAxis::TickData::NONE  && tick_length != 0.0 )
 			{
 				wxRealPoint tickStart, tickEnd;
-				double tick_length = ti.tick_size == wxPLAxis::TickData::LARGE ? 5 : 2;
+
 				if ( m_axisPos == X_BOTTOM || m_axisPos == X_TOP )
 				{
 					tickStart.x = physical;
@@ -1400,7 +1404,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 	if ( m_x2.axis && m_x2.axis->IsShown() )
 		m_x2.layout->render( dc, m_plotRects[0].y, m_x2.axis, 
 			box.x, box.x+box.width, 
-			m_x1.axis == 0 ? m_plotRects[nyaxes-1].y+m_plotRects[nyaxes-1].height : -1 );
+			-1 /*m_x1.axis == 0 ? m_plotRects[nyaxes-1].y+m_plotRects[nyaxes-1].height : -1 */ );
 	
 	// set up some polar plot values
 	wxPLRealRect rect1 = m_plotRects[0];
@@ -1414,7 +1418,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 			if (is_cartesian)
 				m_y1[pp].layout->render( dc, box.x, m_y1[pp].axis, 
 					m_plotRects[pp].y + m_plotRects[pp].height,  m_plotRects[pp].y,
-					m_y2[pp].axis == 0 ? box.x+box.width : -1 );
+					-1 /*m_y2[pp].axis == 0 ? box.x+box.width : -1*/ );
 			else
 				m_y1[pp].layout->render( dc, pp_center.x, m_y1[pp].axis, 
 					pp_center.y,  pp_center.y-pp_radius,
