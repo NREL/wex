@@ -118,10 +118,11 @@ public:
 		AxisPos *xap, AxisPos *yap, PlotPos *ppos );
 
 	void AddAnnotation( wxPLAnnotation *an, 
-		wxPLAnnotationMapping::PositionMode pm = wxPLAnnotationMapping::AXIS,
+		wxPLAnnotation::PositionMode pm = wxPLAnnotation::AXIS,
 		AxisPos xap = X_BOTTOM,
 		AxisPos yap = Y_LEFT,
-		PlotPos ppos = PLOT_TOP );
+		PlotPos ppos = PLOT_TOP,
+		wxPLAnnotation::ZOrder zo = wxPLAnnotation::FRONT );
 
 	void DeleteAllAnnotations();
 
@@ -147,6 +148,9 @@ public:
 	
 	
 	void SetBorderWidth( double b=0.5 ) { m_borderWidth = b; } // zero is OK to hide plot borders
+	void SetBorderSpace( double left=0, double right=0, double top=0, double bottom=0 ) { 
+		m_spaceLeftTop.x = left; m_spaceLeftTop.y = top;
+		m_spaceRightBottom.x = right; m_spaceRightBottom.y = bottom; }
 	void ShowAxes( bool b );
 	void ShowGrid( bool coarse, bool fine ) { m_showCoarseGrid = coarse; m_showFineGrid = fine; }
 	void ShowCoarseGrid( bool coarse ) { m_showCoarseGrid = coarse; }
@@ -206,10 +210,12 @@ protected:
 	void DrawLegendOutline();
 private:
 
+	void DrawAnnotations( wxPLOutputDevice &dc, const wxPLRealRect &plotarea, wxPLAnnotation::ZOrder zo );
 	void DrawGrid( wxPLOutputDevice &dc, wxPLAxis::TickData::TickSize size );
 	void DrawPolarGrid(wxPLOutputDevice &dc, wxPLAxis::TickData::TickSize size);
 
 
+	wxRealPoint m_spaceLeftTop, m_spaceRightBottom;
 	double m_borderWidth;
 	bool m_showLegend;
 	bool m_showLegendBorder;
@@ -246,11 +252,12 @@ private:
 
 	struct annot_data
 	{
-		annot_data() : ann(0), posm( wxPLAnnotationMapping::FRACTIONAL ), ppos(PLOT_TOP), xap(X_BOTTOM), yap(Y_LEFT) { }
+		annot_data() : ann(0), posm( wxPLAnnotation::AXIS ), ppos(PLOT_TOP), xap(X_BOTTOM), yap(Y_LEFT), zorder( wxPLAnnotation::FRONT ) { }
 		wxPLAnnotation *ann;
-		wxPLAnnotationMapping::PositionMode posm;
+		wxPLAnnotation::PositionMode posm;
 		PlotPos ppos;
 		AxisPos xap, yap;
+		wxPLAnnotation::ZOrder zorder;
 	};
 
 	std::vector<annot_data> m_annotations;

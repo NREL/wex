@@ -183,9 +183,9 @@ void TestPLPlot( wxWindow *parent )
 	bar_data.push_back( wxRealPoint( 4, 6 ) );
 	bar_data.push_back( wxRealPoint( 5, 5 ) );
 
-	wxPLBarPlot *bar1 = new wxPLBarPlot( bar_data, "bar1", *wxRED );
-	wxPLBarPlot *bar2 = new wxPLBarPlot( bar_data, "bar2", *wxGREEN );
-	wxPLBarPlot *bar3 = new wxPLBarPlot( bar_data, "bar3", *wxBLUE );
+	wxPLBarPlot *bar1 = new wxPLBarPlot( bar_data, 0.0, "bar1", *wxRED );
+	wxPLBarPlot *bar2 = new wxPLBarPlot( bar_data, 0.0, "bar2", *wxGREEN );
+	wxPLBarPlot *bar3 = new wxPLBarPlot( bar_data, 0.0, "bar3", *wxBLUE );
 
 	std::vector<wxPLBarPlot*> group;
 	group.push_back( bar1 );
@@ -432,28 +432,28 @@ void TestPlotAnnotations( wxWindow *parent )
 	for( size_t i=0;i<20;i++ )
 		data.push_back( wxRealPoint( i, 20*sin(i*14.1) ) );
 
-	plot->AddPlot( new wxPLBarPlot( data, "Test data", wxColour("Forest green" ) ) );
+	plot->AddPlot( new wxPLBarPlot( data, 0.0, "Test data", wxColour("Forest green" ) ) );
 
-	plot->AddAnnotation( new wxPLTextAnnotation( "Annotation \\phi\\Phi \nhere^2", wxRealPoint( 10, 0 ), 2, 0, *wxRED, wxPLTextLayout::RIGHT ), wxPLAnnotationMapping::AXIS );
-	plot->AddAnnotation( new wxPLTextAnnotation( "Origin_{0,0}", wxRealPoint( 0, 0 ), -1, 0, *wxBLUE ), wxPLAnnotationMapping::FRACTIONAL );
-	plot->AddAnnotation( new wxPLTextAnnotation( "((175pt 175pt))", wxRealPoint( 175, 175 ), 0, 90, *wxBLACK ), wxPLAnnotationMapping::POINTS );
+	plot->AddAnnotation( new wxPLTextAnnotation( "Annotation \\phi\\Phi \nhere^2", wxRealPoint( 10, 0 ), 2, 0, *wxRED, wxPLTextLayout::RIGHT ), wxPLAnnotation::AXIS );
+	plot->AddAnnotation( new wxPLTextAnnotation( "Origin_{0,0}", wxRealPoint( 0, 0 ), -1, 0, *wxBLUE ), wxPLAnnotation::FRACTIONAL );
+	plot->AddAnnotation( new wxPLTextAnnotation( "((175pt 175pt))", wxRealPoint( 175, 175 ), 0, 90, *wxBLACK ), wxPLAnnotation::POINTS );
 
 	std::vector<wxRealPoint> line1;
 	line1.push_back( wxRealPoint( 5, 10 ) );
 	line1.push_back( wxRealPoint( 10, 0 ) );
 	line1.push_back( wxRealPoint( 15, -11 ) );
-	plot->AddAnnotation( new wxPLLineAnnotation( line1, 3, *wxBLACK ), wxPLAnnotationMapping::AXIS );
+	plot->AddAnnotation( new wxPLLineAnnotation( line1, 3, *wxBLACK ), wxPLAnnotation::AXIS );
 	line1.clear();
 	line1.push_back( wxRealPoint( 10, 10 ) );
 	line1.push_back( wxRealPoint( 13, 11 ) );
 	line1.push_back( wxRealPoint( 17, 3 ) );
 	line1.push_back( wxRealPoint( 1, -3 ) );
-	plot->AddAnnotation( new wxPLLineAnnotation( line1, 5, *wxRED, wxPLOutputDevice::DOT ), wxPLAnnotationMapping::AXIS );
+	plot->AddAnnotation( new wxPLLineAnnotation( line1, 5, *wxRED, wxPLOutputDevice::DOT ), wxPLAnnotation::AXIS );
 	
 	line1.clear();
 	line1.push_back( wxRealPoint( 17, 3 ) );
 	line1.push_back( wxRealPoint( 8, 9 ) );
-	plot->AddAnnotation( new wxPLLineAnnotation( line1, 0.5, *wxBLUE, wxPLOutputDevice::DOT ), wxPLAnnotationMapping::AXIS );
+	plot->AddAnnotation( new wxPLLineAnnotation( line1, 0.5, *wxBLUE, wxPLOutputDevice::DOT ), wxPLAnnotation::AXIS );
 
 	plot->AddAnnotation( new wxPLBraceAnnotation( wxRealPoint(1, 9 ), wxRealPoint(3, 1 ), 1.0 ) );
 	plot->AddAnnotation( new wxPLBraceAnnotation( wxRealPoint(1, 9 ), wxRealPoint(7, 1 ), 1.0 ) );
@@ -509,9 +509,9 @@ void TestPLBarPlot( wxWindow *parent )
 		bars3.push_back( wxRealPoint( i, rng() ) );
 	}
 
-	wxPLBarPlot *bar1 = new wxPLBarPlot( bars1, "Bar1", *wxRED );
-	wxPLBarPlot *bar2 = new wxPLBarPlot( bars2, "Bar2", *wxGREEN );
-	wxPLBarPlot *bar3 = new wxPLBarPlot( bars3, "Bar3", *wxBLUE );
+	wxPLBarPlot *bar1 = new wxPLBarPlot( bars1, 0.0, "Bar1", *wxRED );
+	wxPLBarPlot *bar2 = new wxPLBarPlot( bars2, 0.0, "Bar2", *wxGREEN );
+	wxPLBarPlot *bar3 = new wxPLBarPlot( bars3, 0.0, "Bar3", *wxBLUE );
 
 	std::vector<wxPLBarPlot*> group;
 	group.push_back( bar1 );
@@ -532,7 +532,7 @@ void TestPLBarPlot( wxWindow *parent )
 	for( size_t i=0;i<48;i++ )
 		hb.push_back( wxRealPoint( i, rng() ) );
 
-	plot->AddPlot( new wxPLBarPlot( hb, "Test", *wxLIGHT_GREY ), wxPLPlot::X_BOTTOM, wxPLPlot::Y_RIGHT, wxPLPlot::PLOT_BOTTOM );
+	plot->AddPlot( new wxPLBarPlot( hb, 0.0, "Test", *wxLIGHT_GREY ), wxPLPlot::X_BOTTOM, wxPLPlot::Y_RIGHT, wxPLPlot::PLOT_BOTTOM );
 
 	frame->Show();
 

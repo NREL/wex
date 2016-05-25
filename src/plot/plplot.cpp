@@ -622,10 +622,12 @@ wxPLPlot::wxPLPlot()
 		m_sideWidgets[i] = 0;
 
 	m_borderWidth = 0.5;
+	m_spaceLeftTop = wxRealPoint(0,0);
+	m_spaceRightBottom = wxRealPoint(0,0);
 	m_showLegend = true;
 	m_showLegendBorder = true;
-	m_showCoarseGrid = true;
-	m_showFineGrid = true;
+	m_showCoarseGrid = false;
+	m_showFineGrid = false;
 	m_showTitle = true;
 	m_titleLayout = 0;
 	m_gridColour.Set( 225, 225, 225 );
@@ -638,7 +640,7 @@ wxPLPlot::wxPLPlot()
 	m_legendInvalidated = true;
 	m_legendPosPercent.x = 85.0;
 	m_legendPosPercent.y = 4.0;
-	m_legendPos = FLOATING;
+	m_legendPos = RIGHT;
 	m_anchorPoint = wxPoint(0, 0);
 	m_currentPoint = wxPoint(0, 0);
 	m_moveLegendMode = false;
@@ -665,8 +667,8 @@ wxPLPlot::~wxPLPlot()
 	DeleteAllAnnotations();
 }
 
-void wxPLPlot::AddAnnotation( wxPLAnnotation *an, wxPLAnnotationMapping::PositionMode pm,
-	AxisPos xap, AxisPos yap, PlotPos ppos )
+void wxPLPlot::AddAnnotation( wxPLAnnotation *an, wxPLAnnotation::PositionMode pm,
+	AxisPos xap, AxisPos yap, PlotPos ppos, wxPLAnnotation::ZOrder zo )
 {
 	annot_data d;
 	d.ann = an;
@@ -674,6 +676,7 @@ void wxPLPlot::AddAnnotation( wxPLAnnotation *an, wxPLAnnotationMapping::Positio
 	d.xap = xap;
 	d.yap = yap;
 	d.ppos = ppos;
+	d.zorder = zo;
 	m_annotations.push_back( d );
 }
 
@@ -1044,11 +1047,11 @@ void wxPLPlot::ShowAxes( bool b )
 class wxPLDefaultAnnotationMapper : public wxPLAnnotationMapping
 {
 	wxPLRealRect m_dev;
-	PositionMode m_posMode;
+	wxPLAnnotation::PositionMode m_posMode;
 	wxPLAxis *m_xax, *m_yax;
 	double m_xmin, m_xmax, m_ymin, m_ymax;
 public:
-	wxPLDefaultAnnotationMapper( PositionMode posmode, const wxPLRealRect &extent, 
+	wxPLDefaultAnnotationMapper( wxPLAnnotation::PositionMode posmode, const wxPLRealRect &extent, 
 		wxPLAxis *xx, double xmin, double xmax, wxPLAxis *yy, double ymin, double ymax )
 		: m_posMode(posmode), m_dev(extent), 
 		m_xax(xx), m_xmin(xmin), m_xmax(xmax),
@@ -1062,15 +1065,15 @@ public:
 	{
 		switch( m_posMode )
 		{
-		case AXIS:
+		case wxPLAnnotation::AXIS:
 			if ( m_xax && m_yax )
 				return wxRealPoint( m_xax->WorldToPhysical( pos.x, m_xmin, m_xmax ),
 					m_yax->WorldToPhysical( pos.y, m_ymin, m_ymax ) );
 
-		case POINTS:
+		case wxPLAnnotation::POINTS:
 			return wxRealPoint( m_dev.x + pos.x, m_dev.y + pos.y );
 
-		case FRACTIONAL:
+		case wxPLAnnotation::FRACTIONAL:
 		default:
 			return wxRealPoint( m_dev.x + pos.x*m_dev.width,
 				m_dev.y + pos.y*m_dev.height );
@@ -1317,7 +1320,13 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 	box.x += yleft_max_axis_width;
 	box.width -= yleft_max_axis_width;
 	box.width -= yright_max_axis_width;
-		
+	
+	// add extra space if desired for annotations, etc
+	box.x += m_spaceLeftTop.x;
+	box.y += m_spaceLeftTop.y;
+	box.width -= ( m_spaceLeftTop.x + m_spaceRightBottom.x );
+	box.height -= ( m_spaceLeftTop.y + m_spaceRightBottom.y );
+
 	if ( box.width < 30 || box.height < 30 )
 		return; // nothing useful to do at this scale
 
@@ -1371,6 +1380,15 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 		if (is_cartesian) DrawGrid( dc, wxPLAxis::TickData::SMALL );
 		else DrawPolarGrid(dc, wxPLAxis::TickData::SMALL);
 	}
+	
+	// calculate extents of all plots
+	wxPLRealRect plotarea( m_plotRects[0].x, 
+				m_plotRects[0].y, 
+				m_plotRects[0].width, 
+				m_plotRects[0].height*nyaxes + (nyaxes-1)*plot_space );
+
+	// draw annotations that are zorder 'back' (i.e. under the plots)	
+	DrawAnnotations( dc, plotarea, wxPLAnnotation::BACK );
 
 	// render plots
 	for ( size_t i = 0; i< m_plots.size(); i++ )
@@ -1496,18 +1514,26 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 	}
 
 	LEGEND_FONT(dc);
-
-	wxPLRealRect plotarea( m_plotRects[0].x, m_plotRects[0].y, m_plotRects[0].width, m_plotRects[0].height*nyaxes + (nyaxes-1)*plot_space );
+	
 	DrawLegend( dc, (m_legendPos==FLOATING||legend_bottom||legend_right) ? geom : plotarea  );
 
+	// draw annotations on the top
+	DrawAnnotations( dc, plotarea, wxPLAnnotation::FRONT );
+}
+
+
+void wxPLPlot::DrawAnnotations( wxPLOutputDevice &dc, const wxPLRealRect &plotarea, wxPLAnnotation::ZOrder zo )
+{
 	if ( m_annotations.size() > 0 )
 	{
 		NORMAL_FONT(dc);
 		for( size_t i=0;i<m_annotations.size();i++ )
 		{
+			if ( m_annotations[i].zorder != zo ) continue;
+
 			wxPLAxis *xax = 0; double xmin=0, xmax = 0;
 			wxPLAxis *yax = 0; double ymin=0, ymax = 0;
-			if ( m_annotations[i].posm == wxPLAnnotationMapping::AXIS )
+			if ( m_annotations[i].posm == wxPLAnnotation::AXIS )
 			{
 				xax = GetAxis( m_annotations[i].xap );
 				yax = GetAxis( m_annotations[i].yap );
@@ -1521,7 +1547,6 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 					ymax = bb.y;
 				}
 			}
-
 			wxPLDefaultAnnotationMapper mmap( m_annotations[i].posm, plotarea, 
 				xax, xmin, xmax,
 				yax, ymin, ymax );

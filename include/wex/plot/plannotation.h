@@ -9,7 +9,6 @@
 class wxPLAnnotationMapping
 {
 public:
-	enum PositionMode { FRACTIONAL, POINTS, AXIS };
 	wxPLAnnotationMapping();
 	virtual ~wxPLAnnotationMapping();
 	virtual wxRealPoint ToDevice( const wxRealPoint &pos ) const = 0;
@@ -18,6 +17,9 @@ public:
 class wxPLAnnotation
 {
 public:
+	enum PositionMode { FRACTIONAL, POINTS, AXIS };
+	enum ZOrder { FRONT, BACK };
+
 	wxPLAnnotation();
 	virtual ~wxPLAnnotation();
 	virtual void Draw( wxPLOutputDevice &dc, const wxPLAnnotationMapping &map ) = 0;
@@ -88,6 +90,28 @@ private:
 	double m_size;
 	wxColour m_colour;
 	wxPLOutputDevice::Style m_style;
+};
+
+class wxPLShapeAnnotation : public wxPLAnnotation
+{
+public:
+	enum ShapeType { RECTANGLE, CIRCLE };
+	wxPLShapeAnnotation( 
+		ShapeType type,
+		const wxPLRealRect &rect,
+		const wxColour &c = *wxLIGHT_GREY,
+		bool filled = true,
+		double size = 1 );
+
+	virtual ~wxPLShapeAnnotation();
+	
+	virtual void Draw( wxPLOutputDevice &dc, const wxPLAnnotationMapping &map );
+private:
+	ShapeType m_type;
+	wxPLRealRect m_rect;
+	wxColour m_colour;
+	bool m_filled;
+	double m_size;
 };
 
 #endif

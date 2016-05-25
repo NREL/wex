@@ -326,14 +326,20 @@ void fcall_plot( lk::invoke_t &cxt )
 
 void fcall_annotate( lk::invoke_t &cxt )
 {
-	LK_DOC( "annotate", "Adds an annotation (text, line) on a plot surface. Options: type{line,brace}, color, size, align{left,center,right}, angle, style{solid,dot,dash,dotdash}, arrow, position{axis,fractional,points}.", "(string or [x0 y0], [x y], table:options):none" );
+	LK_DOC( "annotate", "Adds an annotation (text, line, brace, circle, rectangle) on a plot surface. Options: type{line,brace,rect,circle}, color, size, align{left,center,right}, angle, style{solid,dot,dash,dotdash}, arrow, position{axis,fractional,points}, zorder{front,back}, filled.", "(string or [x0 y0], [x y] or radius, table:options):none" );
 
 	wxPLPlotCtrl *plot = GetPlotSurface( 
 		(s_curToplevelParent!=0)
 			? s_curToplevelParent 
 			: GetCurrentTopLevelWindow() );
 
-	wxRealPoint pos(cxt.arg(1).index(0)->as_number(),
+	wxRealPoint pos;
+	double radius = 1;
+
+	if ( cxt.arg(1).type() == lk::vardata_t::NUMBER )
+		radius = cxt.arg(1).as_number(); // for circle shapes
+	else
+		pos = wxRealPoint(cxt.arg(1).index(0)->as_number(),
 			cxt.arg(1).index(1)->as_number() );
 
 	double size = 0;
@@ -341,9 +347,17 @@ void fcall_annotate( lk::invoke_t &cxt )
 	wxColour color( *wxBLACK );
 	wxPLTextLayout::TextAlignment align = wxPLTextLayout::LEFT;
 	wxPLOutputDevice::Style style = wxPLOutputDevice::SOLID;
-	wxPLAnnotationMapping::PositionMode posm = wxPLAnnotationMapping::AXIS;
+	wxPLAnnotation::PositionMode posm = wxPLAnnotation::AXIS;
+	wxPLAnnotation::ZOrder zorder = wxPLAnnotation::FRONT;
 	wxPLLineAnnotation::ArrowType arrow = wxPLLineAnnotation::NO_ARROW;
+	wxPLPlot::AxisPos xap( wxPLPlot::X_BOTTOM );
+	wxPLPlot::AxisPos yap( wxPLPlot::Y_LEFT );
+	wxPLPlot::PlotPos ppos( wxPLPlot::PLOT_TOP );
+
+	bool filled = true;
 	bool brace = false;
+	bool rect = false;
+	bool circle = false;
 
 	if ( cxt.arg_count() > 2 )
 	{
@@ -353,10 +367,19 @@ void fcall_annotate( lk::invoke_t &cxt )
 			color = lk_to_colour( o );
 		}
 		
+		if ( lk::vardata_t *o = opts.lookup( "filled" ) )
+		{
+			filled = o->as_boolean();
+		}
+		
 		if ( lk::vardata_t *o = opts.lookup( "type" ) )
 		{
 			if( o->as_string().Lower() == "brace" )
 				brace = true;
+			if( o->as_string().Lower() == "rect" )
+				rect = true;
+			if( o->as_string().Lower() == "circle" )
+				circle = true;
 		}
 
 		if ( lk::vardata_t *o = opts.lookup( "size" ) )
@@ -399,8 +422,14 @@ void fcall_annotate( lk::invoke_t &cxt )
 		if ( lk::vardata_t *o = opts.lookup( "position" ) )
 		{
 			wxString A( o->as_string().Lower() );
-			if ( A == "fractional" ) posm = wxPLAnnotationMapping::FRACTIONAL;
-			if ( A == "points" ) posm = wxPLAnnotationMapping::POINTS;
+			if ( A == "fractional" ) posm = wxPLAnnotation::FRACTIONAL;
+			if ( A == "points" ) posm = wxPLAnnotation::POINTS;
+		}
+
+		if ( lk::vardata_t *o = opts.lookup( "zorder" ) )
+		{
+			if ( o->as_string().Lower() == "back" )
+				zorder = wxPLAnnotation::BACK;
 		}
 
 	}
@@ -409,7 +438,7 @@ void fcall_annotate( lk::invoke_t &cxt )
 	if ( cxt.arg(0).deref().type() == lk::vardata_t::STRING )
 	{
 		plot->AddAnnotation( new wxPLTextAnnotation( cxt.arg(0).as_string(),
-			pos, size, angle, color, align ), posm );
+			pos, size, angle, color, align ), posm, xap, yap, ppos, zorder );
 	}
 	else if ( cxt.arg(0).deref().type() == lk::vardata_t::VECTOR )
 	{
@@ -420,8 +449,24 @@ void fcall_annotate( lk::invoke_t &cxt )
 		pts.push_back( pos );
 		pts.push_back( p0 );
 		if ( size <= 0 ) size = 1;
-		if ( brace ) plot->AddAnnotation( new wxPLBraceAnnotation( pos, p0, 1.0, size, color, style ), posm );
-		else plot->AddAnnotation( new wxPLLineAnnotation( pts, size, color, style, arrow ), posm );
+		if ( brace ) 
+		{
+			plot->AddAnnotation( new wxPLBraceAnnotation( pos, p0, 1.0, size, color, style ), posm, xap, yap, ppos, zorder );
+		}
+		else if ( rect )
+		{
+			wxPLRealRect rr(  p0.x, p0.y, pos.x, pos.y );
+			plot->AddAnnotation( new wxPLShapeAnnotation( wxPLShapeAnnotation::RECTANGLE, rr, color, filled, size ), posm, xap, yap, ppos, zorder );
+		}
+		else if ( circle )
+		{
+			wxPLRealRect rr( p0.x, p0.y, radius, radius );
+			plot->AddAnnotation( new wxPLShapeAnnotation( wxPLShapeAnnotation::CIRCLE, rr, color, filled, size ), posm, xap, yap, ppos, zorder );
+		}
+		else
+		{
+			plot->AddAnnotation( new wxPLLineAnnotation( pts, size, color, style, arrow ), posm, xap, yap, ppos, zorder );
+		}
 	}
 	
 	plot->Refresh();
@@ -431,7 +476,7 @@ void fcall_annotate( lk::invoke_t &cxt )
 void fcall_plotopt( lk::invoke_t &cxt )
 {
 	LK_DOC("plotopt", 
-		"Modifies the current plot properties like title, coarse, fine, legend, legendpos, legendborder, scale, font, window, border, showaxes, pdffontface, pdffontsize, pdffontdir", 
+		"Modifies the current plot properties like title, coarse, fine, legend, legendpos, legendborder, scale, font, window, border, space, showaxes, pdffontface, pdffontsize, pdffontdir", 
 		"(table:options):boolean");
 	
 	cxt.result().assign( 1.0 );
@@ -569,6 +614,20 @@ void fcall_plotopt( lk::invoke_t &cxt )
 			plot->SetFont( font );
 			mod = true;
 		}
+	}
+
+	if ( lk::vardata_t *arg = cxt.arg(0).lookup("space") )
+	{
+		wxRealPoint tl(0,0), br(0,0);
+		tl.x = arg->index(0)->as_number();
+		br.x = arg->index(1)->as_number();
+		if ( arg->length() > 2 )
+		{
+			tl.y = arg->index(2)->as_number();
+			br.y = arg->index(3)->as_number();
+		}
+		plot->SetBorderSpace( tl.x, br.x, tl.y, br.y );
+		mod = true;
 	}
 	
 	if (mod)

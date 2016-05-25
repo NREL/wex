@@ -175,3 +175,37 @@ void wxPLBraceAnnotation::Draw( wxPLOutputDevice &dc, const wxPLAnnotationMappin
 	dc.Pen( m_colour, m_size, m_style );
 	dc.Lines( ln.size(), &ln[0] );
 }
+
+
+wxPLShapeAnnotation::wxPLShapeAnnotation( 
+		ShapeType type,
+		const wxPLRealRect &rect,
+		const wxColour &c,
+		bool filled,
+		double size ) : wxPLAnnotation(),
+	m_type(type), m_rect(rect), m_colour(c), m_filled(filled), m_size(size)
+{
+}
+
+wxPLShapeAnnotation::~wxPLShapeAnnotation()
+{
+}
+
+void wxPLShapeAnnotation::Draw( wxPLOutputDevice &dc, const wxPLAnnotationMapping &map )
+{
+	dc.Pen( m_colour, m_size );
+	if ( m_filled ) dc.Brush( m_colour ); else dc.NoBrush();
+
+	if ( m_type == RECTANGLE )
+	{
+		wxRealPoint tl = map.ToDevice( wxRealPoint( m_rect.x, m_rect.y ) );
+		wxRealPoint br = map.ToDevice( wxRealPoint( m_rect.x+m_rect.width, m_rect.y+m_rect.height ) );
+		dc.Rect( tl.x, tl.y, br.x-tl.x, tl.y-br.y );
+	}
+	else
+	{
+		wxRealPoint c = map.ToDevice( wxRealPoint(m_rect.x, m_rect.y) );
+		wxRealPoint rp = map.ToDevice( wxRealPoint( m_rect.x+m_rect.width, m_rect.y ) );
+		dc.Circle( c, rp.x-c.x );
+	}
+}

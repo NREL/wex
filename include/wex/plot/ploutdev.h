@@ -16,6 +16,8 @@ public:
 	double x, y, width, height;
 
 	wxPLRealRect() { x=y=width=height=0.0; }
+	wxPLRealRect( const wxPLRealRect &rhs )
+		: x(rhs.x), y(rhs.y), width(rhs.width), height(rhs.height) { }
 	wxPLRealRect( double _x, double _y, double _w, double _h )
 		: x(_x), y(_y), width(_w), height(_h) { }
 
