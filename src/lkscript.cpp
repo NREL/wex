@@ -454,8 +454,8 @@ void fcall_annotate( lk::invoke_t &cxt )
 			cxt.arg(0).index(1)->as_number() );
 
 		std::vector<wxRealPoint> pts;
-		pts.push_back( pos );
 		pts.push_back( p0 );
+		pts.push_back( pos );
 		if ( size <= 0 ) size = 1;
 		if ( brace ) 
 		{

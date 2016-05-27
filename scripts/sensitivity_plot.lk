@@ -111,7 +111,7 @@ function sensitivity_plot( data, baseline, label, units )
 	axis('y1', { label=ytitle, showlabel=true, show=true, type='label', labels=ylab, min=0, max=n+1, ticksizes=[0,0]});
 
 	annotate( [baseline,0], [baseline,n+1], {type='line', size=2, color='white'});
-	annotate( [baseline,-0.5], [baseline,0], {type='line', size=2, arrow='filled'});
+	annotate( [baseline,0], [baseline,-0.5], {type='line', size=2, arrow='filled'});
 	annotate( 'Baseline ' + label + ' = ' + sprintf('%g ', baseline) + units, [baseline,-1], {align='center'});
 	
 	plotopt( {window=[700,400/5*n]} );
