@@ -280,11 +280,14 @@ void wxPLHBarPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 	wxRealPoint pos, size;
 	map.GetDeviceExtents( &pos, &size );
 
+	/*
+	// don't automatically draw a vertical bar to show baseline
+	// now can use annotation feature to do this.
 	start.y = pos.y+1;
-	end.y = start.y + size.y-1;
-	
+	end.y = start.y + size.y-1;	
 	dc.Pen( *wxBLACK, 1 );
 	dc.Line(start.x, start.y, end.x, end.y);
+	*/
 }
 
 	

@@ -23,10 +23,13 @@ wxPLTextAnnotation::wxPLTextAnnotation( const wxString &text,
 	double size,
 	double angle,
 	const wxColour &c, 
-	wxPLTextLayout::TextAlignment align )
+	wxPLTextLayout::TextAlignment align,
+	const wxRealPoint &delta )
 
 	: wxPLAnnotation( ),
-		m_text(text), m_pos(pos), m_size(size), m_angle(angle), m_colour(c), m_align(align), m_layout(0)
+		m_text(text), m_pos(pos), m_size(size), 
+		m_angle(angle), m_colour(c), m_align(align), m_layout(0),
+		m_delta(delta)
 {
 }
 
@@ -53,7 +56,7 @@ void wxPLTextAnnotation::Draw( wxPLOutputDevice &dc, const wxPLAnnotationMapping
 	pos.y -= m_layout->Height()/2;
 	
 	dc.TextColour( m_colour );
-	m_layout->Render( dc, pos.x, pos.y, m_angle, false );
+	m_layout->Render( dc, pos.x+m_delta.x, pos.y+m_delta.y, m_angle, false );
 }
 
 

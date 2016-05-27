@@ -326,7 +326,7 @@ void fcall_plot( lk::invoke_t &cxt )
 
 void fcall_annotate( lk::invoke_t &cxt )
 {
-	LK_DOC( "annotate", "Adds an annotation (text, line, brace, circle, rectangle) on a plot surface. Options: type{line,brace,rect,circle}, color, size, align{left,center,right}, angle, style{solid,dot,dash,dotdash}, arrow, position{axis,fractional,points}, zorder{front,back}, filled.", "(string or [x0 y0], [x y] or radius, table:options):none" );
+	LK_DOC( "annotate", "Adds an annotation (text, line, brace, circle, rectangle) on a plot surface. Options: type{line,brace,rect,circle}, color, size, align{left,center,right}, angle, style{solid,dot,dash,dotdash}, arrow{outline,filled}, position{axis,fractional,points}, zorder{front,back}, dxdy=[dx,dy], filled=t/f.", "(string or [x0 y0], [x y] or radius, table:options):none" );
 
 	wxPLPlotCtrl *plot = GetPlotSurface( 
 		(s_curToplevelParent!=0)
@@ -353,6 +353,8 @@ void fcall_annotate( lk::invoke_t &cxt )
 	wxPLPlot::AxisPos xap( wxPLPlot::X_BOTTOM );
 	wxPLPlot::AxisPos yap( wxPLPlot::Y_LEFT );
 	wxPLPlot::PlotPos ppos( wxPLPlot::PLOT_TOP );
+
+	wxRealPoint dxdy(0,0);
 
 	bool filled = true;
 	bool brace = false;
@@ -432,13 +434,19 @@ void fcall_annotate( lk::invoke_t &cxt )
 				zorder = wxPLAnnotation::BACK;
 		}
 
+		if ( lk::vardata_t *o = opts.lookup( "dxdy" ) )
+		{
+			dxdy.x = o->index(0)->as_number();
+			dxdy.y = o->index(1)->as_number();
+		}
+
 	}
 	
 
 	if ( cxt.arg(0).deref().type() == lk::vardata_t::STRING )
 	{
 		plot->AddAnnotation( new wxPLTextAnnotation( cxt.arg(0).as_string(),
-			pos, size, angle, color, align ), posm, xap, yap, ppos, zorder );
+			pos, size, angle, color, align, dxdy ), posm, xap, yap, ppos, zorder );
 	}
 	else if ( cxt.arg(0).deref().type() == lk::vardata_t::VECTOR )
 	{
@@ -671,7 +679,16 @@ void fcall_axis( lk::invoke_t &cxt )
 	if (axname == "x2") axis = plot->GetXAxis2();
 	if (axname == "y1") axis = plot->GetYAxis1();
 	if (axname == "y2") axis = plot->GetYAxis2();
-	if (!axis) return;
+
+
+	if ( axis == NULL )
+	{
+		axis = new wxPLLinearAxis( 0, 1 );
+		if (axname == "x1") plot->SetXAxis1( axis );
+		if (axname == "x2") plot->SetXAxis2( axis );
+		if (axname == "y1") plot->SetYAxis1( axis );
+		if (axname == "y2") plot->SetYAxis2( axis );
+	}
 
 	if (cxt.arg_count() < 2 || cxt.arg(1).type() != lk::vardata_t::HASH ) return;
 	bool mod = false;
@@ -686,7 +703,7 @@ void fcall_axis( lk::invoke_t &cxt )
 
 		if ( arg->as_string() == "log" )
 		{
-			if ( min <= 0 ) min = 0.001;
+			if ( min <= 0 ) min = 0.00001;
 			if ( max < min ) max = min+10;
 
 			axis_new = new wxPLLogAxis( min, max, axis->GetLabel() );

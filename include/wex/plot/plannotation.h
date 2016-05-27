@@ -34,13 +34,15 @@ class wxPLTextAnnotation : public wxPLAnnotation
 	wxColour m_colour;
 	wxPLTextLayout::TextAlignment m_align;
 	wxPLTextLayout *m_layout;
+	wxRealPoint m_delta;
 public:
 	wxPLTextAnnotation( const wxString &text,
 		const wxRealPoint &pos,
 		double size = 0,
 		double angle = 0,
 		const wxColour &c = *wxBLACK,
-		wxPLTextLayout::TextAlignment align = wxPLTextLayout::LEFT );
+		wxPLTextLayout::TextAlignment align = wxPLTextLayout::LEFT,
+		const wxRealPoint &delta = wxRealPoint(0,0) );
 
 	virtual ~wxPLTextAnnotation();
 	
