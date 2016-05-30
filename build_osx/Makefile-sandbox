@@ -1,5 +1,5 @@
-DVDIR = ../tools/sandbox
-VPATH = $(DVDIR)
+SANDBOXDIR = ../tools/sandbox
+VPATH = $(SANDBOXDIR)
 WEXLIB = ../wexosxwx3.a
 LKDIR = ../../lk
 LKLIB = $(LKDIR)/lkosxwx3.a
@@ -7,8 +7,11 @@ LKLIB = $(LKDIR)/lkosxwx3.a
 CC = gcc
 CXX = g++
 CFLAGS = -g -I. -I../include `wx-config-3 --cflags` -I$(LKDIR)/include
-CXXFLAGS = $(CFLAGS)
-LDFLAGS = `wx-config-3 --libs` `wx-config-3 --libs aui` `wx-config-3 --libs stc` `wx-config-3 --libs gl` -lm  $(WEXLIB) $(LKLIB)
+CXXFLAGS = $(CFLAGS) -stdlib=libstdc++
+OBJCXXFLAGS = -stdlib=libstdc++
+LDFLAGS = `wx-config-3 --libs` `wx-config-3 --libs aui` `wx-config-3 --libs stc` `wx-config-3 --libs gl` -lm  $(WEXLIB) $(LKLIB) -stdlib=libstdc++
+
+
 OBJECTS  = sandbox.o
 TARGET = Sandbox
 

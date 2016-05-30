@@ -5,8 +5,9 @@ WEXLIB = ../wexosxwx3.a
 CC = gcc
 CXX = g++
 CFLAGS = -g -I. -I../include `wx-config-3 --cflags`
-CXXFLAGS = $(CFLAGS)
-LDFLAGS = `wx-config-3 --libs` `wx-config-3 --libs aui` `wx-config-3 --libs stc` -lm 
+CXXFLAGS = -std=c++0x $(CFLAGS) -stdlib=libstdc++
+OBJCXXFLAGS = -stdlib=libstdc++
+LDFLAGS = `wx-config-3 --libs` `wx-config-3 --libs aui` `wx-config-3 --libs stc` -lm -stdlib=libstdc++
 OBJECTS  = dview.o
 TARGET = DView
 
