@@ -8,7 +8,7 @@ LKLIB = $(LKDIR)/lkosxwx3.a
 CC = gcc
 CXX = g++
 CFLAGS = -g -I. -I$(WEXDIR)/include -I$(LKDIR) -I../tcs -DLK_USE_WXWIDGETS `wx-config-3 --cflags`
-CXXFLAGS = $(CFLAGS)
+CXXFLAGS = $(CFLAGS) -std=c++0x
 LDFLAGS = $(WEXLIB) $(LKLIB) `wx-config-3 --libs` `wx-config-3 --libs aui` `wx-config-3 --libs stc` -lm 
 
 OBJECTS  = lkscript.o

@@ -4,13 +4,11 @@ WEXLIB = ../wexosxwx3.a
 LKDIR = ../../lk
 LKLIB = $(LKDIR)/lkosxwx3.a
 
-CC = gcc
-CXX = g++
-CFLAGS = -g -I. -I../include `wx-config-3 --cflags` -I$(LKDIR)/include
-CXXFLAGS = $(CFLAGS) -stdlib=libstdc++
-OBJCXXFLAGS = -stdlib=libstdc++
-LDFLAGS = `wx-config-3 --libs` `wx-config-3 --libs aui` `wx-config-3 --libs stc` `wx-config-3 --libs gl` -lm  $(WEXLIB) $(LKLIB) -stdlib=libstdc++
-
+CC = gcc -mmacosx-version-min=10.9
+CXX = g++ -mmacosx-version-min=10.9
+CFLAGS = -g -I. -I../include `wx-config-3 --cflags` -I$(LKDIR)/include  -DWX_PRECOMP -O2 -arch x86_64  -fno-common
+CXXFLAGS = $(CFLAGS) -std=gnu++11
+LDFLAGS = -arch x86_64 `wx-config-3 --libs` `wx-config-3 --libs aui` `wx-config-3 --libs stc` `wx-config-3 --libs gl` -lm  $(WEXLIB) $(LKLIB)
 
 OBJECTS  = sandbox.o
 TARGET = Sandbox

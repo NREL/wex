@@ -3,12 +3,11 @@ VPATH = ../src/freetype/src/base ../src/freetype/src/cff ../src/freetype/src/cid
 LKDIR = ../../lk
 LKLIB = lkosxwx3.a
 
-CC = gcc
-CXX = g++
-CFLAGS = -fPIC -Wall -O2 `wx-config-3 --cflags` -I../include -I../src/freetype/include -DFT2_BUILD_LIBRARY -DOPJ_STATIC -DFT_CONFIG_MODULES_H=\"slimftmodules.h\" -DFT_CONFIG_OPTIONS_H=\"slimftoptions.h\" -I$(LKDIR)/include
-CXXFLAGS = -std=c++0x $(CFLAGS) -stdlib=libstdc++
-OBJCXXFLAGS = -stdlib=libstdc++
-LDFLAGS = -stdlib=libstdc++
+CC = gcc -mmacosx-version-min=10.9
+CXX = g++ -mmacosx-version-min=10.9
+CFLAGS = -fPIC -Wall -O2 `wx-config-3 --cflags` -I../include -I../src/freetype/include -DFT2_BUILD_LIBRARY -DOPJ_STATIC -DFT_CONFIG_MODULES_H=\"slimftmodules.h\" -DFT_CONFIG_OPTIONS_H=\"slimftoptions.h\" -I$(LKDIR)/include  -DWX_PRECOMP -O2 -arch x86_64  -fno-common
+CXXFLAGS = $(CFLAGS) -std=gnu++11
+LDFLAGS =  -arch x86_64  -framework IOKit -framework Carbon -framework Cocoa -framework AudioToolbox -framework System -framework OpenGL 
 
 LIBNAME = wexosxwx3
 TARGET = ../$(LIBNAME).a
