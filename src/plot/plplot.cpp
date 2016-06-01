@@ -1418,6 +1418,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 
 	// draw some axes
 	AXIS_FONT(dc);
+	dc.TextColour( m_axisColour );
 	dc.Pen( m_axisColour, 0.5 );	
 	if ( m_x2.axis && m_x2.axis->IsShown() )
 		m_x2.layout->render( dc, m_plotRects[0].y, m_x2.axis, 

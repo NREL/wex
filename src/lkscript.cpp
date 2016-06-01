@@ -38,6 +38,7 @@
 #include "wex/plot/plwindrose.h"
 #include "wex/plot/plcontourplot.h"
 #include "wex/plot/plcolourmap.h"
+#include "wex/plot/plsectorplot.h"
 
 enum { BAR, HBAR, LINE, SCATTER, WINDROSE };
 static void CreatePlot( wxPLPlotCtrl *plot, double *x, double *y, int len, double thick, wxColour &col, int type,
@@ -916,6 +917,71 @@ void fcall_griddata( lk::invoke_t &cxt )
 	to_lk_matrix( zq, cxt.result() );
 }
 
+void fcall_sector( lk::invoke_t &cxt )
+{
+	LK_DOC( "sector", "Creates a sector plot from labeled data, with an optional inner section.  Options are: colors{array}, showvalues, calloutsize, holesize, textspace, border.", "(array:[[ value, label ]...], {array:[[ value, label ]...]}, table:options):none" );
+	
+	wxPLPlotCtrl *plot = GetPlotSurface( 
+		(s_curToplevelParent!=0)
+			? s_curToplevelParent 
+			: GetCurrentTopLevelWindow() );
+
+	wxPLSectorPlot *sector = new wxPLSectorPlot;
+	for( size_t i=0;i<cxt.arg(0).length();i++ )
+	{
+		if ( cxt.arg(0).index(i)->length() < 2 ) break;
+		sector->AddSector( cxt.arg(0).index(i)->index(0)->as_number(),
+				cxt.arg(0).index(i)->index(1)->as_string() );
+	}
+
+	size_t optidx = 1;
+	if ( cxt.arg_count() > 1 && cxt.arg(1).deref().type() == lk::vardata_t::VECTOR )
+	{
+		optidx = 2;
+		for( size_t i=0;i<cxt.arg(1).length();i++ )
+		{
+			if ( cxt.arg(1).index(i)->length() < 2 ) break;
+			sector->AddInnerSector( cxt.arg(1).index(i)->index(0)->as_number(),
+					cxt.arg(1).index(i)->index(1)->as_string() );
+		}
+	}
+	
+	if ( optidx < cxt.arg_count() )
+	{
+		lk::vardata_t &opts = cxt.arg(optidx);
+		if ( lk::vardata_t *o = opts.lookup( "showvalues" ) )
+			sector->ShowSegmentValues( o->as_boolean() );
+		if ( lk::vardata_t *o = opts.lookup( "holesize" ) )
+			sector->SetCenterHoleSize( o->as_number() );
+		if ( lk::vardata_t *o = opts.lookup( "calloutsize" ) )
+			sector->SetCalloutSize( o->as_number() );
+		if ( lk::vardata_t *o = opts.lookup( "textspace") ) 
+			sector->SetTextSpace( o->as_number() );
+		if ( lk::vardata_t *o = opts.lookup( "border" ) )
+			sector->SetBorder( o->as_number() );
+		if ( lk::vardata_t *o = opts.lookup( "colors" ) )
+		{
+			std::vector<wxColour> list;
+			for( size_t i=0;i<o->length();i++ )
+				list.push_back( lk_to_colour( o->index(i) ) );
+
+			sector->SetColours( list );
+		}
+
+		wxString prefix, suffix;
+		if ( lk::vardata_t *o = opts.lookup( "suffix" ) )
+			suffix = o->as_string();
+		if ( lk::vardata_t *o = opts.lookup( "prefix" ) )
+			prefix = o->as_string();
+
+		if ( !prefix.IsEmpty() || !suffix.IsEmpty() )
+			sector->SetFormat( wxNUMERIC_REAL, wxNUMERIC_GENERIC, false, prefix, suffix );
+	}
+
+	plot->AddPlot( sector );
+}
+
+
 void fcall_contour( lk::invoke_t &cxt )
 {
 	LK_DOC( "contour", "Creates a contour plot from gridded x,y,z data. Options are filled, colormap, levels, min, max", "( matrix:x, matrix:y, matrix:z, { table:options } ):none" );
@@ -1394,6 +1460,7 @@ lk::fcall_t* wxLKPlotFunctions()
 		fcall_peaks,
 		fcall_griddata,
 		fcall_contour,
+		fcall_sector,
 		0 };
 		
 	return (lk::fcall_t*)vec;

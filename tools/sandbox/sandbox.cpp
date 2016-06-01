@@ -848,7 +848,7 @@ public:
 		{
 			if (!wxPLPlot::AddPdfFontDir( wexdir + "/pdffonts" ))
 				wxMessageBox("Could not add font dir: " + wexdir + "/pdffonts" );
-			if (!wxPLPlot::SetPdfDefaultFont( "ComputerModernSansSerif", 11.0 ) )
+			if (!wxPLPlot::SetPdfDefaultFont( "RalewayThin", 11.0 ) )
 				wxMessageBox("Could not set default pdf font to Computer Modern Sans Serif" );
 		}
 
