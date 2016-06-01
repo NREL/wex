@@ -192,7 +192,7 @@ public:
 
 
 	static bool AddPdfFontDir( const wxString &path );
-	static wxString LocatePdfFontInfoXml( const wxString &face );
+	static wxString LocatePdfFontDataFile( const wxString &face );
 	static wxArrayString ListAvailablePdfFonts();
 	static bool SetPdfDefaultFont( const wxString &face, double points );
 	bool RenderPdf( const wxString &file, double width, double height );

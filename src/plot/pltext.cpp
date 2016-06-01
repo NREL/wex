@@ -1141,8 +1141,14 @@ wxFreeTypeDemo::wxFreeTypeDemo( wxWindow *parent )
 {
 	SetBackgroundStyle( wxBG_STYLE_PAINT );
 
-	face1 = wxFreeTypeLoadFont( "C:\\Users\\adobos\\Projects\\wex\\pdffonts\\ComputerModernSerifRegular.otf" );
-	face2 = wxFreeTypeLoadFont( "C:\\Users\\adobos\\Projects\\wex\\pdffonts\\ComputerModernSansSerifRegular.otf" );
+	wxString dir;
+	wxGetEnv( "WEXDIR", &dir );
+
+	face1 = wxFreeTypeLoadFont( dir + "\\pdffonts\\ComputerModernUpright.ttf" );
+	face2 = wxFreeTypeLoadFont( dir + "\\pdffonts\\ComputerModernSansSerif.ttf" );
+	face3 = wxFreeTypeLoadFont( dir + "\\pdffonts\\RalewayThin.ttf" );
+	face4 = wxFreeTypeLoadFont( dir + "\\pdffonts\\LindenHillItalic.otf" );
+	face5 = wxFreeTypeLoadFont( dir + "\\pdffonts\\LeagueScriptNumberOne.otf" );
 }
 
 void wxFreeTypeDemo::OnPaint( wxPaintEvent & )
@@ -1163,7 +1169,7 @@ void wxFreeTypeDemo::OnPaint( wxPaintEvent & )
 	dc.DrawRectangle( 0, 140, 300, 100 );
 
 	wxImage img( size.x, size.y );
-	int dpi = 96;
+	int dpi = 200;
 	wxString demotext( text + " (" + wxFreeTypeFontName(face1) + ")" );
 	wxSize bbox = wxFreeTypeMeasure( face1, 14, dpi, demotext );
 	wxFreeTypeDraw( &img, true,  wxPoint(0,0), face1, 14,     dpi, demotext, *wxBLACK );
@@ -1186,10 +1192,10 @@ void wxFreeTypeDemo::OnPaint( wxPaintEvent & )
 		wxFreeTypeDraw( &img, false, wxPoint(350,200), face2, 12, dpi, "text to rotate", "Forest Green", angle );
 	}
 
-	wxFreeTypeDraw( &img, false, wxPoint(350,170), face1, 12, dpi, "Text positioning", *wxBLACK, 0 );
-	wxFreeTypeDraw( &img, false, wxPoint(650,170), face1, 12, dpi, "Text positioning", *wxBLACK, 0 );
-	wxFreeTypeDraw( &img, false, wxPoint(350,570), face1, 12, dpi, "Text positioning", *wxBLACK, 0 );
-	wxFreeTypeDraw( &img, false, wxPoint(650,570), face1, 12, dpi, "Text positioning", *wxBLACK, 0 );
+	wxFreeTypeDraw( &img, false, wxPoint(350,170), face2, 12, dpi, "Text positioning", *wxBLACK, 0 );
+	wxFreeTypeDraw( &img, false, wxPoint(650,170), face3, 12, dpi, "Text positioning", *wxBLACK, 0 );
+	wxFreeTypeDraw( &img, false, wxPoint(350,570), face4, 12, dpi, "Text positioning", *wxBLACK, 0 );
+	wxFreeTypeDraw( &img, false, wxPoint(650,570), face5, 12, dpi, "Text positioning", *wxBLACK, 0 );
 	
 	dc.DrawBitmap( wxBitmap(img), wxPoint(0,0) );
 

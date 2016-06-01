@@ -69,7 +69,7 @@ void wxFreeTypeDraw( wxImage *img, bool init_img, const wxPoint &pos,
 
 class wxFreeTypeDemo : public wxWindow
 {
-	int face1, face2;
+	int face1, face2, face3, face4, face5;
 public:
 	wxFreeTypeDemo( wxWindow *parent );
 	void OnPaint( wxPaintEvent & );

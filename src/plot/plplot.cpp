@@ -2081,9 +2081,13 @@ bool wxPLPlot::AddPdfFontDir( const wxString &path )
 	return false;
 }
 
-wxString wxPLPlot::LocatePdfFontInfoXml( const wxString &face )
+wxString wxPLPlot::LocatePdfFontDataFile( const wxString &face )
 {
-	return s_pdfFontDirs.FindAbsoluteValidPath( face + ".xml" );
+	wxString fd( s_pdfFontDirs.FindAbsoluteValidPath( face + ".otf" ) );
+	if ( fd.IsEmpty() )
+		fd = s_pdfFontDirs.FindAbsoluteValidPath( face + ".ttf" );
+
+	return fd;
 }
 
 wxArrayString wxPLPlot::ListAvailablePdfFonts()
@@ -2092,11 +2096,13 @@ wxArrayString wxPLPlot::ListAvailablePdfFonts()
 	for( size_t i=0;i<s_pdfFontDirs.size();i++ )
 	{
 		wxArrayString files;
-		wxDir::GetAllFiles( s_pdfFontDirs[i], &files, "*.xml", wxDIR_FILES );
+		wxDir::GetAllFiles( s_pdfFontDirs[i], &files, wxEmptyString, wxDIR_FILES );
 		for( size_t k=0;k<files.size();k++ )
 		{
 			wxFileName file( files[k] );
-			faces.Add( file.GetName() );
+			wxString ext( file.GetExt().Lower() );
+			if ( ext == "ttf" || ext == "otf" )
+				faces.Add( file.GetName() );
 		}
 	}
 	return faces;
@@ -2131,8 +2137,8 @@ bool wxPLPlot::SetPdfDefaultFont( const wxString &face, double points )
 
 	if (  !IsBuiltinPdfFont(face) )
 	{
-		wxString xml( LocatePdfFontInfoXml( face ) );
-		if ( !xml.IsEmpty() )
+		wxString fd( LocatePdfFontDataFile( face ) );
+		if ( !fd.IsEmpty() )
 		{
 			s_pdfDefaultFontFace = face;
 			return true;
@@ -2156,8 +2162,8 @@ bool wxPLPlot::RenderPdf( const wxString &file, double width, double height )
 
 	if ( !IsBuiltinPdfFont( s_pdfDefaultFontFace ) )
 	{
-		wxString xml( LocatePdfFontInfoXml( s_pdfDefaultFontFace ) );
-		if ( !doc.AddFont( s_pdfDefaultFontFace, wxEmptyString, xml ) 
+		wxString datafile( LocatePdfFontDataFile( s_pdfDefaultFontFace ) );
+		if ( !doc.AddFont( s_pdfDefaultFontFace, wxEmptyString, datafile ) 
 			|| !doc.SetFont( s_pdfDefaultFontFace, wxPDF_FONTSTYLE_REGULAR, s_pdfDefaultFontPoints ) )
 			doc.SetFont( "Helvetica", wxPDF_FONTSTYLE_REGULAR, s_pdfDefaultFontPoints );
 	}
