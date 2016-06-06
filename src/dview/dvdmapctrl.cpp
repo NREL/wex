@@ -214,10 +214,12 @@ wxDVDMapCtrl::wxDVDMapCtrl(wxWindow* parent, wxWindowID id,
 	
 	wxBoxSizer *horizPlotSizer = new wxBoxSizer(wxHORIZONTAL);
 	horizPlotSizer->Add( m_plotSurface, 1, wxEXPAND|wxALL, 0);
-	horizPlotSizer->Add( m_yGraphScroller, 0, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 0);
-		
+//	horizPlotSizer->Add(m_yGraphScroller, 0, wxALL | wxEXPAND | wxALIGN_CENTER_VERTICAL, 0);
+	horizPlotSizer->Add(m_yGraphScroller, 0, wxALL | wxEXPAND , 0);
+
 	wxBoxSizer *optionsSizer = new wxBoxSizer(wxHORIZONTAL);	
-	optionsSizer->Add(m_colourMapSelector, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND|wxALIGN_RIGHT, 3);
+//	optionsSizer->Add(m_colourMapSelector, 0, wxALL | wxALIGN_CENTER_VERTICAL | wxEXPAND | wxALIGN_RIGHT, 3);
+	optionsSizer->Add(m_colourMapSelector, 0, wxALL | wxEXPAND | wxALIGN_RIGHT, 3);
 	optionsSizer->AddStretchSpacer();
 	optionsSizer->Add(new wxStaticText(this, wxID_ANY, "Min:"), 0, wxALIGN_CENTER|wxALIGN_CENTER_VERTICAL, 4);
 	optionsSizer->Add(m_minTextBox, 0, wxALIGN_RIGHT | wxALL|wxALIGN_CENTER_VERTICAL, 3);

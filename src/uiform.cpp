@@ -1557,8 +1557,9 @@ void wxUIPropertyEditor::SetObject( wxUIObject *obj )
 			m_curProps.push_back( x );
 
 			GetSizer()->Add( x.label, 0, wxALL|wxALIGN_CENTRE_VERTICAL, 4 );
-			GetSizer()->Add( x.editor, 1, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 2 );
-			ValueToPropGrid( x );
+//			GetSizer()->Add(x.editor, 1, wxALL | wxALIGN_CENTER_VERTICAL | wxEXPAND, 2);
+			GetSizer()->Add(x.editor, 1, wxALL | wxEXPAND, 2);
+			ValueToPropGrid(x);
 		}
 	}
 

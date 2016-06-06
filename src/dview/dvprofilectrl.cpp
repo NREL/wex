@@ -228,10 +228,12 @@ wxDVProfileCtrl::wxDVProfileCtrl(wxWindow* parent, wxWindowID id, const wxPoint&
 	m_rightAxisLabel->SetFont( label_font );
 		
 	wxBoxSizer *graphsAndAxisLabel = new wxBoxSizer(wxHORIZONTAL);
-	graphsAndAxisLabel->Add( m_leftAxisLabel, 0, wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 0);
-	graphsAndAxisLabel->Add( m_graphsSizer, 1, wxEXPAND, 0 );
-	graphsAndAxisLabel->Add( m_rightAxisLabel, 0, wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 0);
-	
+//	graphsAndAxisLabel->Add(m_leftAxisLabel, 0, wxALIGN_CENTER_VERTICAL | wxALL | wxEXPAND, 0);
+	graphsAndAxisLabel->Add(m_leftAxisLabel, 0,  wxALL | wxEXPAND, 0);
+	graphsAndAxisLabel->Add(m_graphsSizer, 1, wxEXPAND, 0);
+//	graphsAndAxisLabel->Add(m_rightAxisLabel, 0, wxALIGN_CENTER_VERTICAL | wxALL | wxEXPAND, 0);
+	graphsAndAxisLabel->Add(m_rightAxisLabel, 0,  wxALL | wxEXPAND, 0);
+
 	wxBoxSizer *left_sizer = new wxBoxSizer( wxVERTICAL );
 	left_sizer->Add( monthSelector, 0, wxEXPAND, 0 );	
 	left_sizer->Add(graphsAndAxisLabel, 1, wxEXPAND, 0);

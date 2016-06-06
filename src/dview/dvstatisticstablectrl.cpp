@@ -441,7 +441,8 @@ wxDVStatisticsTableCtrl::wxDVStatisticsTableCtrl(wxWindow *parent, wxWindowID id
 	m_chkShowMonths = new wxCheckBox(this, wxID_ANY, "Show Monthly Values", wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
 
 	wxBoxSizer *top_sizer = new wxBoxSizer(wxVERTICAL);
-	top_sizer->Add(m_chkShowMonths, 0, wxALL | wxALIGN_CENTER_VERTICAL, 4);
+//	top_sizer->Add(m_chkShowMonths, 0, wxALL | wxALIGN_CENTER_VERTICAL, 4);
+	top_sizer->Add(m_chkShowMonths, 0, wxALL , 4);
 	top_sizer->Add(m_ctrl, 1, wxALL | wxEXPAND, 0);
 	SetSizer(top_sizer);
 
