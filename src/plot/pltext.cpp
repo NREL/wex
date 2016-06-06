@@ -1130,11 +1130,18 @@ wxSize wxFreeTypeMeasure( int fnt, double points, unsigned int dpi, const wxStri
 }
 
 #include <wx/dcbuffer.h>
+#include <wx/dir.h>
+#include <wx/wfstream.h>
+#include <wx/msgdlg.h>
+
+#include <wex/pdf/pdfdoc.h>
 
 BEGIN_EVENT_TABLE( wxFreeTypeDemo, wxWindow )
 	EVT_PAINT( wxFreeTypeDemo::OnPaint )
 	EVT_SIZE( wxFreeTypeDemo::OnSize )
 END_EVENT_TABLE()
+
+
 
 wxFreeTypeDemo::wxFreeTypeDemo( wxWindow *parent )
 	: wxWindow( parent, wxID_ANY )
@@ -1144,11 +1151,70 @@ wxFreeTypeDemo::wxFreeTypeDemo( wxWindow *parent )
 	wxString dir;
 	wxGetEnv( "WEXDIR", &dir );
 
-	face1 = wxFreeTypeLoadFont( dir + "\\pdffonts\\ComputerModernUpright.ttf" );
-	face2 = wxFreeTypeLoadFont( dir + "\\pdffonts\\ComputerModernSansSerif.ttf" );
-	face3 = wxFreeTypeLoadFont( dir + "\\pdffonts\\RalewayThin.ttf" );
-	face4 = wxFreeTypeLoadFont( dir + "\\pdffonts\\LindenHillItalic.otf" );
-	face5 = wxFreeTypeLoadFont( dir + "\\pdffonts\\LeagueScriptNumberOne.otf" );
+	dir += "/pdffonts";
+	
+	wxPdfDocument doc( wxPORTRAIT, "pt", wxPAPER_A5 );
+	doc.AddPage( wxPORTRAIT, 72*8, 72*11.5 );
+	doc.SetFont( "Helvetica", 0, 8 );
+	doc.SetTextColour( *wxBLACK );
+
+	int ypos = 36;
+	wxArrayString files;
+	wxDir::GetAllFiles( dir, &files, wxEmptyString, wxDIR_FILES );
+	for( size_t k=0;k<files.size();k++ )
+	{
+		wxFileName file( files[k] );
+		wxString ext( file.GetExt().Lower() );
+		wxString name( file.GetName() );
+		if ( ext == "ttf" || ext == "otf" )
+		{
+			int face = wxFreeTypeLoadFont( files[k] );
+			if ( face >= 0 )
+				faces.push_back( face );
+			
+			doc.SetFont( "Helvetica", 0, 8 );
+			if ( doc.AddFont( name, wxEmptyString, files[k] ) )
+			{
+				wxString text(name + ": The quick brown fox...");
+				if ( doc.SetFont( name, 0, 14 ) )
+					doc.Text( 36, ypos, text );
+				else
+				{
+					doc.SetFont( "Helvetica", 0, 8 );
+					doc.Text( 36, ypos, "style error with font: " + name );
+				}
+			}
+			else
+				doc.Text( 36, ypos, "error with font: " + name );
+							
+			ypos += 14;
+		}
+	}
+	
+	wxString pdffile( wxFileName::CreateTempFileName( "pdf" ) + ".pdf" );
+	const wxMemoryOutputStream &data = doc.CloseAndGetBuffer();
+	wxFileOutputStream fp( pdffile );
+	if ( fp.IsOk())
+	{
+
+		wxMemoryInputStream tmpis( data );
+		fp.Write( tmpis );
+		fp.Close();
+
+		wxLaunchDefaultBrowser( pdffile );
+	}
+	else
+		wxMessageBox("Could not write PDF output file" );
+
+
+}
+
+int wxFreeTypeDemo::Face(int i )
+{
+	if ( i <= faces.size() )
+		return i;
+	else
+		return faces.size()-1;
 }
 
 void wxFreeTypeDemo::OnPaint( wxPaintEvent & )
@@ -1156,6 +1222,12 @@ void wxFreeTypeDemo::OnPaint( wxPaintEvent & )
 	wxAutoBufferedPaintDC dc(this);
 	dc.SetBackground( *wxWHITE_BRUSH );
 	dc.Clear();
+
+	if ( faces.size() == 0 )
+	{
+		dc.DrawText( "No fonts loaded", 10, 10 );
+		return;
+	}
 
 	wxString text( wxPLTextLayout::Escape( "AV Ta ^sup_sub\\\\euro \\badcode \\Omega~\\Phi\\ne\\delta, but\n\\Kappa\\approx\\zeta \\emph\\qmark, and this is the end of the text!. Cost was 10 \\pound, or 13.2\\cent" ) );
 		
@@ -1169,34 +1241,43 @@ void wxFreeTypeDemo::OnPaint( wxPaintEvent & )
 	dc.DrawRectangle( 0, 140, 300, 100 );
 
 	wxImage img( size.x, size.y );
-	int dpi = 200;
-	wxString demotext( text + " (" + wxFreeTypeFontName(face1) + ")" );
-	wxSize bbox = wxFreeTypeMeasure( face1, 14, dpi, demotext );
-	wxFreeTypeDraw( &img, true,  wxPoint(0,0), face1, 14,     dpi, demotext, *wxBLACK );
-	wxFreeTypeDraw( &img, false, wxPoint(10,200),face2, 12,   dpi, text + " (" + wxFreeTypeFontName(face2) + ")", *wxRED, 45.0 );
-	wxFreeTypeDraw( &img, false, wxPoint(10,200),face1, 14,   dpi, text + " (" + wxFreeTypeFontName(face2) + ")", *wxBLACK, -45.0 );
-	wxFreeTypeDraw( &img, false, wxPoint(150,150), face1, 26, dpi, "Vertical text", *wxBLUE, 90 );
-	wxFreeTypeDraw( &img, false, wxPoint(200,200), face2, 26, dpi, "Vertical text", "Dark Green", -90 );
-	wxFreeTypeDraw( &img, false, wxPoint(150,150), face1, 20, dpi, "WHITE TEXT", *wxWHITE, 10 );
-	wxFreeTypeDraw( &img, false, wxPoint(300,200), face2, 16, dpi, "Flipped backwards super text", *wxCYAN, 180 );
+	int dpi = dc.GetPPI().x;
+	wxString demotext( text + " (" + wxFreeTypeFontName( Face(1) ) + ")" );
+	wxSize bbox = wxFreeTypeMeasure( Face(1), 14, dpi, demotext );
+	wxFreeTypeDraw( &img, true,  wxPoint(0,0), Face(1), 14,     dpi, demotext, *wxBLACK );
+	wxFreeTypeDraw( &img, false, wxPoint(10,200),Face(2), 12,   dpi, text + " (" + wxFreeTypeFontName(Face(2)) + ")", *wxRED, 45.0 );
+	wxFreeTypeDraw( &img, false, wxPoint(10,200),Face(1), 14,   dpi, text + " (" + wxFreeTypeFontName(Face(2)) + ")", *wxBLACK, -45.0 );
+	wxFreeTypeDraw( &img, false, wxPoint(150,150), Face(1), 26, dpi, "Vertical text", *wxBLUE, 90 );
+	wxFreeTypeDraw( &img, false, wxPoint(200,200), Face(2), 26, dpi, "Vertical text", "Dark Green", -90 );
+	wxFreeTypeDraw( &img, false, wxPoint(150,150), Face(1), 20, dpi, "WHITE TEXT", *wxWHITE, 10 );
+	wxFreeTypeDraw( &img, false, wxPoint(300,200), Face(2), 16, dpi, "Flipped backwards super text", *wxCYAN, 180 );
 	
 	wxPoint p1(350,200);
 	dc.SetPen( *wxBLACK_PEN );
 	dc.SetBrush( *wxGREEN_BRUSH );
-	int dist = wxFreeTypeMeasure( face2, 12, dpi, "text to rotate").x;
+	int dist = wxFreeTypeMeasure( Face(2), 12, dpi, "text to rotate").x;
 	for( double angle = 0;angle<=270;angle+=22.5 )
 	{
 		wxPoint vec( dist*cos(angle*M_PI/180),dist*sin(-angle*M_PI/180) );
 		dc.DrawLine( p1, p1+vec  );
 		dc.DrawCircle( p1+vec, 3 );
-		wxFreeTypeDraw( &img, false, wxPoint(350,200), face2, 12, dpi, "text to rotate", "Forest Green", angle );
+		wxFreeTypeDraw( &img, false, wxPoint(350,200), Face(2), 12, dpi, "text to rotate", "Forest Green", angle );
 	}
 
-	wxFreeTypeDraw( &img, false, wxPoint(350,170), face2, 12, dpi, "Text positioning", *wxBLACK, 0 );
-	wxFreeTypeDraw( &img, false, wxPoint(650,170), face3, 12, dpi, "Text positioning", *wxBLACK, 0 );
-	wxFreeTypeDraw( &img, false, wxPoint(350,570), face4, 12, dpi, "Text positioning", *wxBLACK, 0 );
-	wxFreeTypeDraw( &img, false, wxPoint(650,570), face5, 12, dpi, "Text positioning", *wxBLACK, 0 );
+	wxFreeTypeDraw( &img, false, wxPoint(350,170), Face(2), 12, dpi, "Text positioning", *wxBLACK, 0 );
+	wxFreeTypeDraw( &img, false, wxPoint(650,170), Face(3), 12, dpi, "Text positioning", *wxBLACK, 0 );
+	wxFreeTypeDraw( &img, false, wxPoint(350,570), Face(4), 12, dpi, "Text positioning", *wxBLACK, 0 );
+	wxFreeTypeDraw( &img, false, wxPoint(650,570), Face(5), 12, dpi, "Text positioning", *wxBLACK, 0 );
 	
+	int yp = 0;
+	for( size_t i=0;i<faces.size();i++ )
+	{
+		wxString thetext( wxFreeTypeFontName(i) + ": The quick brown fox jumped..." );
+		wxSize sz = wxFreeTypeMeasure( i, 14, dpi, thetext );
+		wxFreeTypeDraw( &img, false, wxPoint(700,yp), i, 14, dpi, thetext, *wxBLACK, 0 );
+		yp += sz.y;
+	}
+
 	dc.DrawBitmap( wxBitmap(img), wxPoint(0,0) );
 
 	dc.SetPen( *wxBLACK_PEN );
@@ -1211,6 +1292,7 @@ void wxFreeTypeDemo::OnPaint( wxPaintEvent & )
 	dc.SetBrush( *wxTRANSPARENT_BRUSH );
 	dc.SetPen( *wxLIGHT_GREY_PEN );
 	dc.DrawRectangle( 0, 0, bbox.x, bbox.y );
+
 }
 
 void wxFreeTypeDemo::OnSize( wxSizeEvent & )

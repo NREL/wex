@@ -11,6 +11,7 @@
 
 #include "wex/pdf/pdfdoc.h"
 #include "wex/pdf/pdffont.h"
+#include "wex/pdf/pdffontmanager.h"
 #include "wex/plot/plhistplot.h"
 #include "wex/plot/plplot.h"
 #include "wex/plot/ploutdev.h"
@@ -2133,25 +2134,27 @@ bool wxPLPlot::SetPdfDefaultFont( const wxString &face, double points )
 	EnsureStandardPdfFontPaths();
 
 	if ( points > 0 ) s_pdfDefaultFontPoints = points; // negative point size retains current size
-
 	if ( face.IsEmpty() ) return true; // no changes to the face
 
 	if (  !IsBuiltinPdfFont(face) )
 	{
-		wxString fd( LocatePdfFontDataFile( face ) );
-		if ( !fd.IsEmpty() )
-		{
-			s_pdfDefaultFontFace = face;
-			return true;
-		}
-		else
+		wxString fontfile = LocatePdfFontDataFile( face );
+		if ( fontfile.IsEmpty() )
+			return false;
+		
+		wxPdfFontManager *fmng = wxPdfFontManager::GetFontManager();
+		
+		wxPdfFont font( fmng->GetFont( s_pdfDefaultFontFace ) );
+		if ( !font.IsValid() )
+			font = fmng->RegisterFont( fontfile, face );
+
+		if ( !font.IsValid() )
 			return false;
 	}
-	else
-	{
-		s_pdfDefaultFontFace = face;
-		return true;
-	}
+
+	s_pdfDefaultFontFace = face;
+
+	return true;
 }
 
 bool wxPLPlot::RenderPdf( const wxString &file, double width, double height )

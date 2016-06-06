@@ -2,7 +2,7 @@
 function cascade_bar( data )
 {
 	newplot();
-	width = 13;
+	width = 16;
 	n = #lcoe_data;
 	baseline = 0;
 	xlabels = [];
@@ -51,10 +51,13 @@ function cascade_bar( data )
 	
 	axis('x1', {min=-1, 'max'=n, type='label', labels=xlabels, ticksizes=[0,0]});
 	axis('y1', {'min'=0, 'max'=1.1*data[0][1], label='LCOE ($/MWh)'});
-	plotopt({ coarse=false,fine=false, legend=false, border=false, space=[0, 130], window=[600,400]});
+	plotopt({ coarse=false,fine=false, legend=false, border=false, space=[0, 130], window=[750,450]});
 	axis('y2', {show=false});
 	axis('y2', {show=false});
 	outln(baseline);
+	if ( !plotopt( {pdffontface='Carlito'} ) )
+		outln( 'could not set font face' );
+	plotout( 'cascade.pdf' );
 }
 
 

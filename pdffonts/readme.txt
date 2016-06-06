@@ -17,6 +17,8 @@ This license is copied below, and is also available with a FAQ at:
 http://scripts.sil.org/OFL
 
 
+Copyright (c) 2010-2013 by tyPoland Lukasz Dziedzic with Reserved Font Name "Carlito".
+
 -----------------------------------------------------------
 SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
 -----------------------------------------------------------
