@@ -61,6 +61,7 @@ public:
 int wxFreeTypeLoadFont( const wxString &font_file );
 wxArrayString wxFreeTypeListFonts();
 wxString wxFreeTypeFontName( int ifnt );
+bool wxFreeTypeFontStyle( int ifnt, bool *bold, bool *italic );
 int wxFreeTypeFindFont( const wxString &font );
 wxSize wxFreeTypeMeasure( int ifnt, double points, unsigned int dpi, const wxString &text );
 void wxFreeTypeDraw( wxImage *img, bool init_img, const wxPoint &pos, 
