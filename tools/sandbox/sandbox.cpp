@@ -848,17 +848,22 @@ public:
 		{
 			if (!wxPLPlot::AddPdfFontDir( wexdir + "/pdffonts" ))
 				wxMessageBox("Could not add font dir: " + wexdir + "/pdffonts" );
-			if (!wxPLPlot::SetPdfDefaultFont( "RalewayThin", 11.0 ) )
+			if (!wxPLPlot::SetPdfDefaultFont( "ComputerModernUpright", 12.0 ) )
 				wxMessageBox("Could not set default pdf font to Computer Modern Sans Serif" );
 		}
 
-		//TestPLPlot( 0 );
+
+		wxStopWatch sw;
+		int nf = wxFreeTypeLoadAllFonts();
+		wxMessageBox( wxString::Format("Loaded %d fonts in %d ms.", nf, (int)sw.Time()) );
+
+		TestPLPlot( 0 );
 		//TestPLPolarPlot(0);
 		//TestPLBarPlot(0);		
 		//TestContourPlot();
 		//TestSectorPlot(0);
 		//TestTextLayout();
-		TestFreeTypeText();
+		//TestFreeTypeText();
 		//TestPlotAnnotations(0);
 
 		//wxFrame *frmgl = new wxFrame( NULL, wxID_ANY, "GL Easy Test", wxDefaultPosition, wxSize(700,700) );

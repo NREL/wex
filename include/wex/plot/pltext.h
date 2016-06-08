@@ -58,8 +58,11 @@ public:
 	DECLARE_EVENT_TABLE();
 };
 
+
+int wxFreeTypeLoadAllFonts( const wxString &path = wxEmptyString );
 int wxFreeTypeLoadFont( const wxString &font_file );
 wxArrayString wxFreeTypeListFonts();
+wxString wxFreeTypeFontFile( int ifnt );
 wxString wxFreeTypeFontName( int ifnt );
 bool wxFreeTypeFontStyle( int ifnt, bool *bold, bool *italic );
 int wxFreeTypeFindFont( const wxString &font );
@@ -67,6 +70,12 @@ wxSize wxFreeTypeMeasure( int ifnt, double points, unsigned int dpi, const wxStr
 void wxFreeTypeDraw( wxImage *img, bool init_img, const wxPoint &pos, 
 	int ifnt, double points, unsigned int dpi, 
 	const wxString &text, const wxColour &c=*wxBLACK, double angle = 0.0 );
+wxImage wxFreeTypeDraw( wxRealPoint *pos, int ifnt, double points, unsigned int dpi, 
+	const wxString &text, const wxColour &c=*wxBLACK, double angle=0.0 );
+void wxFreeTypeDraw( wxDC &dc, const wxPoint &pos, int ifnt, double points,
+	const wxString &text, const wxColour &c=*wxBLACK, double angle=0.0 );
+void wxFreeTypeDraw( wxGraphicsContext &gc, const wxPoint &pos, int ifnt, double points,
+	const wxString &text, const wxColour &c=*wxBLACK, double angle=0.0 );
 
 class wxFreeTypeDemo : public wxWindow
 {

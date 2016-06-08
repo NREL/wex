@@ -3,6 +3,7 @@
 #include <wex/pdf/pdfdoc.h>
 #include <wex/pdf/pdffont.h>
 #include <wex/plot/ploutdev.h>
+#include <wex/plot/pltext.h>
 
 wxPLPdfOutputDevice::wxPLPdfOutputDevice( wxPdfDocument &doc ) 
 	: wxPLOutputDevice(), m_pdf(doc)	
@@ -540,18 +541,39 @@ void wxPLGraphicsOutputDevice::TextColour( const wxColour &c )
 	UpdateFont();
 }
 
+//#define FREETYPE_TEXT 1
+
+#if defined(__WXMSW__)
+#define DPI_NOMINAL 96.0 // Windows
+#else
+#define DPI_NOMINAL 72.0 // OSX & Linux
+#endif
+#define FT_FONT_FACE 23
+
+#include <wex/utils.h>
+
 void wxPLGraphicsOutputDevice::Text( const wxString &text, double x, double y, double angle )
 {
+#ifdef FREETYPE_TEXT
+	wxPoint pos( (int)SCALE(x), (int)SCALE(y) );
+	wxFreeTypeDraw( *m_gc, pos, FT_FONT_FACE, 12+m_fontSize, text, m_textColour, angle );
+#else
 	if ( angle == 0.0 ) m_gc->DrawText( text, SCALE(x), SCALE(y) );
 	else m_gc->DrawText( text, SCALE(x), SCALE(y), angle * 3.1415926/180.0 );
+#endif
 }
+
 
 void wxPLGraphicsOutputDevice::Measure( const wxString &text, double *width, double *height )
 {
+#ifdef FREETYPE_TEXT
+	unsigned int dpi = DPI_NOMINAL*wxGetScreenHDScale();
+	wxSize sz = wxFreeTypeMeasure( FT_FONT_FACE, 12+m_fontSize, dpi, text );
+	if ( width ) *width = (wxCoord)(sz.x+0.5)/m_scale;
+	if ( height ) *height = (wxCoord)(sz.y+0.5)/m_scale;
+#else
     wxDouble h , d , e , w;
-
     m_gc->GetTextExtent( text, &w, &h, &d, &e );
-
     if ( height )
         *height = (wxCoord)(h+0.5)/m_scale;
     
@@ -562,4 +584,5 @@ void wxPLGraphicsOutputDevice::Measure( const wxString &text, double *width, dou
 
     if ( width )
         *width = (wxCoord)(w+0.5)/m_scale;
+#endif
 }

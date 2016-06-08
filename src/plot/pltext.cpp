@@ -1,5 +1,6 @@
 #include <wx/tokenzr.h>
 
+#include <wx/dir.h>
 #include <wex/plot/pltext.h>
 
 struct escape_sequence
@@ -524,7 +525,7 @@ void wxPLTextLayoutDemo::OnSize( wxSizeEvent & )
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-//#define SUBPIXEL_RENDERING 1
+#define SUBPIXEL_RENDERING 1
 //#define GAMMA_CORRECTION 1
 
 #ifdef SUBPIXEL_RENDERING
@@ -555,9 +556,44 @@ static bool check_freetype_init()
 		return true;
 }
 
+
+int wxFreeTypeLoadAllFonts( const wxString &path )
+{
+	wxString dir;
+	if ( path.IsEmpty() )
+	{
+		wxGetEnv( "WEXDIR", &dir );
+		dir += "/pdffonts";
+	}
+	else
+		dir = path;
+
+	int n = 0;
+	wxArrayString files;
+	wxDir::GetAllFiles( dir, &files, wxEmptyString, wxDIR_FILES );
+	for( size_t k=0;k<files.size();k++ )
+	{
+		wxFileName file( files[k] );
+		wxString ext( file.GetExt().Lower() );
+		wxString name( file.GetName() );
+		if ( ext == "ttf" || ext == "otf" )
+		{
+			int face = wxFreeTypeLoadFont( files[k] );
+			if ( face >= 0 )
+				n++;
+		}
+	}
+	return n;
+}
+
 int wxFreeTypeLoadFont( const wxString &font_file )
 {
 	if ( !check_freetype_init() ) return -1;
+
+	for( size_t i=0;i<ft_faces.size();i++ )
+		if ( wxFileName(ft_faces[i].file).SameAs( wxFileName(font_file) ) )
+			return i;
+
 	FT_Face face;
 	FT_Error err = FT_New_Face( ft_library, font_file.c_str(), 0, &face );
 	if ( 0 == err )
@@ -579,6 +615,14 @@ wxArrayString wxFreeTypeListFonts()
 	for( size_t i=0;i<ft_faces.size();i++ )
 		list.Add( ft_faces[i].font );
 	return list;
+}
+
+wxString wxFreeTypeFontFile( int ifnt )
+{
+	if ( ifnt >= 0 && ifnt < (int)ft_faces.size() )
+		return ft_faces[ifnt].file;
+	else
+		return wxEmptyString;
 }
 
 wxString wxFreeTypeFontName( int fnt )
@@ -724,6 +768,105 @@ static void wxFreeTypeGlyph( unsigned char *rgb, unsigned char *alpha,
 
 // see also : http://jcgt.org/published/0002/01/04/paper.pdf
 
+static wxRealPoint rotate2d(
+	const wxRealPoint &P, 
+	double angle )
+{
+	double rad = angle*M_PI/180.0;
+	return wxRealPoint(
+		cos(rad)*P.x - sin(rad)*P.y,
+		sin(rad)*P.x + cos(rad)*P.y );
+}
+
+void wxFreeTypeDraw( wxDC &dc, const wxPoint &pos, int ifnt, double points,
+	const wxString &text, const wxColour &c, double angle )
+{
+	wxRealPoint offset(0,0);
+	wxSize ppi( dc.GetPPI() );
+	unsigned int dpi = std::max(ppi.x, ppi.y);
+
+	wxImage img( wxFreeTypeDraw( &offset, ifnt, points, dpi, text, c, angle ) );
+
+	if ( img.IsOk() )
+	{
+		wxPoint offpt( pos.x - (int)offset.x, pos.y - (int)offset.y );
+		dc.DrawBitmap( wxBitmap(img), offpt );
+		/*
+		dc.SetPen( *wxLIGHT_GREY_PEN );
+		dc.SetBrush( *wxTRANSPARENT_BRUSH );
+		dc.DrawRectangle( offpt.x, offpt.y, img.GetWidth(), img.GetHeight() );
+		*/
+	}
+}
+
+#include <wex/utils.h>
+
+#if defined(__WXMSW__)
+#define DPI_NOMINAL 96.0 // Windows
+#else
+#define DPI_NOMINAL 72.0 // OSX & Linux
+#endif
+
+void wxFreeTypeDraw( wxGraphicsContext &gc, const wxPoint &pos, int ifnt, double points,
+	const wxString &text, const wxColour &c, double angle )
+{
+	wxRealPoint offset(0,0);
+	
+	unsigned int dpi = DPI_NOMINAL*wxGetScreenHDScale(); 
+
+	wxImage img( wxFreeTypeDraw( &offset, ifnt, points, dpi, text, c, angle ) );
+	if ( img.IsOk() )
+	{
+		wxRealPoint offpt( pos.x - offset.x, pos.y - offset.y );
+		gc.DrawBitmap( wxBitmap(img), offpt.x, offpt.y, img.GetWidth(), img.GetHeight() );
+
+		/*
+		gc.SetPen( *wxLIGHT_GREY_PEN );
+		gc.SetBrush( *wxTRANSPARENT_BRUSH );
+		gc.DrawRectangle( offpt.x, offpt.y, img.GetWidth(), img.GetHeight() );
+		*/
+	}
+}
+
+wxImage wxFreeTypeDraw( wxRealPoint *offset, int ifnt, double points, unsigned int dpi, const wxString &text, const wxColour &c, double angle )
+{
+	if ( text.IsEmpty() || ifnt < 0 || ifnt >= (int)ft_faces.size() || !check_freetype_init() ) 
+		return wxNullImage;
+
+	// first measure the text
+	wxSize size( wxFreeTypeMeasure( ifnt, points, dpi, text ) );
+	if ( size.x == 0 || size.y == 0 )
+		return wxNullImage;
+
+	wxRealPoint pp[3] = { wxRealPoint(0, -size.y), wxRealPoint( size.x, -size.y ), wxRealPoint( size.x, 0 ) };
+	if ( angle != 0.0 )
+		for( size_t i=0;i<3;i++ )
+			pp[i] = rotate2d( pp[i], angle );
+
+	// find bounding box of rotated text
+	wxRealPoint min(0,0), max(0,0);
+	for( size_t i=0;i<3;i++ )
+	{
+		if ( pp[i].x < min.x ) min.x = pp[i].x;
+		if ( pp[i].x > max.x ) max.x = pp[i].x;
+
+		if ( pp[i].y < min.y ) min.y = pp[i].y;
+		if ( pp[i].y > max.y ) max.y = pp[i].y;
+	}
+
+	// create image surface of appropriate size
+	wxSize bounds( abs(max.x-min.x), abs(max.y-min.y) );
+	wxImage img( bounds, false );
+	
+	// find offset coordinate for top-left placement
+	*offset = wxPoint( -min.x, max.y );
+
+	// render the text
+	wxFreeTypeDraw( &img, true, *offset, ifnt, points, dpi, text, c, angle );
+	
+	return img;
+}
+
 void wxFreeTypeDraw( wxImage *img, bool init_img, const wxPoint &pos, 
 	int ifnt, double points, unsigned int dpi, 
 	const wxString &text, const wxColour &c, double angle )
@@ -836,14 +979,18 @@ void wxFreeTypeDraw( wxImage *img, bool init_img, const wxPoint &pos,
 
 wxSize wxFreeTypeMeasure( int fnt, double points, unsigned int dpi, const wxString &text )
 {
-	if ( fnt < 0 || fnt >= (int)ft_faces.size() || !check_freetype_init() ) return wxSize( std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN() );
+	if ( fnt < 0 || fnt >= (int)ft_faces.size() || !check_freetype_init() ) 
+		return wxSize( std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN() );
 
 	FT_Face face = ft_faces[fnt].face;
 	
 	FT_Error err = FT_Set_Char_Size( face, (int)(points*64.0), 0, dpi, dpi );
+	if ( err ) 
+		return wxSize(0,0);
+
+	FT_Set_Transform( face, 0, 0 );
 
 	FT_UInt previous, glyph_index;
-	FT_GlyphSlot slot = face->glyph;
 	int pen_x = 0;
 	int pen_y = 0;
 	int px_ascent = ((double)face->ascender)/((double)face->units_per_EM) * points * dpi/72.0;
@@ -851,7 +998,8 @@ wxSize wxFreeTypeMeasure( int fnt, double points, unsigned int dpi, const wxStri
 	previous = 0;
 	for( wxString::const_iterator it = text.begin(); it != text.end(); ++it )
 	{
-		glyph_index = FT_Get_Char_Index( face, *it );
+		FT_ULong uchar = (*it);
+		glyph_index = FT_Get_Char_Index( face, uchar );
 
 		/* retrieve kerning distance and move pen position */
 		if ( use_kerning && previous && glyph_index )
@@ -865,18 +1013,18 @@ wxSize wxFreeTypeMeasure( int fnt, double points, unsigned int dpi, const wxStri
 		if ( err ) continue;
 
 		// increment pen pos
-		pen_x += slot->advance.x >> 6;
-		pen_y += slot->advance.y >> 6; // not useful for now (?)
+		pen_x += face->glyph->advance.x >> 6;
+		pen_y += face->glyph->advance.y >> 6; // not useful for now (?)
 
 		// save current glyph for next kerning
 		previous = glyph_index;
 	}
-
-	return wxSize( abs(pen_x), ((double)(face->ascender-face->descender))/((double)face->units_per_EM) * points * dpi/72.0 );
+	
+	return wxSize( abs(pen_x), 
+		((double)(face->ascender-face->descender))/((double)face->units_per_EM) * points * dpi/72.0 );
 }
 
 #include <wx/dcbuffer.h>
-#include <wx/dir.h>
 #include <wx/wfstream.h>
 #include <wx/msgdlg.h>
 
@@ -1050,6 +1198,17 @@ void wxFreeTypeDemo::OnPaint( wxPaintEvent & )
 	dc.SetPen( *wxLIGHT_GREY_PEN );
 	dc.DrawRectangle( 0, 0, bbox.x, bbox.y );
 
+	dc.SetBrush( *wxWHITE_BRUSH );
+	dc.DrawRectangle( 0, 0, 500, 400 );
+	//dc.SetBrush( *wxLIGHT_GREY_BRUSH );
+	//dc.DrawCircle(200,200,4);
+	wxFreeTypeDraw( dc, wxPoint(300,200), Face(23), 12, "The quick brown fox jumped...", *wxBLUE, 0.0 );
+	wxFreeTypeDraw( dc, wxPoint(300,200), Face(24), 10, "...over the lazy dog.", *wxRED, 45 );
+	wxFreeTypeDraw( dc, wxPoint(300,200), Face(22), 14, "Jumping dogs over lazy foxes.", "Forest Green", 195 );
+	dc.SetBrush( *wxBLACK_BRUSH );
+	dc.DrawRectangle( 0, 0, 300, 200 );
+	wxFreeTypeDraw( dc, wxPoint(300,200), Face(27), 18, "White on black.", *wxWHITE, 135 );
+	wxFreeTypeDraw( dc, wxPoint(300,200), Face(0), 12, "TOP TO BOTTOM.", *wxBLACK, 270 );
 }
 
 void wxFreeTypeDemo::OnSize( wxSizeEvent & )
