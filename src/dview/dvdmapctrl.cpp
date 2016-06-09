@@ -219,13 +219,13 @@ wxDVDMapCtrl::wxDVDMapCtrl(wxWindow* parent, wxWindowID id,
 
 	wxBoxSizer *optionsSizer = new wxBoxSizer(wxHORIZONTAL);	
 //	optionsSizer->Add(m_colourMapSelector, 0, wxALL | wxALIGN_CENTER_VERTICAL | wxEXPAND | wxALIGN_RIGHT, 3);
-	optionsSizer->Add(m_colourMapSelector, 0, wxALL | wxEXPAND | wxALIGN_RIGHT, 3);
+	optionsSizer->Add(m_colourMapSelector, 0, wxALL | wxEXPAND , 3);
 	optionsSizer->AddStretchSpacer();
 	optionsSizer->Add(new wxStaticText(this, wxID_ANY, "Min:"), 0, wxALIGN_CENTER|wxALIGN_CENTER_VERTICAL, 4);
-	optionsSizer->Add(m_minTextBox, 0, wxALIGN_RIGHT | wxALL|wxALIGN_CENTER_VERTICAL, 3);
+	optionsSizer->Add(m_minTextBox, 0, wxALL|wxALIGN_CENTER_VERTICAL, 3);
 	optionsSizer->AddSpacer( 6 );
 	optionsSizer->Add(new wxStaticText(this, wxID_ANY, "Max:"), 0, wxALIGN_CENTER|wxALIGN_CENTER_VERTICAL, 4);
-	optionsSizer->Add(m_maxTextBox, 0, wxALIGN_RIGHT | wxALL|wxALIGN_CENTER_VERTICAL, 3);
+	optionsSizer->Add(m_maxTextBox, 0,  wxALL|wxALIGN_CENTER_VERTICAL, 3);
 	optionsSizer->Add(new wxButton(this, ID_RESET_MIN_MAX, "Reset", wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT), 0, wxALIGN_CENTER | wxRIGHT, 5);
 	
 	wxBoxSizer *leftSizer = new wxBoxSizer( wxVERTICAL );

@@ -60,7 +60,7 @@ wxThreadProgressDialog::wxThreadProgressDialog(wxWindow *parent, int nthreads, b
 	m_log->SetForegroundColour( wxMetroTheme::Colour( wxMT_TEXT ) );		
 	szv->Add( m_log, 1, wxALL|wxEXPAND, 10 );
 
-	szv->Add( m_button, 0, wxALIGN_CENTER_VERTICAL|wxCENTER|wxLEFT|wxRIGHT|wxBOTTOM, 10);
+	szv->Add( m_button, 0, wxCENTER|wxLEFT|wxRIGHT|wxBOTTOM, 10);
 
 	
 	// not in a sizer.  will be manually positioned when ShowSaveLogButton is called.
