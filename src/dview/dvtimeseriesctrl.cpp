@@ -300,7 +300,7 @@ class wxDVTimeSeriesPlot : public wxPLPlottable
 							rpt2 = m_data->At(j);
 							wxRealPoint cur2( map.ToDevice( rpt2 ) );
 
-							if ( !dc.Equals(cur.x, cur2.x) )
+							if ( wxRound(cur.x) != wxRound(cur2.x) )
 								break;
 
 							if ( rpt2.y > max ) { max = rpt2.y; jmax = j;}

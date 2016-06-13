@@ -383,6 +383,8 @@ public:
 		if (!wxApp::OnInit())
 			return false;
 
+		//wxFreeTypeLoadAllFonts();
+
 		::wxInitAllImageHandlers();
 		wxFileSystem::AddHandler(new wxZipFSHandler);
 			

@@ -19,11 +19,6 @@ void wxPLPdfOutputDevice::SetAntiAliasing( bool )
 	// nothing to do here for PDFs...
 }
 
-bool wxPLPdfOutputDevice::Equals( double a, double b ) const
-{
-	return ( wxRound(10.0*a) == wxRound(10.0*b) );
-}
-
 void wxPLPdfOutputDevice::Clip( double x, double y, double width, double height ) {
 	m_pdf.ClippingRect( x, y, width, height );
 }
@@ -285,10 +280,6 @@ void wxPLDCOutputDevice::SetAntiAliasing( bool on )
 
 wxDC *wxPLDCOutputDevice::GetDC() { return m_curdc; }
 	
-bool wxPLDCOutputDevice::Equals( double a, double b ) const {
-	return ((int)a) == ((int)b);
-}
-
 void wxPLDCOutputDevice::Clip( double x, double y, double width, double height ) { 
 	m_curdc->SetClippingRegion( CAST(x), CAST(y), CAST(width), CAST(height) );
 }
@@ -392,11 +383,6 @@ void wxPLGraphicsOutputDevice::SetAntiAliasing( bool b )
 bool wxPLGraphicsOutputDevice::GetAntiAliasing() const
 {
 	return m_gc->GetAntialiasMode() != wxANTIALIAS_NONE;
-}
-
-bool wxPLGraphicsOutputDevice::Equals( double a, double b ) const
-{
-	return ( wxRound(2.0*a) == wxRound(2.0*b) );
 }
 
 void wxPLGraphicsOutputDevice::Clip( double x, double y, double width, double height )

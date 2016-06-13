@@ -41,7 +41,6 @@ public:
 	virtual bool GetAntiAliasing() const = 0;
 
 	// Pure virtuals, to be implemented
-	virtual bool Equals( double a, double b ) const = 0; // determine if two positions are equal for display purposes at native device resolution
 	virtual void Clip( double x, double y, double width, double height ) = 0;
 	virtual void Unclip() = 0;
 	virtual void Pen( const wxColour &c, double size=1, Style line = SOLID, Style join = MITER, Style cap = BUTT ) = 0;
@@ -88,7 +87,6 @@ public:
 	wxPLPdfOutputDevice( wxPdfDocument &doc );
 	virtual void SetAntiAliasing( bool );
 	virtual bool GetAntiAliasing() const { return true; }
-	virtual bool Equals( double a, double b ) const;
 	virtual void Clip( double x, double y, double width, double height );
 	virtual void Unclip();
 	virtual void Pen( const wxColour &c, double size=1, Style line = SOLID, Style join = MITER, Style cap = BUTT );
@@ -129,7 +127,6 @@ public:
 	
 	virtual void SetAntiAliasing( bool b );
 
-	virtual bool Equals( double a, double b ) const;
 	virtual void Clip( double x, double y, double width, double height );
 	virtual void Unclip();
 	virtual void Brush( const wxColour &c, Style sty );
@@ -164,7 +161,6 @@ public:
 	virtual void SetAntiAliasing( bool b );
 	virtual bool GetAntiAliasing() const;
 
-	virtual bool Equals( double a, double b ) const;
 	virtual void Clip( double x, double y, double width, double height );
 	virtual void Unclip();
 	virtual void Brush( const wxColour &c, Style sty );
