@@ -1343,7 +1343,7 @@ void wxFreeTypeDemo::GenerateTTFBinaryFontData()
 	
 	
 	wxString hfile( dir + "/pdffonts/fontdata.h" );
-	FILE *fp = fopen( hfile, "w" );
+	FILE *fp = fopen( hfile.c_str(), "w" );
 	
 	wxArrayString names, cnames;
 	
