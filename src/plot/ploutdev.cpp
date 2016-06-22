@@ -528,13 +528,6 @@ void wxPLGraphicsOutputDevice::TextColour( const wxColour &c )
 }
 
 #define FREETYPE_TEXT 1
-
-#if defined(__WXMSW__)
-#define DPI_NOMINAL 96.0 // Windows
-#else
-#define DPI_NOMINAL 72.0 // OSX & Linux
-#endif
-
 #define FT_FONT_FACE 0
 
 #include <wex/utils.h>
@@ -554,7 +547,9 @@ void wxPLGraphicsOutputDevice::Text( const wxString &text, double x, double y, d
 void wxPLGraphicsOutputDevice::Measure( const wxString &text, double *width, double *height )
 {
 #ifdef FREETYPE_TEXT
-	unsigned int dpi = DPI_NOMINAL*wxGetScreenHDScale();
+	double dpix, dpiy;
+	m_gc->GetDPI( &dpix, &dpiy );
+	unsigned int dpi = (unsigned int)std::max(dpix,dpiy);
 	wxSize sz = wxFreeTypeMeasure( FT_FONT_FACE, 12+m_fontSize, dpi, text );
 	if ( width ) *width = (wxCoord)(sz.x+0.5)/m_scale;
 	if ( height ) *height = (wxCoord)(sz.y+0.5)/m_scale;

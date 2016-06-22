@@ -905,18 +905,15 @@ void wxFreeTypeDraw( wxDC &dc, const wxPoint &pos, int ifnt, double points,
 
 #include <wex/utils.h>
 
-#if defined(__WXMSW__)
-#define DPI_NOMINAL 96.0 // Windows
-#else
-#define DPI_NOMINAL 72.0 // OSX & Linux
-#endif
-
 void wxFreeTypeDraw( wxGraphicsContext &gc, const wxPoint &pos, int ifnt, double points,
 	const wxString &text, const wxColour &c, double angle )
 {
 	wxRealPoint offset(0,0);
 	
-	unsigned int dpi = DPI_NOMINAL*wxGetScreenHDScale(); 
+	double dpix,dpiy;
+	gc.GetDPI( &dpix, &dpiy );
+	unsigned int dpi = (unsigned int)std::max(dpix,dpiy);
+
 
 	wxImage img( wxFreeTypeDraw( &offset, ifnt, points, dpi, text, c, angle ) );
 	if ( img.IsOk() )
