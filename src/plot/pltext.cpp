@@ -1,5 +1,5 @@
 #include <wx/tokenzr.h>
-
+#include <wx/choicdlg.h>
 #include <wx/dir.h>
 #include <wex/plot/pltext.h>
 
@@ -521,6 +521,66 @@ void wxPLTextLayoutDemo::OnSize( wxSizeEvent & )
 	Refresh();
 }
 
+#include <wx/buffer.h>
+#include <wx/zstream.h>
+#include <wx/msgdlg.h>
+
+#include <wex/utils.h>
+#include <wex/pdf/pdffont.h>
+#include <wex/pdf/pdffontmanager.h>
+
+#include "fontdata.h"
+
+static std::vector< std::vector<unsigned char>* > gs_inflatedFontData;
+
+static bool inflate_builtin_fonts()
+{
+	size_t nfonts = 0;
+	while( builtinfonts[nfonts].data )
+		nfonts++;
+	
+	if ( gs_inflatedFontData.size() == nfonts )
+		return true;
+	
+	for( size_t i=0;i<gs_inflatedFontData.size();i++ )
+		if ( gs_inflatedFontData[i] != 0 )
+			delete gs_inflatedFontData[i];
+
+	gs_inflatedFontData.clear();
+
+	wxString errors;
+	for( size_t i=0;i<nfonts;i++ )
+	{
+		wxMemoryInputStream in( (const void*)builtinfonts[i].data, (size_t)builtinfonts[i].len );
+		wxZlibInputStream zin( in );
+
+		std::vector<unsigned char> *buf = new std::vector<unsigned char>;
+		buf->reserve( builtinfonts[i].len * 3 );
+		
+		while( zin.CanRead() )
+			buf->push_back( (unsigned char)zin.GetC() );
+
+		gs_inflatedFontData.push_back( buf );
+		
+		/*
+		wxPdfFontManager *fmgr = wxPdfFontManager::GetFontManager();
+		int pdfstyle = wxPDF_FONTSTYLE_REGULAR;
+		if ( builtinfonts[i].bold ) pdfstyle |= wxPDF_FONTSTYLE_BOLD;
+		if ( builtinfonts[i].italic ) pdfstyle |= wxPDF_FONTSTYLE_ITALIC;
+		if ( !fmgr->GetFont( builtinfonts[i].face, pdfstyle ).IsValid() )
+		{
+			wxPdfFont font = fmgr->RegisterFont( buf, builtinfonts[i].face, 0 );
+			if ( !font.IsValid() )
+				errors += "failed to register builtin freetype/pdf font: " + wxString(builtinfonts[i].face) + "\n";
+		}*/
+	}
+
+	if ( errors.size() > 0 )
+		wxShowTextMessageDialog( errors );
+
+	return gs_inflatedFontData.size() == nfonts;
+}
+
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -533,19 +593,46 @@ void wxPLTextLayoutDemo::OnSize( wxSizeEvent & )
 #endif
 
 static FT_Library ft_library = 0;
-struct face_info {
+struct ft_face_info {
 	FT_Face face;
 	wxString font;
 	wxString file;
+	font_data *builtin;
+	wxMemoryBuffer data;
 };
 
-static std::vector<face_info> ft_faces;
+static std::vector<ft_face_info> ft_faces;
 
 static bool check_freetype_init()
 {
 	if ( ft_library == 0 )
 	{
 		FT_Error err = FT_Init_FreeType( &ft_library );
+
+
+		if ( inflate_builtin_fonts() )
+		{
+			int i=0;
+			while( builtinfonts[i].data )
+			{
+				FT_Face face;
+				FT_Error err = FT_New_Memory_Face( ft_library, 
+					&(*gs_inflatedFontData[i])[0], gs_inflatedFontData[i]->size(), 
+					0, &face );
+			
+				if ( 0 == err )
+				{
+					ft_face_info fi;
+					fi.face = face;
+					fi.font = builtinfonts[i].face;
+					fi.file = wxEmptyString;
+					fi.builtin = &builtinfonts[i];
+					ft_faces.push_back( fi );
+				}
+
+				i++;
+			}
+		}
 
 #ifdef SUBPIXEL_RENDERING
 		if ( err==0 ) FT_Library_SetLcdFilter( ft_library, FT_LCD_FILTER_DEFAULT  );
@@ -598,10 +685,11 @@ int wxFreeTypeLoadFont( const wxString &font_file )
 	FT_Error err = FT_New_Face( ft_library, font_file.c_str(), 0, &face );
 	if ( 0 == err )
 	{
-		face_info fi;
+		ft_face_info fi;
 		fi.face = face;
 		fi.font = wxFileName(font_file).GetName();
 		fi.file = font_file;
+		fi.builtin = NULL;
 		ft_faces.push_back( fi );
 		return ft_faces.size()-1;
 	}
@@ -611,6 +699,7 @@ int wxFreeTypeLoadFont( const wxString &font_file )
 
 wxArrayString wxFreeTypeListFonts()
 {
+	check_freetype_init();
 	wxArrayString list;
 	for( size_t i=0;i<ft_faces.size();i++ )
 		list.Add( ft_faces[i].font );
@@ -644,6 +733,21 @@ bool wxFreeTypeFontStyle( int ifnt, bool *bold, bool *italic )
 	}
 	else
 		return false;
+}
+
+unsigned char *wxFreeTypeFontData( int ifnt, size_t *len )
+{
+	if ( ifnt >= 0 && ifnt < (int) ft_faces.size() )
+	{
+		if ( ft_faces[ifnt].builtin && ifnt < gs_inflatedFontData.size() )
+		{
+			if ( len ) *len = gs_inflatedFontData[ifnt]->size();
+			return &(*gs_inflatedFontData[ifnt])[0];
+		}
+	}
+
+	return 0;
+
 }
 
 int wxFreeTypeFindFont( const wxString &font )
@@ -830,8 +934,11 @@ void wxFreeTypeDraw( wxGraphicsContext &gc, const wxPoint &pos, int ifnt, double
 
 wxImage wxFreeTypeDraw( wxRealPoint *offset, int ifnt, double points, unsigned int dpi, const wxString &text, const wxColour &c, double angle )
 {
-	if ( text.IsEmpty() || ifnt < 0 || ifnt >= (int)ft_faces.size() || !check_freetype_init() ) 
+	if ( !check_freetype_init() || ft_faces.size() == 0 || text.IsEmpty() || ifnt < 0  ) 
 		return wxNullImage;
+
+	if ( ifnt >= (int)ft_faces.size() )
+		ifnt = 0; // use default if invalid font
 
 	// first measure the text
 	wxSize size( wxFreeTypeMeasure( ifnt, points, dpi, text ) );
@@ -871,8 +978,11 @@ void wxFreeTypeDraw( wxImage *img, bool init_img, const wxPoint &pos,
 	int ifnt, double points, unsigned int dpi, 
 	const wxString &text, const wxColour &c, double angle )
 {
-	if ( text.IsEmpty() || ifnt < 0 || ifnt >= (int)ft_faces.size() || !check_freetype_init() || !img ) 
+	if ( !check_freetype_init() || ft_faces.size() == 0 || text.IsEmpty() || ifnt < 0 || !img ) 
 		return;
+
+	if ( ifnt >= (int)ft_faces.size() )
+		ifnt = 0;
 	
 	wxSize size( img->GetWidth(), img->GetHeight() );
 
@@ -979,8 +1089,11 @@ void wxFreeTypeDraw( wxImage *img, bool init_img, const wxPoint &pos,
 
 wxSize wxFreeTypeMeasure( int fnt, double points, unsigned int dpi, const wxString &text )
 {
-	if ( fnt < 0 || fnt >= (int)ft_faces.size() || !check_freetype_init() ) 
+	if ( !check_freetype_init() || fnt < 0 || ft_faces.size() == 0  ) 
 		return wxSize( std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN() );
+
+	if ( fnt >= (int)ft_faces.size() )
+		fnt = 0;
 
 	FT_Face face = ft_faces[fnt].face;
 	
@@ -1025,6 +1138,7 @@ wxSize wxFreeTypeMeasure( int fnt, double points, unsigned int dpi, const wxStri
 }
 
 #include <wx/dcbuffer.h>
+#include <wx/dir.h>
 #include <wx/wfstream.h>
 #include <wx/msgdlg.h>
 
@@ -1214,4 +1328,119 @@ void wxFreeTypeDemo::OnPaint( wxPaintEvent & )
 void wxFreeTypeDemo::OnSize( wxSizeEvent & )
 {
 	Refresh();
+}
+
+
+
+
+void wxFreeTypeDemo::GenerateTTFBinaryFontData()
+{
+	wxArrayString msgs;
+	wxString dir;
+	wxGetEnv( "WEXDIR", &dir );
+	wxArrayString files;
+	wxDir::GetAllFiles( dir + "/pdffonts", &files, wxEmptyString, wxDIR_FILES );
+	
+	
+	wxString hfile( dir + "/pdffonts/fontdata.h" );
+	FILE *fp = fopen( hfile, "w" );
+	
+	wxArrayString names, cnames;
+	
+	wxArrayInt sel;
+	int nn = wxGetSelectedChoices( sel, "regenerate binary .h font data file for built-in fonts?", "Query", files );
+	if ( nn >= 0  )
+	{
+		for( size_t kk=0;kk<sel.size();kk++) 
+		{
+			int i = sel[kk];
+
+			wxFileName fn(files[i]);
+			wxString ext( fn.GetExt().Lower() );
+			if ( ext == "ttf" || ext == "otf" )
+			{
+				wxFFileInputStream in( files[i] );
+				if ( !in.IsOk() ) continue;
+
+				wxFFileOutputStream out( dir + "/pdffonts/" + fn.GetName() + ".z" );
+				wxZlibOutputStream zout( out );
+				zout.Write( in );
+				zout.Close();
+				out.Close();
+			
+				wxString cname( fn.GetName() );
+				cname.Replace( " ", "" );
+				cname.Replace( "-", "_" );
+				cname.MakeLower();
+
+				unsigned long n = 0;
+				fprintf(fp,"static unsigned char %s[] = {\n", (const char*)cname.c_str());
+
+				wxFFileInputStream in2( dir + "/pdffonts/" + fn.GetName() + ".z" );
+				unsigned char byte;
+				in2.Read(&byte,1);
+				while( in2.LastRead() == 1 )
+				{
+					fprintf(fp,"0x%.2X", (int)byte);
+					++n;
+
+					in2.Read(&byte,1);
+					if ( in2.LastRead() != 1 )
+						break;
+					
+					fprintf(fp, "," );
+					if(n % 20 == 0) fprintf(fp,"\n");
+				}
+				
+				fprintf(fp,"};\n");
+				fprintf(fp,"static const int %s_len = %d;\n", (const char*)cname.c_str(), n );
+
+				cnames.Add( cname );
+				names.Add( fn.GetName() );
+				msgs.Add( "loaded: " + fn.GetName() );
+			}
+
+		}
+
+	
+	
+		fprintf( fp, "\nstruct font_data\n" );
+		fprintf( fp, "{\n");
+		fprintf( fp, "  unsigned char *data;\n");
+		fprintf( fp, "  unsigned int len;\n");
+		fprintf( fp, "  const char *face;\n");
+		fprintf( fp, "  const char *family;\n" );
+		fprintf( fp, "  int bold;\n");
+		fprintf( fp, "  int italic;\n");
+		fprintf( fp, "};\n\n");
+		fprintf(fp,"font_data builtinfonts[] = {\n" );
+		for( size_t i=0;i<names.size();i++ )
+		{
+			wxCStrData name = names[i].c_str();
+			wxString family( name );
+			int dash = family.Find( "-" );
+			if ( dash != wxNOT_FOUND )
+			{
+				family.Truncate( dash );
+				family = family.Trim().Trim(false);
+			}
+
+
+			wxCStrData cname = cnames[i];
+			int bold = (cnames[i].Find( "bold" ) != wxNOT_FOUND );
+			int italic = (cnames[i].Find( "italic" ) != wxNOT_FOUND );
+			fprintf(fp, "  { %s, %s_len, \"%s\", \"%s\", %d, %d },\n",
+				(const char*)cname, 
+				(const char*)cname, 
+				(const char*)name,
+				(const char*)family.c_str(),
+				bold, 
+				italic );
+		}
+		fprintf(fp,"  { 0, 0, 0, 0, 0, 0 }\n" );
+		fprintf(fp,"};\n\n" );
+
+		fclose(fp);
+		wxShowTextMessageDialog( wxJoin( msgs, '\n' ) );
+	}
 }

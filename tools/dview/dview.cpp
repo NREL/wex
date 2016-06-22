@@ -382,9 +382,7 @@ public:
 		//wxApp::OnInit handles all of our command line argument stuff.
 		if (!wxApp::OnInit())
 			return false;
-
-		//wxFreeTypeLoadAllFonts();
-
+		
 		::wxInitAllImageHandlers();
 		wxFileSystem::AddHandler(new wxZipFSHandler);
 			

@@ -66,6 +66,7 @@ wxString wxFreeTypeFontFile( int ifnt );
 wxString wxFreeTypeFontName( int ifnt );
 bool wxFreeTypeFontStyle( int ifnt, bool *bold, bool *italic );
 int wxFreeTypeFindFont( const wxString &font );
+unsigned char *wxFreeTypeFontData( int ifnt, size_t *len );
 wxSize wxFreeTypeMeasure( int ifnt, double points, unsigned int dpi, const wxString &text );
 void wxFreeTypeDraw( wxImage *img, bool init_img, const wxPoint &pos, 
 	int ifnt, double points, unsigned int dpi, 
@@ -83,6 +84,7 @@ class wxFreeTypeDemo : public wxWindow
 	int Face(int idx);
 public:
 	wxFreeTypeDemo( wxWindow *parent );
+	static void GenerateTTFBinaryFontData();
 	void OnPaint( wxPaintEvent & );
 	void OnSize( wxSizeEvent & );
 	DECLARE_EVENT_TABLE();

@@ -527,14 +527,15 @@ void wxPLGraphicsOutputDevice::TextColour( const wxColour &c )
 	UpdateFont();
 }
 
-//#define FREETYPE_TEXT 1
+#define FREETYPE_TEXT 1
 
 #if defined(__WXMSW__)
 #define DPI_NOMINAL 96.0 // Windows
 #else
 #define DPI_NOMINAL 72.0 // OSX & Linux
 #endif
-#define FT_FONT_FACE 23
+
+#define FT_FONT_FACE 0
 
 #include <wex/utils.h>
 

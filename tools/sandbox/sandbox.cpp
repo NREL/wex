@@ -318,6 +318,12 @@ void TestTextLayout()
 	new TextLayoutFrame;
 }
 
+#include <wx/dir.h>
+#include <wx/zipstrm.h>
+#include <wx/buffer.h>
+
+//#include "c:/Users/adobos/Projects/wex/pdffonts/fontdata.h"
+
 void TestFreeTypeText()
 {
 	wxFrame *frame = new wxFrame( 0, wxID_ANY, "FreeType text output", wxDefaultPosition, wxSize(800,800) );
@@ -853,15 +859,15 @@ public:
 		}
 
 
-		wxStopWatch sw;
-		int nf = wxFreeTypeLoadAllFonts();
-		wxMessageBox( wxString::Format("Loaded %d fonts in %d ms.", nf, (int)sw.Time()) );
+	//	wxStopWatch sw;
+	//	int nf = wxFreeTypeLoadAllFonts();
+	//	wxMessageBox( wxString::Format("Loaded %d fonts in %d ms.", nf, (int)sw.Time()) );
 
 		TestPLPlot( 0 );
 		//TestPLPolarPlot(0);
-		//TestPLBarPlot(0);		
+		TestPLBarPlot(0);		
 		//TestContourPlot();
-		//TestSectorPlot(0);
+		TestSectorPlot(0);
 		//TestTextLayout();
 		//TestFreeTypeText();
 		//TestPlotAnnotations(0);
