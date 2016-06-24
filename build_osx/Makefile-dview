@@ -7,7 +7,8 @@ CXX = g++
 CFLAGS = -g -I. -I../include `wx-config-3 --cflags`
 CXXFLAGS = $(CFLAGS) 
 
-LDFLAGS = `wx-config-3 --libs` `wx-config-3 --libs aui` `wx-config-3 --libs stc` -lm OBJECTS = dview.o
+LDFLAGS = `wx-config-3 --libs` `wx-config-3 --libs aui` `wx-config-3 --libs stc` -lm 
+OBJECTS = dview.o
 TARGET = DView
 
 
