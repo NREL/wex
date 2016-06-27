@@ -49,7 +49,7 @@ void wxPLLinePlot::Init()
 	m_colour = "forest green";
 	m_thickness = 2;
 	m_style = SOLID;
-	m_marker = NONE;
+	m_marker = NO_MARKER;
 	m_ignoreZeros = false;
 }
 
@@ -75,11 +75,13 @@ void wxPLLinePlot::SetIgnoreZeros(bool value)
 
 void wxPLLinePlot::DrawMarkers( wxPLOutputDevice &dc, std::vector<wxRealPoint> &points, double size )
 {
-	if ( m_marker == NONE ) return;
+	if ( m_marker == NO_MARKER ) return;
 
 	std::vector<wxRealPoint> mkr(6, wxRealPoint() );
 		
-	double radius = (size<=3) ? 3 : 4;
+	double radius = 5;
+	if ( size <= 1 ) radius = 3;
+	else if ( size <= 3 ) radius = 4;
 
 	for( size_t i=0;i<points.size();i++ )
 	{
@@ -179,8 +181,11 @@ void wxPLLinePlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 			// draw currently accumulated points and clear
 			// accumulator - this will draw the contiguous
 			// segments of data that don't have any NaN values
-			LINE_PEN;
-			dc.Lines( points.size(), &points[0] );
+			if ( m_style != NO_LINE )
+			{
+				LINE_PEN;
+				dc.Lines( points.size(), &points[0] );
+			}
 			
 			MARKER_PEN;
 			DrawMarkers( dc, points, m_thickness );
@@ -190,8 +195,12 @@ void wxPLLinePlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 	
 	if ( points.size() > 1 )
 	{
-		LINE_PEN;
-		dc.Lines( points.size(), &points[0] );
+		if ( m_style != NO_LINE )
+		{
+			LINE_PEN;
+			dc.Lines( points.size(), &points[0] );
+		}
+
 		MARKER_PEN;
 		DrawMarkers( dc, points, m_thickness );
 	}
@@ -202,10 +211,13 @@ void wxPLLinePlot::DrawInLegend( wxPLOutputDevice &dc, const wxPLRealRect &rct)
 	double thick = m_thickness;
 	if ( thick > 3 ) thick = 3; // limit line thickness for legend display
 	
-	LINE_PEN;
-	dc.Line( rct.x, rct.y+rct.height/2, rct.x+rct.width, rct.y+rct.height/2 );
+	if ( m_style != NO_LINE )
+	{
+		LINE_PEN;
+		dc.Line( rct.x, rct.y+rct.height/2, rct.x+rct.width, rct.y+rct.height/2 );
+	}
 
-	if ( m_marker != NONE )
+	if ( m_marker != NO_MARKER )
 	{
 		std::vector<wxRealPoint> mkr(1, wxPoint( rct.x + rct.width/2, rct.y + rct.height/2 ) );
 		MARKER_PEN;

@@ -6,8 +6,8 @@
 class wxPLLinePlot : public wxPLPlottable
 {
 public:
-	enum Style { SOLID, DOTTED, DASHED };
-	enum Marker { NONE, CIRCLE, SQUARE, DIAMOND, HOURGLASS };
+	enum Style { NO_LINE, SOLID, DOTTED, DASHED };
+	enum Marker { NO_MARKER, CIRCLE, SQUARE, DIAMOND, HOURGLASS };
 
 	wxPLLinePlot();
 	wxPLLinePlot( const std::vector<wxRealPoint> &data, 
@@ -15,7 +15,7 @@ public:
 		const wxColour &col = *wxBLUE,
 		Style sty = SOLID,
 		double thick = 2.0,
-		Marker mkr = NONE );
+		Marker mkr = NO_MARKER );
 	virtual ~wxPLLinePlot();
 
 
