@@ -80,6 +80,7 @@ wxString wxFormatTime( size_t istep, size_t steps_per_hour, bool use_12_hr = tru
 double wxGetScreenHDScale();
 void wxGetScreenHDScale( double *xs, double *ys );
 void wxDevicePPIToScale( const wxSize &ppi, double *xs, double *ys );
+double wxGetDrawingDPI();
 
 wxPoint wxScalePoint( const wxPoint &p, double xs, double ys );
 wxSize wxScaleSize( const wxSize &s, double xs, double ys );

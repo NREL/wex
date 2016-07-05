@@ -1067,6 +1067,11 @@ void wxDevicePPIToScale( const wxSize &ppi, double *xs, double *ys )
 #endif
 }
 
+double wxGetDrawingDPI()
+{
+	return DPI_NOMINAL*wxGetScreenHDScale();
+}
+
 void wxGetScreenHDScale( double *xs, double *ys )
 {
 static wxSize dpi( -1, -1 );

@@ -909,10 +909,7 @@ void wxFreeTypeDraw( wxGraphicsContext &gc, const wxPoint &pos, int ifnt, double
 	const wxString &text, const wxColour &c, double angle )
 {
 	wxRealPoint offset(0,0);
-	
-	double dpix,dpiy;
-	gc.GetDPI( &dpix, &dpiy );
-	unsigned int dpi = (unsigned int)std::max(dpix,dpiy);
+	unsigned int dpi = wxGetDrawingDPI();
 
 
 	wxImage img( wxFreeTypeDraw( &offset, ifnt, points, dpi, text, c, angle ) );
