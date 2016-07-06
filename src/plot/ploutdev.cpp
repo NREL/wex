@@ -5,11 +5,11 @@
 #include <wex/plot/ploutdev.h>
 #include <wex/plot/pltext.h>
 
-wxPLPdfOutputDevice::wxPLPdfOutputDevice( wxPdfDocument &doc ) 
+wxPLPdfOutputDevice::wxPLPdfOutputDevice( wxPdfDocument &doc, double fontpnts ) 
 	: wxPLOutputDevice(), m_pdf(doc)	
 {
 	m_fontRelSize = 0;
-	m_fontPoint0 = m_pdf.GetFontSize();
+	m_fontPoint0 = fontpnts;
 	m_pen = m_brush = true;
 	m_pdf.SetTextColour( *wxBLACK );
 }
@@ -362,12 +362,12 @@ void wxPLDCOutputDevice::Measure( const wxString &text, double *width, double *h
 
 
 
-wxPLGraphicsOutputDevice::wxPLGraphicsOutputDevice( wxGraphicsContext *gc, const wxFont &font, double scale)
-	: m_gc(gc), m_font0( font ), m_scale( scale )
+wxPLGraphicsOutputDevice::wxPLGraphicsOutputDevice( wxGraphicsContext *gc, double scale, double fontpoints)
+	: m_gc(gc), m_scale( scale )
 {
-	m_fontSize = 0;
+	m_fontPoints0 = fontpoints;
+	m_fontRelSize = 0;
 	m_textColour = *wxBLACK;
-	UpdateFont();
 
 	m_pen = m_brush = true;
 	Pen( *wxBLACK, 1, SOLID );
@@ -505,30 +505,21 @@ void wxPLGraphicsOutputDevice::Path( FillRule rule )
 
 void wxPLGraphicsOutputDevice::TextPoints( double relpt )
 {
-	m_fontSize = relpt;
-	UpdateFont();
-}
-
-void wxPLGraphicsOutputDevice::UpdateFont()
-{
-	wxFont font( m_font0 );
-	if ( m_fontSize != 0 ) font.SetPointSize( font.GetPointSize() + SCALE(m_fontSize) );
-	m_gc->SetFont( font, m_textColour );
+	m_fontRelSize = relpt;
 }
 
 double wxPLGraphicsOutputDevice::TextPoints() const
 {
-	return m_fontSize;
+	return m_fontRelSize;
 }
 
 void wxPLGraphicsOutputDevice::TextColour( const wxColour &c )
 {
 	m_textColour = c;
-	UpdateFont();
 }
 
 #define FREETYPE_TEXT 1
-#define FT_FONT_FACE 0
+#define FT_FONT_FACE_DEFAULT 0
 
 #include <wex/utils.h>
 
@@ -536,7 +527,9 @@ void wxPLGraphicsOutputDevice::Text( const wxString &text, double x, double y, d
 {
 #ifdef FREETYPE_TEXT
 	wxPoint pos( (int)SCALE(x), (int)SCALE(y) );
-	wxFreeTypeDraw( *m_gc, pos, FT_FONT_FACE, 12+m_fontSize, text, m_textColour, angle );
+	unsigned int dpi = wxGetDrawingDPI();
+	wxFreeTypeDraw( *m_gc, pos, FT_FONT_FACE_DEFAULT, 
+		m_fontPoints0+m_fontRelSize, dpi, text, m_textColour, angle );
 #else
 	if ( angle == 0.0 ) m_gc->DrawText( text, SCALE(x), SCALE(y) );
 	else m_gc->DrawText( text, SCALE(x), SCALE(y), angle * 3.1415926/180.0 );
@@ -548,7 +541,9 @@ void wxPLGraphicsOutputDevice::Measure( const wxString &text, double *width, dou
 {
 #ifdef FREETYPE_TEXT
 	unsigned int dpi = wxGetDrawingDPI();
-	wxSize sz = wxFreeTypeMeasure( FT_FONT_FACE, 12+m_fontSize, dpi, text );
+	wxSize sz = wxFreeTypeMeasure( FT_FONT_FACE_DEFAULT, 
+		m_fontPoints0+m_fontRelSize, dpi, text );
+
 	if ( width ) *width = (wxCoord)(sz.x+0.5)/m_scale;
 	if ( height ) *height = (wxCoord)(sz.y+0.5)/m_scale;
 #else

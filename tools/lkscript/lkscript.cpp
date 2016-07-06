@@ -2,6 +2,7 @@
 #include <wx/frame.h>
 #include <wx/stc/stc.h>
 #include <wx/webview.h>
+#include <wx/dynlib.h>
 
 #include <wx/app.h>
 
@@ -24,6 +25,16 @@ class MyApp : public wxApp
 public:
 	bool OnInit()
 	{
+		
+#ifdef __WXMSW__
+		typedef BOOL (WINAPI *SetProcessDPIAware_t)(void); 
+		wxDynamicLibrary dllUser32(wxT("user32.dll")); 
+		SetProcessDPIAware_t pfnSetProcessDPIAware = 
+			(SetProcessDPIAware_t)dllUser32.RawGetSymbol(wxT("SetProcessDPIAware")); 
+		if ( pfnSetProcessDPIAware ) 
+			pfnSetProcessDPIAware(); 
+#endif
+
 		wxArrayString args;
 		for( int i=0;i<argc;i++ )
 			args.Add( argv[i] );
@@ -37,7 +48,7 @@ public:
 		{
 			if (!wxPLPlot::AddPdfFontDir( wexdir + "/pdffonts" ))
 				wxMessageBox("Could not add font dir: " + wexdir + "/pdffonts" );
-			if (!wxPLPlot::SetPdfDefaultFont( "ComputerModernSansSerif", 10.0 ) )
+			if (!wxPLPlot::SetPdfDefaultFont( "ComputerModernSansSerif" ) )
 				wxMessageBox("Could not set default pdf font to Computer Modern Sans Serif" );
 		}
 		

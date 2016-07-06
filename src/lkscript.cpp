@@ -494,13 +494,9 @@ void fcall_plotopt( lk::invoke_t &cxt )
 	cxt.result().assign( 1.0 );
 	
 	if ( lk::vardata_t *arg = cxt.arg(0).lookup("pdffontface") )
-		if ( !wxPLPlot::SetPdfDefaultFont( arg->as_string(), -1.0 ) )
+		if ( !wxPLPlot::SetPdfDefaultFont( arg->as_string() ) )
 			cxt.result().assign( 0.0 );
-
-	if ( lk::vardata_t *arg = cxt.arg(0).lookup("pdffontsize") )
-		if ( !wxPLPlot::SetPdfDefaultFont( wxEmptyString, arg->as_number() ) )
-			cxt.result().assign( 0.0 );
-
+	
 	if ( lk::vardata_t *arg = cxt.arg(0).lookup("pdffontdir") )
 		if ( !wxPLPlot::AddPdfFontDir( arg->as_string() ) )
 			cxt.result().assign( 0.0 );

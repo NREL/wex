@@ -58,7 +58,7 @@ public:
 	bool ExportPdf( const wxString &file );
 	wxBitmap GetBitmap( int width=-1, int height=-1 );
 	
-	void Render( wxGraphicsContext &gc, const wxFont &font, wxRect geom );
+	void Render( wxGraphicsContext &gc, wxRect geom, double fontpoints=-1 );
 
 protected:
 	virtual wxSize DoGetBestSize() const;

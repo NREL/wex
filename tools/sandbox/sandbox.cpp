@@ -291,7 +291,7 @@ public: TextLayoutFrame() : wxFrame( 0, -1, "Text layout", wxDefaultPosition, wx
 
 		doc.SetTextColour( *wxBLACK );
 
-		wxPLPdfOutputDevice pdfdc( doc );
+		wxPLPdfOutputDevice pdfdc( doc, 12.0 );
 		m_layout->Draw( pdfdc, wxPLRealRect(0,0,width,height) );
 
 		wxString file( wxFileName::GetHomeDir() + "/graph.pdf" );

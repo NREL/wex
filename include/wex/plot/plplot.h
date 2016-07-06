@@ -146,6 +146,8 @@ public:
 	wxPLAxis &Axis( AxisPos axispos, PlotPos ppos = PLOT_TOP );
 	void SetAxis( wxPLAxis *a, AxisPos axispos, PlotPos ppos = PLOT_TOP );
 	
+	void SetTextSize( double points ) { m_textSizePoints = points; }
+	double GetTextSize() { return m_textSizePoints; }
 	
 	void SetBorderWidth( double b=0.5 ) { m_borderWidth = b; } // zero is OK to hide plot borders
 	void SetBorderSpace( double left=0, double right=0, double top=0, double bottom=0 ) { 
@@ -194,9 +196,9 @@ public:
 	static bool AddPdfFontDir( const wxString &path );
 	static wxString LocatePdfFontDataFile( const wxString &face );
 	static wxArrayString ListAvailablePdfFonts();
-	static bool SetPdfDefaultFont( const wxString &face, double points );
-	bool RenderPdf( const wxString &file, double width, double height );
-
+	static bool SetPdfDefaultFont( const wxString &face );
+	bool RenderPdf( const wxString &file, double width, double height, double fontpoints=-1 );
+	
 	class axis_layout;
 protected:
 
@@ -235,6 +237,7 @@ private:
 	bool m_moveLegendErase;
 	wxPoint m_anchorPoint;
 	wxPoint m_currentPoint;
+	double m_textSizePoints;
 
 	std::vector< wxPLRealRect > m_plotRects;
 	wxPLSideWidgetBase *m_sideWidgets[4];

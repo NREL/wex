@@ -275,7 +275,7 @@ wxBitmap wxPLPlotCtrl::GetBitmap( int width, int height )
 			wxBitmap bittemp( 10, 10 );
 			wxMemoryDC dctemp( bittemp );
 			wxGraphicsContext *gc = wxGraphicsContext::Create( dctemp );
-			wxPLGraphicsOutputDevice odev( gc, GetFont(), wxGetScreenHDScale() );
+			wxPLGraphicsOutputDevice odev( gc, wxGetScreenHDScale(), 12.0 );
 			CalculateLegendLayout( odev );
 			InvalidateLegend(); // keep legend invalidated for subsequent render
 
@@ -307,7 +307,7 @@ wxBitmap wxPLPlotCtrl::GetBitmap( int width, int height )
 		gc->DrawRectangle( 0, 0, imgSize.GetWidth(), imgSize.GetHeight() );
 
 		wxRect rect(0, 0, imgSize.GetWidth(), imgSize.GetHeight());
-		Render( *gc, GetFont(), rect );
+		Render( *gc, rect );
 
 		delete gc;
 	}
@@ -349,9 +349,8 @@ bool wxPLPlotCtrl::ExportPdf( const wxString &file )
 {
 	int width, height;
 	GetClientSize( &width, &height );
-	wxClientDC dc(this);
-	double ppi = dc.GetPPI().x;
-	return RenderPdf( file, width*72.0/ppi, height*72.0/ppi );
+	double dpi = wxGetDrawingDPI();
+	return RenderPdf( file, width*72.0/dpi, height*72.0/dpi );
 }
 
 wxSize wxPLPlotCtrl::DoGetBestSize() const
@@ -359,28 +358,29 @@ wxSize wxPLPlotCtrl::DoGetBestSize() const
 	return wxScaleSize( 500, 400 ); // default plot size
 }
 
-void wxPLPlotCtrl::Render( wxGraphicsContext &gc, const wxFont &font, wxRect geom )
+void wxPLPlotCtrl::Render( wxGraphicsContext &gc, wxRect geom, double fontpoints )
 {
-	wxFont font_normal( font );
+	if ( fontpoints <= 0 )
+		fontpoints = GetTextSize();
+
 	if ( m_scaleTextSize )
 	{
 		// scale text according to geometry width, within limits
 		double point_size = geom.width/1000.0 * 12.0;
 		if ( point_size > 23 ) point_size = 23;
 		if ( point_size < 7 ) point_size = 7;
-		font_normal.SetPointSize( (int)point_size );
+		fontpoints = point_size;
 	}
-	gc.SetFont( font_normal, *wxBLACK );
 	
 	double scale = wxGetScreenHDScale();
-
+		
 	wxPLRealRect rr;
 	rr.x = geom.x/scale;
 	rr.y = geom.y/scale;
 	rr.width = geom.width/scale;
 	rr.height = geom.height/scale;
 
-	wxPLGraphicsOutputDevice odev( &gc, font_normal, scale );
+	wxPLGraphicsOutputDevice odev( &gc, scale, fontpoints );
 	wxPLPlot::Render( odev, rr );
 }
 
@@ -411,7 +411,7 @@ void wxPLPlotCtrl::OnPaint( wxPaintEvent & )
 		gc->SetBrush( *wxWHITE_BRUSH );
 		gc->DrawRectangle( 0, 0, width, height );
 
-		Render( *gc, GetFont(), wxRect(0, 0, width, height) );
+		Render( *gc, wxRect(0, 0, width, height) );
 
 #ifdef SHOW_RENDERER_INFO
 		gc->DrawText( "Using " + renderer->GetName() + wxString::Format( " in %d ms.", sw.Time() ), 2, 2 );

@@ -84,7 +84,7 @@ class wxPLPdfOutputDevice : public wxPLOutputDevice
 	wxPdfShape m_shape;
 
 public:
-	wxPLPdfOutputDevice( wxPdfDocument &doc );
+	wxPLPdfOutputDevice( wxPdfDocument &doc, double fontpts );
 	virtual void SetAntiAliasing( bool );
 	virtual bool GetAntiAliasing() const { return true; }
 	virtual void Clip( double x, double y, double width, double height );
@@ -147,16 +147,15 @@ public:
 class wxPLGraphicsOutputDevice : public wxPLOutputDevice
 {
 	wxGraphicsContext *m_gc;
-	wxFont m_font0;
+	double m_fontPoints0;
+	double m_fontRelSize;
 	double m_scale;
-	double m_fontSize;
 	wxColour m_textColour;
 	bool m_pen, m_brush;
 	wxGraphicsPath m_path;
 
-	void UpdateFont();
 public:
-	wxPLGraphicsOutputDevice( wxGraphicsContext *gc, const wxFont &font = *wxNORMAL_FONT, double scale=1.0 );
+	wxPLGraphicsOutputDevice( wxGraphicsContext *gc, double scale, double fontpoints );
 	
 	virtual void SetAntiAliasing( bool b );
 	virtual bool GetAntiAliasing() const;

@@ -622,6 +622,7 @@ wxPLPlot::wxPLPlot()
 	for ( size_t i=0;i<4;i++ )
 		m_sideWidgets[i] = 0;
 
+	m_textSizePoints = 11.0;
 	m_borderWidth = 0.5;
 	m_spaceLeftTop = wxRealPoint(0,0);
 	m_spaceRightBottom = wxRealPoint(0,0);
@@ -2111,7 +2112,6 @@ wxArrayString wxPLPlot::ListAvailablePdfFonts()
 }
 
 static wxString s_pdfDefaultFontFace("Helvetica");
-static double s_pdfDefaultFontPoints = 11.0;
 
 static void EnsureStandardPdfFontPaths()
 {
@@ -2129,11 +2129,10 @@ static bool IsBuiltinPdfFont( const wxString &face )
 		|| face == "Symbol";
 }
 
-bool wxPLPlot::SetPdfDefaultFont( const wxString &face, double points )
+bool wxPLPlot::SetPdfDefaultFont( const wxString &face )
 {
 	EnsureStandardPdfFontPaths();
-
-	if ( points > 0 ) s_pdfDefaultFontPoints = points; // negative point size retains current size
+	
 	if ( face.IsEmpty() ) return true; // no changes to the face
 
 	if (  !IsBuiltinPdfFont(face) )
@@ -2157,8 +2156,11 @@ bool wxPLPlot::SetPdfDefaultFont( const wxString &face, double points )
 	return true;
 }
 
-bool wxPLPlot::RenderPdf( const wxString &file, double width, double height )
+bool wxPLPlot::RenderPdf( const wxString &file, double width, double height, double fontpoints )
 {
+	if ( fontpoints < 0 )
+		fontpoints = m_textSizePoints;
+
 	EnsureStandardPdfFontPaths();
 
 	wxPdfDocument doc( wxPORTRAIT, "pt", wxPAPER_A5 );
@@ -2168,18 +2170,18 @@ bool wxPLPlot::RenderPdf( const wxString &file, double width, double height )
 	{
 		wxString datafile( LocatePdfFontDataFile( s_pdfDefaultFontFace ) );
 		if ( !doc.AddFont( s_pdfDefaultFontFace, wxEmptyString, datafile ) 
-			|| !doc.SetFont( s_pdfDefaultFontFace, wxPDF_FONTSTYLE_REGULAR, s_pdfDefaultFontPoints ) )
-			doc.SetFont( "Helvetica", wxPDF_FONTSTYLE_REGULAR, s_pdfDefaultFontPoints );
+			|| !doc.SetFont( s_pdfDefaultFontFace, wxPDF_FONTSTYLE_REGULAR, fontpoints ) )
+			doc.SetFont( "Helvetica", wxPDF_FONTSTYLE_REGULAR, fontpoints );
 	}
 	else
-		doc.SetFont( s_pdfDefaultFontFace, wxPDF_FONTSTYLE_REGULAR, s_pdfDefaultFontPoints );
+		doc.SetFont( s_pdfDefaultFontFace, wxPDF_FONTSTYLE_REGULAR, fontpoints );
 	
-	doc.SetFontSize( s_pdfDefaultFontPoints );
+	doc.SetFontSize( fontpoints );
 
 	Invalidate();
-
-	wxPLPdfOutputDevice dc(doc);
-	Render( dc, wxPLRealRect( 2, 2, width-4, height-4 ) );
+	
+	wxPLPdfOutputDevice dc( doc, fontpoints );
+	Render( dc, wxPLRealRect( 0, 0, width, height ) );
 		
 	Invalidate();
 		

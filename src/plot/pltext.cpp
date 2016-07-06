@@ -511,7 +511,7 @@ void wxPLTextLayoutDemo::OnPaint( wxPaintEvent & )
 	pdc.Clear();
 
 	wxGraphicsContext *gc = wxGraphicsContext::Create( pdc );
-	wxPLGraphicsOutputDevice dc( gc );
+	wxPLGraphicsOutputDevice dc( gc, 1.0, 12.0 );
 	Draw( dc, wxPLRealRect( 0, 0, width, height/2 ) );
 	delete gc;
 }
@@ -882,12 +882,10 @@ static wxRealPoint rotate2d(
 		sin(rad)*P.x + cos(rad)*P.y );
 }
 
-void wxFreeTypeDraw( wxDC &dc, const wxPoint &pos, int ifnt, double points,
+void wxFreeTypeDraw( wxDC &dc, const wxPoint &pos, int ifnt, double points, unsigned int dpi,
 	const wxString &text, const wxColour &c, double angle )
 {
 	wxRealPoint offset(0,0);
-	wxSize ppi( dc.GetPPI() );
-	unsigned int dpi = std::max(ppi.x, ppi.y);
 
 	wxImage img( wxFreeTypeDraw( &offset, ifnt, points, dpi, text, c, angle ) );
 
@@ -905,12 +903,10 @@ void wxFreeTypeDraw( wxDC &dc, const wxPoint &pos, int ifnt, double points,
 
 #include <wex/utils.h>
 
-void wxFreeTypeDraw( wxGraphicsContext &gc, const wxPoint &pos, int ifnt, double points,
+void wxFreeTypeDraw( wxGraphicsContext &gc, const wxPoint &pos, int ifnt, double points, unsigned int dpi,
 	const wxString &text, const wxColour &c, double angle )
 {
 	wxRealPoint offset(0,0);
-	unsigned int dpi = wxGetDrawingDPI();
-
 
 	wxImage img( wxFreeTypeDraw( &offset, ifnt, points, dpi, text, c, angle ) );
 	if ( img.IsOk() )
@@ -1254,7 +1250,7 @@ void wxFreeTypeDemo::OnPaint( wxPaintEvent & )
 	dc.DrawRectangle( 0, 140, 300, 100 );
 
 	wxImage img( size.x, size.y );
-	int dpi = dc.GetPPI().x;
+	unsigned int dpi = wxGetDrawingDPI();
 	wxString demotext( text + " (" + wxFreeTypeFontName( Face(1) ) + ")" );
 	wxSize bbox = wxFreeTypeMeasure( Face(1), 14, dpi, demotext );
 	wxFreeTypeDraw( &img, true,  wxPoint(0,0), Face(1), 14,     dpi, demotext, *wxBLACK );
@@ -1310,13 +1306,14 @@ void wxFreeTypeDemo::OnPaint( wxPaintEvent & )
 	dc.DrawRectangle( 0, 0, 500, 400 );
 	//dc.SetBrush( *wxLIGHT_GREY_BRUSH );
 	//dc.DrawCircle(200,200,4);
-	wxFreeTypeDraw( dc, wxPoint(300,200), Face(23), 12, "The quick brown fox jumped...", *wxBLUE, 0.0 );
-	wxFreeTypeDraw( dc, wxPoint(300,200), Face(24), 10, "...over the lazy dog.", *wxRED, 45 );
-	wxFreeTypeDraw( dc, wxPoint(300,200), Face(22), 14, "Jumping dogs over lazy foxes.", "Forest Green", 195 );
+
+	wxFreeTypeDraw( dc, wxPoint(300,200), Face(23), 12, dpi,  "The quick brown fox jumped...", *wxBLUE, 0.0 );
+	wxFreeTypeDraw( dc, wxPoint(300,200), Face(24), 10, dpi, "...over the lazy dog.", *wxRED, 45 );
+	wxFreeTypeDraw( dc, wxPoint(300,200), Face(22), 14, dpi, "Jumping dogs over lazy foxes.", "Forest Green", 195 );
 	dc.SetBrush( *wxBLACK_BRUSH );
 	dc.DrawRectangle( 0, 0, 300, 200 );
-	wxFreeTypeDraw( dc, wxPoint(300,200), Face(27), 18, "White on black.", *wxWHITE, 135 );
-	wxFreeTypeDraw( dc, wxPoint(300,200), Face(0), 12, "TOP TO BOTTOM.", *wxBLACK, 270 );
+	wxFreeTypeDraw( dc, wxPoint(300,200), Face(27), 18, dpi, "White on black.", *wxWHITE, 135 );
+	wxFreeTypeDraw( dc, wxPoint(300,200), Face(0), 12, dpi, "TOP TO BOTTOM.", *wxBLACK, 270 );
 }
 
 void wxFreeTypeDemo::OnSize( wxSizeEvent & )

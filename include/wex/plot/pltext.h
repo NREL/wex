@@ -73,9 +73,9 @@ void wxFreeTypeDraw( wxImage *img, bool init_img, const wxPoint &pos,
 	const wxString &text, const wxColour &c=*wxBLACK, double angle = 0.0 );
 wxImage wxFreeTypeDraw( wxRealPoint *pos, int ifnt, double points, unsigned int dpi, 
 	const wxString &text, const wxColour &c=*wxBLACK, double angle=0.0 );
-void wxFreeTypeDraw( wxDC &dc, const wxPoint &pos, int ifnt, double points,
+void wxFreeTypeDraw( wxDC &dc, const wxPoint &pos, int ifnt, double points, unsigned int dpi,
 	const wxString &text, const wxColour &c=*wxBLACK, double angle=0.0 );
-void wxFreeTypeDraw( wxGraphicsContext &gc, const wxPoint &pos, int ifnt, double points,
+void wxFreeTypeDraw( wxGraphicsContext &gc, const wxPoint &pos, int ifnt, double points, unsigned int dpi,
 	const wxString &text, const wxColour &c=*wxBLACK, double angle=0.0 );
 
 class wxFreeTypeDemo : public wxWindow
