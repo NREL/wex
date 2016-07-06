@@ -2387,14 +2387,6 @@ bool wxLKScriptCtrl::Execute( )
 		wxMessageBox("A script is already running.");
 		return false;
 	}
-
-	if ( GetBreakpoints().size() > 0 )
-	{
-		if ( !CompileAndLoad( ) )
-			return false;
-	
-		return Debug( DEBUG_RUN );
-	}
 	
 	m_scriptRunning = true;
 	m_stopScriptFlag = false;
@@ -2417,7 +2409,7 @@ bool wxLKScriptCtrl::Execute( )
 		// change working directory by default to where script is located
 		wxSetWorkingDirectory( m_workDir );
 	}
-	
+		
 	bool success = true;
 	wxYield();
 	if ( !CompileAndLoad( ) )
@@ -2425,10 +2417,14 @@ bool wxLKScriptCtrl::Execute( )
 
 	m_vm.clrbrk();
 	wxStopWatch sw;
-	if ( success ) success = m_vm.run( lk::vm::NORMAL );
+	if ( success ) 
+	{
+		if ( GetBreakpoints().size() > 0 ) success = Debug( DEBUG_RUN );
+		else success = m_vm.run( lk::vm::NORMAL );
+	}
 
 	if ( success ) OnOutput(wxString::Format("Elapsed time: %.1lf seconds.\n", 0.001*sw.Time()));
-	else OnOutput("Script error: " + m_vm.error() );
+	else OnOutput("Error: " + m_vm.error() );
 			
 	m_env->clear_objs();
 
