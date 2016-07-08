@@ -983,7 +983,7 @@ void fcall_sector( lk::invoke_t &cxt )
 
 void fcall_contour( lk::invoke_t &cxt )
 {
-	LK_DOC( "contour", "Creates a contour plot from gridded x,y,z data. Options are filled, colormap, levels, min, max", "( matrix:x, matrix:y, matrix:z, { table:options } ):none" );
+	LK_DOC( "contour", "Creates a contour plot from gridded x,y,z data. Options are filled, colormap, levels, min, max, decimals", "( matrix:x, matrix:y, matrix:z, { table:options } ):none" );
 	
 	wxPLPlotCtrl *plot = GetPlotSurface( 
 		(s_curToplevelParent!=0)
@@ -992,6 +992,7 @@ void fcall_contour( lk::invoke_t &cxt )
 	
 	wxString cmap_name;
 	bool filled = false;
+	int decimals = -1;
 	size_t levels = 10;
 	double min, max;
 	min=max=std::numeric_limits<double>::quiet_NaN();
@@ -1011,6 +1012,8 @@ void fcall_contour( lk::invoke_t &cxt )
 			max = o->as_number();
 		if ( lk::vardata_t *o = opt.lookup( "label" ) )
 			label = o->as_string();
+		if ( lk::vardata_t *o = opt.lookup( "decimals" ) )
+			decimals = o->as_integer();
 	}
 
 	wxMatrix<double> x, y, z;
@@ -1039,6 +1042,9 @@ void fcall_contour( lk::invoke_t &cxt )
 
 	if ( min < cmap->GetScaleMin() ) cmap->SetScaleMin( min );
 	if ( max > cmap->GetScaleMax() ) cmap->SetScaleMax( max );
+
+	if ( decimals > 0 && decimals < 20 ) cmap->SetFormat( wxString::Format( "%%.%dlf", decimals ) );
+	else cmap->SetFormat( "%lg" );
 
 	wxPLContourPlot *contour = new wxPLContourPlot( x, y, z, filled, label, (int)levels, cmap );
 	plot->AddPlot( contour );
