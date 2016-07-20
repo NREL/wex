@@ -13,16 +13,7 @@
 #include <unordered_map>
 using std::unordered_map;
 #pragma warning(disable: 4290)  // ignore warning: 'C++ exception specification ignored except to indicate a function is not __declspec(nothrow)'
-/*
-//#if defined(_MSC_VER)||defined(__APPLE__)
-#include <unordered_map>
-//using std::tr1::unordered_map;
-using std::unordered_map;
-//#else
-//#include <tr1/unordered_map>
-//using std::tr1::unordered_map;
-//#endif
-*/
+
 class wxDVPlotCtrlSettings
 {
 public:
