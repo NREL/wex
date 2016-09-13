@@ -518,7 +518,7 @@ void wxPLGraphicsOutputDevice::TextColour( const wxColour &c )
 	m_textColour = c;
 }
 
-#define FREETYPE_TEXT 1
+//#define FREETYPE_TEXT 1
 #define FT_FONT_FACE_DEFAULT 0
 
 #include <wex/utils.h>

@@ -46,7 +46,7 @@ size_t wxPLBarPlotBase::Len() const
 
 void wxPLBarPlotBase::DrawInLegend( wxPLOutputDevice &dc, const wxPLRealRect &rct)
 {
-	dc.Pen( m_colour );
+	dc.NoPen();
 	dc.Brush( m_colour );
 	dc.Rect( rct );
 }
@@ -187,7 +187,7 @@ void wxPLBarPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 	double dispbar_w = CalcDispBarWidth( map );
 	
 	dc.SetAntiAliasing( false );
-	dc.Pen( m_colour );
+	dc.NoPen();
 	dc.Brush( m_colour );
 	
 	for (size_t i=0; i<Len(); i++)
@@ -240,7 +240,7 @@ void wxPLHBarPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 	if( Len() == 0 ) return;
 
 	double bar_width = CalcDispBarWidth( map );
-	dc.Pen( m_colour );
+	dc.NoPen();
 	dc.Brush( m_colour );
 	for (size_t i=0; i<Len(); i++)
 	{
@@ -274,13 +274,13 @@ void wxPLHBarPlot::Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
 			dc.Rect(prct.x, prct.y, prct.width, prct.height);
 	}
 	
+	/*
 	wxRealPoint start,end;
 	end.x = start.x = map.ToDevice( m_baseline, 0 ).x;
 	
 	wxRealPoint pos, size;
 	map.GetDeviceExtents( &pos, &size );
 
-	/*
 	// don't automatically draw a vertical bar to show baseline
 	// now can use annotation feature to do this.
 	start.y = pos.y+1;
