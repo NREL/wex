@@ -32,12 +32,16 @@ public:
 	void ExtendToNiceInPosDir(double* d, bool posDir, bool useFineScale = false);
 
 	virtual wxColour ColourForValue(double val);
+
+	void SetReversed( bool r=true ) { m_reversed = r; }
+	bool IsReversed();
 	
 	// side widget renderer
 	virtual wxRealPoint CalculateBestSize();
 	virtual void Render( wxPLOutputDevice &dc, const wxPLRealRect& geom);
 	
 protected:
+	bool m_reversed;
 	wxString m_format;
 	double m_min;
 	double m_max;

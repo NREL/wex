@@ -7,6 +7,7 @@ wxPLColourMap::wxPLColourMap(double min, double max)
 	m_min = min;
 	m_max = max;
 	m_format = "%lg";
+	m_reversed = false;
 }
 
 wxPLColourMap::wxPLColourMap( const wxPLColourMap &cpy )
@@ -104,8 +105,9 @@ void wxPLColourMap::Render( wxPLOutputDevice &dc, const wxPLRealRect &geom)
 	double colourBarStep = colourBarHeight / ((double)m_colourList.size());
 	for (size_t i=0; i<m_colourList.size(); i++)
 	{
-		dc.Pen( m_colourList[i] );
-		dc.Brush( m_colourList[i] );
+		size_t idx =  m_reversed ? m_colourList.size() - i - 1 : i;
+		dc.Pen( m_colourList[idx] );
+		dc.Brush( m_colourList[idx] );
 		dc.Rect(colourBarX+1, geom.y+charHeight/2 + 1 + (m_colourList.size()-1-i)*colourBarStep, 10, colourBarStep+1);
 	}
 		
@@ -125,6 +127,9 @@ wxColour wxPLColourMap::ColourForValue(double val)
 	if (val >= m_max) return m_colourList[m_colourList.size()-1];
 
 	size_t position = (size_t)( ((double)m_colourList.size()) * (val - m_min) / (m_max - m_min) );
+
+	if ( m_reversed ) position = m_colourList.size() - position - 1;
+
 	if ( position >= 0 && position < m_colourList.size() )
 		return m_colourList[position];
 	else
