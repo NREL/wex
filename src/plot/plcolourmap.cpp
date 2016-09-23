@@ -56,6 +56,18 @@ void wxPLColourMap::SetScaleMax(double max)
 	InvalidateBestSize();
 }
 
+void wxPLColourMap::SetFormat( const wxString &fmt )
+{
+	m_format = fmt;
+	InvalidateBestSize();
+}
+
+void wxPLColourMap::SetLabels( const wxArrayString &l )
+{
+	m_labels = l;
+	InvalidateBestSize();
+}
+
 double wxPLColourMap::GetScaleMin()
 {
 	return m_min;
@@ -80,11 +92,23 @@ wxRealPoint wxPLColourMap::CalculateBestSize()
 	double range = m_max - m_min;
 	double step = range / 10;
 	wxCoord maxWidth = 0, temp;
-	for (int i=0; i<11; i++)
+	if ( m_labels.size() > 0 )
 	{
-		dc.GetTextExtent( wxString::Format( wxFormatString(m_format), m_min + i*step), &temp, NULL);
-		if (temp > maxWidth)
-			maxWidth = temp;
+		for( size_t i=0;i<m_labels.size();i++ )
+		{
+			dc.GetTextExtent( m_labels[i], &temp, NULL );
+			if ( temp > maxWidth )
+				maxWidth = temp;
+		}
+	}
+	else
+	{
+		for (int i=0; i<11; i++)
+		{
+			dc.GetTextExtent( wxString::Format( wxFormatString(m_format), m_min + i*step), &temp, NULL);
+			if (temp > maxWidth)
+				maxWidth = temp;
+		}
 	}
 
 	return wxRealPoint( 17+maxWidth, 300 );
@@ -112,12 +136,22 @@ void wxPLColourMap::Render( wxPLOutputDevice &dc, const wxPLRealRect &geom)
 	}
 		
 	double xTextPos = colourBarX + 14;
-	double yTextStep = colourBarHeight / 10;
 
-	double range = m_max - m_min;
-	double step = range / 10;
-	for (size_t i=0; i<11; i++)
-		dc.Text( wxString::Format( wxFormatString(m_format), m_min + i*step), xTextPos, geom.y+wxCoord((10-i)*yTextStep) );	
+	if ( m_labels.size() < 2 )
+	{
+		double yTextStep = colourBarHeight / 10;
+		double step = (m_max - m_min) / 10;
+		for (size_t i=0; i<11; i++)
+			dc.Text( wxString::Format( wxFormatString(m_format), m_min + i*step), 
+				xTextPos, geom.y+wxCoord((10-i)*yTextStep) );
+	}
+	else
+	{
+		double yTextStep = colourBarHeight / (m_labels.size()-1.0);
+		double step = (m_max - m_min) / ( m_labels.size() - 1.0 );
+		for( size_t i=0;i<m_labels.size();i++ )
+			dc.Text( m_labels[i], xTextPos, geom.y + wxCoord( m_labels.size()-1-i)*yTextStep );
+	}
 }
 
 wxColour wxPLColourMap::ColourForValue(double val)

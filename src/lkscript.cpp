@@ -983,7 +983,7 @@ void fcall_sector( lk::invoke_t &cxt )
 
 void fcall_contour( lk::invoke_t &cxt )
 {
-	LK_DOC( "contour", "Creates a contour plot from gridded x,y,z data. Options are filled, colormap, levels, min, max, decimals", "( matrix:x, matrix:y, matrix:z, { table:options } ):none" );
+	LK_DOC( "contour", "Creates a contour plot from gridded x,y,z data. Options are filled, colormap=jet/grayscale, reversecolors=t/f, scalelabels=['',''...], levels, min, max, decimals", "( matrix:x, matrix:y, matrix:z, { table:options } ):none" );
 	
 	wxPLPlotCtrl *plot = GetPlotSurface( 
 		(s_curToplevelParent!=0)
@@ -998,6 +998,7 @@ void fcall_contour( lk::invoke_t &cxt )
 	double min, max;
 	min=max=std::numeric_limits<double>::quiet_NaN();
 	wxString label;
+	wxArrayString scalelabels;
 	if ( cxt.arg_count() > 3 )
 	{
 		lk::vardata_t &opt = cxt.arg(3);
@@ -1017,6 +1018,15 @@ void fcall_contour( lk::invoke_t &cxt )
 			label = o->as_string();
 		if ( lk::vardata_t *o = opt.lookup( "decimals" ) )
 			decimals = o->as_integer();
+		if ( lk::vardata_t *o = opt.lookup( "scalelabels" ) )
+		{
+			lk::vardata_t &oref = o->deref();
+			if ( oref.type() == lk::vardata_t::VECTOR )
+			{
+				for( size_t i=0;i<oref.length();i++ )
+					scalelabels.Add( o->index(i)->as_string() );
+			}
+		}
 	}
 
 	wxMatrix<double> x, y, z;
@@ -1036,7 +1046,6 @@ void fcall_contour( lk::invoke_t &cxt )
 		else 
 			cmap = new wxPLJetColourMap( min, max );
 
-		cmap->SetReversed( reversed );
 		
 		plot->SetSideWidget( cmap, wxPLPlot::Y_RIGHT );
 
@@ -1044,6 +1053,9 @@ void fcall_contour( lk::invoke_t &cxt )
 			if ( wxPLContourPlot *cp = dynamic_cast<wxPLContourPlot*>( plot->GetPlot(i) ) )
 				cp->SetColourMap( cmap );
 	}
+	
+	cmap->SetReversed( reversed );
+	if (scalelabels.size() > 0 ) cmap->SetLabels( scalelabels );
 
 	if ( min < cmap->GetScaleMin() ) cmap->SetScaleMin( min );
 	if ( max > cmap->GetScaleMax() ) cmap->SetScaleMax( max );

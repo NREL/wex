@@ -26,7 +26,9 @@ public:
 	virtual double GetScaleMin();
 	virtual double GetScaleMax();
 	void ExtendScaleToNiceNumbers();
-	void SetFormat( const wxString &fmt ) { m_format = fmt; }
+	void SetFormat( const wxString &fmt );
+	void SetLabels( const wxArrayString &l );
+	wxArrayString GetLabels() const { return m_labels; }
 
 	//If true, + dir.  If false, - dir.
 	void ExtendToNiceInPosDir(double* d, bool posDir, bool useFineScale = false);
@@ -45,6 +47,7 @@ protected:
 	wxString m_format;
 	double m_min;
 	double m_max;
+	wxArrayString m_labels;
 	std::vector<wxColour> m_colourList;
 };
 
