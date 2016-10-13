@@ -983,7 +983,7 @@ void fcall_sector( lk::invoke_t &cxt )
 
 void fcall_contour( lk::invoke_t &cxt )
 {
-	LK_DOC( "contour", "Creates a contour plot from gridded x,y,z data. Options are filled, colormap=jet/grayscale, reversecolors=t/f, scalelabels=['',''...], levels, min, max, decimals", "( matrix:x, matrix:y, matrix:z, { table:options } ):none" );
+	LK_DOC( "contour", "Creates a contour plot from gridded x,y,z data. Options are filled, colormap=jet/parula/grayscale/rainbow, reversecolors=t/f, scalelabels=['',''...], levels, min, max, decimals", "( matrix:x, matrix:y, matrix:z, { table:options } ):none" );
 	
 	wxPLPlotCtrl *plot = GetPlotSurface( 
 		(s_curToplevelParent!=0)
@@ -1043,6 +1043,10 @@ void fcall_contour( lk::invoke_t &cxt )
 		if ( cmap_name=="grayscale" || cmap_name == "greyscale" 
 			|| cmap_name == "grey" || cmap_name == "gray" ) 
 			cmap = new wxPLGrayscaleColourMap( min, max );
+		else if ( cmap_name == "parula" )
+			cmap = new wxPLParulaColourMap( min, max );
+		else if ( cmap_name == "rainbow" )
+			cmap = new wxPLCoarseRainbowColourMap( min, max );
 		else 
 			cmap = new wxPLJetColourMap( min, max );
 

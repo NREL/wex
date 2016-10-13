@@ -41,6 +41,8 @@ public:
 	bool SetCurrentDataName(const wxString& name);
 	wxPLColourMap* GetCurrentColourMap();
 	void SetColourMapName(const wxString& name);
+	void SetReverseColours( bool b );
+	bool IsReversedColours();
 	void SelectDataSetAtIndex(int index);
 	int GetNumberOfSelections();
 
@@ -107,11 +109,13 @@ public:
 	void OnYScrollPageDown(wxScrollEvent& e);
 
 	void OnResetColourMapMinMax(wxCommandEvent& e);
+	void OnReverseColours( wxCommandEvent & );
 
 	void Invalidate(); // recalculate and rerender plot
 private:
 	wxDVSelectionListCtrl *m_selector;
 	wxChoice *m_colourMapSelector;
+	wxCheckBox *m_reverseColours;
 
 	wxTextCtrl *m_minTextBox;
 	wxTextCtrl *m_maxTextBox;

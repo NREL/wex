@@ -120,7 +120,7 @@ public:
 enum {
 	ID_DATA_SELECTOR = wxID_HIGHEST + 1, 
 	ID_COLOURMAP_SELECTOR_CHOICE, ID_GRAPH_SCROLLBAR, ID_GRAPH_Y_SCROLLBAR,
-	ID_MIN_Z_INPUT, ID_MAX_Z_INPUT, ID_DMAP_SURFACE, ID_RESET_MIN_MAX};
+	ID_MIN_Z_INPUT, ID_MAX_Z_INPUT, ID_DMAP_SURFACE, ID_RESET_MIN_MAX, ID_REVERSE_COLOURS };
 
 static const double MIN_ZOOM_LENGTH = 7 * 24;
 
@@ -128,6 +128,7 @@ BEGIN_EVENT_TABLE(wxDVDMapCtrl, wxPanel)
 	
 	EVT_DVSELECTIONLIST(ID_DATA_SELECTOR, wxDVDMapCtrl::OnDataChannelSelection)
 	EVT_CHOICE(ID_COLOURMAP_SELECTOR_CHOICE, wxDVDMapCtrl::OnColourMapSelection)
+	EVT_CHECKBOX( ID_REVERSE_COLOURS, wxDVDMapCtrl::OnReverseColours )
 
 	EVT_TEXT_ENTER(ID_MIN_Z_INPUT, wxDVDMapCtrl::OnColourMapMinChanged)
 	EVT_TEXT_ENTER(ID_MAX_Z_INPUT, wxDVDMapCtrl::OnColourMapMaxChanged)
@@ -163,7 +164,7 @@ wxDVDMapCtrl::wxDVDMapCtrl(wxWindow* parent, wxWindowID id,
 {
 	m_currentlyShownDataSet = 0;
 
-	m_colourMap = new wxPLCoarseRainbowColourMap(0, 24);
+	m_colourMap = new wxPLJetColourMap(0, 24);
 
 	m_plotSurface = new wxPLPlotCtrl( this, ID_DMAP_SURFACE );
 	m_plotSurface->SetBackgroundColour( *wxWHITE );
@@ -187,9 +188,11 @@ wxDVDMapCtrl::wxDVDMapCtrl(wxWindow* parent, wxWindowID id,
 	m_minTextBox = new wxTextCtrl(this, ID_MIN_Z_INPUT, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
 	m_maxTextBox = new wxTextCtrl(this, ID_MAX_Z_INPUT, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
 	
-	wxString choices[3] = { "Coarse Rainbow", "Fine Rainbow", "Grayscale" };
-	m_colourMapSelector = new wxChoice(this, ID_COLOURMAP_SELECTOR_CHOICE, wxDefaultPosition, wxDefaultSize, 3, choices );
+	wxString choices[5] = { "Jet", "Parula", "Grayscale", "Coarse Rainbow", "Fine Rainbow" };
+	m_colourMapSelector = new wxChoice(this, ID_COLOURMAP_SELECTOR_CHOICE, wxDefaultPosition, wxDefaultSize, 5, choices );
 	m_colourMapSelector->SetSelection(0);
+
+	m_reverseColours = new wxCheckBox( this, ID_REVERSE_COLOURS, "Reverse colors" );
 
 	m_yGraphScroller = new wxScrollBar(this, ID_GRAPH_Y_SCROLLBAR, wxDefaultPosition, wxDefaultSize, wxSB_VERTICAL);
 	m_xGraphScroller = new wxScrollBar(this, ID_GRAPH_SCROLLBAR, wxDefaultPosition, wxDefaultSize, wxSB_HORIZONTAL);
@@ -220,6 +223,7 @@ wxDVDMapCtrl::wxDVDMapCtrl(wxWindow* parent, wxWindowID id,
 	wxBoxSizer *optionsSizer = new wxBoxSizer(wxHORIZONTAL);	
 //	optionsSizer->Add(m_colourMapSelector, 0, wxALL | wxALIGN_CENTER_VERTICAL | wxEXPAND | wxALIGN_RIGHT, 3);
 	optionsSizer->Add(m_colourMapSelector, 0, wxALL | wxEXPAND , 3);
+	optionsSizer->Add( m_reverseColours, 0, wxLEFT|wxRIGHT|wxALIGN_CENTER_VERTICAL, 5 );
 	optionsSizer->AddStretchSpacer();
 	optionsSizer->Add(new wxStaticText(this, wxID_ANY, "Min:"), 0, wxALIGN_CENTER|wxALIGN_CENTER_VERTICAL, 4);
 	optionsSizer->Add(m_minTextBox, 0, wxALL|wxALIGN_CENTER_VERTICAL, 3);
@@ -555,10 +559,15 @@ void wxDVDMapCtrl::SetColourMapName(const wxString& name)
 	int position = m_colourMapSelector->FindString(name);
 	switch(position)
 	{
-	case 1: m_colourMap = new wxPLFineRainbowColourMap; break;
+	case 0: m_colourMap = new wxPLJetColourMap; break;
+	case 1: m_colourMap = new wxPLParulaColourMap; break;
 	case 2: m_colourMap = new wxPLGrayscaleColourMap; break;
-	default: m_colourMap = new wxPLCoarseRainbowColourMap; break;
+	case 3: m_colourMap = new wxPLCoarseRainbowColourMap; break;
+	default:
+		m_colourMap = new wxPLFineRainbowColourMap; break;
 	}
+
+	m_colourMap->SetReversed( m_reverseColours->GetValue() );
 
 	if (position != wxNOT_FOUND)
 	{
@@ -568,6 +577,18 @@ void wxDVDMapCtrl::SetColourMapName(const wxString& name)
 		m_dmap->SetColourMap( m_colourMap );
 		Invalidate();
 	}
+}
+
+void wxDVDMapCtrl::SetReverseColours( bool b )
+{
+	m_reverseColours->SetValue( b );
+	m_colourMap->SetReversed( b );
+	Invalidate();
+}
+
+bool wxDVDMapCtrl::IsReversedColours()
+{
+	return m_reverseColours->GetValue();
 }
 
 void wxDVDMapCtrl::Invalidate()
@@ -615,6 +636,12 @@ void wxDVDMapCtrl::OnDataChannelSelection(wxCommandEvent &)
 void wxDVDMapCtrl::OnColourMapSelection(wxCommandEvent &)
 {
 	SetColourMapName( m_colourMapSelector->GetStringSelection() );
+}
+
+void wxDVDMapCtrl::OnReverseColours( wxCommandEvent & )
+{
+	m_colourMap->SetReversed( m_reverseColours->GetValue() );
+	m_plotSurface->Refresh();
 }
 
 void wxDVDMapCtrl::OnColourMapMinChanged(wxCommandEvent &)

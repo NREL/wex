@@ -72,6 +72,14 @@ public:
 	virtual wxString GetName();
 };
 
+class wxPLParulaColourMap : public wxPLColourMap
+{
+public:
+	wxPLParulaColourMap( double min=0, double max=1 );
+	virtual wxString GetName();
+};
+
+
 class wxPLGrayscaleColourMap : public wxPLColourMap
 {
 public:
