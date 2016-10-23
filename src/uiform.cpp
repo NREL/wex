@@ -498,20 +498,37 @@ public:
 	}
 };
 
-class wxUIMultilineTextObject : public wxUITextEntryObject
+class wxUIMultilineTextObject : public wxUIObject
 {
 public:
-	wxUIMultilineTextObject() { }
+	wxUIMultilineTextObject() {
+		AddProperty("Text", new wxUIProperty(""));
+		AddProperty("Editable", new wxUIProperty(true));
+		AddProperty("ForeColour", new wxUIProperty(*wxBLACK));
+		AddProperty("BackColour", new wxUIProperty(*wxWHITE));
+		AddProperty("TabOrder", new wxUIProperty(-1));
+	}
 	virtual wxString GetTypeName() { return "MultilineText"; }
 	virtual wxUIObject *Duplicate() { wxUIObject *o = new wxUIMultilineTextObject; o->Copy(this); return o; }
-	virtual wxWindow *CreateNative( wxWindow *parent ) {
-		wxTextCtrl *txt = new wxTextCtrl( parent, wxID_ANY, Property("text").GetString(), GetPosition(), GetSize(), wxTE_MULTILINE );
+	virtual bool IsNativeObject() { return true; }
+	virtual wxWindow *CreateNative(wxWindow *parent) {
+		wxTextCtrl *txt = new wxExtTextCtrl(parent, wxID_ANY, Property("text").GetString(), GetPosition(), GetSize(), wxTE_MULTILINE);
 		txt->SetForegroundColour( Property("ForeColour").GetColour() );
 		txt->SetBackgroundColour( Property("BackColour").GetColour() );
 		txt->SetEditable( Property("Editable").GetBoolean() );
 		return AssignNative( txt );
 	}
-	virtual void Draw( wxWindow *win, wxDC &dc, const wxRect &geom )
+	virtual void OnPropertyChanged(const wxString &id, wxUIProperty *p)
+	{
+		if (wxTextCtrl *txt = GetNative<wxTextCtrl>())
+		{
+			if (id == "Text") txt->ChangeValue(p->GetString());
+			else if (id == "ForeColour") txt->SetForegroundColour(p->GetColour());
+			else if (id == "BackColour") txt->SetBackgroundColour(p->GetColour());
+			else if (id == "Editable") txt->SetEditable(p->GetBoolean());
+		}
+	}
+	virtual void Draw(wxWindow *win, wxDC &dc, const wxRect &geom)
 	{
 		dc.SetPen( *wxLIGHT_GREY_PEN );
 		dc.SetBrush( wxBrush( Property("BackColour").GetColour() ) );
@@ -524,6 +541,12 @@ public:
 		dc.SetBrush( wxBrush(wxColour(235,235,235) ) );
 		dc.DrawRectangle( geom.x+geom.width-10, geom.y+1, 9, geom.height-2 );
 	}
+	virtual void OnNativeEvent()
+	{
+		if (wxTextCtrl *txt = GetNative<wxTextCtrl>())
+			Property("Text").Set(txt->GetValue());
+	}
+
 };
 
 class wxUINumericObject : public wxUIObject
