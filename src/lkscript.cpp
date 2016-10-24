@@ -1073,6 +1073,51 @@ void fcall_contour( lk::invoke_t &cxt )
 	plot->AddPlot( contour );
 }
 
+#include <wx/anidecod.h>
+#include <wx/imaggif.h>
+#include <wx/file.h>
+#include <wx/ffile.h>
+#include <wx/wfstream.h>
+#include <wx/quantize.h>
+
+void fcall_gifanim( lk::invoke_t &cxt )
+{
+	LK_DOC( "gifanim", "Create a GIF animation.  Call with no arguments to save the current plot as a frame.  Call with a file name and delay time (ms) to write to a file.", "(string:file name[, number:delay] OR none):boolean" );
+
+static wxImageArray s_frames;
+
+	if ( cxt.arg_count() == 0 )
+	{
+		
+		wxPLPlotCtrl *plot = GetPlotSurface( 
+			(s_curToplevelParent!=0)
+				? s_curToplevelParent 
+				: GetCurrentTopLevelWindow() );
+		if ( !plot ) return;
+
+		wxImage img;
+		cxt.result().assign( wxQuantize::Quantize( plot->GetBitmap().ConvertToImage(), img ) ? 1.0 : 0.0 );
+		s_frames.push_back( img );
+	}
+	else
+	{		
+		cxt.result().assign( 0.0 );
+
+		wxString file( cxt.arg(0).as_string() );
+		int delay = 75;
+		if ( cxt.arg_count() > 1 )
+			delay = cxt.arg(1).as_integer();
+		
+		wxBusyInfo info("Writing gif animation: " + file );
+		wxGIFHandler gif;
+		wxFileOutputStream fs(file);
+		if ( fs.IsOk() && gif.SaveAnimation( s_frames, &fs, true, delay ) )
+			cxt.result().assign( 1.0 );
+
+		s_frames.Clear();
+	}
+}
+
 
 void fcall_csvconv( lk::invoke_t &cxt )
 {
@@ -1489,6 +1534,7 @@ lk::fcall_t* wxLKPlotFunctions()
 		fcall_griddata,
 		fcall_contour,
 		fcall_sector,
+		fcall_gifanim,
 		0 };
 		
 	return (lk::fcall_t*)vec;
