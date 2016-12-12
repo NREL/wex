@@ -139,7 +139,7 @@ public:
 		: wxFrame( parent, wxID_ANY, 
 			wxString::Format("plot %d", _iplot++),
 			wxDefaultPosition, wxScaleSize(wxSize(500,400)),
-			(parent != 0 ? wxFRAME_FLOAT_ON_PARENT : 0 )|wxCLOSE_BOX|wxCLIP_CHILDREN|wxCAPTION|wxRESIZE_BORDER )
+			wxCLOSE_BOX|wxCLIP_CHILDREN|wxCAPTION|wxRESIZE_BORDER )
 	{
 		m_plot = new wxPLPlotCtrl( this, wxID_ANY );
 		m_plot->SetHighlightMode( wxPLPlotCtrl::HIGHLIGHT_ZOOM );
