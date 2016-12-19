@@ -83,35 +83,31 @@ void wxPLColourMap::ExtendScaleToNiceNumbers()
 	wxPLAxis::ExtendBoundsToNiceNumber(&m_max, &m_min);
 }
 
-wxRealPoint wxPLColourMap::CalculateBestSize()
+wxRealPoint wxPLColourMap::CalculateBestSize( wxPLOutputDevice &dc )
 {
-	wxBitmap bit(100, 100);
-	wxMemoryDC dc(bit);
-	dc.SetFont( *wxNORMAL_FONT );
-	
 	double range = m_max - m_min;
 	double step = range / 10;
-	wxCoord maxWidth = 0, temp;
+	double maxWidth = 0, width, height;
 	if ( m_labels.size() > 0 )
 	{
 		for( size_t i=0;i<m_labels.size();i++ )
 		{
-			dc.GetTextExtent( m_labels[i], &temp, NULL );
-			if ( temp > maxWidth )
-				maxWidth = temp;
+			dc.Measure( m_labels[i], &width, &height );
+			if ( width > maxWidth )
+				maxWidth = width;
 		}
 	}
 	else
 	{
 		for (int i=0; i<11; i++)
 		{
-			dc.GetTextExtent( wxString::Format( wxFormatString(m_format), m_min + i*step), &temp, NULL);
-			if (temp > maxWidth)
-				maxWidth = temp;
+			dc.Measure( wxString::Format( wxFormatString(m_format), m_min + i*step), &width, &height );
+			if (width > maxWidth)
+				maxWidth = width;
 		}
 	}
 
-	return wxRealPoint( 17+maxWidth, 300 );
+	return wxRealPoint( 17.0+maxWidth, 300.0 );
 }
 
 void wxPLColourMap::Render( wxPLOutputDevice &dc, const wxPLRealRect &geom)

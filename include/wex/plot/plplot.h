@@ -88,10 +88,10 @@ public:
 	virtual ~wxPLSideWidgetBase();
 
 	virtual void Render( wxPLOutputDevice &, const wxPLRealRect & ) = 0;
-	virtual wxRealPoint CalculateBestSize() = 0;
+	virtual wxRealPoint CalculateBestSize( wxPLOutputDevice & ) = 0;
 
 	void InvalidateBestSize();
-	wxRealPoint GetBestSize();
+	wxRealPoint GetBestSize( wxPLOutputDevice & );
 
 private:
 	wxRealPoint m_bestSize;

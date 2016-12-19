@@ -39,7 +39,7 @@ public:
 	bool IsReversed();
 	
 	// side widget renderer
-	virtual wxRealPoint CalculateBestSize();
+	virtual wxRealPoint CalculateBestSize( wxPLOutputDevice &dc );
 	virtual void Render( wxPLOutputDevice &dc, const wxPLRealRect& geom);
 	
 protected:

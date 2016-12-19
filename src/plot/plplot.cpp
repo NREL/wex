@@ -263,10 +263,10 @@ void wxPLSideWidgetBase::InvalidateBestSize()
 	m_bestSize.x = m_bestSize.y = -1;
 }
 
-wxRealPoint wxPLSideWidgetBase::GetBestSize()
+wxRealPoint wxPLSideWidgetBase::GetBestSize( wxPLOutputDevice &dc )
 {
 	if ( m_bestSize.x < 0 || m_bestSize.y < 0 )
-		m_bestSize = CalculateBestSize();
+		m_bestSize = CalculateBestSize( dc );
 
 	if ( m_bestSize.x <= 0 ) m_bestSize.x = 5;
 	if ( m_bestSize.y <= 0 ) m_bestSize.y = 5;
@@ -1093,6 +1093,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 #define LEGEND_FONT(dc)  dc.TextPoints( -1 )
 #define AXIS_FONT(dc)    dc.TextPoints( 0 )
 
+	NORMAL_FONT(dc);
 	dc.TextColour( *wxBLACK );
 
 	// ensure plots have the axes they need to be rendered
@@ -1108,7 +1109,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 	// draw any side widgets first and remove the space from the total plot area
 	if ( m_sideWidgets[Y_LEFT] != 0 )
 	{
-		wxRealPoint sz = m_sideWidgets[Y_LEFT]->GetBestSize();
+		wxRealPoint sz = m_sideWidgets[Y_LEFT]->GetBestSize( dc );
 		m_sideWidgets[Y_LEFT]->Render( dc, 
 			wxPLRealRect( geom.x, geom.y, 
 				sz.x, geom.height ) );
@@ -1118,7 +1119,7 @@ void wxPLPlot::Render( wxPLOutputDevice &dc, wxPLRealRect geom )
 
 	if ( m_sideWidgets[Y_RIGHT] != 0 )
 	{
-		wxRealPoint sz = m_sideWidgets[Y_RIGHT]->GetBestSize();		
+		wxRealPoint sz = m_sideWidgets[Y_RIGHT]->GetBestSize( dc );		
 		m_sideWidgets[Y_RIGHT]->Render( dc, 
 			wxPLRealRect( geom.x+geom.width-sz.x, geom.y, 
 				sz.x, geom.height ) );
