@@ -14,6 +14,12 @@
 #include <wex/registration.h>
 
 static wxOnlineRegistrationData *gs_regData = 0;
+wxOnlineRegistrationData::wxOnlineRegistrationData() {
+	// nothing to do
+}
+wxOnlineRegistrationData::~wxOnlineRegistrationData() {
+	// nothing to do
+}
 
 void wxOnlineRegistration::Init( wxOnlineRegistrationData *dd )
 {
@@ -51,6 +57,53 @@ static bool first_run = true;
 	}
 
 	return s_filereg;
+}
+
+bool wxOnlineRegistration::CheckRegistration()
+{	
+	if ( !gs_regData ) return false;
+
+	wxString app = gs_regData->GetAppName();
+	wxString org = gs_regData->GetOrganization();
+
+	wxString email = wxOnlineRegistration::GetEmail();
+	wxString key = wxOnlineRegistration::GetKey();
+	
+	if ( email.IsEmpty() || key.IsEmpty() )
+	{
+		wxOnlineRegistration::ShowDialog();
+	}
+		
+	if ( !wxOnlineRegistration::IncrementUsage() )
+	{
+		if ( !wxOnlineRegistration::CanStart() )
+		{
+			wxOnlineRegistration::ShowDialog( "You have reached the limit for the number of times you can run " +
+				app + " without verifying your registration key.\n\n"
+				"Please check your email address, verification code, and internet connection." );
+
+			if ( !wxOnlineRegistration::CanStart() )
+				return false;
+		}
+		else 
+		{
+			wxString text = (app + " could not connect to " + org + " servers to verify your registration key.\n"
+				"This might be caused by a problem with your internet connection. "
+				"Click Confirm to try again or Skip for now to continue without registering.\n\n" );
+			int nstarts = wxOnlineRegistration::AllowedStartsRemaining();
+			if ( nstarts == 1 )	text += "This is the last time you may run " + app + " without verifying your registration.\n\n";
+			else text += wxString::Format( "You may run " + app + " %d more times without your verifying your registration.\n\n", nstarts );
+
+			if ( !wxOnlineRegistration::ShowDialog( text, wxString::Format("Skip for now (%d left)", nstarts) ) )
+			{
+				// since app is not going to start, decrement usage count (it was incremented already for this start above)
+				wxOnlineRegistration::DecrementUsage();
+				return false;
+			}
+		}
+	}
+
+	return true;
 }
 
 wxString wxOnlineRegistration::GetEmail()
@@ -148,8 +201,8 @@ bool wxOnlineRegistration::CheckInWithServer( int *usage_count )
 	wxBusyCursor curs;
 	wxEasyCurl curl;
 	
-	wxString url = gs_regData->GetApiUrl( wxOnlineRegistrationData::CHECK_IN );
-	wxString post = gs_regData->GetPostData(wxOnlineRegistrationData::CHECK_IN );
+	wxString url, post; 
+	gs_regData->GetApi( wxOnlineRegistrationData::CHECK_IN, &url, &post );
 
 	curl.SetPostData( post );
 	curl.Get( url );
@@ -346,7 +399,9 @@ void wxOnlineRegistration::OnRegister( wxCommandEvent & )
 	if ( m_register->GetLabel() == "Resend key" )
 	{
 	//	https://developer.nrel.gov/api/sam/v1/tracker/resend_key?api_key=SAMAPIKEY&email=someusersemail@somedomain.com
-		wxString url = gs_regData->GetApiUrl( wxOnlineRegistrationData::RESEND_KEY );
+		wxString url, post;
+		gs_regData->GetApi( wxOnlineRegistrationData::RESEND_KEY, &url, &post );
+
 		curl.Get( url );
 		
 		wxString raw( curl.GetDataAsString() );
@@ -367,8 +422,8 @@ void wxOnlineRegistration::OnRegister( wxCommandEvent & )
 		return;
 	}
 	
-	wxString url = gs_regData->GetApiUrl( wxOnlineRegistrationData::REGISTER_NEW );
-	wxString post = gs_regData->GetPostData( wxOnlineRegistrationData::REGISTER_NEW );
+	wxString url, post;
+	gs_regData->GetApi( wxOnlineRegistrationData::REGISTER_NEW, &url, &post );
 		
 	curl.SetPostData( post );
 	curl.Get( url );		

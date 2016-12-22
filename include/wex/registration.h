@@ -1,5 +1,5 @@
-#ifndef __registration_h
-#define __registration_h
+#ifndef __wex_registration_h
+#define __wex_registration_h
 
 #include <wx/dialog.h>
 
@@ -13,6 +13,7 @@ public:
 	virtual ~wxOnlineRegistrationData();
 
 	virtual wxString GetAppName() = 0;
+	virtual wxString GetOrganization() = 0;
 
 	virtual bool IsAnOverrideKey( const char * ) = 0;
 	virtual wxString GetLocalRegistrationFile() = 0;
@@ -24,8 +25,7 @@ public:
 	
 	enum Endpoint { CHECK_IN, RESEND_KEY, REGISTER_NEW };
 
-	virtual wxString GetApiUrl( Endpoint ept ) = 0;
-	virtual wxString GetPostData( Endpoint ept ) = 0;
+	virtual bool GetApi( Endpoint ept, wxString *url, wxString *post ) = 0;
 
 	virtual void ShowHelp() = 0;
 	virtual wxString ReadProxy() = 0;
@@ -38,6 +38,9 @@ public:
 	wxOnlineRegistration( wxWindow *parent );
 
 	static void Init( wxOnlineRegistrationData * );	
+
+	static bool CheckRegistration();
+
 	static wxString GetEmail();
 	static wxString GetKey();
 	static wxString GetVersionAndPlatform();
