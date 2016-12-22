@@ -36,6 +36,7 @@ OBJECTS = \
 	type1.o \
 	clipper.o \
 	gleasy.o \
+	registration.o \
 	easycurl.o \
 	snaplay.o \
 	pagelayout.o \

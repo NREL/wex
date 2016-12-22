@@ -48,6 +48,7 @@ OBJECTS = \
 	radiochoice.o \
 	metro.o \
 	uiform.o \
+	registration.o \
 	tpdlg.o \
 	diurnal.o \
 	utils.o \
