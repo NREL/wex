@@ -116,8 +116,10 @@ private:
 		my_vm( wxLKScriptCtrl *lcs );
 		virtual bool on_run( const lk::srcpos_t &sp );
 	};
+	lk::bytecode m_bc;
 	my_vm m_vm;
-	wxString m_assembly, m_bytecode;
+
+	wxString m_assemblyText;
 	
 	bool m_scriptRunning;
 	bool m_stopScriptFlag;

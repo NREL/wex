@@ -2253,20 +2253,15 @@ bool wxLKScriptCtrl::CompileAndLoad( )
 	m_env->clear_vars();
 	m_env->clear_objs();
 
-	lk::code_gen cg;
-	if ( cg.emitasm( tree.get() ) )
+	lk::codegen cg;
+	if ( cg.generate( tree.get() ) )
 	{
-		std::vector<unsigned int> code;
-		std::vector<lk::vardata_t> data;
-		std::vector<lk_string> id;
-		std::vector<lk::srcpos_t> dbg;		
-
-		m_assembly.Clear();
-		m_bytecode.Clear();
-		cg.textout( m_assembly, m_bytecode );
-
-		cg.bytecode( code, data, id, dbg );
-		m_vm.load( code, data, id, dbg );
+		m_assemblyText.Clear();
+		wxString bcText;
+		cg.textout( m_assemblyText, bcText );
+		
+		cg.get( m_bc );
+		m_vm.load( &m_bc );
 		m_vm.initialize( m_env );
 		return true;
 	}
@@ -2289,7 +2284,7 @@ bool wxLKScriptCtrl::Debug( int mode )
 
 	m_debugger->Show();
 	
-	m_debugger->UpdateAssembly( wxStringTokenize( m_assembly, "\n" ) );
+	m_debugger->UpdateAssembly( wxStringTokenize( m_assemblyText, "\n" ) );
 
 	m_vm.clrbrk();
 	if ( mode == DEBUG_RUN )
@@ -2330,7 +2325,7 @@ bool wxLKScriptCtrl::Debug( int mode )
 	}
 	
 	size_t ip = m_vm.get_ip();
-	const std::vector<lk::srcpos_t> &dbg = m_vm.get_debuginfo();
+	const std::vector<lk::srcpos_t> &dbg = m_bc.debuginfo;
 	
 	// always update the view.
 	m_debugger->UpdateView();
