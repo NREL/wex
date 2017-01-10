@@ -29,8 +29,9 @@
 
 #include <wex/radiochoice.h>
 
-#ifdef __WXOSX__
+#if defined(__WXOSX__)||defined(__WXGTK__)
 #include <cmath>
+#undef wxIsNaN
 #define wxIsNaN(a) std::isnan(a)
 #endif
 

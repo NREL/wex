@@ -6,7 +6,7 @@
 
 #include "wex/plot/plaxis.h"
 
-#ifdef __WXOSX__
+#if defined(__WXOSX__)||defined(__WXGTK__)
 #define my_isnan(x) std::isnan(x)
 #else
 #define my_isnan(x) wxIsNaN(x)
