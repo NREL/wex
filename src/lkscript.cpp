@@ -2404,7 +2404,14 @@ bool wxLKScriptCtrl::Execute( )
 	}
 
 	if ( success ) OnOutput(wxString::Format("Elapsed time: %.1lf seconds.\n", 0.001*sw.Time()));
-	else OnOutput("Error: " + m_vm.error() );
+	else
+	{
+		if (wxYES == wxMessageBox("An error occurred in the script:\n\n" + m_vm.error() + "\n\nBreak into the debugger?", "Query", wxYES_NO ) )
+			success = Debug( DEBUG_RUN );
+		else
+			OnOutput("Error: " + m_vm.error() );
+	}
+
 			
 	m_env->clear_objs();
 
