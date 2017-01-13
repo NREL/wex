@@ -1370,6 +1370,12 @@ static void fcall_geocode( lk::invoke_t &cxt )
 	cxt.result().hash_item("ok").assign( ok ? 1.0 : 0.0 );
 }
 
+static void fcall_browse( lk::invoke_t &cxt )
+{
+	LK_DOC("browse", "Open a URL, local file, or folder using the default browser.", "(string:url):none");
+	::wxLaunchDefaultBrowser( cxt.arg(0).as_string() );
+}
+
 static void fcall_curl( lk::invoke_t &cxt )
 {
 	LK_DOC( "curl", "Issue a synchronous HTTP/HTTPS request.  Options are: 'post', 'message', 'file'.  If 'file' is specified, data is downloaded to that file and true/false is returned. Otherwise, the retrieved data is returned as a string.", 
@@ -1458,14 +1464,23 @@ lk::fcall_t* wxLKPlotFunctions()
 lk::fcall_t* wxLKMiscFunctions()
 {
 	static const lk::fcall_t vec[] = {
+		fcall_browse,
 		fcall_curl,
 		fcall_geocode,
 		fcall_apikeys,
+		fcall_rand,
+		0 };
+		
+	return (lk::fcall_t*)vec;
+}
+
+lk::fcall_t* wxLKFileFunctions()
+{
+	static const lk::fcall_t vec[] = {
 		fcall_csvread,
 		fcall_csvwrite,
 		fcall_csvconv,
 		fcall_decompress, 
-		fcall_rand,
 		0 };
 		
 	return (lk::fcall_t*)vec;
@@ -1711,14 +1726,25 @@ wxLKScriptCtrl::wxLKScriptCtrl( wxWindow *parent, int id,
 
 	SetLanguage( LK );
 	EnableCallTips( true );
-	
-	if( libs & wxLK_STDLIB_BASIC ) RegisterLibrary( lk::stdlib_basic(), "Standard Operations" );
-	if( libs & wxLK_STDLIB_STRING ) RegisterLibrary( lk::stdlib_string(), "String Functions" );
-	if( libs & wxLK_STDLIB_MATH ) RegisterLibrary( lk::stdlib_math(), "Math Functions" );
-	if( libs & wxLK_STDLIB_WXUI ) RegisterLibrary( lk::stdlib_wxui(), "User interface Functions" );
-	if( libs & wxLK_STDLIB_PLOT ) RegisterLibrary( wxLKPlotFunctions(), "Plotting Functions", this );
-	if( libs & wxLK_STDLIB_MISC ) RegisterLibrary( wxLKMiscFunctions(), "Misc Functions", this );
-	if( libs & wxLK_STDLIB_SOUT ) RegisterLibrary( wxLKStdOutFunctions(), "BIOS Functions", this );
+		
+	if( libs & wxLK_STDLIB_BASIC ) 
+		RegisterLibrary( lk::stdlib_basic(), "Basic Operations" );
+	if( libs & wxLK_STDLIB_SYSIO ) 
+		RegisterLibrary( lk::stdlib_sysio(), "System Input/Output" );
+	if( libs & wxLK_STDLIB_STRING ) 
+		RegisterLibrary( lk::stdlib_string(), "String Functions" );
+	if( libs & wxLK_STDLIB_MATH ) 
+		RegisterLibrary( lk::stdlib_math(), "Math Functions" );
+	if( libs & wxLK_STDLIB_WXUI ) 
+		RegisterLibrary( lk::stdlib_wxui(), "User interface Functions" );
+	if( libs & wxLK_STDLIB_PLOT ) 
+		RegisterLibrary( wxLKPlotFunctions(), "Plotting Functions", this );
+	if( libs & wxLK_STDLIB_MISC ) 
+		RegisterLibrary( wxLKMiscFunctions(), "Misc Functions", this );
+	if( libs & wxLK_STDLIB_FILE ) 
+		RegisterLibrary( wxLKFileFunctions(), "Data File Functions", this );
+	if( libs & wxLK_STDLIB_SOUT ) 
+		RegisterLibrary( wxLKStdOutFunctions(), "BIOS Functions", this );
 	
 	wxFont font( *wxNORMAL_FONT );
 	AnnotationSetStyleOffset( 512 );
@@ -2436,7 +2462,7 @@ class wxLKScriptWindow::MyScriptCtrl : public wxLKScriptCtrl
 public:
 	MyScriptCtrl( wxWindow *parent, int id, wxLKScriptWindow *scriptwin )
 		: wxLKScriptCtrl( parent, id, wxDefaultPosition, wxDefaultSize,
-			(wxLK_STDLIB_BASIC|wxLK_STDLIB_STRING|wxLK_STDLIB_MATH|wxLK_STDLIB_WXUI|wxLK_STDLIB_PLOT|wxLK_STDLIB_MISC|wxLK_STDLIB_SOUT) ),
+			(wxLK_STDLIB_ALL|wxLK_STDLIB_SOUT) ),
 		 m_scriptwin( scriptwin )
 	{
 		ShowFindInFilesButton( true );

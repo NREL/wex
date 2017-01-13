@@ -14,18 +14,23 @@
 #include "wex/utils.h"
 
 #define wxLK_STDLIB_BASIC  0x0001
-#define wxLK_STDLIB_STRING 0x0002
-#define wxLK_STDLIB_MATH   0x0004
-#define wxLK_STDLIB_WXUI   0x0008
-#define wxLK_STDLIB_PLOT   0x0010
-#define wxLK_STDLIB_MISC   0x0020
-#define wxLK_STDLIB_SOUT   0x0040 // out,outln via wxLKScriptCtrl::OnOutput() virtual method
+#define wxLK_STDLIB_SYSIO  0x0002
+#define wxLK_STDLIB_STRING 0x0004
+#define wxLK_STDLIB_MATH   0x0008
+#define wxLK_STDLIB_WXUI   0x0010
+#define wxLK_STDLIB_PLOT   0x0020
+#define wxLK_STDLIB_MISC   0x0040
+#define wxLK_STDLIB_FILE   0x0080
+#define wxLK_STDLIB_SOUT   0x0100 // out,outln via wxLKScriptCtrl::OnOutput() virtual method
 
-#define wxLK_STDLIB_ALL (wxLK_STDLIB_BASIC|wxLK_STDLIB_STRING| \
-	wxLK_STDLIB_MATH|wxLK_STDLIB_WXUI|wxLK_STDLIB_PLOT|wxLK_STDLIB_MISC) // by default don't include stdout functions
+#define wxLK_STDLIB_ALL \
+	(wxLK_STDLIB_BASIC|wxLK_STDLIB_SYSIO|wxLK_STDLIB_STRING \
+	|wxLK_STDLIB_MATH|wxLK_STDLIB_WXUI|wxLK_STDLIB_PLOT \
+	|wxLK_STDLIB_MISC|wxLK_STDLIB_FILE) // by default don't include stdout functions
 
-lk::fcall_t* wxLKPlotFunctions(); // newplot, plot, plotopt, plotpng
-lk::fcall_t* wxLKMiscFunctions(); // geocode, curl, apikeys, rand, decompress, jsonparse
+lk::fcall_t* wxLKPlotFunctions(); // newplot, plot, plotopt, plotout, gifanim
+lk::fcall_t* wxLKMiscFunctions(); // geocode, curl, apikeys, rand
+lk::fcall_t* wxLKFileFunctions(); // csvread, csvwrite, decompress
 lk::fcall_t* wxLKStdOutFunctions(); // out, outln:  must use an extended wxLKScriptCtrl that implements ::OnOutput()
 
 class wxPLPlotCtrl;
