@@ -281,7 +281,9 @@ wxOnlineRegistration::wxOnlineRegistration( wxWindow *parent )
 	grid->Add( label, 0, wxLEFT|wxTOP|wxBOTTOM|wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT, SPACE );
 
 	m_email = new wxTextCtrl( panel, ID_EMAIL, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE );
+#ifdef __WXMSW__
 	m_email->SetFont( font );
+#endif
 	grid->Add( m_email, 0, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, SPACE );
 	
 	m_register = new wxMetroButton( panel, ID_REGISTER, "Register" );
@@ -293,7 +295,9 @@ wxOnlineRegistration::wxOnlineRegistration( wxWindow *parent )
 	grid->Add( label, 0, wxLEFT|wxTOP|wxBOTTOM|wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT, SPACE );
 
 	m_key = new wxTextCtrl( panel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE );
+#ifdef __WXMSW__
 	m_key->SetFont( font );
+#endif
 	grid->Add( m_key, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, SPACE );
 	grid->Add( new wxMetroButton( panel, ID_CONFIRM, "Confirm" ), 0, wxALIGN_CENTER_VERTICAL|wxALIGN_CENTER|wxRIGHT, SPACE );
 
