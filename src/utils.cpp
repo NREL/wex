@@ -1441,15 +1441,16 @@ static void byteReverse(unsigned char *buf, unsigned longs)
 
 wxString wxGetMD5(const wxString &string)
 {
-	int lenght = string.Len();
-	//wxStringBuffer buf(string, lenght);
-
 	MD5_CTX ctx;
 	char tmp[40];		// MD5 are fixed sized to 32 chars
-	
+
+	char *buf = strdup( (const char*)string.c_str() );
+
 	MD5Init(&ctx);
-	MD5Update(&ctx, (const unsigned char*)string.GetData(), lenght*sizeof(wxChar));
+	MD5Update(&ctx, (unsigned char*)buf, strlen(buf) );
 	MD5End(&ctx, tmp);
+
+	free(buf);
 
 	return wxString(tmp, wxConvUTF8);
 }
