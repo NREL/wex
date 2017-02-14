@@ -40,6 +40,7 @@ public:
 	static void Init( wxOnlineRegistrationData * );	
 
 	static bool CheckRegistration();
+	static void EnableDebugMessages(bool b );
 
 	static wxString GetEmail();
 	static wxString GetKey();

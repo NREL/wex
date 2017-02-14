@@ -13,6 +13,13 @@
 
 #include <wex/registration.h>
 
+static bool gs_enDebug = false;
+
+void wxOnlineRegistration::EnableDebugMessages( bool b )
+{
+	gs_enDebug = b;
+}
+
 static wxOnlineRegistrationData *gs_regData = 0;
 wxOnlineRegistrationData::wxOnlineRegistrationData() {
 	// nothing to do
@@ -184,6 +191,7 @@ void wxOnlineRegistration::DecrementUsage()
 		wxString::Format("%d", CountSinceLastVerify()-1) );
 }
 	
+
 bool wxOnlineRegistration::CheckInWithServer( int *usage_count )
 {
 	if ( !gs_regData ) return false;
@@ -213,19 +221,18 @@ bool wxOnlineRegistration::CheckInWithServer( int *usage_count )
 	wxJSONReader reader;
 	wxString raw( curl.GetDataAsString() );
 
-#ifdef REGISTRATION_DEBUG
-	wxLogStatus("wxOnlineRegistration::CheckInWithServer");
-	wxLogStatus("\turl: " + url );
-	wxLogStatus("\tresponse: " + raw );
-#endif
+	if ( gs_enDebug )
+	{
+		wxLogStatus("wxOnlineRegistration::CheckInWithServer");
+		wxLogStatus("\turl: " + url );
+		wxLogStatus("\tpost: " + post );
+		wxLogStatus("\tresponse: " + raw );
+}
 
 	if ( reader.Parse( raw, &root ) == 0 )
 	{
 		int code = root.Item("status").AsInt();
-		
-#ifdef REGISTRATION_DEBUG
-		wxLogStatus("\tcode: %d", code);
-#endif
+		if ( gs_enDebug ) wxLogStatus("\tcode: %d", code);
 
 		if (code == 200)
 		{
@@ -405,19 +412,21 @@ void wxOnlineRegistration::OnRegister( wxCommandEvent & )
 	//	https://developer.nrel.gov/api/sam/v1/tracker/resend_key?api_key=SAMAPIKEY&email=someusersemail@somedomain.com
 		wxString url, post;
 		gs_regData->GetApi( wxOnlineRegistrationData::RESEND_KEY, &url, &post );
-
+		curl.SetPostData(post);
 		curl.Get( url );
 		
 		wxString raw( curl.GetDataAsString() );
 		if ( reader.Parse( raw, &root ) == 0 )
 			code = root.Item("status").AsInt();
 		
-#ifdef REGISTRATION_DEBUG
-		wxLogStatus("wxOnlineRegistration::OnRegister (Resend key)");
-		wxLogStatus("\turl: " + url);
-		wxLogStatus("\tresponse: " + raw );
-		wxLogStatus("\tcode: %d", code);
-#endif
+		if ( gs_enDebug )
+		{
+			wxLogStatus("wxOnlineRegistration::OnRegister (Resend key)");
+			wxLogStatus("\turl: " + url);
+			wxLogStatus("\tpost: " + post );
+			wxLogStatus("\tresponse: " + raw );
+			wxLogStatus("\tcode: %d", code);
+		}
 		
 		if ( code == 404 ) m_output->SetValue("No user exists with that email address." );
 		else if ( code == 200 ) m_output->SetValue("An email with your registration key has been sent to " + email + ". Paste the key from the email into the box above and click 'Confirm' to register.");
@@ -436,12 +445,14 @@ void wxOnlineRegistration::OnRegister( wxCommandEvent & )
 	if ( reader.Parse( raw, &root ) == 0 )
 		code = root.Item("status").AsInt();
 		
-#ifdef REGISTRATION_DEBUG
-	wxLogStatus("wxOnlineRegistration::OnRegister (Resend key)");
-	wxLogStatus("\turl: " + url);
-	wxLogStatus("\tpost: " + post );
-	wxLogStatus("\tcode: %d", code);
-#endif
+	if ( gs_enDebug )
+	{
+		wxLogStatus("wxOnlineRegistration::OnRegister (Resend key)");
+		wxLogStatus("\turl: " + url);
+		wxLogStatus("\tpost: " + post );
+		wxLogStatus("\tresponse: " + raw );
+		wxLogStatus("\tcode: %d", code);
+	}
 
 	if ( code == 200 ) m_output->SetValue( "Registration successful!  You have been sent an email with a registration key.");
 	else if ( code == 409 ) 
@@ -477,7 +488,9 @@ void wxOnlineRegistration::OnConfirm( wxCommandEvent & )
 		m_output->SetValue("The registration key could not be verified. Please check the key and internet connection.");
 	else
 	{
-		m_output->SetValue(wxString::Format("Registration successful!\n\nYou have used %s %d times.", 
+		m_output->SetValue(wxString::Format(
+			"Registration successful!\n\n"
+			"You have used %s %d times.", 
 			(const char*)gs_regData->GetAppName().c_str(), total_usage ));
 		wxYield();
 		wxMilliSleep( 1000 );
