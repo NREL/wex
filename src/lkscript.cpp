@@ -1291,30 +1291,62 @@ void fcall_csvread( lk::invoke_t &cxt )
 
 void fcall_csvwrite( lk::invoke_t &cxt )
 {
-	LK_DOC( "csvwrite", "Write a CSV file from a 2D array or table of arrays.", "(string:file, array or table:data):boolean" );
+	LK_DOC( "csvwrite", "Write a CSV file from a 2D array or table of arrays. Possible options: 'cols'=[column name list]", "(string:file, array or table:data, [table:options]):boolean" );
 
 	wxCSVData csv;
 
 	lk::vardata_t &data = cxt.arg(1).deref();
 	if ( data.type() == lk::vardata_t::HASH )
 	{
-		size_t col = 0;
-		for( lk::varhash_t::iterator it = data.hash()->begin();
-			it != data.hash()->end();
+		std::vector<lk_string> colnames;
+		if ( cxt.arg_count() > 2 && cxt.arg(2).type() == lk::vardata_t::HASH )
+		{
+			lk::vardata_t &opt = cxt.arg(2);
+
+			if ( lk::vardata_t *cl = opt.lookup( "cols" ) )
+			{
+				if ( cl->type() == lk::vardata_t::VECTOR )
+				{
+
+					for( size_t i=0;i<cl->length();i++ )
+					{
+						lk_string s = cl->index(i)->as_string();
+						if ( data.hash()->find( s ) != data.hash()->end() )
+							colnames.push_back( s );
+					}
+				}
+			}
+		}
+		
+		
+		if ( colnames.size() == 0 )
+		{
+			for( lk::varhash_t::iterator it = data.hash()->begin();
+				it != data.hash()->end();
+				++it )
+				colnames.push_back( it->first );
+		}
+
+		size_t icol = 0;
+		for( std::vector<lk_string>::iterator it = colnames.begin();
+			it != colnames.end();
 			++it )
 		{
-			csv(0,col) = it->first;
-
-			lk::vardata_t &dd = it->second->deref();
-			if ( dd.type() == lk::vardata_t::VECTOR )
+			lk::varhash_t::iterator itdd = data.hash()->find( *it );
+			if ( itdd != data.hash()->end() )
 			{
-				for( size_t row=0;row<dd.length();row++ )
-					csv(1+row,col) = dd.index(row)->as_string();
-			}
-			else
-				csv(1,col) = dd.as_string();
+				csv(0,icol) = itdd->first;
+				lk::vardata_t &dd = *itdd->second;
+				if ( dd.type() == lk::vardata_t::VECTOR )
+				{
+					for( size_t row=0;row<dd.length();row++ )
+						csv(1+row,icol) = dd.index(row)->as_string();
+				}
+				else
+					csv(1,icol) = dd.as_string();
 
-			col++;			
+				icol++;			
+			}
 		}
 	}
 	else if (data.type() == lk::vardata_t::VECTOR )
