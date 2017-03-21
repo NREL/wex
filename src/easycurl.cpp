@@ -305,7 +305,7 @@ public:
 		m_gauge = new wxGauge( this, wxID_ANY, 100, wxDefaultPosition, wxDefaultSize, wxGA_SMOOTH );
 
 		wxBoxSizer *sizer = new wxBoxSizer( wxVERTICAL );
-		sizer->Add( m_label, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxALIGN_LEFT, 10 );
+		sizer->Add( m_label, 0, wxALL|wxALIGN_LEFT, 10 );
 		sizer->Add( m_gauge, 0, wxALL|wxEXPAND|wxLEFT|wxRIGHT, 10 );
 		sizer->Add( CreateButtonSizer( wxCANCEL ), 0, wxALL|wxEXPAND, 10 );
 		SetSizerAndFit( sizer );
