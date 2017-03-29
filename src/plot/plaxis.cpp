@@ -12,6 +12,9 @@
 #define my_isnan(x) wxIsNaN(x)
 #endif
 
+#define AXIS_EPS 1e-13
+#define CHECK_RANGE_VALID if ( m_max <= m_min ) m_max = m_min + AXIS_EPS
+
 wxPLAxis::wxPLAxis()
 {
 	Init();
@@ -22,6 +25,9 @@ wxPLAxis::wxPLAxis( double min, double max, const wxString &label )
 	Init();
 	m_min = min;
 	m_max = max;
+
+	CHECK_RANGE_VALID;
+
 	m_label = label;
 }
 
@@ -58,7 +64,8 @@ wxPLAxis::~wxPLAxis()
 void wxPLAxis::SetWorld( double min, double max )
 {
 	m_min = min;
-	m_max = max;
+	m_max = max;	
+	CHECK_RANGE_VALID;;
 }
 
 void wxPLAxis::SetWorldMin( double min )
@@ -135,6 +142,8 @@ void wxPLAxis::ExtendBound( wxPLAxis *a )
 			}
 		}
 	}	
+
+	CHECK_RANGE_VALID;
 }
 
 void wxPLAxis::ExtendBoundsToNiceNumber(double *upper, double *lower)
@@ -206,6 +215,8 @@ wxPLAxis *wxPLLinearAxis::Duplicate()
 
 void wxPLLinearAxis::GetAxisTicks( double phys_min, double phys_max, std::vector<TickData> &list )
 {
+	if ( !std::isnormal( phys_min ) || !std::isnormal(phys_max) ) return;
+
 	std::vector<double> largeticks, smallticks;
 	CalcTicksFirstPass( phys_min, phys_max, largeticks, smallticks );
 	CalcTicksSecondPass( phys_min, phys_max, largeticks, smallticks );
@@ -227,7 +238,7 @@ void wxPLLinearAxis::GetAxisTicks( double phys_min, double phys_max, std::vector
 void wxPLLinearAxis::CalcTicksFirstPass(double phys_min, double phys_max, 
 		std::vector<double> &largeticks, std::vector<double> &smallticks)
 {
-	if ( m_min == m_max )
+	if ( m_min == m_max || !std::isnormal( phys_min ) || !std::isnormal(phys_max))
 		return;
 	
 	double adjustedMax = AdjustedWorldValue( m_max );
@@ -261,7 +272,7 @@ void wxPLLinearAxis::CalcTicksFirstPass(double phys_min, double phys_max,
 	double position = first;
 	int safetyCount = 0;
 	while ( (position <= adjustedMax)
-		&& (++safetyCount < 5000) )
+		&& (++safetyCount < 100) )
 	{
 		largeticks.push_back( position );
 		position += tickDist;
@@ -290,6 +301,8 @@ void wxPLLinearAxis::CalcTicksFirstPass(double phys_min, double phys_max,
 void wxPLLinearAxis::CalcTicksSecondPass(double phys_min, double phys_max, 
 		std::vector<double> &largeticks, std::vector<double> &smallticks)
 {
+	if ( !std::isnormal( phys_min ) || !std::isnormal(phys_max) ) return;
+
 		//return if already generated.
 	if (smallticks.size() > 0)
 		return;
@@ -341,7 +354,7 @@ double wxPLLinearAxis::DetermineLargeTickStep( double physical_len, bool &should
 {
 	should_cull_middle = false;
 
-	if ( m_min == m_max )
+	if ( fabs(m_max-m_min) < AXIS_EPS )
 		return 1.0;
 
 	// adjust world max and min for offset and scale properties of axis.
@@ -350,7 +363,7 @@ double wxPLLinearAxis::DetermineLargeTickStep( double physical_len, bool &should
 	double range = adjustedMax - adjustedMin;
 
 	// if axis has zero world length, then return arbitrary number.
-	if ( adjustedMax == adjustedMin )
+	if ( fabs(adjustedMax-adjustedMin) < AXIS_EPS )
 		return 1.0;
 
 	int minPhysLargeTickStep = 40;
