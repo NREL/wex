@@ -642,7 +642,7 @@ void wxDVDMapCtrl::OnDataChannelSelection(wxCommandEvent &)
 
 void wxDVDMapCtrl::OnSearch(wxCommandEvent& e)
 {
-	m_selector->Filter(m_srchCtrl->GetValue());
+	m_selector->Filter(m_srchCtrl->GetValue().Lower());
 }
 
 void wxDVDMapCtrl::OnColourMapSelection(wxCommandEvent &)

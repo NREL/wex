@@ -403,7 +403,7 @@ void wxDVPnCdfCtrl::OnDataChannelSelection(wxCommandEvent &)
 
 void wxDVPnCdfCtrl::OnSearch(wxCommandEvent& e)
 {
-	m_selector->Filter(m_srchCtrl->GetValue());
+	m_selector->Filter(m_srchCtrl->GetValue().Lower());
 }
 
 void wxDVPnCdfCtrl::OnEnterYMax(wxCommandEvent& e)

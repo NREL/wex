@@ -485,7 +485,7 @@ void wxDVProfileCtrl::OnSelAllMonths(wxCommandEvent& e)
 
 void wxDVProfileCtrl::OnSearch(wxCommandEvent& e)
 {
-	m_dataSelector->Filter(m_srchCtrl->GetValue());
+	m_dataSelector->Filter(m_srchCtrl->GetValue().Lower());
 }
 
 void wxDVProfileCtrl::SetMonthIndexSelected(int i, bool value)

@@ -392,7 +392,7 @@ void wxDVDCCtrl::OnDataChannelSelection(wxCommandEvent& e)
 
 void wxDVDCCtrl::OnSearch(wxCommandEvent& e)
 {
-	m_dataSelector->Filter(m_srchCtrl->GetValue());
+	m_dataSelector->Filter(m_srchCtrl->GetValue().Lower());
 }
 
 wxDVDCCtrl::PlotSet::PlotSet( wxDVTimeSeriesDataSet *ds )

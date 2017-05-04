@@ -358,5 +358,5 @@ void wxDVScatterPlotCtrl::RefreshPlot()
 
 void wxDVScatterPlotCtrl::OnSearch(wxCommandEvent& e)
 {
-	m_dataSelectionList->Filter(m_srchCtrl->GetValue());
+	m_dataSelectionList->Filter(m_srchCtrl->GetValue().Lower());
 }

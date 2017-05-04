@@ -1136,7 +1136,7 @@ void wxDVTimeSeriesCtrl::OnGraphScrollPageDown(wxScrollEvent& e)
 
 void wxDVTimeSeriesCtrl::OnSearch(wxCommandEvent& e)
 {
-	m_dataSelector->Filter(m_srchCtrl->GetValue());
+	m_dataSelector->Filter(m_srchCtrl->GetValue().Lower());
 }
 
 void wxDVTimeSeriesCtrl::OnDataChannelSelection(wxCommandEvent& e)
