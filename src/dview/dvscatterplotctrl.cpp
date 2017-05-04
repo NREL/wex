@@ -4,6 +4,7 @@
 
 #include <wx/wx.h>
 #include <wx/tokenzr.h>
+#include "wx/srchctrl.h"
 
 #include "wex/plot/plplotctrl.h"
 #include "wex/plot/plscatterplot.h"
@@ -55,6 +56,7 @@ enum { wxID_SCATTER_DATA_SELECTOR = wxID_HIGHEST + 1, wxID_PERFECT_AGREE_LINE };
 BEGIN_EVENT_TABLE(wxDVScatterPlotCtrl, wxPanel)
 	EVT_DVSELECTIONLIST( wxID_SCATTER_DATA_SELECTOR, wxDVScatterPlotCtrl::OnChannelSelection )
 	EVT_CHECKBOX(wxID_PERFECT_AGREE_LINE, wxDVScatterPlotCtrl::OnShowLine)
+	EVT_TEXT(wxID_ANY, wxDVScatterPlotCtrl::OnSearch)
 END_EVENT_TABLE()
 
 wxDVScatterPlotCtrl::wxDVScatterPlotCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos, 
@@ -66,7 +68,11 @@ wxDVScatterPlotCtrl::wxDVScatterPlotCtrl(wxWindow* parent, wxWindowID id, const 
 	m_plotSurface->SetBackgroundColour( *wxWHITE );
 	m_plotSurface->ShowLegend( false );
 
+	m_srchCtrl = new wxSearchCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxSize(150, -1), 0);
 	m_dataSelectionList = new wxDVSelectionListCtrl(this, wxID_SCATTER_DATA_SELECTOR, 2, wxDefaultPosition, wxDefaultSize, wxDVSEL_RADIO_FIRST_COL);
+	wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
+	sizer->Add(m_srchCtrl, 0, wxALL | wxEXPAND, 0);
+	sizer->Add(m_dataSelectionList, 0, wxALL | wxALIGN_CENTER, 0);
 
 	wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(mainSizer);
@@ -77,7 +83,7 @@ wxDVScatterPlotCtrl::wxDVScatterPlotCtrl(wxWindow* parent, wxWindowID id, const 
 
 	wxBoxSizer *topSizer = new wxBoxSizer(wxHORIZONTAL);
 	topSizer->Add(m_plotSurface, 1, wxEXPAND | wxALL, 10);
-	topSizer->Add(m_dataSelectionList, 0, wxEXPAND, 0);
+	topSizer->Add(sizer, 0, wxEXPAND, 0);
 
 	mainSizer->Add(optionsSizer, 0, wxEXPAND, 0);
 	mainSizer->Add(topSizer, 1, wxEXPAND | wxALL, 0);
@@ -348,4 +354,9 @@ void wxDVScatterPlotCtrl::RefreshPlot()
 
 	m_plotSurface->Invalidate();
 	m_plotSurface->Refresh();
+}
+
+void wxDVScatterPlotCtrl::OnSearch(wxCommandEvent& e)
+{
+	m_dataSelectionList->Filter(m_srchCtrl->GetValue());
 }

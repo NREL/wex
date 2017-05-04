@@ -5,6 +5,7 @@
 
 #include <wx/tokenzr.h>
 #include <wx/busyinfo.h>
+#include "wx/srchctrl.h"
 
 #include "wex/plot/pllineplot.h"
 
@@ -29,8 +30,13 @@ wxDVDCCtrl::wxDVDCCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos,
 	m_plotSurface->ShowLegend( false );
 	topSizer->Add(m_plotSurface, 1, wxEXPAND|wxALL, 10);
 
+	m_srchCtrl = new wxSearchCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxSize(150, -1), 0);
 	m_dataSelector = new wxDVSelectionListCtrl(this, wxID_DC_DATA_SELECTOR, 1);
-	topSizer->Add(m_dataSelector, 0, wxEXPAND, 0);
+	wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
+	sizer->Add(m_srchCtrl, 0, wxALL | wxEXPAND, 0);
+	sizer->Add(m_dataSelector, 0, wxALL | wxALIGN_CENTER, 0);
+
+	topSizer->Add(sizer, 0, wxEXPAND, 0);
 }
 
 wxDVDCCtrl::~wxDVDCCtrl()
@@ -47,6 +53,7 @@ wxDVDCCtrl::~wxDVDCCtrl()
 
 BEGIN_EVENT_TABLE(wxDVDCCtrl, wxPanel)
 	EVT_DVSELECTIONLIST(wxID_DC_DATA_SELECTOR, wxDVDCCtrl::OnDataChannelSelection)
+	EVT_TEXT(wxID_ANY, wxDVDCCtrl::OnSearch)
 END_EVENT_TABLE()
 
 
@@ -381,6 +388,11 @@ void wxDVDCCtrl::OnDataChannelSelection(wxCommandEvent& e)
 		HidePlotAtIndex(row);
 
 	m_plotSurface->Refresh();
+}
+
+void wxDVDCCtrl::OnSearch(wxCommandEvent& e)
+{
+	m_dataSelector->Filter(m_srchCtrl->GetValue());
 }
 
 wxDVDCCtrl::PlotSet::PlotSet( wxDVTimeSeriesDataSet *ds )

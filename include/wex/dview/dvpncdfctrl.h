@@ -15,6 +15,7 @@ class wxChoice;
 class wxTextCtrl;
 class wxCheckBox;
 class wxDVSelectionListCtrl;
+class wxSearchCtrl;
 
 class wxDVPnCdfCtrl : public wxPanel
 {
@@ -47,6 +48,7 @@ public:
 
 	// Event Handlers
 	void OnDataChannelSelection(wxCommandEvent& e);
+	void OnSearch(wxCommandEvent& e);
 
 	void OnEnterYMax( wxCommandEvent & );
 	void OnBinComboSelection( wxCommandEvent & );
@@ -64,6 +66,7 @@ private:
 	wxTextCtrl *m_maxTextBox;
 	
 	wxDVSelectionListCtrl *m_selector;
+	wxSearchCtrl * m_srchCtrl = NULL;
 	wxComboBox *m_binsCombo;
 	wxChoice *m_normalizeChoice;
 	wxCheckBox *m_hideZeros;

@@ -7,6 +7,7 @@
 class wxPLPlotCtrl;
 class wxDVSelectionListCtrl;
 class wxDVTimeSeriesDataSet;
+class wxSearchCtrl;
 
 class wxDVScatterPlotCtrl : public wxPanel
 {
@@ -29,11 +30,13 @@ public:
 	void OnChannelSelection( wxCommandEvent & );
 	void OnShowLine(wxCommandEvent &);
 	void RefreshPlot();
+	void OnSearch(wxCommandEvent& e);
 
 private:
 	std::vector<wxDVTimeSeriesDataSet*> m_dataSets;
 
 	wxDVSelectionListCtrl *m_dataSelectionList;
+	wxSearchCtrl * m_srchCtrl = NULL;
 	int m_xDataIndex;
 	std::vector<int> m_yDataIndices;
 

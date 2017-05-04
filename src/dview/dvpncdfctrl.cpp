@@ -2,6 +2,7 @@
 
 #include <wx/wx.h>
 #include <wx/busyinfo.h>
+#include "wx/srchctrl.h"
 
 #include "wex/plot/plplotctrl.h"
 #include "wex/plot/plhistplot.h"
@@ -26,6 +27,7 @@ BEGIN_EVENT_TABLE(wxDVPnCdfCtrl, wxPanel)
 	EVT_TEXT_ENTER(wxID_BIN_COMBO, wxDVPnCdfCtrl::OnBinTextEnter)
 	EVT_CHECKBOX(wxID_ANY, wxDVPnCdfCtrl::OnShowZerosClick)
 	EVT_CHOICE(wxID_PLOT_TYPE, wxDVPnCdfCtrl::OnPlotTypeSelection)
+	EVT_TEXT(wxID_ANY, wxDVPnCdfCtrl::OnSearch)
 END_EVENT_TABLE()
 
 wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos, 
@@ -44,8 +46,12 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos
 	
 	m_maxTextBox = new wxTextCtrl(this, wxID_Y_MAX_TB, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
 
+	m_srchCtrl = new wxSearchCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxSize(150, -1), 0);
 	m_selector = new wxDVSelectionListCtrl(this, ID_DATA_SELECTOR, 1, wxDefaultPosition, wxDefaultSize, wxDVSEL_RADIO_FIRST_COL|wxDVSEL_NO_COLOURS); 
-	
+	wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
+	sizer->Add(m_srchCtrl, 0, wxALL | wxEXPAND, 0);
+	sizer->Add(m_selector, 0, wxALL | wxALIGN_CENTER, 0);
+
 	m_hideZeros = new wxCheckBox(this, wxID_ANY, "Exclude Zero Values", wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
 
 	m_PlotTypeDisplayed = new wxChoice(this, wxID_PLOT_TYPE);
@@ -90,7 +96,7 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos
 	
 	wxBoxSizer *mainSizer = new wxBoxSizer( wxHORIZONTAL );
 	mainSizer->Add( leftSizer, 1, wxALL|wxEXPAND, 0 );
-	mainSizer->Add( m_selector, 0, wxALL|wxEXPAND, 0 );
+	mainSizer->Add( sizer, 0, wxALL|wxEXPAND, 0 );
 	SetSizer( mainSizer );
 
 	m_plotSurface->SetYAxis1( new wxPLLinearAxis(0, 100, "% of Data Points"));
@@ -393,6 +399,11 @@ void wxDVPnCdfCtrl::OnDataChannelSelection(wxCommandEvent &)
 	ChangePlotDataTo(m_dataSets[m_selectedDataSetIndex], true);
 	UpdateYAxisLabel();
 	InvalidatePlot();
+}
+
+void wxDVPnCdfCtrl::OnSearch(wxCommandEvent& e)
+{
+	m_selector->Filter(m_srchCtrl->GetValue());
 }
 
 void wxDVPnCdfCtrl::OnEnterYMax(wxCommandEvent& e)

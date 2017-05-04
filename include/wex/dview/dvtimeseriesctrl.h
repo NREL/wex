@@ -26,6 +26,7 @@ class wxCheckBox;
 class wxDVTimeSeriesPlot;
 class wxScrollBar;
 class wxRadioChoice;
+class wxSearchCtrl;
 
 enum wxDVStatType { wxDV_AVERAGE, wxDV_SUM };
 enum wxDVTimeSeriesType { wxDV_RAW, wxDV_HOURLY, wxDV_DAILY, wxDV_MONTHLY };
@@ -165,13 +166,13 @@ protected:
 	void OnGraphScrollLineDown(wxScrollEvent& e);
 	void OnGraphScrollPageUp(wxScrollEvent& e);
 	void OnGraphScrollPageDown(wxScrollEvent& e);
+	void OnSearch(wxCommandEvent& e);
+
 	/*
 	void OnPlotDrag(wxCommandEvent& e);
 	void OnPlotDragStart(wxCommandEvent& e);
 	void OnPlotDragEnd(wxCommandEvent& e);
 	*/
-	
-
 	
 	void AutoscaleYAxis(wxPLAxis* axisToScale, 
 		const std::vector<int>& selectedChannelIndices, bool forceUpdate = false, bool ScaleOverAllData = false);
@@ -195,6 +196,7 @@ private:
 	wxPLTimeAxis *m_xAxis;
 	wxScrollBar *m_graphScrollBar;
 	wxDVSelectionListCtrl *m_dataSelector;
+	wxSearchCtrl * m_srchCtrl = NULL;
 
 	bool m_topAutoScale,  m_top2AutoScale, m_bottomAutoScale, m_bottom2AutoScale;
 	wxDVTimeSeriesStyle m_style; // line, stepped

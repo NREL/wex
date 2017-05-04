@@ -24,6 +24,7 @@ class wxDVTimeSeriesDataSet;
 class wxPLColourMap;
 class wxDVDMapPlot;
 class wxDVSelectionListCtrl;
+class wxSearchCtrl;
 
 class wxDVDMapCtrl : public wxPanel
 {
@@ -88,6 +89,7 @@ public:
 
 	/*Event Handlers*/
 	void OnDataChannelSelection(wxCommandEvent& e);
+	void OnSearch(wxCommandEvent& e);
 
 	void OnColourMapSelection(wxCommandEvent& e);
 	void OnColourMapMinChanged(wxCommandEvent& e);
@@ -114,6 +116,7 @@ public:
 	void Invalidate(); // recalculate and rerender plot
 private:
 	wxDVSelectionListCtrl *m_selector;
+	wxSearchCtrl * m_srchCtrl = NULL;
 	wxChoice *m_colourMapSelector;
 	wxCheckBox *m_reverseColours;
 

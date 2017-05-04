@@ -2,6 +2,7 @@
 #include <wx/choice.h>
 #include <wx/scrolbar.h>
 #include <wx/textctrl.h>
+#include "wx/srchctrl.h"
 
 #include "wex/plot/plplotctrl.h"
 #include "wex/plot/plaxis.h"
@@ -156,6 +157,8 @@ BEGIN_EVENT_TABLE(wxDVDMapCtrl, wxPanel)
 	EVT_COMMAND_SCROLL_PAGEUP(ID_GRAPH_Y_SCROLLBAR, wxDVDMapCtrl::OnYScrollPageUp)
 	EVT_COMMAND_SCROLL_PAGEDOWN(ID_GRAPH_Y_SCROLLBAR, wxDVDMapCtrl::OnYScrollPageDown)
 
+	EVT_TEXT(wxID_ANY, wxDVDMapCtrl::OnSearch)
+
 END_EVENT_TABLE()
 
 wxDVDMapCtrl::wxDVDMapCtrl(wxWindow* parent, wxWindowID id, 
@@ -213,8 +216,12 @@ wxDVDMapCtrl::wxDVDMapCtrl(wxWindow* parent, wxWindowID id,
 	scrollSizer->Add( zoom_out, 0, wxALL|wxEXPAND, 1);
 	scrollSizer->Add( zoom_fit , 0, wxALL|wxEXPAND, 1);
 
+	m_srchCtrl = new wxSearchCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxSize(150, -1), 0);
 	m_selector = new wxDVSelectionListCtrl(this, ID_DATA_SELECTOR, 1, wxDefaultPosition, wxDefaultSize, wxDVSEL_RADIO_FIRST_COL|wxDVSEL_NO_COLOURS); 
-	
+	wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
+	sizer->Add(m_srchCtrl, 0, wxALL | wxEXPAND, 0);
+	sizer->Add(m_selector, 0, wxALL | wxALIGN_CENTER, 0);
+
 	wxBoxSizer *horizPlotSizer = new wxBoxSizer(wxHORIZONTAL);
 	horizPlotSizer->Add( m_plotSurface, 1, wxEXPAND|wxALL, 0);
 //	horizPlotSizer->Add(m_yGraphScroller, 0, wxALL | wxEXPAND | wxALIGN_CENTER_VERTICAL, 0);
@@ -239,7 +246,7 @@ wxDVDMapCtrl::wxDVDMapCtrl(wxWindow* parent, wxWindowID id,
 
 	wxBoxSizer *mainSizer = new wxBoxSizer( wxHORIZONTAL );
 	mainSizer->Add( leftSizer, 1, wxALL|wxEXPAND, 0 );
-	mainSizer->Add( m_selector, 0, wxALL|wxEXPAND, 0 );
+	mainSizer->Add( sizer, 0, wxALL|wxEXPAND, 0 );
 	SetSizer( mainSizer );
 }
 
@@ -631,6 +638,11 @@ void wxDVDMapCtrl::OnDataChannelSelection(wxCommandEvent &)
 	m_selector->GetLastEventInfo( &row, 0, &isChecked );
 	if ( row >= 0 && row < (int)m_dataSets.size() )
 		ChangePlotDataTo( m_dataSets[row] );
+}
+
+void wxDVDMapCtrl::OnSearch(wxCommandEvent& e)
+{
+	m_selector->Filter(m_srchCtrl->GetValue());
 }
 
 void wxDVDMapCtrl::OnColourMapSelection(wxCommandEvent &)

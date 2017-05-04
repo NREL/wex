@@ -8,6 +8,7 @@
 class wxDVTimeSeriesDataSet;
 class wxPLLinePlot;
 class wxDVSelectionListCtrl;
+class wxSearchCtrl;
 
 class wxDVDCCtrl : public wxPanel
 {
@@ -32,10 +33,12 @@ public:
 
 	//Event Handlers
 	void OnDataChannelSelection(wxCommandEvent& e);
+	void OnSearch(wxCommandEvent& e);
 
 private:
 	wxPLPlotCtrl *m_plotSurface;
 	wxDVSelectionListCtrl *m_dataSelector;
+	wxSearchCtrl * m_srchCtrl = NULL;
 
 	struct PlotSet
 	{
@@ -51,7 +54,6 @@ private:
 	std::vector<int> m_currentlyShownIndices;
 
 	void CalculateDCPlotData( PlotSet *p );
-
 
 	DECLARE_EVENT_TABLE()
 };

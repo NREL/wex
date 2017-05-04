@@ -15,6 +15,7 @@
 #include <wx/tokenzr.h>
 #include <wx/statline.h>
 #include <wx/gdicmn.h>
+#include "wx/srchctrl.h"
 
 #include "wex/plot/pllineplot.h"
 
@@ -754,7 +755,6 @@ void wxDVTimeSeriesSettingsDialog::OnClickStatHandler(wxCommandEvent& event)
 	SetStatType( mStatTypeCheck->IsChecked() ? wxDV_SUM : wxDV_AVERAGE );
 }
 
-
 enum{
 		ID_DATA_CHANNEL_SELECTOR = wxID_HIGHEST+1, 
 		ID_GRAPH_SCROLLBAR,
@@ -778,6 +778,8 @@ BEGIN_EVENT_TABLE(wxDVTimeSeriesCtrl, wxPanel)
 	//EVT_COMMAND_SCROLL_CHANGED(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrl::OnGraphScroll)
 	EVT_COMMAND_SCROLL_PAGEDOWN(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrl::OnGraphScrollPageDown)
 	EVT_COMMAND_SCROLL_PAGEUP(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrl::OnGraphScrollPageUp)
+
+	EVT_TEXT(wxID_ANY, wxDVTimeSeriesCtrl::OnSearch)
 
 END_EVENT_TABLE()
 
@@ -828,15 +830,19 @@ wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, wxDVTime
 	scrollerAndZoomSizer->Add( pref_btn, 0, wxALL|wxEXPAND, 1);
 	
 	//Contains boxes to turn lines on or off.
+	m_srchCtrl = new wxSearchCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxSize(150, -1), 0);
 	m_dataSelector = new wxDVSelectionListCtrl(this, ID_DATA_CHANNEL_SELECTOR, 2);
-		
+	wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
+	sizer->Add(m_srchCtrl, 0, wxALL | wxEXPAND, 0);
+	sizer->Add(m_dataSelector, 0, wxALL | wxALIGN_CENTER, 0);
+
 	wxBoxSizer *graph_sizer = new wxBoxSizer(wxVERTICAL);	
 	graph_sizer->Add( m_plotSurface, 1, wxEXPAND|wxALL, 4);
 	graph_sizer->Add( scrollerAndZoomSizer, 0, wxEXPAND|wxALL, 0);
 
 	wxBoxSizer *top_sizer = new wxBoxSizer(wxHORIZONTAL);
 	top_sizer->Add( graph_sizer, 1, wxALL|wxEXPAND, 0 );
-	top_sizer->Add( m_dataSelector, 0, wxEXPAND, 0);
+	top_sizer->Add( sizer, 0, wxEXPAND, 0);
 	SetSizer(top_sizer);
 
 	for (int i=0; i<GRAPH_AXIS_POSITION_COUNT; i++)
@@ -1127,6 +1133,12 @@ void wxDVTimeSeriesCtrl::OnGraphScrollPageDown(wxScrollEvent& e)
 {
 	PanByPercent(1.0);
 }
+
+void wxDVTimeSeriesCtrl::OnSearch(wxCommandEvent& e)
+{
+	m_dataSelector->Filter(m_srchCtrl->GetValue());
+}
+
 void wxDVTimeSeriesCtrl::OnDataChannelSelection(wxCommandEvent& e)
 {
 	int row, col;

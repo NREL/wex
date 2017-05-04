@@ -2,6 +2,7 @@
 #include <wx/sizer.h>
 #include <wx/dcbuffer.h>
 #include <wx/tokenzr.h>
+#include "wx/srchctrl.h"
 
 #include "wex/plot/plplotctrl.h"
 #include "wex/plot/pllineplot.h"
@@ -170,6 +171,7 @@ BEGIN_EVENT_TABLE(wxDVProfileCtrl, wxPanel)
 	EVT_DVSELECTIONLIST( ID_DATA_SELECTOR, wxDVProfileCtrl::OnDataChannelSelection )
 	EVT_COMMAND_RANGE( ID_JAN_CHECK, ID_ANNUAL_CHECK, wxEVT_COMMAND_CHECKBOX_CLICKED, wxDVProfileCtrl::OnMonthSelection )
 	EVT_CHECKBOX( ID_SEL_ALL_CHECK, wxDVProfileCtrl::OnSelAllMonths )
+	EVT_TEXT(wxID_ANY, wxDVProfileCtrl::OnSearch)
 END_EVENT_TABLE()
 
 wxDVProfileCtrl::wxDVProfileCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos, 
@@ -238,11 +240,15 @@ wxDVProfileCtrl::wxDVProfileCtrl(wxWindow* parent, wxWindowID id, const wxPoint&
 	left_sizer->Add( monthSelector, 0, wxEXPAND, 0 );	
 	left_sizer->Add(graphsAndAxisLabel, 1, wxEXPAND, 0);
 
+	m_srchCtrl = new wxSearchCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxSize(150, -1), 0);
 	m_dataSelector = new wxDVSelectionListCtrl(this, ID_DATA_SELECTOR, 1); 
+	wxBoxSizer * sizer = new wxBoxSizer(wxVERTICAL);
+	sizer->Add(m_srchCtrl, 0, wxALL | wxEXPAND, 0);
+	sizer->Add(m_dataSelector, 0, wxALL | wxALIGN_CENTER, 0);
 
 	wxBoxSizer *main_sizer = new wxBoxSizer( wxHORIZONTAL );
 	main_sizer->Add( left_sizer, 1, wxALL|wxEXPAND, 0 );
-	main_sizer->Add( m_dataSelector, 0, wxALL|wxEXPAND, 0 );
+	main_sizer->Add( sizer, 0, wxALL|wxEXPAND, 0 );
 	SetSizer( main_sizer );
 }
 
@@ -477,6 +483,10 @@ void wxDVProfileCtrl::OnSelAllMonths(wxCommandEvent& e)
 	Refresh();
 }
 
+void wxDVProfileCtrl::OnSearch(wxCommandEvent& e)
+{
+	m_dataSelector->Filter(m_srchCtrl->GetValue());
+}
 
 void wxDVProfileCtrl::SetMonthIndexSelected(int i, bool value)
 {

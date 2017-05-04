@@ -11,6 +11,7 @@ class wxPLLinePlot;
 class wxDVSelectionListCtrl;
 class wxGridSizer;
 class wxCheckBox;
+class wxSearchCtrl;
 
 class wxDVProfileCtrl : public wxPanel
 {
@@ -45,6 +46,7 @@ private:
 	void OnDataChannelSelection(wxCommandEvent& e);
 	void OnMonthSelection(wxCommandEvent& e);
 	void OnSelAllMonths(wxCommandEvent& e);
+	void OnSearch(wxCommandEvent& e);
 	
 	struct PlotSet
 	{
@@ -60,6 +62,7 @@ private:
 
 	std::vector<PlotSet*> m_plots; //12 months of a day of data for each added data set.
 	wxDVSelectionListCtrl *m_dataSelector;
+	wxSearchCtrl * m_srchCtrl = NULL;
 	wxCheckBox *m_monthCheckBoxes[13];
 	wxPLPlotCtrl *m_plotSurfaces[13];
 	int m_numberOfPlotSurfacesShown;
