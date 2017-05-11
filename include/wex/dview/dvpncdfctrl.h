@@ -66,7 +66,7 @@ private:
 	wxTextCtrl *m_maxTextBox;
 	
 	wxDVSelectionListCtrl *m_selector;
-	wxSearchCtrl * m_srchCtrl = NULL;
+	wxSearchCtrl *m_srchCtrl;
 	wxComboBox *m_binsCombo;
 	wxChoice *m_normalizeChoice;
 	wxCheckBox *m_hideZeros;
