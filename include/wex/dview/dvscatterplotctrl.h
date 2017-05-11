@@ -36,7 +36,7 @@ private:
 	std::vector<wxDVTimeSeriesDataSet*> m_dataSets;
 
 	wxDVSelectionListCtrl *m_dataSelectionList;
-	wxSearchCtrl * m_srchCtrl = NULL;
+	wxSearchCtrl *m_srchCtrl;
 	int m_xDataIndex;
 	std::vector<int> m_yDataIndices;
 

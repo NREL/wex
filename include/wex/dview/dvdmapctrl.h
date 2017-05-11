@@ -116,7 +116,7 @@ public:
 	void Invalidate(); // recalculate and rerender plot
 private:
 	wxDVSelectionListCtrl *m_selector;
-	wxSearchCtrl * m_srchCtrl = NULL;
+	wxSearchCtrl *m_srchCtrl;
 	wxChoice *m_colourMapSelector;
 	wxCheckBox *m_reverseColours;
 

@@ -166,7 +166,7 @@ wxDVDMapCtrl::wxDVDMapCtrl(wxWindow* parent, wxWindowID id,
 	: wxPanel(parent, id, pos, size, wxTAB_TRAVERSAL)
 {
 	m_currentlyShownDataSet = 0;
-
+	m_srchCtrl = NULL;
 	m_colourMap = new wxPLJetColourMap(0, 24);
 
 	m_plotSurface = new wxPLPlotCtrl( this, ID_DMAP_SURFACE );

@@ -62,7 +62,7 @@ private:
 
 	std::vector<PlotSet*> m_plots; //12 months of a day of data for each added data set.
 	wxDVSelectionListCtrl *m_dataSelector;
-	wxSearchCtrl * m_srchCtrl = NULL;
+	wxSearchCtrl *m_srchCtrl;
 	wxCheckBox *m_monthCheckBoxes[13];
 	wxPLPlotCtrl *m_plotSurfaces[13];
 	int m_numberOfPlotSurfacesShown;

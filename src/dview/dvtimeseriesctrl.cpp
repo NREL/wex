@@ -789,6 +789,7 @@ wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, wxDVTime
 	: wxPanel(parent, id)
 {	
 	SetBackgroundColour( *wxWHITE );
+	m_srchCtrl = NULL;
 	m_stackingOnYLeft = false;
 	m_topAutoScale = false;
 	m_top2AutoScale = false;

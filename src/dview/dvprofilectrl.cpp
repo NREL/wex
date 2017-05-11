@@ -178,7 +178,7 @@ wxDVProfileCtrl::wxDVProfileCtrl(wxWindow* parent, wxWindowID id, const wxPoint&
 		const wxSize& size, long style, const wxString& name)
 		: wxPanel(parent, id, pos, size, style, name)
 {
-
+	m_srchCtrl = NULL;
 	wxScrolledWindow *monthSelector = new wxScrolledWindow (this, wxID_ANY, 
 		wxDefaultPosition, wxDefaultSize, wxHSCROLL);
 	wxBoxSizer *monthSizer = new wxBoxSizer( wxHORIZONTAL );

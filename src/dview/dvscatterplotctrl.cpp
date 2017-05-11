@@ -63,6 +63,8 @@ wxDVScatterPlotCtrl::wxDVScatterPlotCtrl(wxWindow* parent, wxWindowID id, const 
 	const wxSize& size, long style, const wxString& name)
 	: wxPanel(parent, id, pos, size, style, name)
 {
+	m_srchCtrl = NULL;
+
 	m_plotSurface = new wxPLPlotCtrl(this, wxID_ANY);
 	m_plotSurface->ShowTitle( false );
 	m_plotSurface->SetBackgroundColour( *wxWHITE );
