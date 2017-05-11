@@ -23,7 +23,7 @@ wxDVDCCtrl::wxDVDCCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos,
 {
 	wxBoxSizer *topSizer = new wxBoxSizer (wxHORIZONTAL);
 	SetSizer(topSizer);
-
+	m_srchCtrl = NULL;
 	m_plotSurface = new wxPLPlotCtrl(this, wxID_ANY);
 	m_plotSurface->SetBackgroundColour( *wxWHITE );
 	m_plotSurface->ShowTitle( false );

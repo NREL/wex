@@ -38,7 +38,7 @@ public:
 private:
 	wxPLPlotCtrl *m_plotSurface;
 	wxDVSelectionListCtrl *m_dataSelector;
-	wxSearchCtrl * m_srchCtrl = NULL;
+	wxSearchCtrl * m_srchCtrl;
 
 	struct PlotSet
 	{
