@@ -13,6 +13,8 @@
 
 #include <wex/registration.h>
 
+#define REGISTRATION_DEBUG 1
+
 static wxOnlineRegistrationData *gs_regData = 0;
 wxOnlineRegistrationData::wxOnlineRegistrationData() {
 	// nothing to do
