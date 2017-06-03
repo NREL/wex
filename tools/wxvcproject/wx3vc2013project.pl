@@ -1,8 +1,10 @@
 #!/usr/bin/perl
+use Cwd;
 use File::Copy;
 use File::Path qw(make_path remove_tree);
-
-chomp( $guid = uc(`GuidGenConsole.exe`) );
+$wd = getcwd();
+print "CWD=$wd\n";
+chomp( $guid = uc(`$wd/GuidGenConsole.exe`) );
 
 print "GUID=$guid\n";
 
