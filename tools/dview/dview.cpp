@@ -31,6 +31,7 @@
 #include "wex/plot/plplotctrl.h"
 #include "wex/plot/pllineplot.h"
 #include "wex/plot/plscatterplot.h"
+#include "wex/utils.h"
 
 #define MAX_RECENT 25
 enum{ 
@@ -379,6 +380,8 @@ private:
 public:
 	bool OnInit()
 	{
+		wxMakeProcessDPIAware();
+
 		//wxApp::OnInit handles all of our command line argument stuff.
 		if (!wxApp::OnInit())
 			return false;
