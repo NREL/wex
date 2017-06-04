@@ -126,7 +126,7 @@ wxString wxOnlineRegistration::GetKey()
 	wxString key;
 	if ( !GetFileRegistration( 0, &key ) )
 		key = gs_regData->ReadSetting( "user-key-" + GetVersionAndPlatform() );
-	return key.Left(36);
+	return key.Left(36); // registration error on OS X with key repeated 11 times.
 }
 
 #define MAX_ATTEMPTS 15
