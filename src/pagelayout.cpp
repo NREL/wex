@@ -326,8 +326,8 @@ bool wxPagePdfRenderer::Render( const wxString &pdf_file )
 		wxString h = m_pageList[i].header;
 		if ( !h.IsEmpty() )
 		{
-			h.Replace("@PAGENUM@", wxString::Format("%d", i+1));
-			h.Replace("@PAGECOUNT@", wxString::Format("%d", m_pageList.size()));
+			h.Replace("@PAGENUM@", wxString::Format("%d", (int)i+1));
+			h.Replace("@PAGECOUNT@", wxString::Format("%d", (int)m_pageList.size()));
 			h.Replace("@DATETIME@", wxNow());
 
 			dv.Color( *wxLIGHT_GREY );
@@ -338,8 +338,8 @@ bool wxPagePdfRenderer::Render( const wxString &pdf_file )
 		wxString f = m_pageList[i].footer;
 		if ( !f.IsEmpty() )
 		{		
-			f.Replace("@PAGENUM@", wxString::Format("%d", i+1));
-			f.Replace("@PAGECOUNT@", wxString::Format("%d", m_pageList.size()));
+			f.Replace("@PAGENUM@", wxString::Format("%d", (int)i+1));
+			f.Replace("@PAGECOUNT@", wxString::Format("%d", (int)m_pageList.size()));
 			f.Replace("@DATETIME@", wxNow());
 			
 			dv.Color( *wxLIGHT_GREY );
