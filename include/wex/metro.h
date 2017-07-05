@@ -1,3 +1,27 @@
+/***********************************************************************************************************************
+*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+*  following conditions are met:
+*
+*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+*  disclaimer.
+*
+*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+*  following disclaimer in the documentation and/or other materials provided with the distribution.
+*
+*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
+*  products derived from this software without specific prior written permission from the respective party.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
+*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**********************************************************************************************************************/
+
 #ifndef __wexmetro_h
 #define __wexmetro_h
 
@@ -12,21 +36,19 @@
 #include <wx/popupwin.h>
 #include <wx/bookctrl.h>
 
-
 class wxMetroThemeProvider
 {
 public:
 	virtual ~wxMetroThemeProvider();
-	virtual wxFont Font( int style, int size );
-	virtual wxColour Colour( int id );
-	virtual wxBitmap Bitmap( int id, bool light );
+	virtual wxFont Font(int style, int size);
+	virtual wxColour Colour(int id);
+	virtual wxBitmap Bitmap(int id, bool light);
 };
-
 
 enum {
 	// fonts
 	wxMT_NORMAL,
-	wxMT_LIGHT, 
+	wxMT_LIGHT,
 	wxMT_SEMIBOLD,
 	wxMT_SEMILIGHT,
 
@@ -52,14 +74,13 @@ enum {
 class wxMetroTheme
 {
 public:
-	static void SetTheme( wxMetroThemeProvider *theme );
+	static void SetTheme(wxMetroThemeProvider *theme);
 	static wxMetroThemeProvider &GetTheme();
 
-	static wxFont Font( int style = wxMT_NORMAL, int size = -1 );
-	static wxColour Colour( int id );
-	static wxBitmap Bitmap( int id, bool light = true );
+	static wxFont Font(int style = wxMT_NORMAL, int size = -1);
+	static wxColour Colour(int id);
+	static wxBitmap Bitmap(int id, bool light = true);
 };
-
 
 // widget styles for
 
@@ -74,15 +95,15 @@ class wxMetroButton : public wxWindow
 {
 public:
 	wxMetroButton(wxWindow *parent, int id, const wxString &label, const wxBitmap &bitmap = wxNullBitmap,
-			const wxPoint &pos=wxDefaultPosition, const wxSize &sz=wxDefaultSize,
-			long style = 0);
-	
+		const wxPoint &pos = wxDefaultPosition, const wxSize &sz = wxDefaultSize,
+		long style = 0);
+
 	wxSize DoGetBestSize() const;
-	void SetLabel( const wxString &l ) { m_label = l; InvalidateBestSize();}
+	void SetLabel(const wxString &l) { m_label = l; InvalidateBestSize(); }
 	wxString GetLabel() const { return m_label; }
-	void SetBitmap( const wxBitmap &b ) { m_bitmap = b; InvalidateBestSize(); }
+	void SetBitmap(const wxBitmap &b) { m_bitmap = b; InvalidateBestSize(); }
 	wxBitmap GetBitmap() const { return m_bitmap; }
-	void SetStyle( long sty ) { m_style = sty; InvalidateBestSize(); }
+	void SetStyle(long sty) { m_style = sty; InvalidateBestSize(); }
 	long GetStyle() const { return m_style; }
 
 private:
@@ -104,9 +125,7 @@ private:
 	DECLARE_EVENT_TABLE()
 };
 
-
 class wxSimplebook;
-
 
 // styles for wxMetroTabList, wxMetroNotebook
 #define wxMT_LIGHTTHEME 0x01
@@ -117,37 +136,37 @@ class wxSimplebook;
 class wxMetroTabList : public wxWindow
 {
 public:
-	wxMetroTabList( wxWindow *parent, int id = wxID_ANY,
+	wxMetroTabList(wxWindow *parent, int id = wxID_ANY,
 		const wxPoint &pos = wxDefaultPosition,
 		const wxSize &size = wxDefaultSize,
-		long style = 0 );
+		long style = 0);
 
-	void Append( const wxString &label, bool button = false, bool shown=true );
-	void Insert( const wxString &label, size_t pos, bool button = false, bool shown=true );
-	void Remove( const wxString &label );
-	void RemoveAt( size_t n );
-	int Find( const wxString &label );
+	void Append(const wxString &label, bool button = false, bool shown = true);
+	void Insert(const wxString &label, size_t pos, bool button = false, bool shown = true);
+	void Remove(const wxString &label);
+	void RemoveAt(size_t n);
+	int Find(const wxString &label);
 	void Clear();
 	size_t Count();
-	wxString GetLabel( size_t idx );
+	wxString GetLabel(size_t idx);
 	wxArrayString GetLabels();
-	void SetLabel( size_t idx, const wxString &text );
-	void SetSelection( size_t idx );
+	void SetLabel(size_t idx, const wxString &text);
+	void SetSelection(size_t idx);
 	size_t GetSelection();
 	wxString GetStringSelection();
-	void ReorderLeft( size_t idx );
-	void ReorderRight( size_t idx );
+	void ReorderLeft(size_t idx);
+	void ReorderRight(size_t idx);
 	void HideItem(size_t idx);
 	void ShowItem(size_t idx);
-	
-	wxPoint GetPopupMenuPosition( int index );
-	
+
+	wxPoint GetPopupMenuPosition(int index);
+
 	wxSize DoGetBestSize() const;
 
 protected:
 	struct item
 	{
-		item( const wxString &l, bool bb, bool shw) : label(l), x_start(0), width(0), shown(shw), button(bb), visible(true) { }
+		item(const wxString &l, bool bb, bool shw) : label(l), x_start(0), width(0), shown(shw), button(bb), visible(true) { }
 		item(const item &x) : label(x.label), x_start(x.x_start), width(x.width), shown(x.shown), button(x.button), visible(true) { }
 		wxString label;
 		int x_start;
@@ -188,28 +207,28 @@ protected:
 class wxMetroNotebook : public wxBookCtrlBase
 {
 public:
-	wxMetroNotebook(wxWindow *parent, int id=-1, 
+	wxMetroNotebook(wxWindow *parent, int id=-1,
 		const wxPoint &pos=wxDefaultPosition, const wxSize &sz=wxDefaultSize, long style = 0 );
 
-    virtual bool SetPageText(size_t n, const wxString& strText);
-    virtual wxString GetPageText(size_t n) const;
-    virtual int GetPageImage(size_t n) const;
-    virtual bool SetPageImage(size_t n, int imageId);
-    virtual bool InsertPage(size_t n,
-                            wxWindow *page,
-                            const wxString& text,
-                            bool bSelect = false,
-                            int imageId = NO_IMAGE);
-    virtual int SetSelection(size_t n);
-    virtual int ChangeSelection(size_t n);
+	virtual bool SetPageText(size_t n, const wxString& strText);
+	virtual wxString GetPageText(size_t n) const;
+	virtual int GetPageImage(size_t n) const;
+	virtual bool SetPageImage(size_t n, int imageId);
+	virtual bool InsertPage(size_t n,
+		wxWindow *page,
+		const wxString& text,
+		bool bSelect = false,
+		int imageId = NO_IMAGE);
+	virtual int SetSelection(size_t n);
+	virtual int ChangeSelection(size_t n);
 	virtual bool DeleteAllPages();
 	virtual void UpdateSelectedPage(size_t newsel);
 	virtual void MakeChangedEvent(wxBookCtrlEvent &evt);
 	virtual wxBookCtrlEvent* wxMetroNotebook::CreatePageChangingEvent() const;
 
 protected:
-	void OnTabListChanged( wxCommandEvent & );
-    virtual wxWindow *DoRemovePage(size_t page);
+	void OnTabListChanged(wxCommandEvent &);
+	virtual wxWindow *DoRemovePage(size_t page);
 	wxMetroTabList *GetTabs() const { return (wxMetroTabList*)m_bookctrl; }
 
 	DECLARE_EVENT_TABLE();
@@ -220,29 +239,29 @@ protected:
 class wxMetroNotebook : public wxWindow
 {
 public:
-	wxMetroNotebook(wxWindow *parent, int id=-1, 
-		const wxPoint &pos=wxDefaultPosition, const wxSize &sz=wxDefaultSize, long style = 0 );
+	wxMetroNotebook(wxWindow *parent, int id = -1,
+		const wxPoint &pos = wxDefaultPosition, const wxSize &sz = wxDefaultSize, long style = 0);
 
-	void AddPage(wxWindow *win, const wxString &text, bool active=false, bool button=false);
-	void AddScrolledPage(wxWindow *win, const wxString &text, bool active=false, bool button=false);
+	void AddPage(wxWindow *win, const wxString &text, bool active = false, bool button = false);
+	void AddScrolledPage(wxWindow *win, const wxString &text, bool active = false, bool button = false);
 	size_t GetPageCount() const;
-	wxWindow *RemovePage( size_t index );
-	void DeletePage( size_t index );
+	wxWindow *RemovePage(size_t index);
+	void DeletePage(size_t index);
 	int GetPageIndex(wxWindow *win);
-	wxWindow *GetPage( size_t index );
-	void HidePage( size_t index );
-	void ShowPage( size_t index );
-	
+	wxWindow *GetPage(size_t index);
+	void HidePage(size_t index);
+	void ShowPage(size_t index);
+
 	int GetSelection() const;
 	void SetSelection(size_t id);
 	void SetText(size_t id, const wxString &text);
-	wxString GetText( size_t id ) const;
+	wxString GetText(size_t id) const;
 	wxString GetSelectionText() const;
-	
-	wxPoint GetPopupMenuPosition( int index );
+
+	wxPoint GetPopupMenuPosition(int index);
 
 private:
-	wxMetroTabList *m_list;	
+	wxMetroTabList *m_list;
 
 	struct page_info
 	{
@@ -258,33 +277,32 @@ private:
 
 	void OnSize(wxSizeEvent &evt);
 	void UpdateTabList();
-	void OnTabList( wxCommandEvent & );
-	void SwitchPage( size_t i );
+	void OnTabList(wxCommandEvent &);
+	void SwitchPage(size_t i);
 	void UpdateLayout();
 
 	DECLARE_EVENT_TABLE()
 };
 
-
 class wxMetroListBox : public wxScrolledWindow
 {
 public:
-	wxMetroListBox( wxWindow *parent, int id, 
-		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize );
+	wxMetroListBox(wxWindow *parent, int id,
+		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize);
 	virtual ~wxMetroListBox();
 
-	void Add( const wxString &label );
-	void Add( const wxArrayString &list );
-	void Delete( size_t idx );
+	void Add(const wxString &label);
+	void Add(const wxArrayString &list);
+	void Delete(size_t idx);
 	void Clear();
-	int Find( const wxString &label );
+	int Find(const wxString &label);
 	int Count();
-	void Set( size_t idx, const wxString &label );
-	wxString Get( size_t idx );
+	void Set(size_t idx, const wxString &label);
+	wxString Get(size_t idx);
 	int GetSelection();
 	wxString GetSelectionString();
-	void SetSelection( int idx );
-	bool SetSelectionString( const wxString &s );
+	void SetSelection(int idx);
+	bool SetSelectionString(const wxString &s);
 	wxString GetValue();
 
 	void Invalidate();
@@ -300,28 +318,27 @@ private:
 	int m_selectedIdx;
 	int m_space;
 
-	void OnPaint( wxPaintEvent &evt );
-	void OnErase( wxEraseEvent &evt );
-	void OnResize( wxSizeEvent &evt );
-	void OnLeftDown( wxMouseEvent &evt );
-	void OnMouseMove( wxMouseEvent &evt );
-	void OnLeave( wxMouseEvent &evt );
-	void OnDClick( wxMouseEvent &evt );
+	void OnPaint(wxPaintEvent &evt);
+	void OnErase(wxEraseEvent &evt);
+	void OnResize(wxSizeEvent &evt);
+	void OnLeftDown(wxMouseEvent &evt);
+	void OnMouseMove(wxMouseEvent &evt);
+	void OnLeave(wxMouseEvent &evt);
+	void OnDClick(wxMouseEvent &evt);
 
 	DECLARE_EVENT_TABLE();
 };
 
-
 class wxMetroPopupMenu
 {
 public:
-	wxMetroPopupMenu( long theme = 0  /* can be wxMT_LIGHTTHEME */ );
-	void SetFont( const wxFont &f );
-	void Append( int id, const wxString &label );
-	void AppendCheckItem( int id, const wxString &label, bool checked = false );
+	wxMetroPopupMenu(long theme = 0  /* can be wxMT_LIGHTTHEME */);
+	void SetFont(const wxFont &f);
+	void Append(int id, const wxString &label);
+	void AppendCheckItem(int id, const wxString &label, bool checked = false);
 	void AppendSeparator();
 
-	void Popup( wxWindow *parent, const wxPoint &pos = wxDefaultPosition, int origin = wxTOP|wxLEFT );
+	void Popup(wxWindow *parent, const wxPoint &pos = wxDefaultPosition, int origin = wxTOP | wxLEFT);
 
 private:
 	long m_theme;
@@ -335,6 +352,4 @@ private:
 	wxFont m_font;
 };
 
-
 #endif
-

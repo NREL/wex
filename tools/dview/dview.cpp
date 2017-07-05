@@ -1,3 +1,27 @@
+/***********************************************************************************************************************
+*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+*  following conditions are met:
+*
+*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+*  disclaimer.
+*
+*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+*  following disclaimer in the documentation and/or other materials provided with the distribution.
+*
+*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
+*  products derived from this software without specific prior written permission from the respective party.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
+*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**********************************************************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,11 +58,11 @@
 #include "wex/utils.h"
 
 #define MAX_RECENT 25
-enum{ 
-		ID_RECENT_FILES = wxID_HIGHEST+1233,			
-		// up to 100 recent items can be accommodated
-		ID_RECENT,
-		ID_RECENT_LAST = ID_RECENT+MAX_RECENT,
+enum{
+	ID_RECENT_FILES = wxID_HIGHEST + 1233,
+	// up to 100 recent items can be accommodated
+	ID_RECENT,
+	ID_RECENT_LAST = ID_RECENT + MAX_RECENT,
 };
 
 class DViewFrame : public wxFrame
@@ -54,12 +78,12 @@ private:
 public:
 
 	DViewFrame()
-	 : wxFrame( 0, wxID_ANY, "Data Viewer", wxDefaultPosition, wxSize(800,600) )
-	{	
+		: wxFrame(0, wxID_ANY, "Data Viewer", wxDefaultPosition, wxSize(800, 600))
+	{
 		mRecentCount = 0;
 
 #ifdef __WXMSW__
-		SetIcon( wxIcon("appicon") );
+		SetIcon(wxIcon("appicon"));
 #endif
 
 		wxMenuBar *menubar = new wxMenuBar;
@@ -69,23 +93,23 @@ public:
 		mFileMenu->Append(wxID_CLEAR, "Clear\tCtrl-W");
 		mFileMenu->AppendSeparator();
 		mFileMenu->Append(ID_RECENT_FILES, "Recent", mRecentMenu);
-	
-	#ifndef __WXMAC__
+
+#ifndef __WXMAC__
 		mFileMenu->AppendSeparator();
 		mFileMenu->Append(wxID_EXIT);
-	#endif
+#endif
 		menubar->Append(mFileMenu, "&File");
-	
+
 		wxMenu *help_menu = new wxMenu;
 		help_menu->Append(wxID_ABOUT);
 		menubar->Append(help_menu, "&Help");
 
-		SetMenuBar( menubar );
-		
-		mPlotCtrl = new wxDVPlotCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0 );
+		SetMenuBar(menubar);
+
+		mPlotCtrl = new wxDVPlotCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0);
 		mPlotCtrl->DisplayTabs();
-	
-		wxConfig cfg( "DView", "NREL" );
+
+		wxConfig cfg("DView", "NREL");
 		long ct = 0;
 		if (cfg.Read("RecentCount", &ct))
 			mRecentCount = (int)ct;
@@ -93,21 +117,20 @@ public:
 		if (mRecentCount > MAX_RECENT)
 			mRecentCount = MAX_RECENT;
 
-		for (int i=0;i<mRecentCount;i++)
+		for (int i = 0; i < mRecentCount; i++)
 		{
 			wxString key;
 			key.Printf("RecentFile_%d", i);
 			wxString fn;
 			if (cfg.Read(key, &fn))
 			{
-				fn.Replace("\\","/");
+				fn.Replace("\\", "/");
 				mRecentFiles[i] = fn;
 			}
 		}
 
 		cfg.Read("LastDirectory", &mLastDir);
 
-		
 		int x, y, width, height;
 		bool maximized;
 
@@ -117,36 +140,34 @@ public:
 			&& cfg.Read("FrameHeight", &height)
 			&& cfg.Read("FrameMaximized", &maximized))
 		{
+			if (width < 700) width = 700;
+			if (height < 450) height = 450;
 
-			if ( width < 700 ) width = 700;
-			if ( height < 450 ) height = 450;
-
-			SetPosition( wxPoint(x, y) );
-			SetClientSize( width, height );
+			SetPosition(wxPoint(x, y));
+			SetClientSize(width, height);
 			if (maximized)
 				Maximize();
 		}
 
 		UpdateRecentMenu();
 	}
-	
+
 	void UpdateRecentMenu()
 	{
 		int i;
-		for (i=0;i<MAX_RECENT;i++)
+		for (i = 0; i < MAX_RECENT; i++)
 		{
-			if (mRecentMenu->FindItem(ID_RECENT+i) != NULL)
-				mRecentMenu->Destroy(ID_RECENT+i);
+			if (mRecentMenu->FindItem(ID_RECENT + i) != NULL)
+				mRecentMenu->Destroy(ID_RECENT + i);
 		}
 
-		for (i=0;i<mRecentCount;i++)
+		for (i = 0; i < mRecentCount; i++)
 		{
 			wxString name;
-			name.Printf("%d ", i+1);
+			name.Printf("%d ", i + 1);
 			name += mRecentFiles[i];
-			mRecentMenu->Append(ID_RECENT+i, name);
+			mRecentMenu->Append(ID_RECENT + i, name);
 		}
-
 
 		mFileMenu->Enable(ID_RECENT_FILES, mRecentCount > 0);
 	}
@@ -157,31 +178,31 @@ public:
 		if (id < 0 || id >= MAX_RECENT)
 			return;
 
-		if ( !mRecentFiles[id].IsEmpty() )
+		if (!mRecentFiles[id].IsEmpty())
 		{
 			wxArrayString files;
-			files.Add( mRecentFiles[id] );
-			Load( files );
+			files.Add(mRecentFiles[id]);
+			Load(files);
 		}
 	}
 
 	wxArrayString GetRecentFiles()
 	{
 		wxArrayString list;
-		for (int i=0;i<mRecentCount;i++)
-			list.Add( mRecentFiles[i] );
+		for (int i = 0; i < mRecentCount; i++)
+			list.Add(mRecentFiles[i]);
 		return list;
 	}
 
 	void AddRecent(const wxString &fn)
 	{
 		wxString norm_fn = fn;
-		norm_fn.Replace("\\","/");
+		norm_fn.Replace("\\", "/");
 
 		int i;
 		int index = -1;
 		// find the file in the recent list
-		for (i=0;i<mRecentCount;i++)
+		for (i = 0; i < mRecentCount; i++)
 		{
 			if (norm_fn == mRecentFiles[i])
 			{
@@ -195,22 +216,22 @@ public:
 			// bring this file to the front of the
 			// recent file list
 
-			for (i=index;i>0;i--)
-				mRecentFiles[i] = mRecentFiles[i-1];
+			for (i = index; i > 0; i--)
+				mRecentFiles[i] = mRecentFiles[i - 1];
 		}
 		else // not found in recent list
 		{
 			// add this to the front of the recent list
-			// and increment the recent count if its 
+			// and increment the recent count if its
 			// less than MAX_RECENT
 
-			for (i=MAX_RECENT-1;i>0;i--)
-				mRecentFiles[i] = mRecentFiles[i-1];
+			for (i = MAX_RECENT - 1; i > 0; i--)
+				mRecentFiles[i] = mRecentFiles[i - 1];
 
 			if (mRecentCount < MAX_RECENT)
 				mRecentCount++;
 		}
-	
+
 		mRecentFiles[0] = norm_fn;
 		UpdateRecentMenu();
 	}
@@ -218,12 +239,12 @@ public:
 	void RemoveRecent(const wxString &fn)
 	{
 		wxString norm_fn = fn;
-		norm_fn.Replace("\\","/");
+		norm_fn.Replace("\\", "/");
 
 		int i;
 		int index = -1;
 		// find the file in the recent list
-		for (i=0;i<mRecentCount;i++)
+		for (i = 0; i < mRecentCount; i++)
 		{
 			if (norm_fn == mRecentFiles[i])
 			{
@@ -234,29 +255,28 @@ public:
 
 		if (index >= 0)
 		{
-			for (i=index;i<MAX_RECENT-1;i++)
-				mRecentFiles[i] = mRecentFiles[i+1];
+			for (i = index; i < MAX_RECENT - 1; i++)
+				mRecentFiles[i] = mRecentFiles[i + 1];
 
 			mRecentCount--;
 			UpdateRecentMenu();
 		}
 	}
 
-	void OnCloseFrame( wxCloseEvent &evt )
-	{	
-
+	void OnCloseFrame(wxCloseEvent &evt)
+	{
 		/* save window position */
 		bool b_maximize = this->IsMaximized();
-		int f_x,f_y,f_width,f_height;
+		int f_x, f_y, f_width, f_height;
 
-		this->GetPosition(&f_x,&f_y);
+		this->GetPosition(&f_x, &f_y);
 		this->GetClientSize(&f_width, &f_height);
-	
+
 		long ct = (long)mRecentCount;
 
-		wxConfig cfg( "DView", "NREL" );
+		wxConfig cfg("DView", "NREL");
 		cfg.Write("RecentCount", ct);
-		for (int i=0;i<mRecentCount;i++)
+		for (int i = 0; i < mRecentCount; i++)
 		{
 			wxString key;
 			key.Printf("RecentFile_%d", i);
@@ -270,17 +290,16 @@ public:
 		cfg.Write("FrameHeight", f_height);
 		cfg.Write("FrameMaximized", b_maximize);
 
-	
 		Destroy();
 	}
-	
+
 	bool Load(const wxArrayString& filenames)
 	{
 		bool FileExists = false;
 
 		wxBeginBusyCursor();
-		for(size_t i=0; i<filenames.GetCount(); i++)
-		{	
+		for (size_t i = 0; i < filenames.GetCount(); i++)
+		{
 			for (size_t j = 0; j < mFileNames.GetCount(); j++)
 			{
 				if (filenames[i] == mFileNames[j])
@@ -292,9 +311,9 @@ public:
 
 			if (!FileExists)
 			{
-				if(!wxDVFileReader::FastRead(mPlotCtrl, filenames[i]))
+				if (!wxDVFileReader::FastRead(mPlotCtrl, filenames[i]))
 				{
-					wxMessageBox( wxT("The selected file is not of the correct format, is corrupt, no longer exists, or you do not have permission to open it."), wxT("Error opening file."), wxICON_ERROR);
+					wxMessageBox(wxT("The selected file is not of the correct format, is corrupt, no longer exists, or you do not have permission to open it."), wxT("Error opening file."), wxICON_ERROR);
 					RemoveRecent(filenames[i]);
 				}
 				else
@@ -305,7 +324,7 @@ public:
 				}
 			}
 		}
-		
+
 		UpdateRecentMenu();
 		wxEndBusyCursor();
 		return true;
@@ -321,10 +340,10 @@ public:
 			Load(myFilePaths);
 		}
 	}
-	
+
 	void OnCommand(wxCommandEvent &evt)
 	{
-		switch( evt.GetId() )
+		switch (evt.GetId())
 		{
 		case wxID_OPEN:
 			Open();
@@ -335,10 +354,10 @@ public:
 			break;
 		case wxID_ABOUT:
 		case wxID_HELP:
-			wxMessageBox( wxT("DView (" + wxGetLibraryVersionInfo().GetVersionString() + ") Version " __DATE__) );
+			wxMessageBox(wxT("DView (" + wxGetLibraryVersionInfo().GetVersionString() + ") Version " __DATE__));
 			break;
 		case wxID_EXIT:
-			Close( false );
+			Close(false);
 			break;
 		}
 	}
@@ -351,23 +370,21 @@ public:
 	DECLARE_EVENT_TABLE();
 };
 
-
 BEGIN_EVENT_TABLE(DViewFrame, wxFrame)
 
-	EVT_MENU( wxID_OPEN,     DViewFrame::OnCommand )
-	EVT_MENU( wxID_CLEAR,    DViewFrame::OnCommand )
-	EVT_MENU( wxID_EXIT,     DViewFrame::OnCommand )
-	EVT_MENU( wxID_ABOUT,    DViewFrame::OnCommand )
-	EVT_CLOSE( DViewFrame::OnCloseFrame )
-	EVT_MENU_RANGE( ID_RECENT, ID_RECENT+MAX_RECENT, DViewFrame::OnRecent)
+EVT_MENU(wxID_OPEN, DViewFrame::OnCommand)
+EVT_MENU(wxID_CLEAR, DViewFrame::OnCommand)
+EVT_MENU(wxID_EXIT, DViewFrame::OnCommand)
+EVT_MENU(wxID_ABOUT, DViewFrame::OnCommand)
+EVT_CLOSE(DViewFrame::OnCloseFrame)
+EVT_MENU_RANGE(ID_RECENT, ID_RECENT + MAX_RECENT, DViewFrame::OnRecent)
 
 END_EVENT_TABLE()
-
 
 class DViewApp : public wxApp
 {
 private:
-	
+
 	bool m_arg_showLog;
 	int m_arg_tab, m_arg_data;
 	double m_startHour, m_endHour;
@@ -385,12 +402,12 @@ public:
 		//wxApp::OnInit handles all of our command line argument stuff.
 		if (!wxApp::OnInit())
 			return false;
-		
+
 		::wxInitAllImageHandlers();
 		wxFileSystem::AddHandler(new wxZipFSHandler);
-			
+
 		DViewFrame *frame = new DViewFrame;
-		
+
 		if (m_arg_filenames.Count() > 0)
 			frame->Load(m_arg_filenames);
 
@@ -400,26 +417,26 @@ public:
 		if (m_arg_data != -1)
 			frame->GetPlot()->SelectDataIndex(m_arg_data);
 
-		if ( m_startHour >= 0 && m_endHour >= 0 && m_startHour < m_endHour )
-			frame->GetPlot()->SetTimeSeriesRange( m_startHour, m_endHour );
+		if (m_startHour >= 0 && m_endHour >= 0 && m_startHour < m_endHour)
+			frame->GetPlot()->SetTimeSeriesRange(m_startHour, m_endHour);
 
-		if ( m_variables.size() > 0 )
-			frame->GetPlot()->SetSelectedNames( m_variables );
+		if (m_variables.size() > 0)
+			frame->GetPlot()->SetSelectedNames(m_variables);
 
-		if ( m_lineMode >= 0 && m_lineMode <= 2 )
-			frame->GetPlot()->SetTimeSeriesMode( m_lineMode );
+		if (m_lineMode >= 0 && m_lineMode <= 2)
+			frame->GetPlot()->SetTimeSeriesMode(m_lineMode);
 
-		if ( m_ylmin < m_ylmax )
-			frame->GetPlot()->SetupTopYLeft( m_ylmin, m_ylmax );
+		if (m_ylmin < m_ylmax)
+			frame->GetPlot()->SetupTopYLeft(m_ylmin, m_ylmax);
 
-		if ( m_yrmin < m_yrmax )
-			frame->GetPlot()->SetupTopYRight( m_yrmin, m_yrmax );
+		if (m_yrmin < m_yrmax)
+			frame->GetPlot()->SetupTopYRight(m_yrmin, m_yrmax);
 
 		frame->Show();
 
 		return true;
 	}
-	
+
 	void OnInitCmdLine(wxCmdLineParser& parser)
 	{
 		wxApp::OnInitCmdLine(parser);
@@ -429,10 +446,10 @@ public:
 		parser.AddOption(wxT("i"), wxT("index"), wxT("variable to display initially (zero-indexed)"), wxCMD_LINE_VAL_NUMBER);
 		parser.AddOption(wxT("v"), wxT("variables"), wxT("comma separated list of column names to display initially"), wxCMD_LINE_VAL_STRING);
 		parser.AddOption(wxT("s"), wxT("start"), wxT("starting hour to display"), wxCMD_LINE_VAL_DOUBLE);
-		parser.AddOption(wxT("e"), wxT("end"), wxT("ending hour to display"), wxCMD_LINE_VAL_DOUBLE );
+		parser.AddOption(wxT("e"), wxT("end"), wxT("ending hour to display"), wxCMD_LINE_VAL_DOUBLE);
 		parser.AddOption(wxT("m"), wxT("mode"), wxT("time series mode: 0=normal,1=stepped,2=stacked"), wxCMD_LINE_VAL_NUMBER);
-		parser.AddOption(wxT("y1"), wxT("y1"), wxT("string min,max range for left y axis on top plot. if not specified, autoscaled."), wxCMD_LINE_VAL_STRING );
-		parser.AddOption(wxT("y2"), wxT("y2"), wxT("string min,max range for right y axis on top plot. 'lock' is also allowed to lock y2 to y1. if not specified, autoscaled."), wxCMD_LINE_VAL_STRING );
+		parser.AddOption(wxT("y1"), wxT("y1"), wxT("string min,max range for left y axis on top plot. if not specified, autoscaled."), wxCMD_LINE_VAL_STRING);
+		parser.AddOption(wxT("y2"), wxT("y2"), wxT("string min,max range for right y axis on top plot. 'lock' is also allowed to lock y2 to y1. if not specified, autoscaled."), wxCMD_LINE_VAL_STRING);
 		parser.AddParam(wxT("files to load"), wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL | wxCMD_LINE_PARAM_MULTIPLE);
 	}
 
@@ -441,7 +458,7 @@ public:
 		wxApp::OnCmdLineParsed(parser);
 
 		m_arg_filenames.Alloc(parser.GetParamCount());
-		for (size_t i=0; i<parser.GetParamCount(); i++)
+		for (size_t i = 0; i < parser.GetParamCount(); i++)
 			m_arg_filenames.Add(parser.GetParam(i));
 
 		double dd;
@@ -450,7 +467,7 @@ public:
 			m_arg_showLog = true;
 		else
 			m_arg_showLog = false;
-		
+
 		m_arg_tab = -1;
 		if (parser.Found(wxT("t"), &tabNumber) && tabNumber >= 0)
 			m_arg_tab = tabNumber;
@@ -460,39 +477,37 @@ public:
 			m_arg_data = varNumber;
 
 		m_startHour = -1;
-		if ( parser.Found("s", &dd) )
+		if (parser.Found("s", &dd))
 			m_startHour = dd;
-			
+
 		m_endHour = -1;
-		if ( parser.Found("e", &dd ) )
+		if (parser.Found("e", &dd))
 			m_endHour = dd;
 
 		wxString ss;
-		if ( parser.Found("v", &ss) )
-			m_variables = wxStringTokenize( ss, ",;|" );
+		if (parser.Found("v", &ss))
+			m_variables = wxStringTokenize(ss, ",;|");
 
 		m_lineMode = -1;
-		if ( parser.Found("m", &varNumber )  && varNumber >= 0 && varNumber <= 2 )
+		if (parser.Found("m", &varNumber) && varNumber >= 0 && varNumber <= 2)
 			m_lineMode = varNumber;
 
 		m_ylmin = m_ylmax = 0;
-		if ( parser.Found("y1", &ss) )
+		if (parser.Found("y1", &ss))
 		{
-			m_ylmin = wxAtof( ss );
-			m_ylmax = wxAtof( ss.Mid( ss.Find(',')+1 ) );
+			m_ylmin = wxAtof(ss);
+			m_ylmax = wxAtof(ss.Mid(ss.Find(',') + 1));
 		}
 
 		m_yrmin = m_yrmax = 0;
-		if ( parser.Found("y2", &ss) )
+		if (parser.Found("y2", &ss))
 		{
-			m_yrmin = wxAtof( ss );
-			m_yrmax = wxAtof( ss.Mid( ss.Find(',')+1 ) );
+			m_yrmin = wxAtof(ss);
+			m_yrmax = wxAtof(ss.Mid(ss.Find(',') + 1));
 		}
 
 		return true;
 	}
-
-
 };
 
-IMPLEMENT_APP( DViewApp );
+IMPLEMENT_APP(DViewApp);

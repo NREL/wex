@@ -1,3 +1,27 @@
+/***********************************************************************************************************************
+*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+*  following conditions are met:
+*
+*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+*  disclaimer.
+*
+*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+*  following disclaimer in the documentation and/or other materials provided with the distribution.
+*
+*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
+*  products derived from this software without specific prior written permission from the respective party.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
+*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**********************************************************************************************************************/
+
 #include <algorithm>
 
 #include <wx/clipbrd.h>
@@ -12,17 +36,16 @@
 #include "wex/utils.h"
 #include "wex/diurnal.h"
 
-
 BEGIN_EVENT_TABLE(wxDiurnalPeriodCtrl, wxWindow)
-	EVT_PAINT(wxDiurnalPeriodCtrl::OnPaint)
-	EVT_ERASE_BACKGROUND(wxDiurnalPeriodCtrl::OnErase)
-	EVT_SIZE(wxDiurnalPeriodCtrl::OnResize)
-	EVT_CHAR(wxDiurnalPeriodCtrl::OnChar)
-	EVT_KEY_DOWN(wxDiurnalPeriodCtrl::OnKeyDown)
-	EVT_LEFT_DOWN(wxDiurnalPeriodCtrl::OnMouseDown)
-	EVT_LEFT_UP(wxDiurnalPeriodCtrl::OnMouseUp)
-	EVT_MOTION(wxDiurnalPeriodCtrl::OnMouseMove)
-	EVT_KILL_FOCUS(wxDiurnalPeriodCtrl::OnLostFocus)
+EVT_PAINT(wxDiurnalPeriodCtrl::OnPaint)
+EVT_ERASE_BACKGROUND(wxDiurnalPeriodCtrl::OnErase)
+EVT_SIZE(wxDiurnalPeriodCtrl::OnResize)
+EVT_CHAR(wxDiurnalPeriodCtrl::OnChar)
+EVT_KEY_DOWN(wxDiurnalPeriodCtrl::OnKeyDown)
+EVT_LEFT_DOWN(wxDiurnalPeriodCtrl::OnMouseDown)
+EVT_LEFT_UP(wxDiurnalPeriodCtrl::OnMouseUp)
+EVT_MOTION(wxDiurnalPeriodCtrl::OnMouseMove)
+EVT_KILL_FOCUS(wxDiurnalPeriodCtrl::OnLostFocus)
 END_EVENT_TABLE()
 
 DEFINE_EVENT_TYPE(wxEVT_DIURNALPERIODCTRL_CHANGE)
@@ -52,7 +75,7 @@ wxDiurnalPeriodCtrl::wxDiurnalPeriodCtrl(wxWindow *parent, int id, const wxPoint
 	m_selStartR = m_selStartC = m_selEndR = m_selEndC = -1;
 	m_min = 0;
 	m_max = 9; // can be set to higher value in SetMinMax
-	
+
 	SetupTOUGrid();
 }
 
@@ -87,30 +110,28 @@ bool wxDiurnalPeriodCtrl::GetColour(int i, wxColour &c)
 void wxDiurnalPeriodCtrl::Set(size_t r, size_t c, int val)
 {
 	if (r < m_nrows && c < m_ncols)
-		VALUE(r,c) = val;
+		VALUE(r, c) = val;
 }
 
-
 void wxDiurnalPeriodCtrl::SetMin(int min)
-{ 
+{
 	SetMinMax(min, m_max);
 }
 
 int wxDiurnalPeriodCtrl::GetMin()
-{ 
-	return m_min; 
+{
+	return m_min;
 }
 
 void wxDiurnalPeriodCtrl::SetMax(int max)
-{ 
+{
 	SetMinMax(m_min, max);
 }
 
 int wxDiurnalPeriodCtrl::GetMax()
-{ 
-	return m_max; 
+{
+	return m_max;
 }
-
 
 void wxDiurnalPeriodCtrl::SetMinMax(int min, int max, bool clamp)
 {
@@ -123,15 +144,15 @@ void wxDiurnalPeriodCtrl::SetMinMax(int min, int max, bool clamp)
 	for (size_t r = 0; r < m_nrows; r++)
 		for (size_t c = 0; c < m_ncols; c++)
 		{
-			if (VALUE(r,c) < min) VALUE(r,c) = min;
-			if (VALUE(r,c) > max) VALUE(r,c) = max;
+			if (VALUE(r, c) < min) VALUE(r, c) = min;
+			if (VALUE(r, c) > max) VALUE(r, c) = max;
 		}
 }
 
 int wxDiurnalPeriodCtrl::Get(size_t r, size_t c) const
 {
 	if (r < m_nrows && c < m_ncols)
-		return VALUE(r,c);
+		return VALUE(r, c);
 	else
 		return -1;
 }
@@ -140,7 +161,7 @@ void wxDiurnalPeriodCtrl::Set(int val)
 {
 	for (size_t r = 0; r < m_nrows; r++)
 		for (size_t c = 0; c < m_ncols; c++)
-			VALUE(r,c) = val;
+			VALUE(r, c) = val;
 	Refresh();
 }
 
@@ -191,9 +212,9 @@ void wxDiurnalPeriodCtrl::OnPaint(wxPaintEvent &)
 	dc.SetFont(SCHED_FONT);
 
 	dc.SetPen(*wxTRANSPARENT_PEN);
-	for (r = 0; r<rows; r++)
+	for (r = 0; r < rows; r++)
 	{
-		for (c = 0; c<cols; c++)
+		for (c = 0; c < cols; c++)
 		{
 			int x = m_rowHeaderSize + c*m_cellSize;
 			int y = m_colHeaderSize + r*m_cellSize;
@@ -208,7 +229,7 @@ void wxDiurnalPeriodCtrl::OnPaint(wxPaintEvent &)
 			if (x >= geom.width || y >= geom.height)
 				break;
 
-			int val = VALUE(r,c);
+			int val = VALUE(r, c);
 			if (val >= 1 && val - 1 < (int)m_colours.size() || sel)
 			{
 				if (IsThisEnabled())
@@ -231,9 +252,9 @@ void wxDiurnalPeriodCtrl::OnPaint(wxPaintEvent &)
 		}
 	}
 
-	dc.SetPen( *wxWHITE_PEN );
+	dc.SetPen(*wxWHITE_PEN);
 	dc.SetTextForeground(wxColour(160, 160, 160));
-	
+
 	for (r = 0; r <= rows; r++)
 	{
 		dc.DrawLine(geom.x, geom.y + m_colHeaderSize + r*m_cellSize,
@@ -257,7 +278,6 @@ void wxDiurnalPeriodCtrl::OnPaint(wxPaintEvent &)
 			dc.DrawRotatedText(m_colLabels[c], geom.x + m_rowHeaderSize + c*m_cellSize + xoff, geom.y + m_colHeaderSize - 2, 90);
 		}
 	}
-
 }
 
 void wxDiurnalPeriodCtrl::OnResize(wxSizeEvent &)
@@ -265,45 +285,44 @@ void wxDiurnalPeriodCtrl::OnResize(wxSizeEvent &)
 	Refresh();
 }
 void wxDiurnalPeriodCtrl::UpdateLayout()
-{	
-	wxClientDC dc( const_cast<wxDiurnalPeriodCtrl*>(this) );
-	dc.SetFont( SCHED_FONT );
-	
+{
+	wxClientDC dc(const_cast<wxDiurnalPeriodCtrl*>(this));
+	dc.SetFont(SCHED_FONT);
+
 	int r, c;
 	int rows = m_nrows;
 	int cols = m_ncols;
 
 	m_rowHeaderSize = 0;
-	for (r = 0; r<rows&&r<(int)m_rowLabels.Count(); r++)
+	for (r = 0; r < rows&&r < (int)m_rowLabels.Count(); r++)
 	{
-		wxSize tsz( dc.GetTextExtent(m_rowLabels[r]));
+		wxSize tsz(dc.GetTextExtent(m_rowLabels[r]));
 		if (tsz.x > m_rowHeaderSize)
 			m_rowHeaderSize = tsz.x;
 	}
 
 	m_colHeaderSize = 0;
-	for (c = 0; c<cols&&c<(int)m_colLabels.Count(); c++)
+	for (c = 0; c < cols&&c < (int)m_colLabels.Count(); c++)
 	{
-		wxSize tsz( dc.GetTextExtent(m_colLabels[c]));
-		if ( tsz.x > m_colHeaderSize )
+		wxSize tsz(dc.GetTextExtent(m_colLabels[c]));
+		if (tsz.x > m_colHeaderSize)
 			m_colHeaderSize = tsz.x;
 	}
-	
-	double xScale, yScale;
-	wxDevicePPIToScale( dc.GetPPI(), &xScale, &yScale );
 
-	m_cellSize = (int)( 19*std::max( xScale, yScale ) );
-	m_rowHeaderSize += (int)(6*yScale);
-	m_colHeaderSize += (int)(6*xScale);
+	double xScale, yScale;
+	wxDevicePPIToScale(dc.GetPPI(), &xScale, &yScale);
+
+	m_cellSize = (int)(19 * std::max(xScale, yScale));
+	m_rowHeaderSize += (int)(6 * yScale);
+	m_colHeaderSize += (int)(6 * xScale);
 }
 
 wxSize wxDiurnalPeriodCtrl::DoGetBestSize() const
 {
-	const_cast<wxDiurnalPeriodCtrl*>(this)->UpdateLayout();	
+	const_cast<wxDiurnalPeriodCtrl*>(this)->UpdateLayout();
 	return wxSize(m_rowHeaderSize + m_ncols*m_cellSize,
 		m_colHeaderSize + m_nrows*m_cellSize);
 }
-
 
 int wxDiurnalPeriodCtrl::ScheduleCharToInt(char c)
 {
@@ -401,15 +420,14 @@ char wxDiurnalPeriodCtrl::ScheduleIntToChar(int d)
 	return ret;
 }
 
-
 bool wxDiurnalPeriodCtrl::Schedule(const wxString &sched)
 {
 	if ((int)sched.Len() != m_nrows*m_ncols)
 		return false;
 
-	for (int r = 0; r<m_nrows; r++)
-		for (int c = 0; c<m_ncols; c++)
-			VALUE(r,c) = ScheduleCharToInt(sched[r*m_ncols + c]);
+	for (int r = 0; r < m_nrows; r++)
+		for (int c = 0; c < m_ncols; c++)
+			VALUE(r, c) = ScheduleCharToInt(sched[r*m_ncols + c]);
 
 	Refresh();
 
@@ -419,9 +437,9 @@ bool wxDiurnalPeriodCtrl::Schedule(const wxString &sched)
 wxString wxDiurnalPeriodCtrl::Schedule() const
 {
 	wxString buf;
-	for (int r = 0; r<m_nrows; r++)
-		for (int c = 0; c<m_ncols; c++)
-			buf << ScheduleIntToChar(VALUE(r,c));
+	for (int r = 0; r < m_nrows; r++)
+		for (int c = 0; c < m_ncols; c++)
+			buf << ScheduleIntToChar(VALUE(r, c));
 
 	return buf;
 }
@@ -449,14 +467,14 @@ void wxDiurnalPeriodCtrl::Copy()
 {
 	if (wxTheClipboard->Open())
 	{
-		// This data objects are held by the clipboard, 
+		// This data objects are held by the clipboard,
 		// so do not delete them in the app.
 		wxString tsv;
-		for (int r = 0; r<m_nrows; r++)
+		for (int r = 0; r < m_nrows; r++)
 		{
-			for (int c = 0; c<m_ncols; c++)
+			for (int c = 0; c < m_ncols; c++)
 			{
-				tsv += wxString::Format("%d", VALUE(r,c));
+				tsv += wxString::Format("%d", VALUE(r, c));
 				if (c < m_ncols - 1)
 					tsv += '\t';
 			}
@@ -479,15 +497,15 @@ void wxDiurnalPeriodCtrl::Paste()
 		if (as.Count() >= (m_nrows * m_ncols))
 		{
 			int as_ndx = 0;
-			for (int r = 0; r<m_nrows; r++)
+			for (int r = 0; r < m_nrows; r++)
 			{
-				for (int c = 0; c<m_ncols; c++)
+				for (int c = 0; c < m_ncols; c++)
 				{
 					long val = 0;
 					if (as_ndx < as.Count())
 						as[as_ndx].ToLong(&val);
 					if ((val <= m_max) && (val >= m_min))
-						VALUE(r,c) = val;
+						VALUE(r, c) = val;
 					as_ndx++;
 				}
 			}
@@ -537,8 +555,6 @@ bool wxDiurnalPeriodCtrl::MSWShouldPreProcessMessage(WXMSG* msg)
 }
 #endif
 
-
-
 void wxDiurnalPeriodCtrl::OnChar(wxKeyEvent &evt)
 {
 	int selrs = MIN(m_selStartR, m_selEndR);
@@ -550,9 +566,9 @@ void wxDiurnalPeriodCtrl::OnChar(wxKeyEvent &evt)
 	if ((ScheduleCharToInt(key) >= m_min) && (ScheduleCharToInt(key) <= m_max) &&
 		selrs >= 0 && selcs >= 0)
 	{
-		for (int r = selrs; r <= selre && r<m_nrows; r++)
-			for (int c = selcs; c <= selce && c<m_ncols; c++)
-				VALUE(r,c) = ScheduleCharToInt(key);
+		for (int r = selrs; r <= selre && r < m_nrows; r++)
+			for (int c = selcs; c <= selce && c < m_ncols; c++)
+				VALUE(r, c) = ScheduleCharToInt(key);
 
 		Refresh();
 
@@ -580,7 +596,6 @@ void wxDiurnalPeriodCtrl::OnMouseDown(wxMouseEvent &evt)
 	m_selEndC = m_selStartC;
 	m_mouseDown = true;
 	Refresh();
-
 }
 
 void wxDiurnalPeriodCtrl::OnMouseUp(wxMouseEvent &)
@@ -612,17 +627,16 @@ void wxDiurnalPeriodCtrl::OnLostFocus(wxFocusEvent &)
 	Refresh();
 }
 
-void wxDiurnalPeriodCtrl::SetData( float *data, size_t nr, size_t nc )
+void wxDiurnalPeriodCtrl::SetData(float *data, size_t nr, size_t nc)
 {
-	if ( nr == m_nrows && nc == m_ncols )
+	if (nr == m_nrows && nc == m_ncols)
 	{
-		memcpy( m_data, data, sizeof(float)*nr*nc );
+		memcpy(m_data, data, sizeof(float)*nr*nc);
 		Refresh();
 	}
 }
 
-
-float *wxDiurnalPeriodCtrl::GetData( size_t *nr, size_t *nc )
+float *wxDiurnalPeriodCtrl::GetData(size_t *nr, size_t *nc)
 {
 	*nr = m_nrows;
 	*nc = m_ncols;
@@ -634,18 +648,18 @@ void wxDiurnalPeriodCtrl::SetupTOUGrid()
 	SetMinMax(1, 9, true);
 
 	m_colours.clear();
-	AddColour( wxColour( 143, 226, 170 ) );
-	AddColour( wxColour( 128, 179, 179 ) );
-	AddColour( wxColour( 196, 148, 49 ) );
-	AddColour( wxColour( 44, 175, 133 ) );
-	AddColour( wxColour( 219, 219, 112 ) );
-	AddColour( wxColour( 206, 57, 57 ) );
-	AddColour( wxColour( 94, 136, 81 ) );
-	AddColour( wxColour( 225, 136, 225 ) );
-	AddColour( wxColour( 255, 60, 157 ) );
-	AddColour( wxColour( 86, 172, 214 ) );
-	AddColour( wxColour( 226, 169, 141 ) );
-	AddColour( wxColour( 254, 235, 97 ) );
+	AddColour(wxColour(143, 226, 170));
+	AddColour(wxColour(128, 179, 179));
+	AddColour(wxColour(196, 148, 49));
+	AddColour(wxColour(44, 175, 133));
+	AddColour(wxColour(219, 219, 112));
+	AddColour(wxColour(206, 57, 57));
+	AddColour(wxColour(94, 136, 81));
+	AddColour(wxColour(225, 136, 225));
+	AddColour(wxColour(255, 60, 157));
+	AddColour(wxColour(86, 172, 214));
+	AddColour(wxColour(226, 169, 141));
+	AddColour(wxColour(254, 235, 97));
 
 	m_rowLabels.clear();
 	AddRowLabel("Jan");

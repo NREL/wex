@@ -1,3 +1,26 @@
+/***********************************************************************************************************************
+*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+*  following conditions are met:
+*
+*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+*  disclaimer.
+*
+*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+*  following disclaimer in the documentation and/or other materials provided with the distribution.
+*
+*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
+*  products derived from this software without specific prior written permission from the respective party.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
+*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**********************************************************************************************************************/
 
 #include <wx/clipbrd.h>
 #include <wx/dcbuffer.h>
@@ -15,9 +38,9 @@ wxExtGridCellAttrProvider::wxExtGridCellAttrProvider(bool highlight_r0, bool hid
 	if (highlight_r0)
 	{
 		m_attrRow0 = new wxGridCellAttr;
-//		m_attrRow0->SetBackgroundColour(wxColour("SLATE BLUE"));
-//		m_attrRow0->SetTextColour(*wxWHITE);
-//		m_attrRow0->SetFont(*wxNORMAL_FONT);
+		//		m_attrRow0->SetBackgroundColour(wxColour("SLATE BLUE"));
+		//		m_attrRow0->SetTextColour(*wxWHITE);
+		//		m_attrRow0->SetFont(*wxNORMAL_FONT);
 		m_attrRow0->SetBackgroundColour(wxColour(240, 240, 240));
 		m_attrRow0->SetTextColour(*wxBLACK);
 		wxFont f = wxFont(*wxNORMAL_FONT);
@@ -29,9 +52,9 @@ wxExtGridCellAttrProvider::wxExtGridCellAttrProvider(bool highlight_r0, bool hid
 	if (highlight_c0)
 	{
 		m_attrCol0 = new wxGridCellAttr;
-//		m_attrCol0->SetBackgroundColour(wxColour("SLATE BLUE"));
-//		m_attrCol0->SetTextColour(*wxWHITE);
-//		m_attrCol0->SetFont(*wxNORMAL_FONT);
+		//		m_attrCol0->SetBackgroundColour(wxColour("SLATE BLUE"));
+		//		m_attrCol0->SetTextColour(*wxWHITE);
+		//		m_attrCol0->SetFont(*wxNORMAL_FONT);
 		m_attrCol0->SetBackgroundColour(wxColour(240, 240, 240));
 		m_attrCol0->SetTextColour(*wxBLACK);
 		wxFont f = wxFont(*wxNORMAL_FONT);
@@ -43,17 +66,16 @@ wxExtGridCellAttrProvider::wxExtGridCellAttrProvider(bool highlight_r0, bool hid
 	if (hide_00)
 	{
 		m_attrCell00 = new wxGridCellAttr;
-//		m_attrCell00->SetBackgroundColour(wxColour("SLATE BLUE"));
-//		m_attrCell00->SetTextColour(wxColour("SLATE BLUE"));
+		//		m_attrCell00->SetBackgroundColour(wxColour("SLATE BLUE"));
+		//		m_attrCell00->SetTextColour(wxColour("SLATE BLUE"));
 		m_attrCell00->SetBackgroundColour(wxColour(240, 240, 240));
 		m_attrCell00->SetTextColour(wxColour(240, 240, 240));
 	}
-
 }
 
 wxExtGridCellAttrProvider::~wxExtGridCellAttrProvider()
 {
-    m_attrForOddRows->DecRef();
+	m_attrForOddRows->DecRef();
 	if (m_attrRow0)
 		m_attrRow0->DecRef();
 	if (m_attrCell00)
@@ -63,49 +85,48 @@ wxExtGridCellAttrProvider::~wxExtGridCellAttrProvider()
 }
 
 wxGridCellAttr *wxExtGridCellAttrProvider::GetAttr(int row, int col,
-                           wxGridCellAttr::wxAttrKind  kind /* = wxGridCellAttr::Any */) const
+	wxGridCellAttr::wxAttrKind  kind /* = wxGridCellAttr::Any */) const
 {
-    wxGridCellAttr *attr = wxGridCellAttrProvider::GetAttr(row, col, kind);
+	wxGridCellAttr *attr = wxGridCellAttrProvider::GetAttr(row, col, kind);
 
-	if ( m_attrCell00 && row==0 && col==0 )
-    {
-        if ( !attr )
-        {
-            attr = m_attrCell00;
-            attr->IncRef();
-        }
-        else
-        {
-            if ( !attr->HasBackgroundColour() )
-            {
-                wxGridCellAttr *attrNew = attr->Clone();
-                attr->DecRef();
-                attr = attrNew;
+	if (m_attrCell00 && row == 0 && col == 0)
+	{
+		if (!attr)
+		{
+			attr = m_attrCell00;
+			attr->IncRef();
+		}
+		else
+		{
+			if (!attr->HasBackgroundColour())
+			{
+				wxGridCellAttr *attrNew = attr->Clone();
+				attr->DecRef();
+				attr = attrNew;
 				//				attr->SetBackgroundColour(wxColour("SLATE BLUE"));
 				//				attr->SetTextColour(wxColour("SLATE BLUE"));
 				attr->SetBackgroundColour(wxColour(240, 240, 240));
 				attr->SetTextColour(wxColour(240, 240, 240));
 			}
-        }
+		}
 
 		return attr;
-    }
+	}
 
-
-	if (m_attrRow0 && row == 0 )
+	if (m_attrRow0 && row == 0)
+	{
+		if (!attr)
 		{
-        if ( !attr )
-        {
-            attr = m_attrRow0;
-            attr->IncRef();
-        }
-        else
-        {
-            if ( !attr->HasBackgroundColour() )
-            {
-                wxGridCellAttr *attrNew = attr->Clone();
-                attr->DecRef();
-                attr = attrNew;
+			attr = m_attrRow0;
+			attr->IncRef();
+		}
+		else
+		{
+			if (!attr->HasBackgroundColour())
+			{
+				wxGridCellAttr *attrNew = attr->Clone();
+				attr->DecRef();
+				attr = attrNew;
 				//attr->SetBackgroundColour(wxColour("SLATE BLUE"));
 				//attr->SetTextColour(*wxWHITE);
 				//attr->SetFont( *wxNORMAL_FONT );
@@ -114,13 +135,13 @@ wxGridCellAttr *wxExtGridCellAttrProvider::GetAttr(int row, int col,
 				wxFont f = wxFont(*wxNORMAL_FONT);
 				f.MakeBold();
 				attr->SetFont(f);
-            }
-        }
+			}
+		}
 
 		return attr;
-    }
+	}
 
-	if (m_attrCol0 && col == 0 )
+	if (m_attrCol0 && col == 0)
 	{
 		if (!attr)
 		{
@@ -148,42 +169,41 @@ wxGridCellAttr *wxExtGridCellAttrProvider::GetAttr(int row, int col,
 		return attr;
 	}
 
-    if ( row % 2 )
-    {
-        if ( !attr )
-        {
-            attr = m_attrForOddRows;
-            attr->IncRef();
-        }
-        else
-        {
-            if ( !attr->HasBackgroundColour() )
-            {
-                wxGridCellAttr *attrNew = attr->Clone();
-                attr->DecRef();
-                attr = attrNew;
-                attr->SetBackgroundColour(*wxLIGHT_GREY);
-            }
-        }
-    }
+	if (row % 2)
+	{
+		if (!attr)
+		{
+			attr = m_attrForOddRows;
+			attr->IncRef();
+		}
+		else
+		{
+			if (!attr->HasBackgroundColour())
+			{
+				wxGridCellAttr *attrNew = attr->Clone();
+				attr->DecRef();
+				attr = attrNew;
+				attr->SetBackgroundColour(*wxLIGHT_GREY);
+			}
+		}
+	}
 
-    return attr;
+	return attr;
 }
 
-
 BEGIN_EVENT_TABLE(wxExtGridCtrl, wxGrid)
-	EVT_GRID_CELL_CHANGED( wxExtGridCtrl::OnGridCellChange)
-	EVT_GRID_SELECT_CELL( wxExtGridCtrl::OnGridCellSelect)
-	EVT_GRID_RANGE_SELECT( wxExtGridCtrl::OnGridRangeSelect)
-	EVT_GRID_EDITOR_HIDDEN( wxExtGridCtrl::OnGridEditorHidden)
-	EVT_GRID_EDITOR_SHOWN( wxExtGridCtrl::OnGridEditorShown)
-	EVT_GRID_LABEL_LEFT_CLICK( wxExtGridCtrl::OnGridLabelClick )
-	EVT_KEY_DOWN( wxExtGridCtrl::OnGridKey )
+EVT_GRID_CELL_CHANGED(wxExtGridCtrl::OnGridCellChange)
+EVT_GRID_SELECT_CELL(wxExtGridCtrl::OnGridCellSelect)
+EVT_GRID_RANGE_SELECT(wxExtGridCtrl::OnGridRangeSelect)
+EVT_GRID_EDITOR_HIDDEN(wxExtGridCtrl::OnGridEditorHidden)
+EVT_GRID_EDITOR_SHOWN(wxExtGridCtrl::OnGridEditorShown)
+EVT_GRID_LABEL_LEFT_CLICK(wxExtGridCtrl::OnGridLabelClick)
+EVT_KEY_DOWN(wxExtGridCtrl::OnGridKey)
 END_EVENT_TABLE()
 
-wxExtGridCtrl::wxExtGridCtrl(wxWindow *parent, int id, 
-	const wxPoint &pos, const wxSize &sz)
-	: wxGrid(parent, id, pos, sz)
+wxExtGridCtrl::wxExtGridCtrl(wxWindow *parent, int id,
+const wxPoint &pos, const wxSize &sz)
+: wxGrid(parent, id, pos, sz)
 {
 	m_sendPasteEvent = true;
 	m_enableCopyPaste = true;
@@ -222,10 +242,10 @@ void wxExtGridCtrl::GetLastSelRange(int *top, int *bottom, int *left, int *right
 size_t wxExtGridCtrl::NumCellsSelected() const
 {
 	int nr = abs(m_selBottomRow - m_selTopRow + 1);
-	int nc = abs(m_selRightCol -  m_selLeftCol + 1);
-	if ( nr < 0 ) nr = 0;
-	if ( nc < 0 ) nc = 0;
-	return (size_t)( nr * nc );
+	int nc = abs(m_selRightCol - m_selLeftCol + 1);
+	if (nr < 0) nr = 0;
+	if (nc < 0) nc = 0;
+	return (size_t)(nr * nc);
 }
 
 void wxExtGridCtrl::OnGridKey(wxKeyEvent &evt)
@@ -233,9 +253,9 @@ void wxExtGridCtrl::OnGridKey(wxKeyEvent &evt)
 	if (m_enableCopyPaste && evt.CmdDown())
 	{
 		int key = tolower(evt.GetKeyCode());
-		if (key=='c')
+		if (key == 'c')
 			Copy();
-		else if (key=='v')
+		else if (key == 'v')
 			Paste();
 		else
 			evt.Skip();
@@ -251,20 +271,20 @@ void wxExtGridCtrl::OnGridLabelClick(wxGridEvent &evt)
 	m_selLeftCol = col;
 	m_selRightCol = col;
 	m_selTopRow = 0;
-	m_selBottomRow = GetNumberRows()-1;
+	m_selBottomRow = GetNumberRows() - 1;
 
-	if ( m_enableCopyPaste ) 
+	if (m_enableCopyPaste)
 	{
 		SetFocus();
-		if ( col >= 0 )
-			SetGridCursor( 0, col );
+		if (col >= 0)
+			SetGridCursor(0, col);
 	}
 
 	evt.Skip();
 }
 
 void wxExtGridCtrl::OnGridCellChange(wxGridEvent &evt)
-{	
+{
 	m_lastSelTopRow = m_selTopRow;
 	m_lastSelBottomRow = m_selBottomRow;
 	m_lastSelLeftCol = m_selLeftCol;
@@ -275,12 +295,12 @@ void wxExtGridCtrl::OnGridCellChange(wxGridEvent &evt)
 	m_selLeftCol = -1;
 	m_selRightCol = -1;
 
-	if (m_enableCopyPaste && evt.GetRow() >= 0 && evt.GetCol() >= 0 && !m_skipSelect )
+	if (m_enableCopyPaste && evt.GetRow() >= 0 && evt.GetCol() >= 0 && !m_skipSelect)
 	{
-		wxString cell = GetCellValue(evt.GetRow(),evt.GetCol());
+		wxString cell = GetCellValue(evt.GetRow(), evt.GetCol());
 		cell.Replace("\n", "");
 		cell.Replace("\t", "");
-		SetCellValue(evt.GetRow(), evt.GetCol(), cell );
+		SetCellValue(evt.GetRow(), evt.GetCol(), cell);
 	}
 
 	evt.Skip();
@@ -301,7 +321,7 @@ void wxExtGridCtrl::OnGridCellSelect(wxGridEvent &evt)
 		return;
 	}
 
-	if ( evt.Selecting() && !m_skipSelect )
+	if (evt.Selecting() && !m_skipSelect)
 	{
 		m_selTopRow = evt.GetRow();
 		m_selBottomRow = m_selTopRow;
@@ -355,72 +375,72 @@ bool wxExtGridCtrl::IsCopyPasteEnabled()
 
 #define BUSY_DELAY_MS 75
 
-void wxExtGridCtrl::Copy( bool all, bool with_headers )
+void wxExtGridCtrl::Copy(bool all, bool with_headers)
 {
-	wxBusyInfo info( "Copying to clipboard...", this );
+	wxBusyInfo info("Copying to clipboard...", this);
 	wxYield();
 
-	int minrow=m_selTopRow, maxrow=m_selBottomRow;
-	int mincol=m_selLeftCol, maxcol=m_selRightCol;
+	int minrow = m_selTopRow, maxrow = m_selBottomRow;
+	int mincol = m_selLeftCol, maxcol = m_selRightCol;
 
-	if ( minrow == maxrow && minrow < 0 )
+	if (minrow == maxrow && minrow < 0)
 	{
 		minrow = 0;
-		maxrow = GetNumberRows()-1;
+		maxrow = GetNumberRows() - 1;
 	}
-	
-	if ( mincol == mincol && mincol < 0 )
+
+	if (mincol == mincol && mincol < 0)
 	{
 		mincol = 0;
-		maxcol = GetNumberCols()-1;
+		maxcol = GetNumberCols() - 1;
 	}
-	
-	if ( all || m_selTopRow < 0 || m_selLeftCol < 0 )
+
+	if (all || m_selTopRow < 0 || m_selLeftCol < 0)
 	{
 		minrow = 0;
-		maxrow = GetNumberRows()-1;
+		maxrow = GetNumberRows() - 1;
 		mincol = 0;
-		maxcol = GetNumberCols()-1;
+		maxcol = GetNumberCols() - 1;
 	}
 
 	wxString data;
 
 	if (with_headers)
 	{
-		for (int c=mincol;c<=maxcol;c++)
-			data += this->GetColLabelValue( c )  + wxString(c==maxcol?'\n':'\t');
+		for (int c = mincol; c <= maxcol; c++)
+			data += this->GetColLabelValue(c) + wxString(c == maxcol ? '\n' : '\t');
 	}
 
-	for (int r = minrow;r<=maxrow;r++)
+	for (int r = minrow; r <= maxrow; r++)
 	{
-		for (int c= mincol;c<=maxcol;c++)
+		for (int c = mincol; c <= maxcol; c++)
 		{
-			wxString cell = GetCellValue(r,c);
+			wxString cell = GetCellValue(r, c);
 			cell.Replace("\n", "");
 			cell.Replace("\t", "");
-			data += cell + wxString(c==maxcol?'\n':'\t');
+			data += cell + wxString(c == maxcol ? '\n' : '\t');
 		}
 	}
 
 	if (wxTheClipboard->Open())
 	{
-		wxTheClipboard->SetData( new wxTextDataObject(data) );
+		wxTheClipboard->SetData(new wxTextDataObject(data));
 		wxTheClipboard->Close();
 
-		wxMilliSleep( BUSY_DELAY_MS );
+		wxMilliSleep(BUSY_DELAY_MS);
 	}
 }
 
-void wxExtGridCtrl::Paste( PasteMode mode )
+void wxExtGridCtrl::Paste(PasteMode mode)
 {
-	wxBusyInfo info( "Pasting from clipboard...", this );
+	wxBusyInfo info("Pasting from clipboard...", this);
 	wxYield();
 
 	if (wxTheClipboard->Open())
 	{
 		wxString data;
 		wxTextDataObject textobj;
-		if (wxTheClipboard->GetData( textobj ))
+		if (wxTheClipboard->GetData(textobj))
 		{
 			data = textobj.GetText();
 			wxTheClipboard->Close();
@@ -430,36 +450,36 @@ void wxExtGridCtrl::Paste( PasteMode mode )
 		int currow = GetGridCursorRow();
 		int curcol = GetGridCursorCol();
 
-		if ( mode == PASTE_ALL
+		if (mode == PASTE_ALL
 			|| mode == PASTE_ALL_RESIZE
-			|| mode == PASTE_ALL_RESIZE_ROWS ) currow = curcol = 0;
+			|| mode == PASTE_ALL_RESIZE_ROWS) currow = curcol = 0;
 
 		wxCSVData csv;
-		csv.SetSeparator( wxUniChar( '\t' ) );
-		csv.ReadString( data );
+		csv.SetSeparator(wxUniChar('\t'));
+		csv.ReadString(data);
 
-		if ( mode == PASTE_ALL_RESIZE )
-			ResizeGrid( csv.NumRows(), csv.NumCols() );
-		else if ( mode == PASTE_ALL_RESIZE_ROWS )
-			ResizeGrid( csv.NumRows(), GetNumberCols() );
+		if (mode == PASTE_ALL_RESIZE)
+			ResizeGrid(csv.NumRows(), csv.NumCols());
+		else if (mode == PASTE_ALL_RESIZE_ROWS)
+			ResizeGrid(csv.NumRows(), GetNumberCols());
 
-		for (size_t i=0;i<csv.NumRows();i++)
+		for (size_t i = 0; i < csv.NumRows(); i++)
 		{
-			for (size_t p=0;p<csv.NumCols();p++)
+			for (size_t p = 0; p < csv.NumCols(); p++)
 			{
 				int r = currow + i;
 				int c = curcol + p;
-				if (r < GetNumberRows() && c < GetNumberCols() && r >=0 && c >= 0 )
+				if (r < GetNumberRows() && c < GetNumberCols() && r >= 0 && c >= 0)
 				{
-					if (!IsReadOnly( r, c ))
+					if (!IsReadOnly(r, c))
 					{
-						SetCellValue( r, c, csv(i,p) );
+						SetCellValue(r, c, csv(i, p));
 					}
 				}
 			}
 		}
 
-		wxMilliSleep( BUSY_DELAY_MS );
+		wxMilliSleep(BUSY_DELAY_MS);
 
 		if (m_sendPasteEvent)
 		{
@@ -474,16 +494,16 @@ void wxExtGridCtrl::ResizeGrid(int nrows, int ncols)
 	Freeze();
 
 	if (GetNumberRows() > nrows)
-		DeleteRows( nrows, GetNumberRows() - nrows );
+		DeleteRows(nrows, GetNumberRows() - nrows);
 
 	if (GetNumberRows() < nrows)
-		AppendRows( nrows - GetNumberRows() );
+		AppendRows(nrows - GetNumberRows());
 
 	if (GetNumberCols() > ncols)
-		DeleteCols( ncols, GetNumberCols() - ncols );
+		DeleteCols(ncols, GetNumberCols() - ncols);
 
 	if (GetNumberCols() < ncols)
-		AppendCols( ncols - GetNumberCols() );
+		AppendCols(ncols - GetNumberCols());
 
 	Thaw();
 }

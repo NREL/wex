@@ -1,3 +1,27 @@
+/***********************************************************************************************************************
+*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+*  following conditions are met:
+*
+*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+*  disclaimer.
+*
+*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+*  following disclaimer in the documentation and/or other materials provided with the distribution.
+*
+*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
+*  products derived from this software without specific prior written permission from the respective party.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
+*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**********************************************************************************************************************/
+
 #ifndef __wxExtGridctrl_h
 #define __wxExtGridctrl_h
 
@@ -6,19 +30,18 @@
 class wxExtGridCellAttrProvider : public wxGridCellAttrProvider
 {
 public:
-    wxExtGridCellAttrProvider(bool highlight_r0=false, bool hide_00=false, bool highlight_c0=false);
-    virtual ~wxExtGridCellAttrProvider();
+	wxExtGridCellAttrProvider(bool highlight_r0 = false, bool hide_00 = false, bool highlight_c0 = false);
+	virtual ~wxExtGridCellAttrProvider();
 
-    virtual wxGridCellAttr *GetAttr(int row, int col,
-                                    wxGridCellAttr::wxAttrKind  kind) const;
+	virtual wxGridCellAttr *GetAttr(int row, int col,
+		wxGridCellAttr::wxAttrKind  kind) const;
 
 private:
-    wxGridCellAttr *m_attrForOddRows;
+	wxGridCellAttr *m_attrForOddRows;
 	wxGridCellAttr *m_attrRow0;
 	wxGridCellAttr *m_attrCol0;
 	wxGridCellAttr *m_attrCell00;
 };
-
 
 class wxExtGridCtrl : public wxGrid
 {
@@ -34,15 +57,15 @@ public:
 	void ResetLastSelRange();
 	size_t NumCellsSelected() const;
 
-	void Copy(bool all=false, bool with_headers=false);
+	void Copy(bool all = false, bool with_headers = false);
 
 	enum PasteMode { PASTE_CURSOR, PASTE_ALL, PASTE_ALL_RESIZE, PASTE_ALL_RESIZE_ROWS };
-	void Paste( PasteMode mode = PASTE_CURSOR );
+	void Paste(PasteMode mode = PASTE_CURSOR);
 
 	void ResizeGrid(int nr, int nc);
-	
+
 private:
-	void OnGridKey( wxKeyEvent &evt );
+	void OnGridKey(wxKeyEvent &evt);
 	void OnGridCellChange(wxGridEvent &evt);
 	void OnGridCellSelect(wxGridEvent &evt);
 	void OnGridEditorHidden(wxGridEvent &evt);
@@ -60,6 +83,5 @@ private:
 
 	DECLARE_EVENT_TABLE()
 };
-
 
 #endif

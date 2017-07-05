@@ -1,3 +1,27 @@
+/***********************************************************************************************************************
+*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+*  following conditions are met:
+*
+*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+*  disclaimer.
+*
+*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+*  following disclaimer in the documentation and/or other materials provided with the distribution.
+*
+*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
+*  products derived from this software without specific prior written permission from the respective party.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
+*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**********************************************************************************************************************/
+
 #ifndef __DVMapCtrl_h
 #define __DVMapCtrl_h
 
@@ -29,12 +53,12 @@ class wxSearchCtrl;
 class wxDVDMapCtrl : public wxPanel
 {
 public:
-	wxDVDMapCtrl(wxWindow* parent, wxWindowID id = wxID_ANY, 
+	wxDVDMapCtrl(wxWindow* parent, wxWindowID id = wxID_ANY,
 		const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize);
 	virtual ~wxDVDMapCtrl();
 
 	//Does not take ownership.
-	void AddDataSet(wxDVTimeSeriesDataSet* d, bool update_ui );
+	void AddDataSet(wxDVTimeSeriesDataSet* d, bool update_ui);
 	void RemoveDataSet(wxDVTimeSeriesDataSet* d); //releases ownership, does not delete.
 	void RemoveAllDataSets(); //clear all data sets from graphs and memory. (delete plottables.  Never took ownership.
 
@@ -42,7 +66,7 @@ public:
 	bool SetCurrentDataName(const wxString& name);
 	wxPLColourMap* GetCurrentColourMap();
 	void SetColourMapName(const wxString& name);
-	void SetReverseColours( bool b );
+	void SetReverseColours(bool b);
 	bool IsReversedColours();
 	void SelectDataSetAtIndex(int index);
 	int GetNumberOfSelections();
@@ -68,7 +92,7 @@ public:
 	void SetViewWindow(double xMin, double yMin, double xMax, double yMax);
 	void PanXByPercent(double p);
 	void PanYByPercent(double p);
-	
+
 	//These functions will move the bounds if they need to be moved.
 	void KeepXBoundsWithinLimits(double* xMin, double* xMax);
 	void KeepYBoundsWithinLimits(double* yMin, double* yMax);
@@ -85,7 +109,6 @@ public:
 	void UpdateYScrollbarPosition();
 
 	void ZoomFactorAndUpdate(double factor, double shiftPercent = 0.0);
-
 
 	/*Event Handlers*/
 	void OnDataChannelSelection(wxCommandEvent& e);
@@ -111,7 +134,7 @@ public:
 	void OnYScrollPageDown(wxScrollEvent& e);
 
 	void OnResetColourMapMinMax(wxCommandEvent& e);
-	void OnReverseColours( wxCommandEvent & );
+	void OnReverseColours(wxCommandEvent &);
 
 	void Invalidate(); // recalculate and rerender plot
 private:

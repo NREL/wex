@@ -1,10 +1,31 @@
+/***********************************************************************************************************************
+*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+*  following conditions are met:
+*
+*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+*  disclaimer.
+*
+*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+*  following disclaimer in the documentation and/or other materials provided with the distribution.
+*
+*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
+*  products derived from this software without specific prior written permission from the respective party.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
+*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**********************************************************************************************************************/
 
 #include "wex/dview/dvtimeseriesdataset.h"
 
-
 wxDVTimeSeriesDataSet::wxDVTimeSeriesDataSet()
 {
-	
 }
 
 wxDVTimeSeriesDataSet::~wxDVTimeSeriesDataSet()
@@ -19,8 +40,8 @@ wxString wxDVTimeSeriesDataSet::GetLabel() const
 /* Helper Functions */
 wxString wxDVTimeSeriesDataSet::GetTitleWithUnits() const
 {
-	wxString units( GetUnits() );
-	if ( units.IsEmpty() ) return GetSeriesTitle();
+	wxString units(GetUnits());
+	if (units.IsEmpty()) return GetSeriesTitle();
 	else return GetSeriesTitle() + " (" + units + ")";
 }
 
@@ -35,7 +56,7 @@ double wxDVTimeSeriesDataSet::GetMinHours()
 }
 double wxDVTimeSeriesDataSet::GetMaxHours()
 {
-	return At(Length()-1).x;
+	return At(Length() - 1).x;
 }
 
 double wxDVTimeSeriesDataSet::GetTotalHours()
@@ -43,18 +64,18 @@ double wxDVTimeSeriesDataSet::GetTotalHours()
 	return GetMaxHours() - GetMinHours();
 }
 
-void wxDVTimeSeriesDataSet::GetMinAndMaxInRange(double* min, double* max, 
-												  size_t startIndex, size_t endIndex)
+void wxDVTimeSeriesDataSet::GetMinAndMaxInRange(double* min, double* max,
+	size_t startIndex, size_t endIndex)
 {
-	if(endIndex > Length())
+	if (endIndex > Length())
 		endIndex = Length();
-	if(startIndex < 0)
+	if (startIndex < 0)
 		startIndex = 0;
 
 	double myMin = At(startIndex).y;
 	double myMax = At(startIndex).y;
 
-	for(size_t i=startIndex+1; i<endIndex; i++)
+	for (size_t i = startIndex + 1; i < endIndex; i++)
 	{
 		if (At(i).y < myMin)
 			myMin = At(i).y;
@@ -74,8 +95,8 @@ void wxDVTimeSeriesDataSet::GetMinAndMaxInRange(double* min, double* max, double
 		startHour = At(0).x;
 	if (endHour < At(0).x)
 		endHour = At(0).x;
-	size_t startIndex = size_t((startHour - At(0).x)/GetTimeStep());
-	size_t endIndex = size_t((endHour - At(0).x)/GetTimeStep() + 2);
+	size_t startIndex = size_t((startHour - At(0).x) / GetTimeStep());
+	size_t endIndex = size_t((endHour - At(0).x) / GetTimeStep() + 2);
 
 	if (startIndex < 0)
 		startIndex = 0;
@@ -95,57 +116,53 @@ void wxDVTimeSeriesDataSet::GetDataMinAndMax(double* min, double* max)
 std::vector<wxRealPoint> wxDVTimeSeriesDataSet::GetDataVector()
 {
 	std::vector<wxRealPoint> pp;
-	pp.reserve( Length() );
-	for (size_t i=0;i<Length();i++)
-		pp.push_back( At(i) );
+	pp.reserve(Length());
+	for (size_t i = 0; i < Length(); i++)
+		pp.push_back(At(i));
 	return pp;
 }
 
-
-
 // ******** Array data set *********** //
-
 
 wxDVArrayDataSet::wxDVArrayDataSet()
 	: m_timestep(1), m_offset(0)
 {
 }
 
-wxDVArrayDataSet::wxDVArrayDataSet( const wxString &var, const std::vector<double> &data )
+wxDVArrayDataSet::wxDVArrayDataSet(const wxString &var, const std::vector<double> &data)
 	: m_varLabel(var), m_timestep(1), m_offset(0)
 {
-	Copy( data );	
+	Copy(data);
 }
 
-wxDVArrayDataSet::wxDVArrayDataSet( const wxString &var, const std::vector<wxRealPoint> &data )
+wxDVArrayDataSet::wxDVArrayDataSet(const wxString &var, const std::vector<wxRealPoint> &data)
 	: m_varLabel(var), m_pData(data), m_timestep(1), m_offset(0)
 {
 }
 
-wxDVArrayDataSet::wxDVArrayDataSet( const wxString &var, const wxString &units, const double &timestep )
+wxDVArrayDataSet::wxDVArrayDataSet(const wxString &var, const wxString &units, const double &timestep)
 	: m_varLabel(var), m_varUnits(units), m_timestep(timestep), m_offset(0)
 {
 }
 
-wxDVArrayDataSet::wxDVArrayDataSet( const wxString &var, const wxString &units, const double &timestep, const std::vector<double> &data )
+wxDVArrayDataSet::wxDVArrayDataSet(const wxString &var, const wxString &units, const double &timestep, const std::vector<double> &data)
 	: m_varLabel(var), m_varUnits(units), m_timestep(timestep), m_offset(0)
 {
-	Copy( data );
+	Copy(data);
 }
 
-wxDVArrayDataSet::wxDVArrayDataSet( const wxString &var, const wxString &units, const double &offset, const double &timestep, const std::vector<double> &data )
+wxDVArrayDataSet::wxDVArrayDataSet(const wxString &var, const wxString &units, const double &offset, const double &timestep, const std::vector<double> &data)
 	: m_varLabel(var), m_varUnits(units), m_timestep(timestep), m_offset(offset)
 {
-	Copy( data );
+	Copy(data);
 }
-
 
 wxRealPoint wxDVArrayDataSet::At(size_t i) const
 {
-	if ((i<m_pData.size())&&(i>=0))
-		return wxRealPoint( m_pData[i].x, m_pData[i].y );
+	if ((i < m_pData.size()) && (i >= 0))
+		return wxRealPoint(m_pData[i].x, m_pData[i].y);
 	else
-		return wxRealPoint(m_offset+i*m_timestep, 0.0 );
+		return wxRealPoint(m_offset + i*m_timestep, 0.0);
 }
 
 size_t wxDVArrayDataSet::Length() const
@@ -178,67 +195,66 @@ void wxDVArrayDataSet::Clear()
 	m_pData.clear();
 }
 
-void wxDVArrayDataSet::Copy( const std::vector<double> &data )
+void wxDVArrayDataSet::Copy(const std::vector<double> &data)
 {
 	m_pData.clear();
-	if ( data.size() > 0 )
+	if (data.size() > 0)
 	{
-		m_pData.resize( data.size() );
-		for( size_t i=0;i<data.size();i++ )
-			m_pData[i] = wxRealPoint( m_offset+i*m_timestep, data[i] );
+		m_pData.resize(data.size());
+		for (size_t i = 0; i < data.size(); i++)
+			m_pData[i] = wxRealPoint(m_offset + i*m_timestep, data[i]);
 	}
 }
 
-void wxDVArrayDataSet::Alloc( size_t n )
+void wxDVArrayDataSet::Alloc(size_t n)
 {
-	m_pData.reserve( n );
+	m_pData.reserve(n);
 }
 
-void wxDVArrayDataSet::Append( const wxRealPoint &p )
+void wxDVArrayDataSet::Append(const wxRealPoint &p)
 {
-	m_pData.push_back( p );
+	m_pData.push_back(p);
 }
 
-void wxDVArrayDataSet::Set( size_t i, double x, double y )
+void wxDVArrayDataSet::Set(size_t i, double x, double y)
 {
-	if ( i < m_pData.size() )
-		m_pData[i] = wxRealPoint( x, y );
+	if (i < m_pData.size())
+		m_pData[i] = wxRealPoint(x, y);
 }
 
-void wxDVArrayDataSet::SetY( size_t i, double y )
+void wxDVArrayDataSet::SetY(size_t i, double y)
 {
-	if ( i < m_pData.size() )
+	if (i < m_pData.size())
 		m_pData[i].y = y;
 }
 
-void wxDVArrayDataSet::SetSeriesTitle( const wxString &title )
+void wxDVArrayDataSet::SetSeriesTitle(const wxString &title)
 {
 	m_varLabel = title;
 }
 
-void wxDVArrayDataSet::SetUnits( const wxString &units )
+void wxDVArrayDataSet::SetUnits(const wxString &units)
 {
 	m_varUnits = units;
 }
 
-void wxDVArrayDataSet::SetTimeStep( double ts, bool recompute_x )
+void wxDVArrayDataSet::SetTimeStep(double ts, bool recompute_x)
 {
 	m_timestep = ts;
-	if ( recompute_x ) RecomputeXData();
+	if (recompute_x) RecomputeXData();
 }
 
-void wxDVArrayDataSet::SetOffset( double off, bool recompute_x )
+void wxDVArrayDataSet::SetOffset(double off, bool recompute_x)
 {
 	m_offset = off;
-	if ( recompute_x ) RecomputeXData();
+	if (recompute_x) RecomputeXData();
 }
 
 void wxDVArrayDataSet::RecomputeXData()
 {
-	for( size_t i=0;i<m_pData.size();i++ )
-		m_pData[i].x = m_offset+i*m_timestep;
+	for (size_t i = 0; i < m_pData.size(); i++)
+		m_pData[i].x = m_offset + i*m_timestep;
 }
-
 
 // ******** Statistics data set *********** //
 
@@ -483,7 +499,6 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 		sp.AvgDailyMin = RoundSignificant(AvgDailyMin);
 
 		Append(sp);
-
 	}
 
 	//Append StatisticsPoint for totals over all months
@@ -531,7 +546,7 @@ wxDVStatisticsDataSet::wxDVStatisticsDataSet(wxDVTimeSeriesDataSet *d)
 	sp.AvgDailyMax = RoundSignificant(AvgDailyMax);
 	sp.AvgDailyMin = RoundSignificant(AvgDailyMin);
 
-	Append(sp); 
+	Append(sp);
 }
 
 double wxDVStatisticsDataSet::RoundSignificant(double ValueToRound, size_t NumSignifDigits)
@@ -544,8 +559,8 @@ double wxDVStatisticsDataSet::RoundSignificant(double ValueToRound, size_t NumSi
 	roundedValue = roundedValue / multiplier;	//Reset the decimal point to its original position
 
 	//TODO:   Implement more sophisticated rounding logic using significant digits:
-	//Round double values to 4 significant digits by only displaying three more digits after the first non-zero digit to the right of the decimal. 
-	//If there are no non-zero digits to the right of the decimal then we should display the number as in integer. 
+	//Round double values to 4 significant digits by only displaying three more digits after the first non-zero digit to the right of the decimal.
+	//If there are no non-zero digits to the right of the decimal then we should display the number as in integer.
 	//We must also be careful not to loose any exponential notation (XX E YY) during the rounding. The E and characters after it should be appended to the rounded value.
 
 	return roundedValue;

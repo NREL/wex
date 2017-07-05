@@ -1,3 +1,27 @@
+/***********************************************************************************************************************
+*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+*  following conditions are met:
+*
+*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+*  disclaimer.
+*
+*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+*  following disclaimer in the documentation and/or other materials provided with the distribution.
+*
+*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
+*  products derived from this software without specific prior written permission from the respective party.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
+*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**********************************************************************************************************************/
+
 /*
 * wxDVVariableStatistics.cpp
 *
@@ -22,7 +46,6 @@
 #ifdef __WXMSW__
 #include "wex/ole/excelauto.h"
 #endif
-
 
 //Tree Model Node
 
@@ -55,34 +78,34 @@ dvStatisticsTreeModelNode::~dvStatisticsTreeModelNode()
 	RemoveAllChildren();
 }
 
-bool dvStatisticsTreeModelNode::IsContainer() const 
-{ 
-	return m_container; 
+bool dvStatisticsTreeModelNode::IsContainer() const
+{
+	return m_container;
 }
 
-dvStatisticsTreeModelNode* dvStatisticsTreeModelNode::GetParent() 
-{ 
-	return m_parent; 
+dvStatisticsTreeModelNode* dvStatisticsTreeModelNode::GetParent()
+{
+	return m_parent;
 }
 
 std::vector<dvStatisticsTreeModelNode*> dvStatisticsTreeModelNode::GetChildren()
-{ 
-	return m_children; 
+{
+	return m_children;
 }
 
-dvStatisticsTreeModelNode* dvStatisticsTreeModelNode::GetNthChild(unsigned int n) 
-{ 
+dvStatisticsTreeModelNode* dvStatisticsTreeModelNode::GetNthChild(unsigned int n)
+{
 	if (n >= m_children.size()) { return NULL; }
-	return m_children[n]; 
+	return m_children[n];
 }
 
-void dvStatisticsTreeModelNode::Append(dvStatisticsTreeModelNode* child) 
-{ 
+void dvStatisticsTreeModelNode::Append(dvStatisticsTreeModelNode* child)
+{
 	m_children.push_back(child);
 }
 
-unsigned int dvStatisticsTreeModelNode::GetChildCount() const 
-{ 
+unsigned int dvStatisticsTreeModelNode::GetChildCount() const
+{
 	return m_children.size();
 }
 
@@ -130,7 +153,6 @@ double dvStatisticsTreeModelNode::GetAvgDailyMax()
 {
 	return m_avgdailymax;
 }
-
 
 //Tree Model
 
@@ -322,10 +344,10 @@ void dvStatisticsTreeModel::Refresh(std::vector<wxDVVariableStatistics*> stats, 
 			}
 		}
 
-		if (groupName == "") 
-		{ 
+		if (groupName == "")
+		{
 			groupName = stats[i]->GetGroupName();
-			groupNode = new dvStatisticsTreeModelNode(m_root, groupName); 
+			groupNode = new dvStatisticsTreeModelNode(m_root, groupName);
 			m_root->Append(groupNode);
 		}
 
@@ -335,12 +357,12 @@ void dvStatisticsTreeModel::Refresh(std::vector<wxDVVariableStatistics*> stats, 
 		{
 			variableNode = new dvStatisticsTreeModelNode(groupNode, ds->GetSeriesTitle() + " (" + ds->GetUnits() + ")");
 
-		for (int j = 0; j < ds->Length(); j++)
-		{
-			p = ds->At(j);
-			monthNode = new dvStatisticsTreeModelNode(variableNode, p.name, p.Mean, p.Min, p.Max, p.Sum, p.StDev, p.AvgDailyMin, p.AvgDailyMax);
-			variableNode->Append(monthNode);
-		}
+			for (int j = 0; j < ds->Length(); j++)
+			{
+				p = ds->At(j);
+				monthNode = new dvStatisticsTreeModelNode(variableNode, p.name, p.Mean, p.Min, p.Max, p.Sum, p.StDev, p.AvgDailyMin, p.AvgDailyMax);
+				variableNode->Append(monthNode);
+			}
 
 			groupNode->Append(variableNode);
 		}
@@ -365,11 +387,10 @@ wxDataViewItem dvStatisticsTreeModel::GetRoot()
 	return (wxDataViewItem)m_root;
 }
 
-
 //wxDVVariableStatistics
 
 wxDVVariableStatistics::wxDVVariableStatistics(wxDVStatisticsDataSet *ds, wxString GroupName, bool OwnsDataset)
-: m_data(ds)
+	: m_data(ds)
 {
 	m_ownsDataset = OwnsDataset;
 	m_groupName = GroupName;
@@ -418,22 +439,21 @@ wxString wxDVVariableStatistics::GetGroupName()
 	return m_groupName;
 }
 
-
 //wxDVStatisticsTableCtrl
 
 enum { ID_COPY_DATA_CLIP = wxID_HIGHEST + 1251, ID_SAVE_DATA_CSV, ID_SEND_EXCEL };
 
 BEGIN_EVENT_TABLE(wxDVStatisticsTableCtrl, wxPanel)
-	EVT_MENU_RANGE(ID_COPY_DATA_CLIP, ID_SEND_EXCEL, wxDVStatisticsTableCtrl::OnPopupMenu)
-	EVT_CHECKBOX(wxID_ANY, wxDVStatisticsTableCtrl::OnShowMonthsClick)
-	END_EVENT_TABLE()
+EVT_MENU_RANGE(ID_COPY_DATA_CLIP, ID_SEND_EXCEL, wxDVStatisticsTableCtrl::OnPopupMenu)
+EVT_CHECKBOX(wxID_ANY, wxDVStatisticsTableCtrl::OnShowMonthsClick)
+END_EVENT_TABLE()
 
 wxDVStatisticsTableCtrl::wxDVStatisticsTableCtrl(wxWindow *parent, wxWindowID id)
-	: wxPanel(parent, id)
+: wxPanel(parent, id)
 {
 	m_showMonths = false;
 
-	m_ctrl = new wxDataViewCtrl(this, ID_STATISTICS_CTRL, wxDefaultPosition, wxSize(1040, 720), 
+	m_ctrl = new wxDataViewCtrl(this, ID_STATISTICS_CTRL, wxDefaultPosition, wxSize(1040, 720),
 		wxDV_MULTIPLE | wxDV_ROW_LINES | wxDV_VERT_RULES | wxDV_HORIZ_RULES | wxBORDER_NONE);
 	m_ctrl->Bind(wxEVT_COMMAND_DATAVIEW_ITEM_CONTEXT_MENU, &wxDVStatisticsTableCtrl::OnContextMenu, this);
 
@@ -441,8 +461,8 @@ wxDVStatisticsTableCtrl::wxDVStatisticsTableCtrl(wxWindow *parent, wxWindowID id
 	m_chkShowMonths = new wxCheckBox(this, wxID_ANY, "Show Monthly Values", wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
 
 	wxBoxSizer *top_sizer = new wxBoxSizer(wxVERTICAL);
-//	top_sizer->Add(m_chkShowMonths, 0, wxALL | wxALIGN_CENTER_VERTICAL, 4);
-	top_sizer->Add(m_chkShowMonths, 0, wxALL , 4);
+	//	top_sizer->Add(m_chkShowMonths, 0, wxALL | wxALIGN_CENTER_VERTICAL, 4);
+	top_sizer->Add(m_chkShowMonths, 0, wxALL, 4);
 	top_sizer->Add(m_ctrl, 1, wxALL | wxEXPAND, 0);
 	SetSizer(top_sizer);
 
@@ -508,7 +528,6 @@ void wxDVStatisticsTableCtrl::RebuildDataViewCtrl()
 
 	wxDataViewItem item = m_StatisticsModel->GetRoot();
 	if (item.IsOk()) { m_ctrl->Expand(item); }
-
 }
 
 void wxDVStatisticsTableCtrl::AddDataSet(wxDVTimeSeriesDataSet *d)
@@ -645,80 +664,80 @@ void wxDVStatisticsTableCtrl::OnPopupMenu(wxCommandEvent &evt)
 
 	switch (menuid)
 	{
-		case ID_COPY_DATA_CLIP:
-			if (wxTheClipboard->Open())
-			{
-				wxString text;
-				wxStringOutputStream sstrm(&text);
+	case ID_COPY_DATA_CLIP:
+		if (wxTheClipboard->Open())
+		{
+			wxString text;
+			wxStringOutputStream sstrm(&text);
 
-				WriteDataAsText('\t', sstrm);
-				wxTheClipboard->SetData(new wxTextDataObject(text));
-				wxTheClipboard->Close();
-			}
+			WriteDataAsText('\t', sstrm);
+			wxTheClipboard->SetData(new wxTextDataObject(text));
+			wxTheClipboard->Close();
+		}
 
-			break;
+		break;
 
 #ifdef __WXMSW__
-			case ID_SEND_EXCEL:
-				{
-					wxExcelAutomation xl;
+	case ID_SEND_EXCEL:
+	{
+		wxExcelAutomation xl;
 
-					if (!xl.StartExcel())
-					{
-						wxMessageBox("Could not start Excel.");
-						return;
-					}
+		if (!xl.StartExcel())
+		{
+			wxMessageBox("Could not start Excel.");
+			return;
+		}
 
-					xl.Show(true);
+		xl.Show(true);
 
-					if (!xl.NewWorkbook())
-					{
-						wxMessageBox("Could not create a new Excel worksheet.");
-						return;
-					}
+		if (!xl.NewWorkbook())
+		{
+			wxMessageBox("Could not create a new Excel worksheet.");
+			return;
+		}
 
-					wxString text;
-					wxStringOutputStream sstrm(&text);
-					WriteDataAsText('\t', sstrm);
+		wxString text;
+		wxStringOutputStream sstrm(&text);
+		WriteDataAsText('\t', sstrm);
 
-					xl.PasteNewWorksheet("Plot Data", text);
-					xl.AutoFitColumns();
-				}
+		xl.PasteNewWorksheet("Plot Data", text);
+		xl.AutoFitColumns();
+	}
 
-				break;
+	break;
 #endif
 
-				case ID_SAVE_DATA_CSV:
-					{
-						wxFileDialog fdlg(this, "Save Graph Data", "", "graphdata", "CSV Data Files (*.csv)|*.csv", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+	case ID_SAVE_DATA_CSV:
+	{
+		wxFileDialog fdlg(this, "Save Graph Data", "", "graphdata", "CSV Data Files (*.csv)|*.csv", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
-						if (fdlg.ShowModal() == wxID_OK)
-						{
-							wxString fn = fdlg.GetPath();
+		if (fdlg.ShowModal() == wxID_OK)
+		{
+			wxString fn = fdlg.GetPath();
 
-							if (fn != "")
-							{
-								//Make sure we have an extension
-								wxString ext;
+			if (fn != "")
+			{
+				//Make sure we have an extension
+				wxString ext;
 
-								wxFileName::SplitPath(fn, NULL, NULL, NULL, &ext);
-								if (ext.Lower() != "csv") { fn += ".csv"; }
+				wxFileName::SplitPath(fn, NULL, NULL, NULL, &ext);
+				if (ext.Lower() != "csv") { fn += ".csv"; }
 
-								wxFFileOutputStream out(fn);
+				wxFFileOutputStream out(fn);
 
-								if (out.IsOk())
-								{
-									WriteDataAsText(',', out);
-								}
-								else
-								{
-									wxMessageBox("Could not write to file: \n\n" + fn, "Save Error", wxICON_ERROR);
-								}
-							}
-						}
-					}
+				if (out.IsOk())
+				{
+					WriteDataAsText(',', out);
+				}
+				else
+				{
+					wxMessageBox("Could not write to file: \n\n" + fn, "Save Error", wxICON_ERROR);
+				}
+			}
+		}
+	}
 
-					break;
+	break;
 	}
 }
 

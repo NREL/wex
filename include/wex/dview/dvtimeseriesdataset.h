@@ -1,3 +1,27 @@
+/***********************************************************************************************************************
+*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+*  following conditions are met:
+*
+*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+*  disclaimer.
+*
+*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+*  following disclaimer in the documentation and/or other materials provided with the distribution.
+*
+*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
+*  products derived from this software without specific prior written permission from the respective party.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
+*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**********************************************************************************************************************/
+
 #ifndef __DVTimeSeriesDataSet_h
 #define __DVTimeSeriesDataSet_h
 
@@ -53,22 +77,22 @@ public:
 	void GetDataMinAndMax(double* min, double* max);
 	std::vector<wxRealPoint> GetDataVector();
 
-	virtual void SetMetaData( const wxString &meta ) { m_metaData = meta; }
+	virtual void SetMetaData(const wxString &meta) { m_metaData = meta; }
 	virtual wxString GetMetaData() { return m_metaData; }
 	virtual wxString GetGroupName() const { return m_groupName; }
-	virtual void SetGroupName( const wxString &g ) { m_groupName = g; }
+	virtual void SetGroupName(const wxString &g) { m_groupName = g; }
 };
 
 class wxDVArrayDataSet : public wxDVTimeSeriesDataSet
 {
 public:
 	wxDVArrayDataSet();
-	wxDVArrayDataSet( const wxString &var, const std::vector<double> &data );
-	wxDVArrayDataSet( const wxString &var, const std::vector<wxRealPoint> &data );
-	wxDVArrayDataSet( const wxString &var, const wxString &units, const double &timestep );
-	wxDVArrayDataSet( const wxString &var, const wxString &units, const double &timestep, const std::vector<double> &data );
-	wxDVArrayDataSet( const wxString &var, const wxString &units, const double &offset, const double &timestep, const std::vector<double> &data );
-	
+	wxDVArrayDataSet(const wxString &var, const std::vector<double> &data);
+	wxDVArrayDataSet(const wxString &var, const std::vector<wxRealPoint> &data);
+	wxDVArrayDataSet(const wxString &var, const wxString &units, const double &timestep);
+	wxDVArrayDataSet(const wxString &var, const wxString &units, const double &timestep, const std::vector<double> &data);
+	wxDVArrayDataSet(const wxString &var, const wxString &units, const double &offset, const double &timestep, const std::vector<double> &data);
+
 	virtual wxRealPoint At(size_t i) const;
 	virtual size_t Length() const;
 	virtual double GetTimeStep() const;
@@ -76,18 +100,17 @@ public:
 	virtual wxString GetSeriesTitle() const;
 	virtual wxString GetUnits() const;
 
-	void Copy( const std::vector<double> &data );
+	void Copy(const std::vector<double> &data);
 	void Clear();
-	void Alloc( size_t n );
-	void Append( const wxRealPoint &p );
-	void Set( size_t i, double x, double y );
-	void SetY( size_t i, double y );
-	
-	void SetSeriesTitle( const wxString &title );
-	void SetUnits( const wxString &units );
-	void SetTimeStep( double ts, bool recompute_x = true );
-	void SetOffset( double off, bool recompute_x = true );
-	
+	void Alloc(size_t n);
+	void Append(const wxRealPoint &p);
+	void Set(size_t i, double x, double y);
+	void SetY(size_t i, double y);
+
+	void SetSeriesTitle(const wxString &title);
+	void SetUnits(const wxString &units);
+	void SetTimeStep(double ts, bool recompute_x = true);
+	void SetOffset(double off, bool recompute_x = true);
 
 	void RecomputeXData();
 private:
@@ -96,7 +119,6 @@ private:
 	double m_timestep; // timestep in hours - fractional hours okay
 	double m_offset; // offset in hours from Jan1 00:00 - fractional hours okay
 	std::vector<wxRealPoint> m_pData;
-	
 };
 
 enum StatisticsType { MEAN = 0, MIN, MAX, SUMMATION, STDEV, AVGDAILYMIN, AVGDAILYMAX };
@@ -141,6 +163,5 @@ public:
 private:
 	std::vector<StatisticsPoint> m_sData;
 	wxDVTimeSeriesDataSet *baseDataset;
-
 };
 #endif

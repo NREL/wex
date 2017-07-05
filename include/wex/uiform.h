@@ -1,3 +1,27 @@
+/***********************************************************************************************************************
+*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+*  following conditions are met:
+*
+*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+*  disclaimer.
+*
+*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+*  following disclaimer in the documentation and/or other materials provided with the distribution.
+*
+*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
+*  products derived from this software without specific prior written permission from the respective party.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
+*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**********************************************************************************************************************/
+
 #ifndef __uiform_h
 #define __uiform_h
 
@@ -14,38 +38,38 @@ class wxUIProperty;
 class wxUIPropertyUpdateInterface
 {
 public:
-	virtual void OnPropertyChanged( const wxString &id, wxUIProperty *p ) = 0;
+	virtual void OnPropertyChanged(const wxString &id, wxUIProperty *p) = 0;
 };
 
 class wxUIProperty
 {
 public:
 	explicit wxUIProperty();
-	explicit wxUIProperty( const wxUIProperty &copy );
-	explicit wxUIProperty( double d );
-	explicit wxUIProperty( int i );
-	explicit wxUIProperty( int i, const wxArrayString &named_options );
-	explicit wxUIProperty( int i, const wxString &commasep_options );
-	explicit wxUIProperty( bool b );
-	explicit wxUIProperty( const char *str );
-	explicit wxUIProperty( const wxString &s );
-	explicit wxUIProperty( const wxColour &c );
-	explicit wxUIProperty( const wxImage &img );
-	explicit wxUIProperty( const wxArrayString &strlist );
+	explicit wxUIProperty(const wxUIProperty &copy);
+	explicit wxUIProperty(double d);
+	explicit wxUIProperty(int i);
+	explicit wxUIProperty(int i, const wxArrayString &named_options);
+	explicit wxUIProperty(int i, const wxString &commasep_options);
+	explicit wxUIProperty(bool b);
+	explicit wxUIProperty(const char *str);
+	explicit wxUIProperty(const wxString &s);
+	explicit wxUIProperty(const wxColour &c);
+	explicit wxUIProperty(const wxImage &img);
+	explicit wxUIProperty(const wxArrayString &strlist);
 
 	enum { INVALID, DOUBLE, BOOLEAN, INTEGER, COLOUR, STRING, STRINGLIST, IMAGE };
 
 	int GetType();
 
-	void Set( double d );
-	void Set( bool b );
-	void Set( int i );
-	void Set( const wxColour &c );
-	void Set( const wxString &s );
-	void Set( const wxArrayString &list);
-	void Set( const wxImage &img );
-	
-	void SetNamedOptions( const wxArrayString &opts, int selection = -1 );
+	void Set(double d);
+	void Set(bool b);
+	void Set(int i);
+	void Set(const wxColour &c);
+	void Set(const wxString &s);
+	void Set(const wxArrayString &list);
+	void Set(const wxImage &img);
+
+	void SetNamedOptions(const wxArrayString &opts, int selection = -1);
 	wxArrayString GetNamedOptions();
 
 	int GetInteger();
@@ -60,11 +84,11 @@ public:
 
 	bool IsValid() { return m_type != INVALID; }
 
-	void Write( wxOutputStream & );
-	bool Read( wxInputStream & );
-	
-	void AddUpdateInterface( const wxString &name, wxUIPropertyUpdateInterface *pui );
-	void RemoveUpdateInterface( wxUIPropertyUpdateInterface *pui );
+	void Write(wxOutputStream &);
+	bool Read(wxInputStream &);
+
+	void AddUpdateInterface(const wxString &name, wxUIPropertyUpdateInterface *pui);
+	void RemoveUpdateInterface(wxUIPropertyUpdateInterface *pui);
 	void ClearUpdateInterfaces();
 
 private:
@@ -80,7 +104,7 @@ private:
 	wxImage m_image;
 	wxArrayString m_strList;
 	wxArrayString m_namedOptions;
-	
+
 	void ValueChanged();
 	struct puidata { wxUIPropertyUpdateInterface *pui; wxString id; };
 	std::vector<puidata> m_updateInterfaceList;
@@ -89,48 +113,47 @@ private:
 class wxUIObject : public wxUIPropertyUpdateInterface
 {
 public:
-	wxUIObject( );
+	wxUIObject();
 	virtual ~wxUIObject();
 
 	virtual wxString GetTypeName() = 0;
 	virtual wxUIObject *Duplicate() = 0;
 	virtual bool IsNativeObject() = 0;
 
-	virtual bool Copy( wxUIObject *rhs );
-	virtual void Draw( wxWindow *win, wxDC &dc, const wxRect &geom );
-	virtual bool IsWithin( int xx, int yy );
+	virtual bool Copy(wxUIObject *rhs);
+	virtual void Draw(wxWindow *win, wxDC &dc, const wxRect &geom);
+	virtual bool IsWithin(int xx, int yy);
 	virtual bool DrawDottedOutline() { return false; }
-	
+
 	/* methods for handling native controls */
-	virtual wxWindow *CreateNative( wxWindow * ) { return 0; }
-	virtual void OnPropertyChanged( const wxString &id, wxUIProperty *p );
-	virtual void OnNativeEvent( );
+	virtual wxWindow *CreateNative(wxWindow *) { return 0; }
+	virtual void OnPropertyChanged(const wxString &id, wxUIProperty *p);
+	virtual void OnNativeEvent();
 
 	void DestroyNative();
 	wxWindow *GetNative() { return m_nativeObject; }
 	template<typename c> c*GetNative() { return dynamic_cast<c*>(m_nativeObject); }
 
-	void SetName( const wxString &name );
+	void SetName(const wxString &name);
 	wxString GetName();
-	void SetGeometry( const wxRect &r );
+	void SetGeometry(const wxRect &r);
 	wxRect GetGeometry();
 	wxPoint GetPosition();
 	wxSize GetSize();
-	virtual void Show( bool b );
+	virtual void Show(bool b);
 	bool IsVisible() { return m_visible; }
 
-	wxUIProperty &Property( const wxString &name );
-	bool HasProperty( const wxString &name );
+	wxUIProperty &Property(const wxString &name);
+	bool HasProperty(const wxString &name);
 	wxArrayString Properties();
 	int GetTabOrder();
-		
-	virtual void Write( wxOutputStream & );
-	virtual bool Read( wxInputStream & );
-	
+
+	virtual void Write(wxOutputStream &);
+	virtual bool Read(wxInputStream &);
 
 protected:
-	void AddProperty( const wxString &name, wxUIProperty *prop );
-	
+	void AddProperty(const wxString &name, wxUIProperty *prop);
+
 private:
 	void DeleteProperties();
 	bool m_visible;
@@ -138,45 +161,43 @@ private:
 	std::vector<propdata> m_properties;
 
 protected:
-	wxWindow *AssignNative( wxWindow *win );
+	wxWindow *AssignNative(wxWindow *win);
 
 private:
 	wxWindow *m_nativeObject;
-	
 };
-
 
 class wxUIPropertyEditor : public wxPanel
 {
 public:
-	wxUIPropertyEditor( wxWindow *parent, int id, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize );
+	wxUIPropertyEditor(wxWindow *parent, int id, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize);
 	virtual ~wxUIPropertyEditor();
-	
-	void SetObject( wxUIObject *obj );
+
+	void SetObject(wxUIObject *obj);
 	wxUIObject *GetObject() { return m_curObject; }
 	void UpdatePropertyValues();
-	
+
 private:
-	void OnChange( wxCommandEvent & );
-	void OnColourPicker( wxColourPickerEvent & );
-	void OnButton( wxCommandEvent & );
-	
+	void OnChange(wxCommandEvent &);
+	void OnColourPicker(wxColourPickerEvent &);
+	void OnButton(wxCommandEvent &);
+
 	struct pgpinfo {
 		wxString name;
 		int type;
 		wxWindow *label;
 		wxWindow *editor;
 	};
-	
-	void ValueToPropGrid( pgpinfo &p );
-	void PropGridToValue( pgpinfo &p );
-	
-	pgpinfo *Find( wxObject *editor );
+
+	void ValueToPropGrid(pgpinfo &p);
+	void PropGridToValue(pgpinfo &p);
+
+	pgpinfo *Find(wxObject *editor);
 
 	std::vector<pgpinfo> m_curProps;
 	wxUIObject *m_curObject;
 	wxString m_lastChangedProperty;
-	
+
 	DECLARE_EVENT_TABLE();
 };
 
@@ -184,53 +205,53 @@ class wxUIObjectTypeProvider
 {
 public:
 	static void RegisterBuiltinTypes();
-	static void Register( wxUIObject *obj );
+	static void Register(wxUIObject *obj);
 	static std::vector<wxUIObject*> GetTypes();
-	static wxUIObject *Create( const wxString &type );
+	static wxUIObject *Create(const wxString &type);
 };
 
 class wxUIFormData
 {
 public:
 	explicit wxUIFormData();
-	explicit wxUIFormData( const wxUIFormData &rhs );
+	explicit wxUIFormData(const wxUIFormData &rhs);
 	virtual ~wxUIFormData();
-	
+
 	wxUIFormData *Duplicate() const;
-	void Copy( const wxUIFormData &rhs );
+	void Copy(const wxUIFormData &rhs);
 
 	// build/destroy native interface as needed
-	void Attach( wxWindow *form );
+	void Attach(wxWindow *form);
 	void Detach();
 	wxWindow *GetWindow() { return m_formWindow; }
-	
+
 	// load/save form definition
-	virtual void Write( wxOutputStream & );
-	virtual bool Read( wxInputStream & );
+	virtual void Write(wxOutputStream &);
+	virtual bool Read(wxInputStream &);
 
 	// methods to create/edit UI objects
-	wxUIObject *Create( const wxString &type, const wxRect &geom, const wxString &name = wxEmptyString );
-	wxUIObject *Create( const wxString &type );
-	void Add( wxUIObject * );
-	void Delete( wxUIObject * );
+	wxUIObject *Create(const wxString &type, const wxRect &geom, const wxString &name = wxEmptyString);
+	wxUIObject *Create(const wxString &type);
+	void Add(wxUIObject *);
+	void Delete(wxUIObject *);
 	void DeleteAll();
-	wxUIObject *Find( const wxString &name );
+	wxUIObject *Find(const wxString &name);
 	std::vector<wxUIObject*> GetObjects();
-	wxUIObject **GetObjects( size_t *n );
-	void Raise( wxUIObject * );
+	wxUIObject **GetObjects(size_t *n);
+	void Raise(wxUIObject *);
 
 	// form properties
-	void SetName( const wxString &name );
+	void SetName(const wxString &name);
 	wxString GetName();
-	void SetSize( int width, int height );
+	void SetSize(int width, int height);
 	wxSize GetSize();
 
 	// virtual function to provide
-	// descendant classes ways to provide info about 
+	// descendant classes ways to provide info about
 	// labels, units, and other properties to be rendered
 	// on the actual form
-	virtual bool GetMetaData( const wxString &name,
-		wxString *label, wxString *units, wxColour *colour );
+	virtual bool GetMetaData(const wxString &name,
+		wxString *label, wxString *units, wxColour *colour);
 
 protected:
 	wxString m_name;
@@ -241,7 +262,6 @@ protected:
 	wxWindow *m_formWindow;
 };
 
-
 class wxUIObjectCopyBuffer
 {
 public:
@@ -249,7 +269,7 @@ public:
 	~wxUIObjectCopyBuffer();
 
 	void Clear();
-	void Assign( std::vector<wxUIObject*> &objlist);
+	void Assign(std::vector<wxUIObject*> &objlist);
 	std::vector<wxUIObject*> Get();
 	int Count();
 
@@ -260,7 +280,7 @@ private:
 class wxUIFormEvent : public wxCommandEvent
 {
 public:
-	wxUIFormEvent( wxUIObject *uiobj, wxEventType commandType = wxEVT_NULL, int id = 0)
+	wxUIFormEvent(wxUIObject *uiobj, wxEventType commandType = wxEVT_NULL, int id = 0)
 		: wxCommandEvent(commandType, id), m_uiObject(uiobj) { }
 	wxUIObject *GetUIObject() { return m_uiObject; }
 	void SetUIObject(wxUIObject *o) { m_uiObject = o; }
@@ -268,47 +288,47 @@ private:
 	wxUIObject *m_uiObject;
 };
 
-DECLARE_EVENT_TYPE( wxEVT_UIFORM_SELECT, -1 )
+DECLARE_EVENT_TYPE(wxEVT_UIFORM_SELECT, -1)
 
 typedef void (wxEvtHandler::*wxUIFormEventFunction)(wxUIFormEvent&);
 
 #define EVT_UIFORM_GENERIC(id, type, fn) \
-    DECLARE_EVENT_TABLE_ENTRY( type, id, -1, \
-    (wxObjectEventFunction) (wxEventFunction) (wxCommandEventFunction) \
-    wxStaticCastEvent( wxUIFormEventFunction, & fn ), (wxObject *) NULL ),
+		DECLARE_EVENT_TABLE_ENTRY( type, id, -1, \
+		(wxObjectEventFunction) (wxEventFunction) (wxCommandEventFunction) \
+		wxStaticCastEvent( wxUIFormEventFunction, & fn ), (wxObject *) NULL ),
 
 #define EVT_UIFORM_SELECT( id, fn ) EVT_UIFORM_GENERIC( id, wxEVT_UIFORM_SELECT, fn )
 
 class wxUIFormEditor : public wxWindow
 {
 public:
-	wxUIFormEditor( wxWindow *parent, int id = wxID_ANY, 
-		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize );
+	wxUIFormEditor(wxWindow *parent, int id = wxID_ANY,
+		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize);
 
-	void SetFormData( wxUIFormData *form );
+	void SetFormData(wxUIFormData *form);
 	wxUIFormData *GetFormData() { return m_form; }
 
-	wxUIObject *CreateObject( const wxString &type );
+	wxUIObject *CreateObject(const wxString &type);
 
-	void SetCopyBuffer( wxUIObjectCopyBuffer *cpbuf);
-	void SetPropertyEditor( wxUIPropertyEditor *pe );
+	void SetCopyBuffer(wxUIObjectCopyBuffer *cpbuf);
+	void SetPropertyEditor(wxUIPropertyEditor *pe);
 	void EnableTabOrderMode(bool b);
 
 	void ClearSelections();
 	std::vector<wxUIObject*> GetSelections();
-	bool IsSelected( wxUIObject * );
-	bool IsSelected( const wxString &name );
+	bool IsSelected(wxUIObject *);
+	bool IsSelected(const wxString &name);
 
-	void Snap( int *x, int *y, int spacing = -1 );
-	int Snap( int p, int spacing = -1 );
+	void Snap(int *x, int *y, int spacing = -1);
+	int Snap(int p, int spacing = -1);
 
-	void SetViewMode( bool b );
-	
-	void GetScale( double *x, double *y );
-	wxSize ScaleSize( const wxSize &s );
-	wxRect ScaleRect( const wxRect &r );
+	void SetViewMode(bool b);
 
-private:	
+	void GetScale(double *x, double *y);
+	wxSize ScaleSize(const wxSize &s);
+	wxRect ScaleRect(const wxRect &r);
+
+private:
 
 	void DrawMultiSelBox();
 	void DrawMoveResizeOutlines();
@@ -331,7 +351,7 @@ private:
 #ifdef wxUI_USE_OVERLAY
 	wxOverlay m_overlay;
 #endif
-	
+
 	void OnMouseMove(wxMouseEvent &evt);
 	void OnLeftUp(wxMouseEvent &evt);
 	void OnDoubleClick(wxMouseEvent &evt);
@@ -341,7 +361,7 @@ private:
 	void OnPaint(wxPaintEvent &evt);
 	void OnPopup(wxCommandEvent &evt);
 	void OnCreateCtrl(wxCommandEvent &evt);
-	
+
 	bool m_tabOrderMode;
 	int m_tabOrderCounter;
 	int m_snapSpacing;
@@ -359,20 +379,19 @@ private:
 	DECLARE_EVENT_TABLE()
 };
 
-
 class wxUIFormDesigner : public wxScrolledWindow
 {
 public:
-	wxUIFormDesigner( wxWindow *parent, int id, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize );
+	wxUIFormDesigner(wxWindow *parent, int id, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize);
 
-	void SetFormData( wxUIFormData *form );
+	void SetFormData(wxUIFormData *form);
 	wxUIFormData *GetFormData();
 
-	void SetFormSize( int width, int height );
+	void SetFormSize(int width, int height);
 	wxSize GetFormSize();
 
-	void SetPropertyEditor( wxUIPropertyEditor *pe ) { m_editor->SetPropertyEditor(pe); }
-	void SetCopyBuffer( wxUIObjectCopyBuffer *cb ) { m_editor->SetCopyBuffer(cb); }
+	void SetPropertyEditor(wxUIPropertyEditor *pe) { m_editor->SetPropertyEditor(pe); }
+	void SetCopyBuffer(wxUIObjectCopyBuffer *cb) { m_editor->SetCopyBuffer(cb); }
 
 	wxUIFormEditor *GetEditor() { return m_editor; }
 

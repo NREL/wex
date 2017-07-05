@@ -1,3 +1,27 @@
+/***********************************************************************************************************************
+*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+*  following conditions are met:
+*
+*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+*  disclaimer.
+*
+*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+*  following disclaimer in the documentation and/or other materials provided with the distribution.
+*
+*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
+*  products derived from this software without specific prior written permission from the respective party.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
+*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**********************************************************************************************************************/
+
 #ifndef __wex_matrix_h
 #define __wex_matrix_h
 
@@ -24,11 +48,11 @@ public:
 		n_rows = n_cols = 0;
 	}
 
-	wxMatrix( const wxMatrix &rhs )
+	wxMatrix(const wxMatrix &rhs)
 	{
 		t_array = 0;
 		n_rows = n_cols = 0;
-		Copy( rhs );
+		Copy(rhs);
 	}
 
 	wxMatrix(size_t nr, size_t nc)
@@ -37,106 +61,105 @@ public:
 		t_array = 0;
 		if (nr < 1) nr = 1;
 		if (nc < 1) nc = 1;
-		Resize(nr,nc);
+		Resize(nr, nc);
 	}
-		
+
 	wxMatrix(size_t nr, size_t nc, const T &val)
 	{
 		n_rows = n_cols = 0;
 		t_array = NULL;
 		if (nr < 1) nr = 1;
 		if (nc < 1) nc = 1;
-		ResizeFill(nr,nc,val);
+		ResizeFill(nr, nc, val);
 	}
-
 
 	virtual ~wxMatrix()
 	{
-		if (t_array) delete [] t_array;
+		if (t_array) delete[] t_array;
 	}
-		
+
 	void Clear()
 	{
-		if (t_array) delete [] t_array;
+		if (t_array) delete[] t_array;
 		t_array = 0;
 		n_rows = n_cols = 0;
 	}
-		
-	void Copy( const wxMatrix &rhs )
+
+	void Copy(const wxMatrix &rhs)
 	{
 		if (this != &rhs)
 		{
-			Resize( rhs.Rows(), rhs.Cols() );
+			Resize(rhs.Rows(), rhs.Cols());
 			size_t nn = n_rows*n_cols;
-			for (size_t i=0;i<nn;i++)
+			for (size_t i = 0; i < nn; i++)
 				t_array[i] = rhs.t_array[i];
 		}
 	}
 
-	void Assign( const T *pvalues, size_t len )
+	void Assign(const T *pvalues, size_t len)
 	{
-		Resize( len );
-		if ( n_cols == len && n_rows == 1 )
-			for (size_t i=0;i<len;i++)
+		Resize(len);
+		if (n_cols == len && n_rows == 1)
+			for (size_t i = 0; i < len; i++)
 				t_array[i] = pvalues[i];
 	}
-		
-	void Assign( const T *pvalues, size_t nr, size_t nc )
+
+	void Assign(const T *pvalues, size_t nr, size_t nc)
 	{
-		Resize( nr, nc );
-		if ( n_rows == nr && n_cols == nc )
+		Resize(nr, nc);
+		if (n_rows == nr && n_cols == nc)
 		{
 			size_t len = nr*nc;
-			for (size_t i=0;i<len;i++)
+			for (size_t i = 0; i < len; i++)
 				t_array[i] = pvalues[i];
 		}
 	}
 
 	wxMatrix &operator=(const wxMatrix &rhs)
 	{
-		Copy( rhs );
+		Copy(rhs);
 		return *this;
 	}
-		
+
 	wxMatrix &operator=(const T &val)
 	{
-		Resize(1,1);
+		Resize(1, 1);
 		t_array[0] = val;
 		return *this;
 	}
-		
+
 	inline operator T()
 	{
 		return t_array[0];
 	}
-		
-	bool Equals( const wxMatrix & rhs )
+
+	bool Equals(const wxMatrix & rhs)
 	{
 		if (n_rows != rhs.n_rows || n_cols != rhs.n_cols)
 			return false;
-			
+
 		size_t nn = n_rows*n_cols;
-		for (size_t i=0;i<nn;i++)
+		for (size_t i = 0; i < nn; i++)
 			if (t_array[i] != rhs.t_array[i])
 				return false;
-			
+
 		return true;
 	}
-		
+
 	inline bool IsSingle()
 	{
 		return (n_rows == 1 && n_cols == 1);
 	}
-			
+
 	inline bool IsArray()
 	{
 		return (n_rows == 1);
 	}
-		
-	void Fill( const T &val )
+
+	void Fill(const T &val)
 	{
 		size_t ncells = n_rows*n_cols;
-		for (size_t i=0;i<ncells;i++)
+		for (size_t i = 0; i < ncells; i++)
 			t_array[i] = val;
 	}
 
@@ -148,8 +171,8 @@ public:
 		}
 
 		if (nr == n_rows && nc == n_cols) return;
-			
-		if (t_array) delete [] t_array;
+
+		if (t_array) delete[] t_array;
 		t_array = new T[nr * nc];
 		n_rows = nr;
 		n_cols = nc;
@@ -157,34 +180,34 @@ public:
 
 	void ResizeFill(size_t nr, size_t nc, const T &val)
 	{
-		Resize( nr, nc );
-		Fill( val );
+		Resize(nr, nc);
+		Fill(val);
 	}
 
-	void ResizePreserve( size_t nr, size_t nc, const T &val )
+	void ResizePreserve(size_t nr, size_t nc, const T &val)
 	{
-		wxMatrix<T> old( *this );
-		Resize( nr, nc );
-		Fill( val );
-		for( size_t r=0;r<nr && r<old.nrows();r++)
-			for( size_t c=0;c<nc && c<old.ncols();c++)
-				At(r,c) = old(r,c);
+		wxMatrix<T> old(*this);
+		Resize(nr, nc);
+		Fill(val);
+		for (size_t r = 0; r < nr && r < old.nrows(); r++)
+			for (size_t c = 0; c < nc && c < old.ncols(); c++)
+				At(r, c) = old(r, c);
 	}
-		
+
 	void Resize(size_t len)
 	{
-		Resize( 1, len );
+		Resize(1, len);
 	}
-		
+
 	void ResizeFill(size_t len, const T &val)
 	{
-		ResizeFill( 1, len, val );
+		ResizeFill(1, len, val);
 	}
-		
+
 	inline T &At(size_t i)
 	{
 #ifdef _DEBUG
-		VEC_ASSERT( i >= 0 && i < n_cols );
+		VEC_ASSERT(i >= 0 && i < n_cols);
 #endif
 		return t_array[i];
 	}
@@ -192,104 +215,104 @@ public:
 	inline const T&At(size_t i) const
 	{
 #ifdef _DEBUG
-		VEC_ASSERT( i >= 0 && i < n_cols );
+		VEC_ASSERT(i >= 0 && i < n_cols);
 #endif
 		return t_array[i];
 	}
-		
+
 	inline T &At(size_t r, size_t c)
 	{
 #ifdef _DEBUG
-		VEC_ASSERT( r >= 0 && r < n_rows && c >= 0 && c < n_cols );
+		VEC_ASSERT(r >= 0 && r < n_rows && c >= 0 && c < n_cols);
 #endif
-		return t_array[n_cols*r+c];
+		return t_array[n_cols*r + c];
 	}
 
 	inline const T &At(size_t r, size_t c) const
 	{
 #ifdef _DEBUG
-		VEC_ASSERT( r >= 0 && r < n_rows && c >= 0 && c < n_cols );
+		VEC_ASSERT(r >= 0 && r < n_rows && c >= 0 && c < n_cols);
 #endif
-		return t_array[n_cols*r+c];
+		return t_array[n_cols*r + c];
 	}
-		
+
 	inline T &operator()(size_t r, size_t c)
 	{
 #ifdef _DEBUG
-		VEC_ASSERT( r >= 0 && r < n_rows && c >= 0 && c < n_cols );
+		VEC_ASSERT(r >= 0 && r < n_rows && c >= 0 && c < n_cols);
 #endif
-		return t_array[n_cols*r+c];
+		return t_array[n_cols*r + c];
 	}
 
 	inline const T &operator()(size_t r, size_t c) const
 	{
 #ifdef _DEBUG
-		VEC_ASSERT( r >= 0 && r < n_rows && c >= 0 && c < n_cols );
+		VEC_ASSERT(r >= 0 && r < n_rows && c >= 0 && c < n_cols);
 #endif
-		return t_array[n_cols*r+c];
+		return t_array[n_cols*r + c];
 	}
-		
+
 	T operator[] (size_t i) const
 	{
 #ifdef _DEBUG
-		VEC_ASSERT( i >= 0 && i < n_cols );
+		VEC_ASSERT(i >= 0 && i < n_cols);
 #endif
 		return t_array[i];
 	}
-		
+
 	T &operator[] (size_t i)
 	{
 #ifdef _DEBUG
-		VEC_ASSERT( i >= 0 && i < n_cols );
+		VEC_ASSERT(i >= 0 && i < n_cols);
 #endif
 		return t_array[i];
 	}
-				
+
 	inline size_t Rows() const
 	{
 		return n_rows;
 	}
-		
+
 	inline size_t Cols() const
 	{
 		return n_cols;
 	}
-		
+
 	inline size_t Cells() const
 	{
 		return n_rows*n_cols;
 	}
-		
+
 	inline size_t Bytes() const
 	{
 		return n_rows*n_cols*sizeof(T);
 	}
-		
+
 	void Size(size_t &nr, size_t &nc) const
 	{
 		nr = n_rows;
 		nc = n_cols;
 	}
-		
+
 	size_t Length() const
 	{
 		return n_cols;
 	}
-	
+
 	bool Empty() const
 	{
-		return ( 0 == n_rows*n_cols );
+		return (0 == n_rows*n_cols);
 	}
 
 	inline T *Data()
 	{
 		return t_array;
 	}
-	
+
 	inline T &RawIndex(size_t idx)
 	{
 #ifdef _DEBUG
-		VEC_ASSERT( idx < n_rows*n_cols );
+		VEC_ASSERT(idx < n_rows*n_cols);
 #endif
 		return t_array[idx];
 	}
@@ -297,7 +320,7 @@ public:
 	inline const T &RawIndex(size_t idx) const
 	{
 #ifdef _DEBUG
-		VEC_ASSERT( idx < n_rows*n_cols );
+		VEC_ASSERT(idx < n_rows*n_cols);
 #endif
 		return t_array[idx];
 	}
@@ -306,7 +329,6 @@ public:
 	{
 		return t_array[0];
 	}
-
 };
 
 #endif

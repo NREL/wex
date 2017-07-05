@@ -1,3 +1,26 @@
+/***********************************************************************************************************************
+*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+*  following conditions are met:
+*
+*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+*  disclaimer.
+*
+*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+*  following disclaimer in the documentation and/or other materials provided with the distribution.
+*
+*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
+*  products derived from this software without specific prior written permission from the respective party.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
+*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**********************************************************************************************************************/
 
 #include <wx/wfstream.h>
 #include <wx/txtstrm.h>
@@ -13,19 +36,19 @@ wxCSVData::wxCSVData()
 	m_sep = ',';
 }
 
-wxCSVData::wxCSVData( const wxCSVData &copy )
+wxCSVData::wxCSVData(const wxCSVData &copy)
 {
-	Copy( copy );
+	Copy(copy);
 }
 
 wxCSVData::~wxCSVData()
 {
-	 // nothing to do
+	// nothing to do
 }
 
-void wxCSVData::Copy( const wxCSVData &copy )
+void wxCSVData::Copy(const wxCSVData &copy)
 {
-	if ( this != &copy )
+	if (this != &copy)
 	{
 		m_invalidated = copy.m_invalidated;
 		m_nrows = copy.m_nrows;
@@ -36,38 +59,38 @@ void wxCSVData::Copy( const wxCSVData &copy )
 	}
 }
 
-wxCSVData &wxCSVData::operator=( const wxCSVData &copy )
+wxCSVData &wxCSVData::operator=(const wxCSVData &copy)
 {
-	Copy( copy );
+	Copy(copy);
 	return *this;
 }
 
-void wxCSVData::Set( size_t r, size_t c, const wxString &val )
+void wxCSVData::Set(size_t r, size_t c, const wxString &val)
 {
 	// rows, cols remain valid
-	if ( r+1 > m_nrows ) m_nrows = r+1;
-	if ( c+1 > m_ncols ) m_ncols = c+1;
-	m_cells[ Encode(r,c) ] = val;
+	if (r + 1 > m_nrows) m_nrows = r + 1;
+	if (c + 1 > m_ncols) m_ncols = c + 1;
+	m_cells[Encode(r, c)] = val;
 }
 
 wxString &wxCSVData::operator()(size_t r, size_t c)
 {
 	// rows, cols remain valid
-	if ( r+1 > m_nrows ) m_nrows = r+1;
-	if ( c+1 > m_ncols ) m_ncols = c+1;
-	return m_cells[ Encode(r,c) ];
+	if (r + 1 > m_nrows) m_nrows = r + 1;
+	if (c + 1 > m_ncols) m_ncols = c + 1;
+	return m_cells[Encode(r, c)];
 }
 
-const wxString &wxCSVData::Get( size_t r, size_t c ) const
+const wxString &wxCSVData::Get(size_t r, size_t c) const
 {
-	cell_hash::const_iterator it = m_cells.find(Encode(r,c));
-	if ( it != m_cells.end() ) return it->second;
+	cell_hash::const_iterator it = m_cells.find(Encode(r, c));
+	if (it != m_cells.end()) return it->second;
 	else return m_emptyStr;
 }
 
 const wxString &wxCSVData::operator()(size_t r, size_t c) const
 {
-	return Get(r,c);
+	return Get(r, c);
 }
 
 size_t wxCSVData::NumCells() const
@@ -77,16 +100,15 @@ size_t wxCSVData::NumCells() const
 
 size_t wxCSVData::NumRows()
 {
-	if ( m_invalidated ) RecalculateDimensions();
+	if (m_invalidated) RecalculateDimensions();
 	return m_nrows;
 }
 
 size_t wxCSVData::NumCols()
 {
-	if ( m_invalidated ) RecalculateDimensions();
+	if (m_invalidated) RecalculateDimensions();
 	return m_ncols;
 }
-
 
 void wxCSVData::Clear()
 {
@@ -95,67 +117,67 @@ void wxCSVData::Clear()
 	m_invalidated = false;
 }
 
-void wxCSVData::Clear( size_t r, size_t c )
+void wxCSVData::Clear(size_t r, size_t c)
 {
-	cell_hash::iterator it = m_cells.find( Encode(r,c) );
-	if( it != m_cells.end() )
+	cell_hash::iterator it = m_cells.find(Encode(r, c));
+	if (it != m_cells.end())
 	{
-		m_cells.erase( it );
+		m_cells.erase(it);
 		m_invalidated = true;
 	}
 }
-	
-bool wxCSVData::Read( wxInputStream &in )
+
+bool wxCSVData::Read(wxInputStream &in)
 {
-/*
-TEST CSV FILE: (r/w)
-"Cell 0,0","a""oran,ge",'e"e'
+	/*
+	TEST CSV FILE: (r/w)
+	"Cell 0,0","a""oran,ge",'e"e'
 
-"Cell 1,0",b'prime,cellb,"Row 1,Col 3"
-dd,"c""dprime","Cell 2,2",,,,bacd
-"ans,b,z,d","x,""yz""","xx',' - "",""",,"a,,,b"
+	"Cell 1,0",b'prime,cellb,"Row 1,Col 3"
+	dd,"c""dprime","Cell 2,2",,,,bacd
+	"ans,b,z,d","x,""yz""","xx',' - "",""",,"a,,,b"
 
-*/
+	*/
 	Clear(); // erase the csv data first
 
 	wxTextInputStream txt(in);
-	
+
 	m_errorLine = 0;
 	size_t max_row = 0;
 	size_t max_col = 0;
 
-	while ( !txt.GetInputStream().Eof() )
+	while (!txt.GetInputStream().Eof())
 	{
 		wxString buf = txt.ReadLine();
 		size_t cur_col = 0;
 		wxString::iterator it = buf.begin();
-		while( it < buf.end() && *it != wxUniChar('\n') && *it != wxUniChar('\r') )
+		while (it < buf.end() && *it != wxUniChar('\n') && *it != wxUniChar('\r'))
 		{
-		//	csvcell *cell = new csvcell;
-		//	cell->r = max_row;
-		//	cell->c = cur_col;
-		//	cells.push_back( cell );
+			//	csvcell *cell = new csvcell;
+			//	cell->r = max_row;
+			//	cell->c = cur_col;
+			//	cells.push_back( cell );
 
 			wxString text;
 
-			if( *it == '"' )
+			if (*it == '"')
 			{
 				++it; // skip the initial quote
 
 				// read a quoted cell
-				while ( it < buf.end() )
+				while (it < buf.end())
 				{
-					if ( *it == '"' )
+					if (*it == '"')
 					{
-						if ( it + 1 < buf.end() )
+						if (it + 1 < buf.end())
 						{
 							wxUniChar next = *(++it);
 							--it;
-							if ( next == '"')
+							if (next == '"')
 							{
 								text += '"';
-								++it; 
-								if ( it < buf.end() ) ++it;
+								++it;
+								if (it < buf.end()) ++it;
 							}
 							else
 							{
@@ -179,9 +201,9 @@ dd,"c""dprime","Cell 2,2",,,,bacd
 			{
 				// read a normal cell
 				wxUniChar prev = 0;
-				while ( it < buf.end() && *it != m_sep && *it != '\n' && *it != '\r' )
+				while (it < buf.end() && *it != m_sep && *it != '\n' && *it != '\r')
 				{
-					if ( *it == '"' && prev == '"' )
+					if (*it == '"' && prev == '"')
 					{
 						text += '"';
 						prev = *it;
@@ -195,74 +217,71 @@ dd,"c""dprime","Cell 2,2",,,,bacd
 					}
 				}
 			}
-			
-			// store the cell
-			Set( max_row, cur_col, text );
 
-			if ( it >= buf.end() || *it == m_sep || *it == '\n' || *it == '\r' )
+			// store the cell
+			Set(max_row, cur_col, text);
+
+			if (it >= buf.end() || *it == m_sep || *it == '\n' || *it == '\r')
 			{
-				if ( it < buf.end() ) ++it; // skip over the comma
+				if (it < buf.end()) ++it; // skip over the comma
 				cur_col++;
-				if ( cur_col > max_col )
+				if (cur_col > max_col)
 					max_col = cur_col;
 			}
 			else
 			{
 				// flag error on the first row with a formatting problem
 				if (m_errorLine == 0)
-					m_errorLine = -( (int)max_row+1 );
+					m_errorLine = -((int)max_row + 1);
 			}
-
-
 		}
 
 		max_row++;
 	}
 
 	return (0 == m_errorLine);
-
 }
 
-void wxCSVData::Write( wxOutputStream &out )
+void wxCSVData::Write(wxOutputStream &out)
 {
-	wxTextOutputStream txt( out, wxEOL_UNIX );
-	if ( m_invalidated ) RecalculateDimensions();
+	wxTextOutputStream txt(out, wxEOL_UNIX);
+	if (m_invalidated) RecalculateDimensions();
 
-	for( size_t r=0;r<m_nrows; r++ )
+	for (size_t r = 0; r < m_nrows; r++)
 	{
-		for( size_t c=0;c<m_ncols;c++ )
+		for (size_t c = 0; c < m_ncols; c++)
 		{
-			wxString cell = Get(r,c);
-			if ( cell.Find( wxUniChar(m_sep) ) >= 0 )
+			wxString cell = Get(r, c);
+			if (cell.Find(wxUniChar(m_sep)) >= 0)
 			{
 				cell.Replace("\"", "\"\"");
 				txt << '"' << cell << '"';
 			}
 			else txt << cell;
 
-			if ( c < m_ncols-1 ) txt << ((wxChar)m_sep);
+			if (c < m_ncols - 1) txt << ((wxChar)m_sep);
 		}
 
 		txt << endl;
 	}
 }
 
-bool wxCSVData::ReadFile( const wxString &file )
+bool wxCSVData::ReadFile(const wxString &file)
 {
-	wxFFileInputStream in( file );
-	if ( !in.IsOk() ) return false;
-	return Read( in );
+	wxFFileInputStream in(file);
+	if (!in.IsOk()) return false;
+	return Read(in);
 }
 
-bool wxCSVData::WriteFile( const wxString &file )
+bool wxCSVData::WriteFile(const wxString &file)
 {
-	wxFFileOutputStream out( file );
-	if ( !out.IsOk() ) return false;
-	Write( out );
+	wxFFileOutputStream out(file);
+	if (!out.IsOk()) return false;
+	Write(out);
 	return true;
 }
 
-bool wxCSVData::ReadString( const wxString &data )
+bool wxCSVData::ReadString(const wxString &data)
 {
 	wxStringInputStream ss(data);
 	return Read(ss);
@@ -271,17 +290,17 @@ bool wxCSVData::ReadString( const wxString &data )
 wxString wxCSVData::WriteString()
 {
 	wxString buf;
-	wxStringOutputStream ss( &buf );
-	Write( ss );
+	wxStringOutputStream ss(&buf);
+	Write(ss);
 	return buf;
 }
-	
-wxUint64 wxCSVData::Encode( size_t r, size_t c ) const
+
+wxUint64 wxCSVData::Encode(size_t r, size_t c) const
 {
-	return ( ((wxUint64)r) << 32 ) | ((wxUint64)c);
+	return (((wxUint64)r) << 32) | ((wxUint64)c);
 }
 
-void wxCSVData::Decode( wxUint64 idx, size_t *r, size_t *c ) const
+void wxCSVData::Decode(wxUint64 idx, size_t *r, size_t *c) const
 {
 	*r = (size_t)(idx >> 32);
 	*c = (size_t)(idx & 0x00000000ffffffff);
@@ -290,15 +309,15 @@ void wxCSVData::Decode( wxUint64 idx, size_t *r, size_t *c ) const
 void wxCSVData::RecalculateDimensions()
 {
 	m_nrows = m_ncols = 0;
-	for( cell_hash::const_iterator it = m_cells.begin();
+	for (cell_hash::const_iterator it = m_cells.begin();
 		it != m_cells.end();
-		++it )
+		++it)
 	{
 		size_t r, c;
-		Decode( it->first, &r, &c );
-		if ( r+1 > m_nrows ) m_nrows = r+1;
-		if ( c+1 > m_ncols ) m_ncols = c+1;
+		Decode(it->first, &r, &c);
+		if (r + 1 > m_nrows) m_nrows = r + 1;
+		if (c + 1 > m_ncols) m_ncols = c + 1;
 	}
-	
+
 	m_invalidated = false;
 }
