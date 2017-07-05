@@ -62,6 +62,8 @@ private:
 	static wxString ColumnText(const unsigned char* column);
 	static bool IsEnergyPlus(sqlite3 * db);
 	static void ExecAndThrowOnError(const std::string &t_stmt, sqlite3 * db);
+	// Interpolates to synthesize data at the 1 minute timeStep
+	static void NonuniformTimestepInterpolation(const std::vector<wxDateTime> & times, std::vector<double> & values);
 };
 
 #endif
