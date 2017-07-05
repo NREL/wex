@@ -975,6 +975,8 @@ bool wxDVFileReader::ReadSQLFile(wxDVPlotCtrl* plotWin, const wxString& filename
 	int success = sqlite3_open_v2(filename.c_str(), &db, SQLITE_OPEN_READONLY | SQLITE_OPEN_EXCLUSIVE, nullptr);
 
 	if (success == SQLITE_OK) {
+		int convertUnits = wxMessageBox(wxT("Would you like to display your Energy+ data in IP units?."), wxT("Units Conversion"), wxYES_NO);
+
 		wxStopWatch sw;
 		sw.Start();
 
@@ -1205,6 +1207,10 @@ bool wxDVFileReader::ReadSQLFile(wxDVPlotCtrl* plotWin, const wxString& filename
 				code = sqlite3_step(sqlStmtPtr);
 			}
 
+			if (convertUnits == 2 && dataDictionary[i].units.length()) {
+				ConvertUnits(dataDictionary[i].units, stdValues);
+			}
+
 			dataDictionary[i].stdValues = stdValues;
 
 			// must finalize to prevent memory leaks
@@ -1433,4 +1439,197 @@ bool wxDVFileReader::IsDate(wxString stringToCheck)
 	}
 
 	return true;
+}
+
+// Conversion factors from Energy+.idd
+void wxDVFileReader::InitUnitConversions()
+{
+	// NOTE: tuple format (SI unit string, IP unit string, SI to IP conversion factor)
+	m_unitConversions.emplace_back("$/(m3/s)", "$/(ft3/min)", 0.000472000059660808);
+	m_unitConversions.emplace_back("$/(W/K)", "$/(Btu/h-F)", 0.52667614683731);
+	m_unitConversions.emplace_back("$/kW", "$/(kBtuh/h)", 0.293083235638921);
+	m_unitConversions.emplace_back("$/m2", "$/ft2", 0.0928939733269818);
+	m_unitConversions.emplace_back("$/m3", "$/ft3", 0.0283127014102352);
+	m_unitConversions.emplace_back("(kg/s)/W", "(lbm/sec)/(Btu/hr)", 0.646078115385742);
+	m_unitConversions.emplace_back("1/K", "1/F", 0.555555555555556);
+	m_unitConversions.emplace_back("1/m", "1/ft", 0.3048);
+	m_unitConversions.emplace_back("A/K", "A/F", 0.555555555555556);
+	m_unitConversions.emplace_back("cm", "in", 0.3937);
+	m_unitConversions.emplace_back("cm2", "inch2", 0.15500031000062);
+	m_unitConversions.emplace_back("deltaC", "deltaF", 1.8);
+	m_unitConversions.emplace_back("deltaC/hr", "deltaF/hr", 1.8);
+	m_unitConversions.emplace_back("deltaJ/kg", "deltaBtu/lb", 0.0004299);
+	m_unitConversions.emplace_back("g/GJ", "lb/MWh", 0.00793664091373665);
+	m_unitConversions.emplace_back("g/kg", "grains/lb", 7);
+	m_unitConversions.emplace_back("g/MJ", "lb/MWh", 7.93664091373665);
+	m_unitConversions.emplace_back("g/mol", "lb/mol", 0.0022046);
+	m_unitConversions.emplace_back("g/m-s", "lb/ft-s", 0.000671968949659);
+	m_unitConversions.emplace_back("g/m-s-K", "lb/ft-s-F", 0.000373574867724868);
+	m_unitConversions.emplace_back("GJ", "ton-hrs", 78.9889415481832);
+	m_unitConversions.emplace_back("J", "Wh", 0.000277777777777778);
+	m_unitConversions.emplace_back("J/K", "Btu/F", 526.565);
+	m_unitConversions.emplace_back("J/kg", "Btu/lb", 0.00042986);
+	m_unitConversions.emplace_back("J/kg-K", "Btu/lb-F", 0.000239005736137667);
+	m_unitConversions.emplace_back("J/kg-K2", "Btu/lb-F2", 0.000132889924714692);
+	m_unitConversions.emplace_back("J/kg-K3", "Btu/lb-F3", 7.38277359526066E-05);
+	m_unitConversions.emplace_back("J/m2-K", "Btu/ft2-F", 4.89224766847393E-05);
+	m_unitConversions.emplace_back("J/m3", "Btu/ft3", 2.68096514745308E-05);
+	m_unitConversions.emplace_back("J/m3-K", "Btu/ft3-F", 1.49237004739337E-05);
+	m_unitConversions.emplace_back("K", "R", 1.8);
+	m_unitConversions.emplace_back("K/m", "F/ft", 0.54861322767449);
+	m_unitConversions.emplace_back("kg", "lb", 2.2046);
+	m_unitConversions.emplace_back("kg/J", "lb/Btu", 2325.83774250441);
+	m_unitConversions.emplace_back("kg/kg-K", "lb/lb-F", 0.555555555555556);
+	m_unitConversions.emplace_back("kg/m", "lb/ft", 0.67196893069637);
+	m_unitConversions.emplace_back("kg/m2", "lb/ft2", 0.204794053596664);
+	m_unitConversions.emplace_back("kg/m3", "lb/ft3", 0.062428);
+	m_unitConversions.emplace_back("kg/m-s", "lb/ft-s", 0.67196893069637);
+	m_unitConversions.emplace_back("kg/m-s-K", "lb/ft-s-F", 0.373316072609094);
+	m_unitConversions.emplace_back("kg/m-s-K2", "lb/ft-s-F2", 0.207397818116164);
+	m_unitConversions.emplace_back("kg/Pa-s-m2", "lb/psi-s-ft2", 1412.00523459398);
+	m_unitConversions.emplace_back("kg/s", "lb/s", 2.20462247603796);
+	m_unitConversions.emplace_back("kg/s2", "lb/s2", 2.2046);
+	m_unitConversions.emplace_back("kg/s-m", "lb/s-ft", 0.67196893069637);
+	m_unitConversions.emplace_back("kJ/kg", "Btu/lb", 0.429925);
+	m_unitConversions.emplace_back("kPa", "psi", 0.145038);
+	m_unitConversions.emplace_back("L/day", "pint/day", 2.11337629827348);
+	m_unitConversions.emplace_back("L/GJ", "gal/kWh", 0.000951022349025202);
+	m_unitConversions.emplace_back("L/kWh", "pint/kWh", 2.11337629827348);
+	m_unitConversions.emplace_back("L/MJ", "gal/kWh", 0.951022349025202);
+	m_unitConversions.emplace_back("lux", "foot-candles", 0.092902267);
+	m_unitConversions.emplace_back("m", "ft", 3.28083989501312);
+	m_unitConversions.emplace_back("m/hr", "ft/hr", 3.28083989501312);
+	m_unitConversions.emplace_back("m/s", "ft/min", 196.850393700787);
+	m_unitConversions.emplace_back("m/s", "miles/hr", 2.2369362920544);
+	m_unitConversions.emplace_back("m/yr", "inch/yr", 39.3700787401575);
+	m_unitConversions.emplace_back("m2", "ft2", 10.7639104167097);
+	m_unitConversions.emplace_back("m2/m", "ft2/ft", 3.28083989501312);
+	m_unitConversions.emplace_back("m2/person", "ft2/person", 10.764961);
+	m_unitConversions.emplace_back("m2/s", "ft2/s", 10.7639104167097);
+	m_unitConversions.emplace_back("m2-K/W", "ft2-F-hr/Btu", 5.678263);
+	m_unitConversions.emplace_back("m3", "ft3", 35.3146667214886);
+	m_unitConversions.emplace_back("m3", "gal", 264.172037284185);
+	m_unitConversions.emplace_back("m3/GJ", "ft3/MWh", 127.13292);
+	m_unitConversions.emplace_back("m3/hr", "ft3/hr", 35.3146667214886);
+	m_unitConversions.emplace_back("m3/hr-m2", "ft3/hr-ft2", 3.28083989501312);
+	m_unitConversions.emplace_back("m3/hr-person", "ft3/hr-person", 35.3146667214886);
+	m_unitConversions.emplace_back("m3/kg", "ft3/lb", 16.018);
+	m_unitConversions.emplace_back("m3/m2", "ft3/ft2", 3.28083989501312);
+	m_unitConversions.emplace_back("m3/MJ", "ft3/kWh", 127.13292);
+	m_unitConversions.emplace_back("m3/person", "ft3/person", 35.3146667214886);
+	m_unitConversions.emplace_back("m3/s", "ft3/min", 2118.88000328931);
+	m_unitConversions.emplace_back("m3/s-m", "ft3/min-ft", 645.89);
+	m_unitConversions.emplace_back("m3/s-m2", "ft3/min-ft2", 196.85);
+	m_unitConversions.emplace_back("m3/s-person", "ft3/min-person", 2118.6438);
+	m_unitConversions.emplace_back("m3/s-W", "(ft3/min)/(Btu/h)", 621.099127332943);
+	m_unitConversions.emplace_back("N-m", "lbf-in", 8.85074900525547);
+	m_unitConversions.emplace_back("N-s/m2", "lbf-s/ft2", 0.0208857913669065);
+	m_unitConversions.emplace_back("Pa", "psi", 0.000145037743897283);
+	m_unitConversions.emplace_back("percent/K", "percent/F", 0.555555555555556);
+	m_unitConversions.emplace_back("person/m2", "person/ft2", 0.0928939733269818);
+	m_unitConversions.emplace_back("s/m", "s/ft", 0.3048);
+	m_unitConversions.emplace_back("V/K", "V/F", 0.555555555555556);
+	m_unitConversions.emplace_back("W", "Btu/h", 3.4121412858518);
+	m_unitConversions.emplace_back("W/((m3/s)-Pa)", "W/((gal/min)-ftH20)", 0.188582274697355);
+	m_unitConversions.emplace_back("W/(m3/s)", "W/(ft3/min)", 0.0004719475);
+	m_unitConversions.emplace_back("W/K", "Btu/h-F", 1.89563404769544);
+	m_unitConversions.emplace_back("W/m", "Btu/h-ft", 1.04072);
+	m_unitConversions.emplace_back("W/m2", "Btu/h-ft2", 0.316957210776545);
+	m_unitConversions.emplace_back("W/m2", "W/ft2", 0.09290304);
+	m_unitConversions.emplace_back("W/m2-K", "Btu/h-ft2-F", 0.176110194261872);
+	m_unitConversions.emplace_back("W/m2-K2", "Btu/h-ft2-F2", 0.097826);
+	m_unitConversions.emplace_back("W/m-K", "Btu-in/h-ft2-F", 6.93481276005548);
+	m_unitConversions.emplace_back("W/m-K2", "Btu/h-F2-ft", 0.321418310071648);
+	m_unitConversions.emplace_back("W/m-K3", "Btu/h-F3-ft", 0.178565727817582);
+	m_unitConversions.emplace_back("W/person", "Btu/h-person", 3.4121412858518);
+	m_unitConversions.emplace_back("kPa", "inHg", 0.29523);
+	m_unitConversions.emplace_back("m", "in", 39.3700787401575);
+	m_unitConversions.emplace_back("m3/hr", "gal/hr", 264.172037284185);
+	m_unitConversions.emplace_back("m3/hr-m2", "gal/hr-ft2", 24.5423853466941);
+	m_unitConversions.emplace_back("m3/hr-person", "gal/hr-person", 264.172037284185);
+	m_unitConversions.emplace_back("m3/m2", "gal/ft2", 24.5423853466941);
+	m_unitConversions.emplace_back("m3/person", "gal/person", 264.172037284185);
+	m_unitConversions.emplace_back("m3/s", "gal/min", 15850.3222370511);
+	m_unitConversions.emplace_back("m3/s-m", "gal/min-ft", 4831.17821785317);
+	m_unitConversions.emplace_back("m3/s-W", "(gal/min)/(Btu/h)", 4645.27137336702);
+	m_unitConversions.emplace_back("Pa", "ftH2O", 0.00033455);
+	m_unitConversions.emplace_back("Pa", "inH2O", 0.00401463);
+	m_unitConversions.emplace_back("Pa", "inHg", 0.00029613);
+	m_unitConversions.emplace_back("Pa", "Pa", 1);
+	m_unitConversions.emplace_back("W", "W", 1);
+	m_unitConversions.emplace_back("W/(m3/s)", "W/(gal/min)", 0.0000630902);
+	m_unitConversions.emplace_back("W/m2", "W/m2", 1);
+	m_unitConversions.emplace_back("W/m-K", "Btu/h-ft-F", 0.577796066000163);
+	m_unitConversions.emplace_back("W/person", "W/person", 1);
+	m_unitConversions.emplace_back("%", "%", 1);
+}
+
+bool wxDVFileReader::ConvertUnits(std::string & units, std::vector<double> & values, bool convertSIToIP)
+{
+	if (m_unitConversions.size() == 0) InitUnitConversions();
+
+	bool success = false;
+	double multiplier = 0;
+
+	// Remove whitespace
+	std::string::iterator end_pos = std::remove(units.begin(), units.end(), ' ');
+	units.erase(end_pos, units.end());
+
+	wxString errors("The following units failed to be converted: ");
+	unsigned startSize = errors.size();
+
+	if (convertSIToIP) {
+		auto it = find_if(begin(m_unitConversions), end(m_unitConversions), [units](decltype(*begin(m_unitConversions)) e) {
+			return get<0>(e) == units;
+		});
+		if (it != end(m_unitConversions)) {
+			units = get<1>(*it);
+			multiplier = get<2>(*it);
+			for (size_t i = 0; i < values.size(); i++) {
+				values.at(i) *= multiplier;
+			}
+			success = true;
+		}
+		else if (units == "C") {
+			units = "F";
+			for (size_t i = 0; i < values.size(); i++) {
+				values.at(i) = values.at(i) * 9 / 5 + 32;
+			}
+			success = true;
+		}
+		else {
+			errors += units + ", ";
+		}
+	}
+	else{
+		auto it = find_if(begin(m_unitConversions), end(m_unitConversions), [units](decltype(*begin(m_unitConversions)) e) {
+			return get<1>(e) == units;
+		});
+		if (it != end(m_unitConversions)) {
+			units = get<0>(*it);
+			multiplier *= 1 / get<2>(*it);
+			for (size_t i = 0; i < values.size(); i++) {
+				values.at(i) *= multiplier;
+			}
+			success = true;
+		}
+		else if (units == "F") {
+			units = "C";
+			//value = (value - 32) * 5 / 9;
+			for (size_t i = 0; i < values.size(); i++) {
+				values.at(i) = (values.at(i) - 32) * 5 / 9;
+			}
+			success = true;
+		}
+		else {
+			errors += units + ", ";
+		}
+	}
+
+	if (errors.size() > startSize) {
+		errors.RemoveLast(2); // remove last ", "
+		wxMessageBox(errors, wxT("Units Conversion Error"), wxICON_INFORMATION);
+	}
+
+	return success;
 }
