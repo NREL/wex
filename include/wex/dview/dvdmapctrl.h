@@ -137,6 +137,7 @@ public:
 	void OnReverseColours(wxCommandEvent &);
 
 	void Invalidate(); // recalculate and rerender plot
+
 private:
 	wxDVSelectionListCtrl *m_selector;
 	wxSearchCtrl *m_srchCtrl;

@@ -39,6 +39,7 @@
 #include "wex/icons/zoom_in.cpng"
 #include "wex/icons/zoom_out.cpng"
 #include "wex/icons/zoom_fit.cpng"
+
 #include <algorithm>
 
 class wxDVDMapPlot : public wxPLPlottable
@@ -135,7 +136,7 @@ public:
 		}
 	}
 
-	virtual void DrawInLegend(wxPLOutputDevice &dc, const wxPLRealRect &rct)
+	virtual void DrawInLegend(wxPLOutputDevice &, const wxPLRealRect &)
 	{
 		// nothing to do: won't be showing legends
 	}
@@ -185,9 +186,15 @@ EVT_TEXT(wxID_ANY, wxDVDMapCtrl::OnSearch)
 
 END_EVENT_TABLE()
 
-wxDVDMapCtrl::wxDVDMapCtrl(wxWindow* parent, wxWindowID id,
-const wxPoint& pos, const wxSize& size)
-: wxPanel(parent, id, pos, size, wxTAB_TRAVERSAL)
+wxDVDMapCtrl::wxDVDMapCtrl(wxWindow* parent,
+wxWindowID id,
+const wxPoint& pos,
+const wxSize& size)
+: wxPanel(parent,
+id,
+pos,
+size,
+wxTAB_TRAVERSAL)
 {
 	m_currentlyShownDataSet = 0;
 	m_srchCtrl = NULL;
@@ -469,7 +476,7 @@ void wxDVDMapCtrl::UpdateYScrollbarPosition()
 
 bool wxDVDMapCtrl::SetCurrentDataName(const wxString& name)
 {
-	for (int i = 0; i < m_dataSets.size(); i++)
+	for (size_t i = 0; i < m_dataSets.size(); i++)
 	{
 		if (m_selector->GetRowLabelWithGroup(i) == name)
 		{
@@ -494,7 +501,7 @@ wxString wxDVDMapCtrl::GetCurrentDataName()
 
 void wxDVDMapCtrl::SelectDataSetAtIndex(int index)
 {
-	if (index < 0 || index >= m_dataSets.size()) return;
+	if (index < 0 || static_cast<size_t>(index) >= m_dataSets.size()) return;
 
 	ChangePlotDataTo(m_dataSets[index]);
 	m_selector->SelectRowInCol(index);
@@ -663,7 +670,7 @@ void wxDVDMapCtrl::OnDataChannelSelection(wxCommandEvent &)
 		ChangePlotDataTo(m_dataSets[row]);
 }
 
-void wxDVDMapCtrl::OnSearch(wxCommandEvent& e)
+void wxDVDMapCtrl::OnSearch(wxCommandEvent &)
 {
 	m_selector->Filter(m_srchCtrl->GetValue().Lower());
 }
@@ -800,7 +807,7 @@ void wxDVDMapCtrl::OnScrollLineUp(wxScrollEvent &)
 	Invalidate();
 }
 
-void wxDVDMapCtrl::OnScrollLineDown(wxScrollEvent&)
+void wxDVDMapCtrl::OnScrollLineDown(wxScrollEvent &)
 {
 	PanXByPercent(0.25);
 
@@ -808,7 +815,7 @@ void wxDVDMapCtrl::OnScrollLineDown(wxScrollEvent&)
 	Invalidate();
 }
 
-void wxDVDMapCtrl::OnScrollPageUp(wxScrollEvent& e)
+void wxDVDMapCtrl::OnScrollPageUp(wxScrollEvent &)
 {
 	PanXByPercent(-1.0);
 
@@ -816,7 +823,7 @@ void wxDVDMapCtrl::OnScrollPageUp(wxScrollEvent& e)
 	Invalidate();
 }
 
-void wxDVDMapCtrl::OnScrollPageDown(wxScrollEvent& e)
+void wxDVDMapCtrl::OnScrollPageDown(wxScrollEvent &)
 {
 	PanXByPercent(1.0);
 
@@ -835,7 +842,7 @@ void wxDVDMapCtrl::OnYScroll(wxScrollEvent& e)
 	Invalidate();
 }
 
-void wxDVDMapCtrl::OnYScrollLineUp(wxScrollEvent& e)
+void wxDVDMapCtrl::OnYScrollLineUp(wxScrollEvent &)
 {
 	PanYByPercent(-0.25);
 
@@ -843,7 +850,7 @@ void wxDVDMapCtrl::OnYScrollLineUp(wxScrollEvent& e)
 	Invalidate();
 }
 
-void wxDVDMapCtrl::OnYScrollLineDown(wxScrollEvent& e)
+void wxDVDMapCtrl::OnYScrollLineDown(wxScrollEvent &)
 {
 	PanYByPercent(0.25);
 
@@ -851,7 +858,7 @@ void wxDVDMapCtrl::OnYScrollLineDown(wxScrollEvent& e)
 	Invalidate();
 }
 
-void wxDVDMapCtrl::OnYScrollPageUp(wxScrollEvent& e)
+void wxDVDMapCtrl::OnYScrollPageUp(wxScrollEvent &)
 {
 	PanYByPercent(-1.0);
 
@@ -859,7 +866,7 @@ void wxDVDMapCtrl::OnYScrollPageUp(wxScrollEvent& e)
 	Invalidate();
 }
 
-void wxDVDMapCtrl::OnYScrollPageDown(wxScrollEvent& e)
+void wxDVDMapCtrl::OnYScrollPageDown(wxScrollEvent &)
 {
 	PanYByPercent(1.0);
 

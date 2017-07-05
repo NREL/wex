@@ -23,10 +23,14 @@
 **********************************************************************************************************************/
 
 #include <algorithm>
+#include <string>
+#include <sstream>
 
 #include <wx/wx.h>
 #include <wx/busyinfo.h>
 #include "wx/srchctrl.h"
+#include <wx/tokenzr.h>
+#include <wx/config.h>
 
 #include "wex/plot/plplotctrl.h"
 #include "wex/plot/plhistplot.h"
@@ -133,7 +137,7 @@ const wxSize& size, long style, const wxString& name)
 
 wxDVPnCdfCtrl::~wxDVPnCdfCtrl()
 {
-	for (int i = 0; i < m_cdfPlotData.size(); i++)
+	for (size_t i = 0; i < m_cdfPlotData.size(); i++)
 		delete m_cdfPlotData[i];
 }
 
@@ -157,7 +161,7 @@ int wxDVPnCdfCtrl::GetNumberOfSelections()
 
 void wxDVPnCdfCtrl::RemoveDataSet(wxDVTimeSeriesDataSet* d)
 {
-	if (m_selectedDataSetIndex >= 0 && m_selectedDataSetIndex < m_dataSets.size()
+	if (m_selectedDataSetIndex >= 0 && static_cast<unsigned>(m_selectedDataSetIndex) < m_dataSets.size()
 		&& m_dataSets[m_selectedDataSetIndex] == d)
 	{
 		ChangePlotDataTo(NULL);
@@ -186,7 +190,7 @@ void wxDVPnCdfCtrl::RemoveAllDataSets()
 
 	m_dataSets.clear();
 
-	for (int i = 0; i < m_cdfPlotData.size(); i++)
+	for (size_t i = 0; i < m_cdfPlotData.size(); i++)
 		delete m_cdfPlotData[i];
 	m_cdfPlotData.clear();
 	m_selector->RemoveAll();
@@ -196,7 +200,7 @@ void wxDVPnCdfCtrl::RemoveAllDataSets()
 
 wxString wxDVPnCdfCtrl::GetCurrentDataName()
 {
-	if (m_selectedDataSetIndex >= 0 && m_selectedDataSetIndex < m_dataSets.size())
+	if (m_selectedDataSetIndex >= 0 && m_selectedDataSetIndex < static_cast<int>(m_dataSets.size()))
 		return m_selector->GetRowLabelWithGroup(m_selectedDataSetIndex);
 	else
 		return wxEmptyString;
@@ -204,7 +208,7 @@ wxString wxDVPnCdfCtrl::GetCurrentDataName()
 
 bool wxDVPnCdfCtrl::SetCurrentDataName(const wxString& name, bool restrictToSmallDataSet)
 {
-	for (int i = 0; i < m_dataSets.size(); i++)
+	for (size_t i = 0; i < m_dataSets.size(); i++)
 	{
 		if (m_selector->GetRowLabelWithGroup(i) == name)
 		{
@@ -222,7 +226,7 @@ bool wxDVPnCdfCtrl::SetCurrentDataName(const wxString& name, bool restrictToSmal
 
 void wxDVPnCdfCtrl::SelectDataSetAtIndex(int index)
 {
-	if (index < 0 || index >= m_dataSets.size()) return;
+	if (index < 0 || index >= static_cast<int>(m_dataSets.size())) return;
 
 	m_selectedDataSetIndex = index;
 	ChangePlotDataTo(m_dataSets[index]);
@@ -283,7 +287,7 @@ void wxDVPnCdfCtrl::SetYMax(double max)
 void wxDVPnCdfCtrl::RebuildPlotSurface(double maxYPercent)
 {
 	if (m_selectedDataSetIndex < 0
-		|| m_selectedDataSetIndex >= m_dataSets.size())
+		|| m_selectedDataSetIndex >= static_cast<int>(m_dataSets.size()))
 		return;
 
 	wxDVTimeSeriesDataSet *ds = m_dataSets[m_selectedDataSetIndex];
@@ -373,12 +377,12 @@ void wxDVPnCdfCtrl::ReadCdfFrom(wxDVTimeSeriesDataSet& d, std::vector<wxRealPoin
 	{
 		std::sort(sortedValues.begin(), sortedValues.end());
 
-		double dataMin = sortedValues[0];
-		double dataMax = sortedValues[sortedValues.size() - 1];
+		//double dataMin = sortedValues[0];
+		//double dataMax = sortedValues[sortedValues.size() - 1];
 	}
 
 	cdfArray->reserve(sortedValues.size());
-	for (int i = 0; i < sortedValues.size(); i++)
+	for (size_t i = 0; i < sortedValues.size(); i++)
 	{
 		double x = sortedValues[i];
 		double percent = 100 * double(i) / double(sortedValues.size() - 1);
@@ -421,12 +425,12 @@ void wxDVPnCdfCtrl::OnDataChannelSelection(wxCommandEvent &)
 	InvalidatePlot();
 }
 
-void wxDVPnCdfCtrl::OnSearch(wxCommandEvent& e)
+void wxDVPnCdfCtrl::OnSearch(wxCommandEvent&)
 {
 	m_selector->Filter(m_srchCtrl->GetValue().Lower());
 }
 
-void wxDVPnCdfCtrl::OnEnterYMax(wxCommandEvent& e)
+void wxDVPnCdfCtrl::OnEnterYMax(wxCommandEvent&)
 {
 	double val;
 	if (m_maxTextBox->GetValue().ToDouble(&val))
@@ -436,9 +440,9 @@ void wxDVPnCdfCtrl::OnEnterYMax(wxCommandEvent& e)
 	}
 }
 
-void wxDVPnCdfCtrl::OnBinComboSelection(wxCommandEvent& e)
+void wxDVPnCdfCtrl::OnBinComboSelection(wxCommandEvent&)
 {
-	if (m_selectedDataSetIndex < 0 || m_selectedDataSetIndex >= m_dataSets.size())
+	if (m_selectedDataSetIndex < 0 || m_selectedDataSetIndex >= static_cast<int>(m_dataSets.size()))
 		return;
 
 	switch (m_binsCombo->GetSelection())
@@ -462,7 +466,7 @@ void wxDVPnCdfCtrl::OnBinComboSelection(wxCommandEvent& e)
 	InvalidatePlot();
 }
 
-void wxDVPnCdfCtrl::OnBinTextEnter(wxCommandEvent& e)
+void wxDVPnCdfCtrl::OnBinTextEnter(wxCommandEvent&)
 {
 	long bins;
 	if (m_binsCombo->GetValue().ToLong(&bins))
@@ -476,7 +480,7 @@ void wxDVPnCdfCtrl::OnBinTextEnter(wxCommandEvent& e)
 	}
 }
 
-void wxDVPnCdfCtrl::OnNormalizeChoice(wxCommandEvent& e)
+void wxDVPnCdfCtrl::OnNormalizeChoice(wxCommandEvent&)
 {
 	SetNormalizeType(wxPLHistogramPlot::NormalizeType(m_normalizeChoice->GetSelection()));
 	m_plotSurface->GetYAxis1()->SetWorldMax(m_pdfPlot->GetNiceYMax());
@@ -484,15 +488,15 @@ void wxDVPnCdfCtrl::OnNormalizeChoice(wxCommandEvent& e)
 	InvalidatePlot();
 }
 
-void wxDVPnCdfCtrl::OnShowZerosClick(wxCommandEvent& e)
+void wxDVPnCdfCtrl::OnShowZerosClick(wxCommandEvent&)
 {
 	bool ignoreZeros = m_hideZeros->GetValue();
-	int index = -1;
+	//int index = -1;
 
 	m_pdfPlot->SetIgnoreZeros(ignoreZeros);
 	m_cdfPlot->SetIgnoreZeros(ignoreZeros);
 
-	if (m_selectedDataSetIndex > -1 && m_selectedDataSetIndex < m_cdfPlotData.size())
+	if (m_selectedDataSetIndex > -1 && m_selectedDataSetIndex < static_cast<int>(m_cdfPlotData.size()))
 	{
 		m_cdfPlotData[m_selectedDataSetIndex]->clear();
 		ReadCdfFrom(*m_dataSets[m_selectedDataSetIndex], m_cdfPlotData[m_selectedDataSetIndex]);
@@ -504,7 +508,7 @@ void wxDVPnCdfCtrl::OnShowZerosClick(wxCommandEvent& e)
 	}
 }
 
-void wxDVPnCdfCtrl::OnPlotTypeSelection(wxCommandEvent& e)
+void wxDVPnCdfCtrl::OnPlotTypeSelection(wxCommandEvent&)
 {
 	int type = m_PlotTypeDisplayed->GetSelection();
 

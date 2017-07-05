@@ -39,6 +39,8 @@
 #include <wx/wfstream.h>
 #include <wx/txtstrm.h>
 #include <wx/sstream.h>
+#include <wx/config.h>
+
 #include <math.h>
 
 #include "wex/dview/dvstatisticstablectrl.h"
@@ -235,7 +237,7 @@ void dvStatisticsTreeModel::GetValue(wxVariant &variant, const wxDataViewItem &i
 	}
 }
 
-bool dvStatisticsTreeModel::SetValue(const wxVariant &variant, const wxDataViewItem &item, unsigned int col)
+bool dvStatisticsTreeModel::SetValue(const wxVariant &, const wxDataViewItem &, unsigned int)
 {
 	//wxASSERT(item.IsOk());
 
@@ -331,10 +333,10 @@ void dvStatisticsTreeModel::Refresh(std::vector<wxDVVariableStatistics*> stats, 
 	}
 
 	//Repopulate nodes, organizing them by group
-	for (int i = 0; i < stats.size(); i++)
+	for (size_t i = 0; i < stats.size(); i++)
 	{
 		groupName = "";
-		for (int j = 0; j < m_root->GetChildCount(); j++)
+		for (size_t j = 0; j < m_root->GetChildCount(); j++)
 		{
 			if (m_root->GetNthChild(j)->GetName() == stats[i]->GetGroupName())
 			{
@@ -355,9 +357,9 @@ void dvStatisticsTreeModel::Refresh(std::vector<wxDVVariableStatistics*> stats, 
 
 		if (showMonths)
 		{
-			variableNode = new dvStatisticsTreeModelNode(groupNode, ds->GetSeriesTitle() + " (" + ds->GetUnits() + ")");
+			variableNode = new dvStatisticsTreeModelNode(groupNode, ds->GetSeriesTitle() + " (" + ds->GetUnits() + ")"); // warning C4701: potentially uninitialized local variable 'groupNode' used
 
-			for (int j = 0; j < ds->Length(); j++)
+			for (size_t j = 0; j < ds->Length(); j++)
 			{
 				p = ds->At(j);
 				monthNode = new dvStatisticsTreeModelNode(variableNode, p.name, p.Mean, p.Min, p.Max, p.Sum, p.StDev, p.AvgDailyMin, p.AvgDailyMax);
@@ -368,7 +370,7 @@ void dvStatisticsTreeModel::Refresh(std::vector<wxDVVariableStatistics*> stats, 
 		}
 		else
 		{
-			for (int j = 0; j < ds->Length(); j++)
+			for (size_t j = 0; j < ds->Length(); j++)
 			{
 				if (ds->At(j).name == "Total")
 				{
@@ -580,7 +582,7 @@ void wxDVStatisticsTableCtrl::RemoveAllDataSets()
 	RebuildDataViewCtrl();
 }
 
-void wxDVStatisticsTableCtrl::WriteDataAsText(wxUniChar sep, wxOutputStream &os, bool visible_only, bool include_x)
+void wxDVStatisticsTableCtrl::WriteDataAsText(wxUniChar sep, wxOutputStream &os, bool, bool)
 {
 	if (m_variableStatistics.size() == 0) { return; }
 
@@ -653,7 +655,7 @@ void wxDVStatisticsTableCtrl::OnExpand(wxCommandEvent& WXUNUSED(event))
 		m_ctrl->Expand(item);
 }
 
-void wxDVStatisticsTableCtrl::OnContextMenu(wxDataViewEvent &event)
+void wxDVStatisticsTableCtrl::OnContextMenu(wxDataViewEvent &)
 {
 	PopupMenu(&m_contextMenu);
 }
@@ -741,7 +743,7 @@ void wxDVStatisticsTableCtrl::OnPopupMenu(wxCommandEvent &evt)
 	}
 }
 
-void wxDVStatisticsTableCtrl::OnShowMonthsClick(wxCommandEvent &e)
+void wxDVStatisticsTableCtrl::OnShowMonthsClick(wxCommandEvent &)
 {
 	m_showMonths = m_chkShowMonths->GetValue();
 	RebuildDataViewCtrl();

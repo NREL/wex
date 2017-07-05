@@ -233,8 +233,25 @@ private:
 	void ClearAllChannelSelections(wxPLPlotCtrl::PlotPos pPos);
 	void RefreshDisabledCheckBoxes();
 	void RefreshDisabledCheckBoxes(wxPLPlotCtrl::PlotPos pPos);
+	std::string GetTabName();
 
-	DECLARE_EVENT_TABLE()
+	void OnTimer(wxTimerEvent& event);
+
+	double TopYMax = 0;
+	double TopYMin = 0;
+	double TopY2Max = 0;
+	double TopY2Min = 0;
+	double BottomYMax = 0;
+	double BottomYMin = 0;
+	double BottomY2Max = 0;
+	double BottomY2Min = 0;
+
+	wxTimer * m_timer = nullptr;
+
+	std::vector<std::pair<int, int> > m_selections;
+	unsigned m_counter = 0;
+
+	DECLARE_EVENT_TABLE();
 };
 
 #endif

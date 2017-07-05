@@ -143,7 +143,7 @@ public:
 			if (width < 700) width = 700;
 			if (height < 450) height = 450;
 
-			SetPosition(wxPoint(x, y));
+			SetPosition(wxPoint(x, y)); // warning C4701: potentially uninitialized local variable 'y' used
 			SetClientSize(width, height);
 			if (maximized)
 				Maximize();
@@ -263,7 +263,7 @@ public:
 		}
 	}
 
-	void OnCloseFrame(wxCloseEvent &evt)
+	void OnCloseFrame(wxCloseEvent &)
 	{
 		/* save window position */
 		bool b_maximize = this->IsMaximized();
@@ -332,7 +332,7 @@ public:
 
 	void Open()
 	{
-		wxFileDialog fdlg(this, "Open Data File", mLastDir, "", "All Files|*.*|CSV Files(*.csv)|*.csv|TXT Files(*.txt)|*.txt|TMY3 Files(*.tmy3)|*.tmy3|EPW Files(*.epw)|*.epw", wxFD_OPEN | wxFD_MULTIPLE);
+		wxFileDialog fdlg(this, "Open Data File", mLastDir, "", "All Files|*.*|CSV Files(*.csv)|*.csv|TXT Files(*.txt)|*.txt|SQL Files(*.sql)|*.sqlv|TMY3 Files(*.tmy3)|*.tmy3|EPW Files(*.epw)|*.epw", wxFD_OPEN | wxFD_MULTIPLE);
 		wxArrayString myFilePaths;
 		if (fdlg.ShowModal() == wxID_OK)
 		{

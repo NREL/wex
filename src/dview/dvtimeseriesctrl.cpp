@@ -33,12 +33,17 @@
  */
 
 #include <algorithm>
+#include <string>
+#include <sstream>
+
 #include <wx/scrolbar.h>
 #include <wx/gbsizer.h>
 #include <wx/tokenzr.h>
 #include <wx/statline.h>
 #include <wx/gdicmn.h>
 #include "wx/srchctrl.h"
+#include <wx/config.h>
+#include <wx/timer.h>
 
 #include "wex/plot/pllineplot.h"
 
@@ -60,7 +65,7 @@
 #endif
 
 static const wxString NO_UNITS("ThereAreNoUnitsForThisAxis.");
-enum { ID_TopCheckbox = wxID_HIGHEST + 1, ID_BottomCheckbox, ID_StatCheckbox };
+enum { ID_TopCheckbox = wxID_HIGHEST + 1, ID_BottomCheckbox, ID_StatCheckbox, ID_Timer };
 
 class wxDVTimeSeriesPlot : public wxPLPlottable
 {
@@ -261,7 +266,7 @@ public:
 
 			wxRealPoint pos, size;
 			map.GetDeviceExtents(&pos, &size);
-			if (points.size() > (int)(3.0*size.x)) {
+			if (static_cast<int>(points.size()) > (int)(3.0*size.x)) {
 				dc.Text("too many data points: please zoom in", pos);
 				return; // quit if 3x more x coord points than pixels
 			}
@@ -751,19 +756,19 @@ void wxDVTimeSeriesSettingsDialog::SetBottomAutoscale2(bool b)
 }
 bool wxDVTimeSeriesSettingsDialog::GetBottomAutoscale2() { return mBottom2AutoscaleCheck ? mBottom2AutoscaleCheck->GetValue() : false; }
 
-void wxDVTimeSeriesSettingsDialog::OnClickTopHandler(wxCommandEvent& event)
+void wxDVTimeSeriesSettingsDialog::OnClickTopHandler(wxCommandEvent&)
 {
 	SetAutoscale(mTopAutoscaleCheck->IsChecked());
 	if (mTop2AutoscaleCheck) SetAutoscale2(mTop2AutoscaleCheck->IsChecked());
 }
 
-void wxDVTimeSeriesSettingsDialog::OnClickBottomHandler(wxCommandEvent& event)
+void wxDVTimeSeriesSettingsDialog::OnClickBottomHandler(wxCommandEvent&)
 {
 	if (mBottomAutoscaleCheck) SetBottomAutoscale(mBottomAutoscaleCheck->IsChecked());
 	if (mBottom2AutoscaleCheck) SetBottomAutoscale2(mBottom2AutoscaleCheck->IsChecked());
 }
 
-void wxDVTimeSeriesSettingsDialog::OnClickStatHandler(wxCommandEvent& event)
+void wxDVTimeSeriesSettingsDialog::OnClickStatHandler(wxCommandEvent&)
 {
 	SetStatType(mStatTypeCheck->IsChecked() ? wxDV_SUM : wxDV_AVERAGE);
 }
@@ -886,7 +891,7 @@ wxDVTimeSeriesType wxDVTimeSeriesCtrl::GetTimeSeriesType()
 
 /*** EVENT HANDLERS ***/
 
-void wxDVTimeSeriesCtrl::OnZoomIn(wxCommandEvent& e)
+void wxDVTimeSeriesCtrl::OnZoomIn(wxCommandEvent&)
 {
 	if (m_plots.size() == 0)
 		return;
@@ -896,7 +901,7 @@ void wxDVTimeSeriesCtrl::OnZoomIn(wxCommandEvent& e)
 		ZoomFactorAndUpdate(2.0);
 }
 
-void wxDVTimeSeriesCtrl::OnZoomOut(wxCommandEvent& e)
+void wxDVTimeSeriesCtrl::OnZoomOut(wxCommandEvent&)
 {
 	if (m_plots.size() == 0)
 		return;
@@ -905,7 +910,7 @@ void wxDVTimeSeriesCtrl::OnZoomOut(wxCommandEvent& e)
 	if (CanZoomOut())
 		ZoomFactorAndUpdate(0.5);
 }
-void wxDVTimeSeriesCtrl::OnZoomFit(wxCommandEvent& e)
+void wxDVTimeSeriesCtrl::OnZoomFit(wxCommandEvent&)
 {
 	ZoomToFit();
 }
@@ -917,7 +922,7 @@ void wxDVTimeSeriesCtrl::SetStackingOnYLeft(bool b)
 	Invalidate();
 }
 
-void wxDVTimeSeriesCtrl::OnSettings(wxCommandEvent &e)
+void wxDVTimeSeriesCtrl::OnSettings(wxCommandEvent&)
 {
 	double y1min = 0, y1max = 0, y2min = 0, y2max = 0;
 	bool isBottomGraphVisible = false;
@@ -1099,7 +1104,7 @@ void wxDVTimeSeriesCtrl::OnMouseWheel(wxMouseEvent& e)
 	}
 }
 
-void wxDVTimeSeriesCtrl::OnHighlight(wxCommandEvent& e)
+void wxDVTimeSeriesCtrl::OnHighlight(wxCommandEvent&)
 {
 	double left, right;
 	m_plotSurface->GetHighlightBounds(&left, &right);
@@ -1127,29 +1132,29 @@ void wxDVTimeSeriesCtrl::OnGraphScroll(wxScrollEvent &e)
 }
 
 //Scrolling the graph a line up or a line down occurs when the user clicks the left or right button on the scrollbar.
-void wxDVTimeSeriesCtrl::OnGraphScrollLineUp(wxScrollEvent& e)
+void wxDVTimeSeriesCtrl::OnGraphScrollLineUp(wxScrollEvent&)
 {
 	PanByPercent(-0.25);
 }
-void wxDVTimeSeriesCtrl::OnGraphScrollLineDown(wxScrollEvent& e)
+void wxDVTimeSeriesCtrl::OnGraphScrollLineDown(wxScrollEvent&)
 {
 	PanByPercent(0.25);
 }
-void wxDVTimeSeriesCtrl::OnGraphScrollPageUp(wxScrollEvent& e)
+void wxDVTimeSeriesCtrl::OnGraphScrollPageUp(wxScrollEvent&)
 {
 	PanByPercent(-1.0);
 }
-void wxDVTimeSeriesCtrl::OnGraphScrollPageDown(wxScrollEvent& e)
+void wxDVTimeSeriesCtrl::OnGraphScrollPageDown(wxScrollEvent&)
 {
 	PanByPercent(1.0);
 }
 
-void wxDVTimeSeriesCtrl::OnSearch(wxCommandEvent& e)
+void wxDVTimeSeriesCtrl::OnSearch(wxCommandEvent&)
 {
 	m_dataSelector->Filter(m_srchCtrl->GetValue().Lower());
 }
 
-void wxDVTimeSeriesCtrl::OnDataChannelSelection(wxCommandEvent& e)
+void wxDVTimeSeriesCtrl::OnDataChannelSelection(wxCommandEvent&)
 {
 	int row, col;
 	bool isChecked;
@@ -1900,7 +1905,7 @@ void wxDVTimeSeriesCtrl::AutoscaleYAxis(wxPLAxis *axisToScale, const std::vector
 	bool needsRescale = false;
 	double dataMax;
 	double dataMin;
-	double timestep = 1.0;
+	//double timestep = 1.0;
 
 	if (ScaleOverAllData)
 	{
@@ -2010,7 +2015,7 @@ void wxDVTimeSeriesCtrl::RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos 
 	int graphIndex = 0;
 	wxString YLabelText;
 	wxString y1Units = NO_UNITS, y2Units = NO_UNITS;
-	wxPLPlotCtrl::AxisPos yap = wxPLPlotCtrl::Y_LEFT;
+	//wxPLPlotCtrl::AxisPos yap = wxPLPlotCtrl::Y_LEFT;
 
 	if (pPos == wxPLPlotCtrl::PLOT_BOTTOM)
 		graphIndex += 2;

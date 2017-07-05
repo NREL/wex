@@ -27,6 +27,8 @@
 #include <wx/dcbuffer.h>
 #include <wx/tokenzr.h>
 #include "wx/srchctrl.h"
+#include <wx/fileconf.h>
+#include <wx/config.h>
 
 #include "wex/plot/plplotctrl.h"
 #include "wex/plot/pllineplot.h"
@@ -36,6 +38,9 @@
 #include "wex/dview/dvprofilectrl.h"
 #include "wex/dview/dvplothelper.h"
 #include <algorithm>
+
+#include <string>
+#include <sstream>
 
 static const wxString NO_UNITS("ThereAreNoUnitsForThisAxis.");
 
@@ -150,7 +155,7 @@ public:
 		// nothing to do
 	}
 
-	void OnPaint(wxPaintEvent& e)
+	void OnPaint(wxPaintEvent&)
 	{
 		wxAutoBufferedPaintDC pdc(this);
 		pdc.SetBackground(wxBrush(GetBackgroundColour()));
@@ -200,6 +205,8 @@ wxDVProfileCtrl::wxDVProfileCtrl(wxWindow* parent, wxWindowID id, const wxPoint&
 const wxSize& size, long style, const wxString& name)
 : wxPanel(parent, id, pos, size, style, name)
 {
+	//wxFileConfig configFile("DView", "NREL");
+
 	m_srchCtrl = NULL;
 	wxScrolledWindow *monthSelector = new wxScrolledWindow(this, wxID_ANY,
 		wxDefaultPosition, wxDefaultSize, wxHSCROLL);
@@ -279,7 +286,7 @@ wxDVProfileCtrl::~wxDVProfileCtrl()
 	// removeall the plots manually from the 13 plot surface widgets
 	// this regains ownership of the plots that are shown so that they can
 	// be deleted in the destructor  ~PlotSet
-	for (int i = 0; i < m_plots.size(); i++)
+	for (size_t i = 0; i < m_plots.size(); i++)
 		for (int j = 0; j < 13; j++)
 			m_plotSurfaces[j]->RemovePlot(m_plots[i]->plots[j]);
 
@@ -307,7 +314,7 @@ bool wxDVProfileCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 	// need to delete some plottables that we made.
 
 	int index = -1;
-	for (int i = 0; i < m_plots.size(); i++)
+	for (size_t i = 0; i < m_plots.size(); i++)
 	{
 		if (d == m_plots[i]->dataset)
 		{
@@ -412,7 +419,7 @@ void wxDVProfileCtrl::PlotSet::CalculateProfileData()
 	// Right now we are averaging across 12 months.
 	// This is more efficient than averaging across days since we already have the monthly averages
 	// But, this is slightly less accurate.  (days in Feb have bigger weight than in March because feb has 28 days).
-	for (int i = 0; i < plotData[0].size(); i++)
+	for (size_t i = 0; i < plotData[0].size(); i++)
 	{
 		double average = 0;
 		for (int j = 0; j < 12; j++)
@@ -450,7 +457,7 @@ void wxDVProfileCtrl::PlotSet::CalculateProfileData()
 }
 
 /*Event Handlers*/
-void wxDVProfileCtrl::OnDataChannelSelection(wxCommandEvent& e)
+void wxDVProfileCtrl::OnDataChannelSelection(wxCommandEvent&)
 {
 	int row;
 	bool isChecked;
@@ -503,7 +510,7 @@ void wxDVProfileCtrl::OnSelAllMonths(wxCommandEvent& e)
 	Refresh();
 }
 
-void wxDVProfileCtrl::OnSearch(wxCommandEvent& e)
+void wxDVProfileCtrl::OnSearch(wxCommandEvent&)
 {
 	m_dataSelector->Filter(m_srchCtrl->GetValue().Lower());
 }
@@ -560,7 +567,7 @@ void wxDVProfileCtrl::ShowMonthPlotAtIndex(int index, bool show)
 
 void wxDVProfileCtrl::ShowPlotAtIndex(int i)
 {
-	if (i < 0 || i >= m_plots.size()) return;
+	if (i < 0 || i >= static_cast<int>(m_plots.size())) return;
 
 	wxString YLabelText;
 	size_t NumY1AxisSelections = 0;
@@ -598,7 +605,7 @@ void wxDVProfileCtrl::ShowPlotAtIndex(int i)
 		m_plotSurfaces[j]->GetAxis(yap)->SetUnits(units);
 
 		YLabelText = units;
-		for (size_t i = 0; i < m_dataSelector->Length(); i++)
+		for (int i = 0; i < m_dataSelector->Length(); i++)
 		{
 			if (m_dataSelector->IsSelected(i, 0) && m_plots[i]->dataset->GetUnits() == units)
 			{
@@ -614,7 +621,7 @@ void wxDVProfileCtrl::ShowPlotAtIndex(int i)
 		}
 		if ((NumY1AxisSelections == 1 && yap == wxPLPlotCtrl::Y_LEFT) || (NumY2AxisSelections == 1 && yap == wxPLPlotCtrl::Y_RIGHT))
 		{
-			YLabelText = m_plots[i]->dataset->GetLabel();
+			YLabelText = m_plots[i]->dataset->GetLabel(); // warning C4258: 'i' : definition from the for loop is ignored; the definition from the enclosing scope is used
 		}
 		m_plotSurfaces[j]->GetAxis(yap)->SetLabel(YLabelText);
 
@@ -645,7 +652,7 @@ void wxDVProfileCtrl::ShowPlotAtIndex(int i)
 
 void wxDVProfileCtrl::HidePlotAtIndex(int i, bool update)
 {
-	if (i < 0 || i >= m_plots.size())
+	if (i < 0 || i >= static_cast<int>(m_plots.size()))
 		return;
 
 	wxString YLabelText;
@@ -653,9 +660,9 @@ void wxDVProfileCtrl::HidePlotAtIndex(int i, bool update)
 	size_t NumY2AxisSelections = 0;
 	int FirstY1AxisSelectionIndex = -1;
 	int FirstY2AxisSelectionIndex = -1;
-	wxPLPlotCtrl::AxisPos yap = wxPLPlotCtrl::Y_LEFT;
+	//wxPLPlotCtrl::AxisPos yap = wxPLPlotCtrl::Y_LEFT;
 	wxString y1Units = NO_UNITS, y2Units = NO_UNITS;
-	int SelIndex = -1;
+	//int SelIndex = -1;
 	wxString units = m_plots[i]->dataset->GetUnits();
 
 	if (m_plotSurfaces[0]->GetYAxis1())
@@ -730,7 +737,7 @@ void wxDVProfileCtrl::HidePlotAtIndex(int i, bool update)
 		}
 		else if (NumY2AxisSelections > 0)	//We deselected the last variable with Y1 units, so move Y2 to Y1
 		{
-			for (int j = 0; j < currently_shown.size(); j++)
+			for (size_t j = 0; j < currently_shown.size(); j++)
 			{
 				int index = currently_shown[j];
 				m_plots[index]->CalculateProfileData();
@@ -791,11 +798,11 @@ void wxDVProfileCtrl::HidePlotAtIndex(int i, bool update)
 
 void wxDVProfileCtrl::HideAllPlots(bool update)
 {
-	for (int i = 0; i < m_plots.size(); i++)
-		for (int j = 0; j < 13; j++)
+	for (size_t i = 0; i < m_plots.size(); i++)
+		for (size_t j = 0; j < 13; j++)
 			m_plotSurfaces[j]->RemovePlot(m_plots[i]->plots[j]);
 
-	for (int k = 0; k < 13; k++)
+	for (size_t k = 0; k < 13; k++)
 	{
 		m_plotSurfaces[k]->SetYAxis1(0);
 		m_plotSurfaces[k]->SetYAxis2(0);
@@ -820,7 +827,7 @@ void wxDVProfileCtrl::AutoScaleYAxes()
 
 	for (int i = 0; i < 13; i++)
 	{
-		for (int j = 0; j < currently_shown.size(); j++)
+		for (size_t j = 0; j < currently_shown.size(); j++)
 		{
 			switch (m_plots[currently_shown[j]]->axisPosition)
 			{
@@ -853,13 +860,13 @@ void wxDVProfileCtrl::RefreshDisabledCheckBoxes()
 	std::vector<int> currently_shown = m_dataSelector->GetSelectionsInCol();
 	if (currently_shown.size() == 0)
 	{
-		for (int i = 0; i < m_plots.size(); i++)
+		for (size_t i = 0; i < m_plots.size(); i++)
 			m_dataSelector->Enable(i, 0, true);
 		return;
 	}
 
 	int first_plot_index = currently_shown[0];
-	if (first_plot_index < 0 || first_plot_index >= m_plots.size())
+	if (first_plot_index < 0 || first_plot_index >= static_cast<int>(m_plots.size()))
 		return;
 
 	wxDVTimeSeriesDataSet *my_dataset = m_plots[first_plot_index]->dataset;
@@ -868,7 +875,7 @@ void wxDVProfileCtrl::RefreshDisabledCheckBoxes()
 	wxString units2;
 	bool units2Set = false;
 
-	for (int i = 1; i < currently_shown.size(); i++)
+	for (size_t i = 1; i < currently_shown.size(); i++)
 	{
 		if (m_plots[currently_shown[i]]->dataset->GetUnits() != units1)
 		{
@@ -880,12 +887,12 @@ void wxDVProfileCtrl::RefreshDisabledCheckBoxes()
 
 	if (!units2Set)
 	{
-		for (int i = 0; i < m_plots.size(); i++)
+		for (size_t i = 0; i < m_plots.size(); i++)
 			m_dataSelector->Enable(i, 0, true);
 	}
 	else
 	{
-		for (int i = 0; i < m_plots.size(); i++)
+		for (size_t i = 0; i < m_plots.size(); i++)
 			m_dataSelector->Enable(i, 0, units1 == m_plots[i]->dataset->GetUnits()
 			|| units2 == m_plots[i]->dataset->GetUnits());
 	}

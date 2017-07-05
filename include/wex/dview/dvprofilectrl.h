@@ -64,6 +64,7 @@ public:
 	int GetNumberOfSelections();
 
 	class VerticalLabelCtrl;
+
 private:
 	//Event Handlers
 	void OnDataChannelSelection(wxCommandEvent& e);

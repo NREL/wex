@@ -92,7 +92,7 @@ void wxDVDCCtrl::AddDataSet(wxDVTimeSeriesDataSet* d, bool update_ui)
 void wxDVDCCtrl::RemoveDataSet(wxDVTimeSeriesDataSet* d)
 {
 	int index = -1;
-	for (int i = 0; i < m_plots.size(); i++)
+	for (size_t i = 0; i < m_plots.size(); i++)
 		if (m_plots[i]->dataset == d)
 			index = i;
 
@@ -116,7 +116,7 @@ void wxDVDCCtrl::RemoveAllDataSets()
 {
 	m_dataSelector->RemoveAll();
 
-	for (int i = 0; i < m_plots.size(); i++)
+	for (size_t i = 0; i < m_plots.size(); i++)
 	{
 		// remove it first in case it's shown to release ownership
 		m_plotSurface->RemovePlot(m_plots[i]->plot);
@@ -167,7 +167,7 @@ void wxDVDCCtrl::ShowPlotAtIndex(int index)
 	wxString YLabelText;
 	size_t NumY1AxisSelections = 0;
 	size_t NumY2AxisSelections = 0;
-	if (index >= 0 && index < m_plots.size())
+	if (index >= 0 && index < static_cast<int>(m_plots.size()))
 	{
 		CalculateDCPlotData(m_plots[index]);
 		m_plots[index]->plot->SetColour(m_dataSelector->GetColourForIndex(index));
@@ -196,7 +196,7 @@ void wxDVDCCtrl::ShowPlotAtIndex(int index)
 		m_plotSurface->GetAxis(yap)->SetUnits(units);
 
 		YLabelText = units;
-		for (size_t i = 0; i < m_dataSelector->Length(); i++)
+		for (int i = 0; i < m_dataSelector->Length(); i++)
 		{
 			if (m_dataSelector->IsSelected(i, 0) && m_plots[i]->dataset->GetUnits() == units)
 			{
@@ -224,7 +224,7 @@ void wxDVDCCtrl::ShowPlotAtIndex(int index)
 
 void wxDVDCCtrl::HidePlotAtIndex(int index, bool update)
 {
-	if (index < 0 || index >= m_plots.size())
+	if (index < 0 || index >= static_cast<int>(m_plots.size()))
 		return;
 
 	wxString YLabelText = "";
@@ -232,9 +232,9 @@ void wxDVDCCtrl::HidePlotAtIndex(int index, bool update)
 	size_t NumY2AxisSelections = 0;
 	int FirstY1AxisSelectionIndex = -1;
 	int FirstY2AxisSelectionIndex = -1;
-	wxPLPlotCtrl::AxisPos yap = wxPLPlotCtrl::Y_LEFT;
+	//wxPLPlotCtrl::AxisPos yap = wxPLPlotCtrl::Y_LEFT;
 	wxString y1Units = NO_UNITS, y2Units = NO_UNITS;
-	int SelIndex = -1;
+	//int SelIndex = -1;
 	m_plotSurface->RemovePlot(m_plots[index]->plot);
 
 	if (m_plotSurface->GetYAxis1())
@@ -288,7 +288,7 @@ void wxDVDCCtrl::HidePlotAtIndex(int index, bool update)
 		m_plotSurface->SetYAxis1(NULL); //Force rescaling.
 		m_plotSurface->SetYAxis2(NULL);
 		//Set the y axis to the left side (instead of the right)
-		for (int j = 0; j < currently_shown.size(); j++)
+		for (size_t j = 0; j < currently_shown.size(); j++)
 		{
 			m_plots[currently_shown[j]]->axisPosition = wxPLPlotCtrl::Y_LEFT;
 			m_plotSurface->RemovePlot(m_plots[currently_shown[j]]->plot);
@@ -325,7 +325,7 @@ void wxDVDCCtrl::RefreshDisabledCheckBoxes()
 	std::vector<int> currently_shown = m_dataSelector->GetSelectionsInCol();
 	if (currently_shown.size() < 2)
 	{
-		for (int i = 0; i < m_plots.size(); i++)
+		for (size_t i = 0; i < m_plots.size(); i++)
 			m_dataSelector->Enable(i, 0, true);
 		return;
 	}
@@ -334,7 +334,7 @@ void wxDVDCCtrl::RefreshDisabledCheckBoxes()
 	wxString units2;
 	bool units2Set = false;
 
-	for (int i = 1; i < currently_shown.size(); i++)
+	for (size_t i = 1; i < currently_shown.size(); i++)
 	{
 		if (m_plots[currently_shown[i]]->dataset->GetUnits() != units1)
 		{
@@ -346,13 +346,13 @@ void wxDVDCCtrl::RefreshDisabledCheckBoxes()
 
 	if (!units2Set)
 	{
-		for (int i = 0; i < m_plots.size(); i++)
+		for (size_t i = 0; i < m_plots.size(); i++)
 			m_dataSelector->Enable(i, 0, true);
 		return;
 	}
 	else
 	{
-		for (int i = 0; i < m_plots.size(); i++)
+		for (size_t i = 0; i < m_plots.size(); i++)
 		{
 			m_dataSelector->Enable(i, 0, units1 == m_plots[i]->dataset->GetUnits()
 				|| units2 == m_plots[i]->dataset->GetUnits());
@@ -386,7 +386,7 @@ void wxDVDCCtrl::SetSelectedNames(const wxString& names, bool restrictToSmallDat
 
 void wxDVDCCtrl::SelectDataSetAtIndex(int index)
 {
-	if (index < 0 || index >= m_plots.size()) return;
+	if (index < 0 || index >= static_cast<int>(m_plots.size())) return;
 
 	m_dataSelector->SelectRowInCol(index);
 	ShowPlotAtIndex(index);
@@ -398,7 +398,7 @@ int wxDVDCCtrl::GetNumberOfSelections()
 }
 
 // *** EVENT HANDLERS ***
-void wxDVDCCtrl::OnDataChannelSelection(wxCommandEvent& e)
+void wxDVDCCtrl::OnDataChannelSelection(wxCommandEvent&)
 {
 	int row;
 	bool isChecked;
@@ -412,7 +412,7 @@ void wxDVDCCtrl::OnDataChannelSelection(wxCommandEvent& e)
 	m_plotSurface->Refresh();
 }
 
-void wxDVDCCtrl::OnSearch(wxCommandEvent& e)
+void wxDVDCCtrl::OnSearch(wxCommandEvent&)
 {
 	m_dataSelector->Filter(m_srchCtrl->GetValue().Lower());
 }
