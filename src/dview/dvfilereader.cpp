@@ -827,7 +827,7 @@ void wxDVFileReader::ReadDataFromCSV(wxDVPlotCtrl *plotWin, const wxString& file
 		dataSets[i]->SetGroupName(wxFileNameFromPath(filename));
 		plotWin->AddDataSet(dataSets[i], (i == dataSets.size() - 1));
 	}
-	plotWin->SelectDataOnBlankTabs();
+	plotWin->SelectDataOnBlankTabs(); // Evan TODO not needed with ReadState method
 	plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
 }
 
@@ -926,7 +926,7 @@ bool wxDVFileReader::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& file
 		dataSets[i]->SetGroupName(wxFileNameFromPath(filename));
 		plotWin->AddDataSet(dataSets[i], (i == dataSets.size() - 1));
 	}
-	plotWin->SelectDataOnBlankTabs();
+	plotWin->SelectDataOnBlankTabs(); // Evan TODO not needed when ReadState used
 	plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
 
 	return true;
@@ -1231,8 +1231,9 @@ bool wxDVFileReader::ReadSQLFile(wxDVPlotCtrl* plotWin, const wxString& filename
 				timeStep = 1.0;
 			}
 			else if (dataDictionary[i].reportingFrequency == "HVAC System Timestep") {
-				// Note: need non-uniform timestep  interpolation for variable frequency, use 1 minute timestep (E+ minimum) and add "missing" data via interpolation;
-				timeStep = 10.0;
+				// Note: variable frequency, use 1 minute timestep (E+ minimum) and add "missing" data via interpolation;
+				NonuniformTimestepInterpolation(dataDictionary[i].dateTimes, dataDictionary[i].stdValues);
+				timeStep = (double)1.0 / 60.0;
 			}
 			else if (dataDictionary[i].reportingFrequency == "Timestep" || dataDictionary[i].reportingFrequency == "Zone Timestep") {
 				// Note: constant frequency, usually 10 or 15 minutes, but always less than 1 hour
@@ -1287,6 +1288,54 @@ bool wxDVFileReader::ReadSQLFile(wxDVPlotCtrl* plotWin, const wxString& filename
 
 		return false;
 	}
+}
+
+void wxDVFileReader::NonuniformTimestepInterpolation(const std::vector<wxDateTime> & times, std::vector<double> & values)
+{
+	assert(times.size() == values.size());
+
+	std::vector<double> valuesByMinute;
+
+	wxTimeSpan timeSpan = times.at(times.size() - 1) - times.at(0);
+
+	int expectedVectorLength = timeSpan.GetMinutes();
+
+	for (size_t i = 1; i < times.size(); i++){
+		timeSpan = times[i] - times[i - 1];
+		wxLongLong intervalInSeconds = timeSpan.GetSeconds();
+		int interval = static_cast<int>(intervalInSeconds.ToDouble()) / 60;
+		int remainder = static_cast<int>(intervalInSeconds.ToDouble()) % 60;
+		if (remainder > 0) {
+			// This is necessary to account for the 1 millisecond time shift required
+			// previously to convert Energy+'s 1 - 24 hour clock to 0 - 23 hour
+			interval += 1;
+		}
+
+		// E+ interval must be greater than 0 and less than 60
+		if (interval <= 0) {
+			// Converting Energy+ to 0 - 23 hour can have corner case failures
+			interval += 60;
+		}
+		else if (interval >= 60) {
+			interval -= 60;
+		}
+		if (interval <= 0 || interval >= 60) {
+			// Should not get here
+			assert(false);
+			continue;
+		}
+
+		double valueDeltaPerMinute = (values[i] - values[i - 1]) / interval;
+		for (int j = 0; j < interval; j++){
+			double value = values.at(i - 1) + valueDeltaPerMinute * j;
+			valuesByMinute.push_back(value);
+		}
+	}
+
+	//int size = valuesByMinute.size();
+	//assert(valuesByMinute.size() == static_cast<unsigned>(expectedVectorLength));
+
+	values = valuesByMinute;
 }
 
 bool wxDVFileReader::IsEnergyPlus(sqlite3 * db)
