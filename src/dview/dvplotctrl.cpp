@@ -86,7 +86,7 @@ double wxDVPlotCtrl::GetMinTimeStep()
 	double MinTimeStep = 1000000000.0;
 	double TimeStep;
 
-	for (int i = 0; i < m_dataSets.size(); i++)
+	for (size_t i = 0; i < m_dataSets.size(); i++)
 	{
 		TimeStep = m_dataSets[i]->GetTimeStep();
 		if (TimeStep < MinTimeStep) { MinTimeStep = TimeStep; }

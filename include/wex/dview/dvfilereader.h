@@ -32,14 +32,20 @@
  * Other applications that implement DViewLib will handle wxDVTimeSeriesDataSet in their own way.
  *
  * This class implements wxDVTimeSeriesDataSet.  This class is used to read a
- * data set from files.  Right now we support csv and txt.
+ * data set from files.  Right now we support csv and txt and Energy+ sql and
+ * can convert the sql input from its native IP to SI units and values.
  */
 #include <stdio.h>
 #include <vector>
 #include <wx/string.h>
 
+struct sqlite3;
+
 class wxDVPlotCtrl;
 class wxDVArrayDataSet;
+class wxDateTime;
+
+using namespace std;
 
 class wxDVFileReader
 {
@@ -48,8 +54,14 @@ public:
 	static bool FastRead(wxDVPlotCtrl* plotWin, const wxString& filename, int prealloc_data = 8760, int prealloc_lnchars = 1024);
 	static bool Read8760WFLines(std::vector<wxDVArrayDataSet*> &dataSets, FILE* infile, int wfType);
 	static bool ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& filename);
+	static bool ReadSQLFile(wxDVPlotCtrl* plotWin, const wxString& filename);
 	static bool IsNumeric(wxString stringToCheck);
 	static bool IsDate(wxString stringToCheck);
+
+private:
+	static wxString ColumnText(const unsigned char* column);
+	static bool IsEnergyPlus(sqlite3 * db);
+	static void ExecAndThrowOnError(const std::string &t_stmt, sqlite3 * db);
 };
 
 #endif

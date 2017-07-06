@@ -22,16 +22,32 @@
 *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-#include <stdio.h>
-#include <wx/string.h>
+#include "../src/sqlite3.h"
 
-#include "wex/dview/dvtimeseriesdataset.h"
+#include <algorithm>
+#include <iostream>
+#include <map>
+#include <sstream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <tuple>
+#include <vector>
+
+#include <wx/filefn.h>
+#include <wx/filename.h>
+#include <wx/msgdlg.h>
+#include <wx/string.h>
+#include <wx/time.h>
+#include <wx/tokenzr.h>
+#include <wx/tokenzr.h>
+#include <wx/txtstrm.h>
+#include <wx/wfstream.h>
+
 #include "wex/dview/dvfilereader.h"
 #include "wex/dview/dvplotctrl.h"
+#include "wex/dview/dvtimeseriesdataset.h"
 
-#include <wx/wfstream.h>
-#include <wx/txtstrm.h>
-#include <wx/tokenzr.h>
+vector<tuple<string, string, double> > m_unitConversions;
 
 static bool AllocReadLine(FILE *fp, wxString &buf, int prealloc = 256)
 {
@@ -88,13 +104,6 @@ struct WFHeader
 #define WF_TM3 7
 #define WF_SWRF 8
 #define WF_SMW 9
-
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <wx/filefn.h>
-#include <wx/filename.h>
-#include <wx/tokenzr.h>
 
 WFHeader::WFHeader()
 {
@@ -253,16 +262,16 @@ static bool ParseEPWHeader(const wxString &file, WFHeader &info, FILE **wfretfp)
 static int GetWeatherFileType(const wxString &weather_file)
 {
 	/*
-		FileLines.Add('* WFType indicates the weather file type');
-		C     MODE 1: TMY FILE FORMAT
-		C     MODE 2: TMY2 FORMAT
-		C     MODE 3: ENERGYPLUS FORMAT
-		C     MODE 4: IWEC (INTERNATIONAL WEATHER FOR ENERGY CALCULATIONS)
-		C     MODE 5: CWEC (CANADIAN WEATHER FOR ENERGY CALCULATIONS)
-		C     MODE 6: METEONORM (TMY2 FILE FORMAT)
-		C     MODE 7: TMY3 FORMAT
-		C     MODE 8: Sam Wind Resource File (tab delimited)
-		*/
+	FileLines.Add('* WFType indicates the weather file type');
+	C     MODE 1: TMY FILE FORMAT
+	C     MODE 2: TMY2 FORMAT
+	C     MODE 3: ENERGYPLUS FORMAT
+	C     MODE 4: IWEC (INTERNATIONAL WEATHER FOR ENERGY CALCULATIONS)
+	C     MODE 5: CWEC (CANADIAN WEATHER FOR ENERGY CALCULATIONS)
+	C     MODE 6: METEONORM (TMY2 FILE FORMAT)
+	C     MODE 7: TMY3 FORMAT
+	C     MODE 8: Sam Wind Resource File (tab delimited)
+	*/
 	wxString ext;
 	wxFileName::SplitPath(weather_file, NULL, NULL, NULL, &ext);
 	if (ext.Lower() == "tm2")
@@ -288,7 +297,7 @@ static int cstrlocate(char *buf, char **colidx, int colmax, char delim)
 	while (p && *p && i < colmax)
 	{
 		p = strchr(p, delim);
-		//		if (p) colidx[i++] = ++p;
+		//if (p) colidx[i++] = ++p;
 		if ((p) && (*(++p) != delim)) colidx[i++] = p;
 	}
 
@@ -300,15 +309,14 @@ static int cstrlocate(char *buf, char **colidx, int colmax, char delim)
 }
 
 /*bool ReadWeatherFileLine(FILE *fp, int type,
-					int &year, int &month, int &day, int &hour,
-					double &dn, double &df, double &ambt, double &wind)*/
+int &year, int &month, int &day, int &hour,
+double &dn, double &df, double &ambt, double &wind)*/
 static bool ReadWeatherFileLine(FILE *fp, int type,
 	int &year, int &month, int &day, int &hour,
 	double &gh, double &dn, double &df,  // Wh/m2, Wh/m2, Wh/m2
 	double &wind, double &drytemp, double &wettemp, // m/s, 'C, 'C
 	double &relhum, double &pressure, // %, mbar
 	double &winddir, double &snowdepth) // deg, cm
-
 {
 	char buf[1024];
 	char *cols[128], *p;
@@ -457,6 +465,10 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 	{
 		return ReadWeatherFile(plotWin, filename);
 	}
+	else if (fExtension.CmpNoCase("sql") == 0)
+	{
+		return ReadSQLFile(plotWin, filename);
+	}
 
 	wxStopWatch sw;
 	sw.Start();
@@ -465,7 +477,7 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 	if (!inFile)
 		return false;
 
-	int lnchars = prealloc_lnchars > 0 ? prealloc_lnchars : 1024;
+	unsigned lnchars = prealloc_lnchars > 0 ? prealloc_lnchars : 1024;
 	lnchars *= 2;  //Give ourselves extra room
 
 	std::vector<wxDVArrayDataSet*> dataSets;
@@ -512,8 +524,8 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 			tkz_tStep.GetNextToken().ToDouble(&entry);
 			ds->SetTimeStep(entry);
 			ds->SetUnits(tkz_units.GetNextToken());
-			//			ds->SetXLabel("Hours since 00:00 Jan 1");
-			//			ds->SetYLabel(ds->GetSeriesTitle() + " (" + ds->GetUnits() + ")");
+			//ds->SetXLabel("Hours since 00:00 Jan 1");
+			//ds->SetYLabel(ds->GetSeriesTitle() + " (" + ds->GetUnits() + ")");
 
 			dataSets.push_back(ds);
 			groupNames.push_back(titleToken.BeforeLast('|'));
@@ -583,8 +595,8 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 		{
 			ds->SetSeriesTitle(title.AfterLast('|'));
 			groupNames.push_back(title.BeforeLast('|'));
-			//			ds->SetXLabel("Hours since 00:00 Jan 1");
-			//			ds->SetYLabel(title);
+			//ds->SetXLabel("Hours since 00:00 Jan 1");
+			//ds->SetYLabel(title);
 			if (title != "Date/Time")
 				isEnergyPlusOutput = false;
 		}
@@ -604,7 +616,7 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 			{
 				isEnergyPlusOutput = false;
 				ds->SetUnits(units);
-				//				ds->SetYLabel(title + " (" + units + ")");
+				//ds->SetYLabel(title + " (" + units + ")");
 			}
 		}
 		ds->SetTimeStep(1.0, false);
@@ -668,7 +680,7 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 	if (prealloc_data > 0)
 	{
 		// preallocate data
-		for (int i = 0; i < dataSets.size(); i++)
+		for (size_t i = 0; i < dataSets.size(); i++)
 			dataSets[i]->Alloc(prealloc_data);
 	}
 
@@ -709,13 +721,14 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 	fclose(inFile);
 
 	//Done reading data; add it to the plotCtrl.
+
 	plotWin->Freeze();
-	for (int i = 0; i < dataSets.size(); i++)
+	for (size_t i = 0; i < dataSets.size(); i++)
 	{
 		dataSets[i]->SetGroupName(groupNames[i].size() > 1 ? groupNames[i] : wxFileNameFromPath(filename));
 		plotWin->AddDataSet(dataSets[i], (i == dataSets.size() - 1) /* update_ui ? */);
 	}
-	plotWin->SelectDataOnBlankTabs();
+	plotWin->SelectDataOnBlankTabs(); // Evan TODO not needed when ReadState used
 	plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
 	plotWin->Thaw();
 
@@ -758,7 +771,7 @@ void wxDVFileReader::ReadDataFromCSV(wxDVPlotCtrl *plotWin, const wxString& file
 
 	std::vector<double> timeCounters;
 	currentLine = intext.ReadLine(); //Offsets from second line.
-	for (int i = 0; i < dataSets.size(); i++)
+	for (size_t i = 0; i < dataSets.size(); i++)
 	{
 		wxString offsetStr = currentLine.BeforeFirst(separator);
 		double offsetDouble;
@@ -768,7 +781,7 @@ void wxDVFileReader::ReadDataFromCSV(wxDVPlotCtrl *plotWin, const wxString& file
 	}
 
 	currentLine = intext.ReadLine(); // Time Steps from third line.
-	for (int i = 0; i < dataSets.size(); i++)
+	for (size_t i = 0; i < dataSets.size(); i++)
 	{
 		wxString timeStepStr = currentLine.BeforeFirst(separator);
 		double timeStepDouble;
@@ -778,7 +791,7 @@ void wxDVFileReader::ReadDataFromCSV(wxDVPlotCtrl *plotWin, const wxString& file
 	}
 
 	currentLine = intext.ReadLine(); //Units from 4th line.
-	for (int i = 0; i < dataSets.size(); i++)
+	for (size_t i = 0; i < dataSets.size(); i++)
 	{
 		wxString units = currentLine.BeforeFirst(separator);
 		dataSets[i]->SetUnits(units);
@@ -794,7 +807,7 @@ void wxDVFileReader::ReadDataFromCSV(wxDVPlotCtrl *plotWin, const wxString& file
 	do
 	{
 		currentLine = intext.ReadLine();
-		for (int i = 0; i < dataSets.size(); i++)
+		for (size_t i = 0; i < dataSets.size(); i++)
 		{
 			dataStr = currentLine.BeforeFirst(separator);
 			if (!dataStr.ToDouble(&dataDouble))
@@ -809,7 +822,7 @@ void wxDVFileReader::ReadDataFromCSV(wxDVPlotCtrl *plotWin, const wxString& file
 	} while (!infile.Eof() && keepGoing);
 
 	//Done reading data; add it to the plotCtrl.
-	for (int i = 0; i < dataSets.size(); i++)
+	for (size_t i = 0; i < dataSets.size(); i++)
 	{
 		dataSets[i]->SetGroupName(wxFileNameFromPath(filename));
 		plotWin->AddDataSet(dataSets[i], (i == dataSets.size() - 1));
@@ -874,7 +887,7 @@ bool wxDVFileReader::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& file
 	ds->SetUnits("cm");
 	dataSets.push_back(ds);
 
-	for (int i = 0; i < dataSets.size(); i++)
+	for (size_t i = 0; i < dataSets.size(); i++)
 		dataSets.at(i)->SetTimeStep(1.0); //All have 1 hr tstep.
 
 	//int year, month, day, hour;
@@ -908,7 +921,7 @@ bool wxDVFileReader::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& file
 	}
 
 	//Done reading data; add it to the plotCtrl.
-	for (int i = 0; i < dataSets.size(); i++)
+	for (size_t i = 0; i < dataSets.size(); i++)
 	{
 		dataSets[i]->SetGroupName(wxFileNameFromPath(filename));
 		plotWin->AddDataSet(dataSets[i], (i == dataSets.size() - 1));
@@ -924,7 +937,7 @@ bool wxDVFileReader::Read8760WFLines(std::vector<wxDVArrayDataSet*> &dataSets, F
 	int year, month, day, hour;
 	double gh, dn, df, wind, drytemp, wettemp, relhum, pressure, winddir, snowdepth;
 
-	for (int i = 0; i < 8760; i++)
+	for (size_t i = 0; i < 8760; i++)
 	{
 		if (!ReadWeatherFileLine(infile, wfType, year, month, day, hour, gh, dn, df, wind, drytemp, wettemp,
 			relhum, pressure, winddir, snowdepth))
@@ -948,6 +961,369 @@ bool wxDVFileReader::Read8760WFLines(std::vector<wxDVArrayDataSet*> &dataSets, F
 
 	return true;
 }
+
+bool wxDVFileReader::ReadSQLFile(wxDVPlotCtrl* plotWin, const wxString& filename)
+{
+	wxFileName fileName(filename);
+
+	if (!fileName.IsFileReadable()){
+		wxMessageBox(wxT("File not readable."), wxT("Error"), wxICON_ERROR);
+		return false;
+	}
+
+	sqlite3 * db;
+	int success = sqlite3_open_v2(filename.c_str(), &db, SQLITE_OPEN_READONLY | SQLITE_OPEN_EXCLUSIVE, nullptr);
+
+	if (success == SQLITE_OK) {
+		wxStopWatch sw;
+		sw.Start();
+
+		struct DataDictionaryItem
+		{
+			int recordIndex;
+			int envPeriodIndex;
+			std::string name;
+			std::string keyValue;
+			std::string envPeriod;
+			std::string reportingFrequency;
+			std::string units;
+			std::string table;
+			unsigned intervalMinutes;
+			std::vector<wxDateTime> dateTimes;
+			std::vector<double> stdValues;
+
+			DataDictionaryItem(int recordIndex_, int envPeriodIndex_, std::string name_, std::string keyValue_, std::string envPeriod_, std::string reportingFrequency_, std::string units_, std::string table_) :recordIndex(recordIndex_), envPeriodIndex(envPeriodIndex_), name(name_), keyValue(keyValue_), envPeriod(envPeriod_), reportingFrequency(reportingFrequency_), units(units_), table(table_) {}
+		};
+
+		std::vector<DataDictionaryItem> dataDictionary;
+
+		if (db)	{
+			// Verify that this is an e+ SQL schema
+			if (!IsEnergyPlus(db)){
+				wxMessageBox(wxT("File not valid Energy+ SQL format."), wxT("Error"), wxICON_ERROR);
+			}
+
+			std::string table, name, keyValue, units, rf;
+
+			int dictionaryIndex, code;
+
+			std::stringstream s;
+			sqlite3_stmt * sqlStmtPtr;
+			std::map<int, std::string> envPeriods;
+			std::map<int, std::string>::iterator envPeriodsItr;
+
+			s << "SELECT EnvironmentPeriodIndex, EnvironmentName FROM EnvironmentPeriods";
+			sqlite3_prepare_v2(db, s.str().c_str(), -1, &sqlStmtPtr, nullptr);
+			code = sqlite3_step(sqlStmtPtr);
+			while (code == SQLITE_ROW)
+			{
+				wxString queryEnvPeriod = ColumnText(sqlite3_column_text(sqlStmtPtr, 1));
+				queryEnvPeriod = queryEnvPeriod.Upper();
+				envPeriods.insert(std::pair<int, std::string>(sqlite3_column_int(sqlStmtPtr, 0), queryEnvPeriod.ToStdString()));
+				code = sqlite3_step(sqlStmtPtr);
+			}
+			sqlite3_finalize(sqlStmtPtr);
+
+			s.str("");
+			s << "SELECT ReportVariableDatadictionaryIndex, VariableName, KeyValue, ReportingFrequency, VariableUnits";
+			s << " FROM ReportVariableDatadictionary";
+			code = sqlite3_prepare_v2(db, s.str().c_str(), -1, &sqlStmtPtr, nullptr);
+
+			table = "ReportVariableData";
+
+			code = sqlite3_step(sqlStmtPtr);
+			while (code == SQLITE_ROW)
+			{
+				dictionaryIndex = sqlite3_column_int(sqlStmtPtr, 0);
+				name = ColumnText(sqlite3_column_text(sqlStmtPtr, 1));
+				keyValue = ColumnText(sqlite3_column_text(sqlStmtPtr, 2)).length() ? ColumnText(sqlite3_column_text(sqlStmtPtr, 2)) : "Site";
+				rf = ColumnText(sqlite3_column_text(sqlStmtPtr, 3));
+				units = ColumnText(sqlite3_column_text(sqlStmtPtr, 4));
+
+				for (envPeriodsItr = envPeriods.begin();
+					envPeriodsItr != envPeriods.end();
+					++envPeriodsItr)
+				{
+					wxString queryEnvPeriod = envPeriodsItr->second;
+					queryEnvPeriod = queryEnvPeriod.Upper();
+					std::string str = keyValue;
+					if (queryEnvPeriod.Contains("RUN PERIOD")) {
+						str += " Run Period " + rf;
+					}
+					else {
+						str += " Design Day " + rf;
+					}
+					dataDictionary.push_back(DataDictionaryItem(dictionaryIndex, envPeriodsItr->first, name, str, queryEnvPeriod.ToStdString(), rf, units, table));
+				}
+
+				// step to next row
+				code = sqlite3_step(sqlStmtPtr);
+			}
+			sqlite3_finalize(sqlStmtPtr);
+		}
+
+		bool isLeapYear = false;
+
+		for (size_t i = 0; i < dataDictionary.size(); i++) {
+			wxString recordIndexString = wxString::Format(wxT("%d"), (int)dataDictionary[i].recordIndex);
+			wxString envPeriodIndexString = wxString::Format(wxT("%d"), (int)dataDictionary[i].envPeriodIndex);
+
+			std::stringstream s;
+			s << "SELECT dt.VariableValue, Time.Month, Time.Day, Time.Hour, Time.Minute, Time.Interval FROM ";
+			s << dataDictionary[i].table;
+			s << " dt INNER JOIN Time ON Time.timeIndex = dt.TimeIndex";
+			s << " WHERE ";
+			if (dataDictionary[i].table == "ReportMeterData")
+			{
+				s << " dt.ReportMeterDataDictionaryIndex=";
+			}
+			else if (dataDictionary[i].table == "ReportVariableData")
+			{
+				s << " dt.ReportVariableDataDictionaryIndex=";
+			}
+			s << recordIndexString;
+			s << " AND Time.EnvironmentPeriodIndex = ";
+			s << envPeriodIndexString;
+
+			sqlite3_stmt * sqlStmtPtr;
+
+			int code = sqlite3_prepare_v2(db, s.str().c_str(), -1, &sqlStmtPtr, nullptr);
+
+			code = sqlite3_step(sqlStmtPtr);
+			std::stringstream s2;
+			s2 << "SQL Query:" << std::endl;
+			s2 << s.str();
+			s2 << "Return Code:" << std::endl;
+			s2 << code;
+
+			//long cumulativeSeconds = 0;
+
+			std::vector<double> stdValues;
+			stdValues.reserve(8760);
+
+			int counter = 0;
+
+			while (code == SQLITE_ROW)
+			{
+				double value = sqlite3_column_double(sqlStmtPtr, 0);
+				stdValues.push_back(value);
+
+				unsigned month = sqlite3_column_int(sqlStmtPtr, 1);
+				unsigned day = sqlite3_column_int(sqlStmtPtr, 2);
+				unsigned hour = sqlite3_column_int(sqlStmtPtr, 3);
+				unsigned minute = sqlite3_column_int(sqlStmtPtr, 4);
+				unsigned intervalMinutes = sqlite3_column_int(sqlStmtPtr, 5); // used for run periods
+
+				if (month == 2 && day == 29) {
+					isLeapYear = true;
+				}
+
+				if (counter++ == 0) {
+					dataDictionary[i].intervalMinutes = intervalMinutes;
+				}
+
+				if (dataDictionary[i].reportingFrequency == "HVAC System Timestep") {
+					// If isLeapYear, choose an arbitrary leap year (ex 2016),
+					// otherwise wxDateTime will seg fault in debug due to an
+					// assert, and have undefined behavior in release.
+					unsigned short year = 2017;
+					if (isLeapYear) {
+						year = 2016;
+					}
+
+					wxDateTime dateTime;
+
+					// E+ uses months 1 - 12; wxWidget Month is an enum 0 - 11
+					--month;
+
+					if (hour == 24) {
+						// EnergyPlus deals in a 00:00:01 -> 24:00:00 instead of
+						// 00:00:00 -> 23:59:59 hrs that the real world uses, so
+						// we are going to adjust for that
+
+						// For E+ hour = 24, we know E+ minutes must = 0
+						assert(minute == 0);
+
+						// Rather than 24:00:00, we want 23:59:59
+						dateTime = wxDateTime(day, wxDateTime::Month(month), wxDateTime::Inv_Year, 23, 59, 59, 999);
+					}
+					else {
+						dateTime = wxDateTime(day, wxDateTime::Month(month), wxDateTime::Inv_Year, hour, minute);
+					}
+					dataDictionary[i].dateTimes.push_back(dateTime);
+				}
+
+				// Check for varying intervals when they should remain constant
+				if (dataDictionary[i].reportingFrequency != "HVAC System Timestep" && dataDictionary[i].reportingFrequency != "Monthly" && intervalMinutes != dataDictionary[i].intervalMinutes) {
+					assert(false);
+				}
+
+				//	intervalMinutes notes:
+				//	1 : 1 / 60 hour
+				//	10 : 1 / 6 hour
+				//	15 : 1 / 4 hour
+				//	60 : 1 hour
+				//	1440 : 24 hours
+				//	40320 : 28 days
+				//	41760 : 29 days ***** leap year if month == 2 *****
+				//	43200 : 30 days
+				//	44640 : 31 days
+
+				//if (!firstReportDateTime){
+				//	if ((month == 0) || (day == 0)){
+				//		// gets called for RunPeriod reports
+				//		firstReportDateTime = lastDateTime(false, dataDictionary.envPeriodIndex);
+				//	}
+				//	else{
+				//		// DLM: potential leap year problem
+				//		// DLM: get standard time zone?
+				//		if (intervalMinutes >= 24 * 60){
+				//			// Daily or Monthly
+				//			OS_ASSERT(intervalMinutes % (24 * 60) == 0);
+				//			firstReportDateTime = openstudio::DateTime(openstudio::Date(month, day), openstudio::Time(1, 0, 0, 0));
+				//		}
+				//		else {
+				//			firstReportDateTime = openstudio::DateTime(openstudio::Date(month, day), openstudio::Time(0, 0, intervalMinutes, 0));
+				//		}
+				//	}
+				//}
+
+				//// Use the new way to create the time series with nonzero first entry
+				//cumulativeSeconds += 60 * intervalMinutes;
+				//stdSecondsFromFirstReport.push_back(cumulativeSeconds);
+
+				//// check if this interval is same as the others
+				//if (isIntervalTimeSeries && !reportingIntervalMinutes){
+				//	reportingIntervalMinutes = intervalMinutes;
+				//}
+				//else if (reportingIntervalMinutes && (reportingIntervalMinutes.get() != intervalMinutes)){
+				//	isIntervalTimeSeries = false;
+				//	reportingIntervalMinutes.reset();
+				//}
+
+				// step to next row
+				code = sqlite3_step(sqlStmtPtr);
+			}
+
+			dataDictionary[i].stdValues = stdValues;
+
+			// must finalize to prevent memory leaks
+			sqlite3_finalize(sqlStmtPtr);
+		}
+
+		// Transfer from dataDictionary into DView
+		std::vector<wxDVArrayDataSet*> dataSets;
+		std::vector<wxString> groupNames;
+		std::vector<double> timeCounters;
+
+		for (size_t i = 0; i < dataDictionary.size(); i++) {
+			double timeStep = 1;
+			if (dataDictionary[i].reportingFrequency == "Hourly") {
+				timeStep = 1;
+			}
+			else if (dataDictionary[i].reportingFrequency == "Daily") {
+				timeStep = 24;
+			}
+			else if (dataDictionary[i].reportingFrequency == "Monthly") {
+				//unsigned intervalMinutes = dataDictionary[i].intervalMinutes;
+				//timeStep = dataDictionary[i].intervalMinutes / 60.0;
+				//timeStep = 30.41667 * 24; // Average days per month, annually
+				timeStep = 1.0;
+			}
+			else if (dataDictionary[i].reportingFrequency == "HVAC System Timestep") {
+				// Note: need non-uniform timestep  interpolation for variable frequency, use 1 minute timestep (E+ minimum) and add "missing" data via interpolation;
+				timeStep = 10.0;
+			}
+			else if (dataDictionary[i].reportingFrequency == "Timestep" || dataDictionary[i].reportingFrequency == "Zone Timestep") {
+				// Note: constant frequency, usually 10 or 15 minutes, but always less than 1 hour
+				timeStep = dataDictionary[i].intervalMinutes / 60.0;
+				wxString stringIntervalMinutes = wxString::Format(wxT("%d"), (unsigned)dataDictionary[i].intervalMinutes);
+				dataDictionary[i].keyValue += " " + stringIntervalMinutes + " minutes";
+			}
+			else {
+				// Oops, not handled
+				assert(false);
+			}
+
+			wxDVArrayDataSet * ds = new wxDVArrayDataSet();
+			ds->SetSeriesTitle(dataDictionary[i].keyValue);
+			ds->SetTimeStep(timeStep);
+			ds->SetUnits(dataDictionary[i].units);
+			dataSets.push_back(ds);
+
+			timeCounters.push_back(timeStep);
+
+			groupNames.push_back(dataDictionary[i].name);
+
+			for (size_t j = 0; j < dataDictionary[i].stdValues.size(); j++) {
+				dataSets[i]->Append(wxRealPoint(timeCounters[i], dataDictionary[i].stdValues[j])); // convert number and add data point.
+				timeCounters[i] += dataSets[i]->GetTimeStep(); // convert number and add data point.
+			}
+		}
+
+		// Done reading data; add it to the plotCtrl.
+		plotWin->Freeze();
+		for (size_t i = 0; i < dataSets.size(); i++)
+		{
+			dataSets[i]->SetGroupName(groupNames[i].size() > 1 ? groupNames[i] : wxFileNameFromPath(filename));
+			plotWin->AddDataSet(dataSets[i], (i == dataSets.size() - 1) /* update_ui ? */);
+		}
+		plotWin->SelectDataOnBlankTabs(); // Evan TODO not needed when ReadState used
+		plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
+		plotWin->Thaw();
+
+		//wxLogStatus("Read %i lines of data points.\n", line);
+		//wxLogDebug("wxDVFileReader::ReadSQLFile [ncol=%d nalloc = %d lnchars=%d] = %d msec\n", columns, prealloc_data, lnchars, (int)sw.Time());
+		return true;
+	}
+	else {
+		sqlite3_close(db);
+
+		wxString stringSuccess = wxString::Format(wxT("%d"), (int)success);
+
+		wxString errorMsg("The following error code was returned while trying to read file ");
+		errorMsg += filename + ": " + stringSuccess;
+		wxMessageBox(errorMsg, wxT("Error"), wxICON_ERROR);
+
+		return false;
+	}
+}
+
+bool wxDVFileReader::IsEnergyPlus(sqlite3 * db)
+{
+	bool success = false;
+	if (db) {
+		wxString eP("EnergyPLus");
+		sqlite3_stmt* sqlStmtPtr;
+		sqlite3_prepare_v2(db, "SELECT EnergyPlusVersion FROM Simulations", -1, &sqlStmtPtr, nullptr);
+		int code = sqlite3_step(sqlStmtPtr);
+		if (code == SQLITE_ROW) {
+			wxString version_line = ColumnText(sqlite3_column_text(sqlStmtPtr, 0));
+			success = version_line.Find(eP);
+		}
+		sqlite3_finalize(sqlStmtPtr);
+	}
+	return success;
+}
+
+wxString wxDVFileReader::ColumnText(const unsigned char* column)
+{
+	return wxString(reinterpret_cast<const char*>(column));
+}
+
+void wxDVFileReader::ExecAndThrowOnError(const std::string &t_stmt, sqlite3 * db)
+{
+	char * err = nullptr;
+	if (sqlite3_exec(db, t_stmt.c_str(), nullptr, nullptr, &err) != SQLITE_OK) {
+		std::string errstr;
+		if (err) {
+			errstr = err;
+			sqlite3_free(err);
+		}
+		throw std::runtime_error("Error executing SQL statement: " + t_stmt + " " + errstr);
+	}
+}
+
 bool wxDVFileReader::IsNumeric(wxString stringToCheck)
 {
 	double entry;
@@ -996,7 +1372,7 @@ bool wxDVFileReader::IsDate(wxString stringToCheck)
 	{
 		c = str.at(i);
 
-		if (AMPMposition = 0 && (c == 'a' || c == 'p' || c == 'm' || c == 'A' || c == 'P' || c == 'M')) { AMPMposition = i; }
+		if (AMPMposition = 0 && (c == 'a' || c == 'p' || c == 'm' || c == 'A' || c == 'P' || c == 'M')) { AMPMposition = i; } // warning C4706: assignment within conditional expression
 
 		if (AMPMposition > 0 && i > AMPMposition + 1) { return false; }
 

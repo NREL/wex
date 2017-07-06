@@ -219,7 +219,7 @@ int wxDVSelectionListCtrl::SelectRowWithNameInCol(const wxString& name, int col)
 void wxDVSelectionListCtrl::SelectRowInCol(int row, int col, bool value)
 {
 	if (col < 0 || col >= NMAXCOLS || col >= m_numCols) return;
-	if (row < 0 || row >= m_itemList.size()) return;
+	if (row < 0 || row >= static_cast<int>(m_itemList.size())) return;
 
 	m_itemList[row]->value[col] = value;
 
@@ -231,7 +231,7 @@ void wxDVSelectionListCtrl::SelectRowInCol(int row, int col, bool value)
 void wxDVSelectionListCtrl::Enable(int row, int col, bool enable)
 {
 	if (col < 0 || col >= NMAXCOLS || col >= m_numCols) return;
-	if (row < 0 || row >= m_itemList.size()) return;
+	if (row < 0 || row >= static_cast<int>(m_itemList.size())) return;
 
 	if (!enable) m_itemList[row]->value[col] = false;
 	m_itemList[row]->enable[col] = enable;
@@ -240,7 +240,7 @@ void wxDVSelectionListCtrl::Enable(int row, int col, bool enable)
 
 bool wxDVSelectionListCtrl::IsRowSelected(int row, int start_col)
 {
-	if (row < 0 || row >= m_itemList.size()) return false;
+	if (row < 0 || row >= static_cast<int>(m_itemList.size())) return false;
 
 	for (int i = start_col; i < NMAXCOLS; i++)
 		if (m_itemList[row]->value[i])
@@ -252,7 +252,7 @@ bool wxDVSelectionListCtrl::IsRowSelected(int row, int start_col)
 bool wxDVSelectionListCtrl::IsSelected(int row, int col)
 {
 	if (col < 0 || col >= NMAXCOLS || col >= m_numCols) return false;
-	if (row < 0 || row >= m_itemList.size()) return false;
+	if (row < 0 || row >= static_cast<int>(m_itemList.size())) return false;
 
 	return m_itemList[row]->value[col];
 }
@@ -266,13 +266,13 @@ void wxDVSelectionListCtrl::GetLastEventInfo(int* row, int* col, bool* isNowChec
 
 wxString wxDVSelectionListCtrl::GetRowLabel(int row)
 {
-	if (row < 0 || row >= m_itemList.size()) return wxEmptyString;
+	if (row < 0 || row >= static_cast<int>(m_itemList.size())) return wxEmptyString;
 	return m_itemList[row]->label;
 }
 
 wxString wxDVSelectionListCtrl::GetRowLabelWithGroup(int row)
 {
-	if (row < 0 || row >= m_itemList.size()) return wxEmptyString;
+	if (row < 0 || row >= static_cast<int>(m_itemList.size())) return wxEmptyString;
 	wxString grp(m_itemList[row]->group);
 	if (grp.IsEmpty()) return m_itemList[row]->label;
 	else return grp + " - " + m_itemList[row]->label;
@@ -300,7 +300,7 @@ std::vector<int> wxDVSelectionListCtrl::GetSelectionsInCol(int col)
 	if (len > 0)
 	{
 		list.reserve(len / 2);
-		for (int i = 0; i < len; i++)
+		for (size_t i = 0; i < len; i++)
 			if (IsSelected(i, col))
 				list.push_back(i);
 	}
@@ -311,7 +311,7 @@ int wxDVSelectionListCtrl::GetNumSelected(int col)
 {
 	int count = 0;
 	size_t len = m_itemList.size();
-	for (int i = 0; i < len; i++)
+	for (size_t i = 0; i < len; i++)
 		if (IsSelected(i, col))
 			count++;
 	return count;
@@ -472,17 +472,17 @@ wxSize wxDVSelectionListCtrl::DoGetBestSize() const
 	return m_bestSize;
 }
 
-void wxDVSelectionListCtrl::OnResize(wxSizeEvent &evt)
+void wxDVSelectionListCtrl::OnResize(wxSizeEvent &)
 {
 	ResetScrollbars();
 }
 
-void wxDVSelectionListCtrl::OnErase(wxEraseEvent &evt)
+void wxDVSelectionListCtrl::OnErase(wxEraseEvent &)
 {
 	/* nothing to do */
 }
 
-void wxDVSelectionListCtrl::OnPaint(wxPaintEvent &evt)
+void wxDVSelectionListCtrl::OnPaint(wxPaintEvent &)
 {
 	static wxBitmap s_cirMinus, s_cirPlus;
 	if (!s_cirMinus.IsOk() || !s_cirPlus.IsOk())
@@ -521,7 +521,7 @@ void wxDVSelectionListCtrl::OnPaint(wxPaintEvent &evt)
 			m_groups[g].geom = wxRect(0, y, windowRect.width, m_groupHeight);
 			dc.SetFont(font_bold);
 			dc.SetPen(wxPen(bg, 1));
-			dc.SetBrush(wxBrush(wxColour(50, 50, 50), wxSOLID));
+			dc.SetBrush(wxBrush(wxColour(50, 50, 50), wxSOLID)); // warning C4996: 'wxBrush::wxBrush': deprecated: use wxBRUSHSTYLE_XXX constants
 			dc.DrawRectangle(m_groups[g].geom);
 			dc.SetTextForeground(*wxWHITE);
 			wxBitmap &bit = (m_collapsedGroups.Index(m_groups[g].label) >= 0) ? s_cirPlus : s_cirMinus;
@@ -631,7 +631,7 @@ void wxDVSelectionListCtrl::OnLeftDown(wxMouseEvent &evt)
 		std::vector<row_item*> &items = m_groups[g].items;
 		for (size_t i = 0; i < items.size(); i++)
 		{
-			for (size_t c = 0; c < m_numCols; c++)
+			for (int c = 0; c < m_numCols; c++)
 			{
 				if (items[i]->shown && items[i]->geom[c].Contains(mx, my))
 				{
@@ -658,7 +658,7 @@ void wxDVSelectionListCtrl::OnLeftDown(wxMouseEvent &evt)
 	}
 }
 
-void wxDVSelectionListCtrl::OnRightDown(wxMouseEvent &evt)
+void wxDVSelectionListCtrl::OnRightDown(wxMouseEvent &)
 {
 	if (m_groups.size() > 1)
 	{
@@ -682,33 +682,33 @@ void wxDVSelectionListCtrl::OnPopupMenu(wxCommandEvent &evt)
 	}
 }
 
-void wxDVSelectionListCtrl::OnMouseMove(wxMouseEvent &evt)
+void wxDVSelectionListCtrl::OnMouseMove(wxMouseEvent &)
 {
 	/*
-		int vsx, vsy;
-		GetViewStart(&vsx,&vsy);
-		wxDVSelectionListCtrlItem *cur_item = LocateXY(vsx+evt.GetX(), vsy+evt.GetY());
-		if (cur_item != mLastHoverItem)
-		{
-		if (mLastHoverItem) mLastHoverItem->Hover = false;
-		mLastHoverItem = cur_item;
-		if (cur_item) cur_item->Hover = true;
+	int vsx, vsy;
+	GetViewStart(&vsx,&vsy);
+	wxDVSelectionListCtrlItem *cur_item = LocateXY(vsx+evt.GetX(), vsy+evt.GetY());
+	if (cur_item != mLastHoverItem)
+	{
+	if (mLastHoverItem) mLastHoverItem->Hover = false;
+	mLastHoverItem = cur_item;
+	if (cur_item) cur_item->Hover = true;
 
-		Refresh();
-		}
-		*/
+	Refresh();
+	}
+	*/
 }
 
-void wxDVSelectionListCtrl::OnLeave(wxMouseEvent &evt)
+void wxDVSelectionListCtrl::OnLeave(wxMouseEvent &)
 {
 	/*	if (mLastHoverItem)
-		{
-		mLastHoverItem->Hover = false;
-		mLastHoverItem = NULL;
+	{
+	mLastHoverItem->Hover = false;
+	mLastHoverItem = NULL;
 
-		Refresh();
-		}
-		*/
+	Refresh();
+	}
+	*/
 }
 
 void wxDVSelectionListCtrl::HandleRadio(int r, int c)

@@ -35,7 +35,7 @@ wxDVAutoColourAssigner::~wxDVAutoColourAssigner()
 
 wxColour wxDVAutoColourAssigner::GetColourForIndex(int index)
 {
-	for (int i = 0; i < mAssignedColours.size(); i++)
+	for (size_t i = 0; i < mAssignedColours.size(); i++)
 	{
 		if (mAssignedColours[i].index == index)
 			return mAssignedColours[i].colour;
@@ -46,7 +46,7 @@ wxColour wxDVAutoColourAssigner::GetColourForIndex(int index)
 
 bool wxDVAutoColourAssigner::IsColourAssigned(int index)
 {
-	for (int i = 0; i < mAssignedColours.size(); i++)
+	for (size_t i = 0; i < mAssignedColours.size(); i++)
 		if (mAssignedColours[i].index == index)
 			return true;
 
@@ -60,7 +60,7 @@ wxColour wxDVAutoColourAssigner::AssignLineColour(int index)
 	int tempUseCount = 1000000000;	//Start with an impossibly high number of uses.  We'll reduce it until we find the lowest use count.
 	int colorIndex;
 
-	for (int i = 0; i < mAvailableColours.size(); i++)
+	for (size_t i = 0; i < mAvailableColours.size(); i++)
 	{
 		if (tempUseCount > mAvailableColours[i].useCount)
 		{
@@ -71,7 +71,7 @@ wxColour wxDVAutoColourAssigner::AssignLineColour(int index)
 		}
 	}
 
-	mAvailableColours[colorIndex].useCount++;
+	mAvailableColours[colorIndex].useCount++; // warning C4701: potentially uninitialized local variable 'colorIndex' used
 
 	cp.index = index;
 	cp.colour = tempColor;
@@ -117,11 +117,11 @@ void wxDVAutoColourAssigner::DeAssignAll()
 
 void wxDVAutoColourAssigner::DeAssignLineColour(int index)
 {
-	for (int i = 0; i < mAssignedColours.size(); i++)
+	for (size_t i = 0; i < mAssignedColours.size(); i++)
 	{
 		if (mAssignedColours[i].index == index)
 		{
-			for (int j = 0; j < mAvailableColours.size(); j++)
+			for (size_t j = 0; j < mAvailableColours.size(); j++)
 			{
 				if (mAvailableColours[j].colour == mAssignedColours[i].colour)
 				{

@@ -25,10 +25,13 @@
 #include <limits>
 #include <numeric>
 #include <algorithm>
+#include <string>
+#include <sstream>
 
 #include <wx/wx.h>
 #include <wx/tokenzr.h>
 #include "wx/srchctrl.h"
+#include <wx/config.h>
 
 #include "wex/plot/plplotctrl.h"
 #include "wex/plot/plscatterplot.h"
@@ -347,7 +350,7 @@ void wxDVScatterPlotCtrl::OnChannelSelection(wxCommandEvent &)
 	RefreshPlot();
 }
 
-void wxDVScatterPlotCtrl::OnShowLine(wxCommandEvent& e)
+void wxDVScatterPlotCtrl::OnShowLine(wxCommandEvent&)
 {
 	m_showLine = m_showPerfAgreeLine->GetValue();
 	UpdatePlotWithChannelSelections();
@@ -378,7 +381,7 @@ void wxDVScatterPlotCtrl::RefreshPlot()
 	m_plotSurface->Refresh();
 }
 
-void wxDVScatterPlotCtrl::OnSearch(wxCommandEvent& e)
+void wxDVScatterPlotCtrl::OnSearch(wxCommandEvent&)
 {
 	m_dataSelectionList->Filter(m_srchCtrl->GetValue().Lower());
 }
