@@ -1,3 +1,27 @@
+/***********************************************************************************************************************
+*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+*  following conditions are met:
+*
+*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+*  disclaimer.
+*
+*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+*  following disclaimer in the documentation and/or other materials provided with the distribution.
+*
+*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
+*  products derived from this software without specific prior written permission from the respective party.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
+*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**********************************************************************************************************************/
+
 #ifndef __DVTimeSeriesCtrl_h
 #define __DVTimeSeriesCtrl_h
 
@@ -35,32 +59,32 @@ enum wxDVTimeSeriesStyle { wxDV_NORMAL, wxDV_STEPPED };
 class wxDVTimeSeriesSettingsDialog : public wxDialog
 {
 public:
-	wxDVTimeSeriesSettingsDialog( wxWindow *parent, const wxString &title, 
+	wxDVTimeSeriesSettingsDialog(wxWindow *parent, const wxString &title,
 		bool isTopRightYVisible = true, bool isBottomGraphVisible = true,
-		bool isBottomRightGraphVisible = true );
+		bool isBottomRightGraphVisible = true);
 
-	void SetTopYBounds( double y1min, double y1max );
-	void SetTopY2Bounds( double ymin, double ymax );
-	void SetBottomYBounds( double y2min, double y2max );
-	void SetBottomY2Bounds( double y2min, double y2max );
-	void GetTopYBounds( double *y1min, double *y1max );
-	void GetTopY2Bounds( double *ymin, double *ymax );
-	void GetBottomYBounds( double *y2min, double *y2max );
-	void GetBottomY2Bounds( double *y2min, double *y2max );
+	void SetTopYBounds(double y1min, double y1max);
+	void SetTopY2Bounds(double ymin, double ymax);
+	void SetBottomYBounds(double y2min, double y2max);
+	void SetBottomY2Bounds(double y2min, double y2max);
+	void GetTopYBounds(double *y1min, double *y1max);
+	void GetTopY2Bounds(double *ymin, double *ymax);
+	void GetBottomYBounds(double *y2min, double *y2max);
+	void GetBottomY2Bounds(double *y2min, double *y2max);
 
-	void SetStyle( wxDVTimeSeriesStyle id );
+	void SetStyle(wxDVTimeSeriesStyle id);
 	wxDVTimeSeriesStyle GetStyle();
-	void SetStatType( wxDVStatType statType );
+	void SetStatType(wxDVStatType statType);
 	wxDVStatType GetStatType();
-	void SetAutoscale( bool b );
-	void SetAutoscale2( bool b );
+	void SetAutoscale(bool b);
+	void SetAutoscale2(bool b);
 	bool GetAutoscale();
 	bool GetAutoscale2();
-	void SetBottomAutoscale( bool b );
+	void SetBottomAutoscale(bool b);
 	bool GetBottomAutoscale();
-	void SetBottomAutoscale2( bool b );
+	void SetBottomAutoscale2(bool b);
 	bool GetBottomAutoscale2();
-	void SetStacked( bool b );
+	void SetStacked(bool b);
 	bool GetStacked();
 
 protected:
@@ -86,7 +110,6 @@ private:
 	wxCheckBox *mStackedArea;
 
 	DECLARE_EVENT_TABLE();
-	
 };
 
 class wxDVTimeSeriesCtrl : public wxPanel
@@ -115,7 +138,7 @@ public:
 	double GetViewMax();
 	void SetViewRange(double min, double max);
 
-	void SetStyle( wxDVTimeSeriesStyle sty );
+	void SetStyle(wxDVTimeSeriesStyle sty);
 
 	void GetVisibleDataMinAndMax(double* min, double* max, const std::vector<int>& selectedChannelIndices);
 	void GetAllDataMinAndMax(double* min, double* max, const std::vector<int>& selectedChannelIndices);
@@ -140,23 +163,23 @@ public:
 	void AutoscaleYAxis(bool forceUpdate = false, bool ScaleOverAllData = false);
 	void AutoscaleYAxisByPlot(bool IsLeftAxis, bool IsTopPlot, int SelectedChannelIndex);
 
-	void SetupTopYLeft( double min=0, double max=0 );
-	void SetupTopYRight( double min=0, double max=0 );
-	
-	void SetStackingOnYLeft( bool b );
+	void SetupTopYLeft(double min = 0, double max = 0);
+	void SetupTopYRight(double min = 0, double max = 0);
+
+	void SetStackingOnYLeft(bool b);
 	void ClearStacking();
 	void UpdateStacking();
-	
+
 	void Invalidate();
 
 protected:
 
-	void StackUp( wxPLPlotCtrl::AxisPos yap, wxPLPlotCtrl::PlotPos ppos );
+	void StackUp(wxPLPlotCtrl::AxisPos yap, wxPLPlotCtrl::PlotPos ppos);
 
 	void OnZoomIn(wxCommandEvent& e);
 	void OnZoomOut(wxCommandEvent& e);
 	void OnZoomFit(wxCommandEvent& e);
-	void OnSettings( wxCommandEvent &e );
+	void OnSettings(wxCommandEvent &e);
 
 	void OnDataChannelSelection(wxCommandEvent& e);
 	void OnMouseWheel(wxMouseEvent& e);
@@ -173,24 +196,24 @@ protected:
 	void OnPlotDragStart(wxCommandEvent& e);
 	void OnPlotDragEnd(wxCommandEvent& e);
 	*/
-	
-	void AutoscaleYAxis(wxPLAxis* axisToScale, 
+
+	void AutoscaleYAxis(wxPLAxis* axisToScale,
 		const std::vector<int>& selectedChannelIndices, bool forceUpdate = false, bool ScaleOverAllData = false);
-	
+
 private:
 	std::vector<wxDVTimeSeriesPlot*> m_plots;
 
 	enum GraphAxisPosition
 	{
-		TOP_LEFT_AXIS = 0, 
+		TOP_LEFT_AXIS = 0,
 		TOP_RIGHT_AXIS,
-		BOTTOM_LEFT_AXIS, 
+		BOTTOM_LEFT_AXIS,
 		BOTTOM_RIGHT_AXIS,
 		GRAPH_AXIS_POSITION_COUNT
 	};
 
 	//This array contains the visible graphs associated with each axis position on each graph.
-	std::vector<std::vector<int>*> m_selectedChannelIndices; 
+	std::vector<std::vector<int>*> m_selectedChannelIndices;
 
 	wxPLPlotCtrl *m_plotSurface;
 	wxPLTimeAxis *m_xAxis;
@@ -198,7 +221,7 @@ private:
 	wxDVSelectionListCtrl *m_dataSelector;
 	wxSearchCtrl *m_srchCtrl;
 
-	bool m_topAutoScale,  m_top2AutoScale, m_bottomAutoScale, m_bottom2AutoScale;
+	bool m_topAutoScale, m_top2AutoScale, m_bottomAutoScale, m_bottom2AutoScale;
 	wxDVTimeSeriesStyle m_style; // line, stepped
 	bool m_stackingOnYLeft;
 	wxDVTimeSeriesType m_seriesType;

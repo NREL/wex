@@ -1,3 +1,27 @@
+/***********************************************************************************************************************
+*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+*  following conditions are met:
+*
+*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+*  disclaimer.
+*
+*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+*  following disclaimer in the documentation and/or other materials provided with the distribution.
+*
+*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
+*  products derived from this software without specific prior written permission from the respective party.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
+*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**********************************************************************************************************************/
+
 #ifndef __DVPlotHelper_h
 #define __DVPlotHelper_h
 
@@ -45,27 +69,26 @@ namespace wxDVPlotHelper
 		do
 		{
 			int newN = 0;
-			for (int i=0; i<n-1; i++)
+			for (int i = 0; i < n - 1; i++)
 			{
-				if (data->at(i) > data->at(i+1))
+				if (data->at(i) > data->at(i + 1))
 				{
-					Swap(&(data->at(i)), &(data->at(i+1)));
-					newN = i+1;
+					Swap(&(data->at(i)), &(data->at(i + 1)));
+					newN = i + 1;
 				}
 			}
 			n = newN;
-		}
-		while (n > 1);
+		} while (n > 1);
 	}
 
 	template<typename T>
 	void SelectionSort(std::vector<T> &p)
 	{
 		int n = p.size();
-		for (int i=0;i<n-1;i++)
+		for (int i = 0; i < n - 1; i++)
 		{
 			int smallest = i;
-			for (int j=i+1;j<n;j++)
+			for (int j = i + 1; j < n; j++)
 				if (p[j] < p[smallest])
 					smallest = j;
 
@@ -82,27 +105,26 @@ namespace wxDVPlotHelper
 	{
 		int i, j, pivot, temp;
 
-		if(left == right) return; 
-		i = left; 
+		if (left == right) return;
+		i = left;
 		j = right;
-		pivot = data->at((left+right)/2); 
+		pivot = data->at((left + right) / 2);
 
 		/* Split the array into two parts */
-		do 
-		{    
-			while (data->at(i) < pivot) i++; 
+		do
+		{
+			while (data->at(i) < pivot) i++;
 			while (data->at(j) > pivot) j--;
-			if (i<=j) 
+			if (i <= j)
 			{
-				temp= data->at(i);
+				temp = data->at(i);
 				data->at(i) = data->at(j);
 				data->at(j) = temp;
 				i++;
 				j--;
 			}
-		} 
-		while (i<=j);
-    
+		} while (i <= j);
+
 		if (left < j) QuickSort(data, left, j);
 		if (i < right) QuickSort(data, i, right);
 	}

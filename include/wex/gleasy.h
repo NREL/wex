@@ -1,3 +1,27 @@
+/***********************************************************************************************************************
+*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+*  following conditions are met:
+*
+*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+*  disclaimer.
+*
+*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+*  following disclaimer in the documentation and/or other materials provided with the distribution.
+*
+*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
+*  products derived from this software without specific prior written permission from the respective party.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
+*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**********************************************************************************************************************/
+
 #ifndef __gleasy_h
 #define __gleasy_h
 
@@ -8,12 +32,11 @@
 
 struct wxGLPoint3D
 {
-	wxGLPoint3D() : x(0),y(0), z(0) { }
-	wxGLPoint3D( const wxGLPoint3D &p ) :x(p.x), y(p.y), z(p.z) { }
-	wxGLPoint3D( float _x, float _y, float _z ) : x(_x), y(_y), z(_z) { }
+	wxGLPoint3D() : x(0), y(0), z(0) { }
+	wxGLPoint3D(const wxGLPoint3D &p) :x(p.x), y(p.y), z(p.z) { }
+	wxGLPoint3D(float _x, float _y, float _z) : x(_x), y(_y), z(_z) { }
 	float x, y, z;
 };
-
 
 class wxGLTrackball
 {
@@ -24,66 +47,65 @@ public:
 	wxGLTrackball();
 
 	// call this every time when mouse moves
-	void Mouse( float mx, float my );
+	void Mouse(float mx, float my);
 
 	// call this when mouse moves and you want to rotate the scene,
-	void Spin( float mx, float my, float win_width, float win_height );
+	void Spin(float mx, float my, float win_width, float win_height);
 
 	// call this for a rotation matrix to use with glMultMatrixf()
-	void GetRotationMatrix( GLfloat m[4][4] );
+	void GetRotationMatrix(GLfloat m[4][4]);
 };
 
 class wxGLEasyCanvas : public wxGLCanvas
 {
 public:
-	wxGLEasyCanvas( wxWindow *parent, int id, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize );
+	wxGLEasyCanvas(wxWindow *parent, int id, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize);
 	virtual ~wxGLEasyCanvas();
 
-	void ShowStatus( bool b ) { m_showStatus = b; }
-	void SetScale( float x, float y, float z ) { m_scale.x = x; m_scale.y = y; m_scale.z = z; }
-	void SetScaleX( float x ) { m_scale.x = x; }
-	void SetScaleY( float y ) { m_scale.y = y; }
-	void SetScaleZ( float z ) { m_scale.z = z; }
-	void SetZoomRate( float zr ) { m_zoomRate = 1.0f/zr; }
-	void SetZoomRange( float min, float max ) { m_zoomMin = min; m_zoomMax = max; }
-	void SetAntiAliasing( bool aa ) { m_antiAliasing = aa; }
-	void SetZoom( float z ) { m_zoom = z; }
+	void ShowStatus(bool b) { m_showStatus = b; }
+	void SetScale(float x, float y, float z) { m_scale.x = x; m_scale.y = y; m_scale.z = z; }
+	void SetScaleX(float x) { m_scale.x = x; }
+	void SetScaleY(float y) { m_scale.y = y; }
+	void SetScaleZ(float z) { m_scale.z = z; }
+	void SetZoomRate(float zr) { m_zoomRate = 1.0f / zr; }
+	void SetZoomRange(float min, float max) { m_zoomMin = min; m_zoomMax = max; }
+	void SetAntiAliasing(bool aa) { m_antiAliasing = aa; }
+	void SetZoom(float z) { m_zoom = z; }
 	float GetZoom() const { return m_zoom; }
-	void SetViewSize( float size ) { m_orth.top = size; }
+	void SetViewSize(float size) { m_orth.top = size; }
 	float GetViewSize() const { return m_orth.top; }
 
-	void SetViewZ( float znear, float zfar ) { m_orth.znear = znear; m_orth.zfar = zfar; }
-	
+	void SetViewZ(float znear, float zfar) { m_orth.znear = znear; m_orth.zfar = zfar; }
+
 	wxBitmap GetBitmap();
 
 protected:
 	virtual void OnRender();
 
-	void Color( const wxColour &c );
-	void PointSize( float p );
-	void Point( float x, float y, float z );
-	void Point( const wxGLPoint3D &p );
+	void Color(const wxColour &c);
+	void PointSize(float p);
+	void Point(float x, float y, float z);
+	void Point(const wxGLPoint3D &p);
 	void BeginPoints(); // optional optimization for rendering lots of points
 	void EndPoints();
-	void Points( const std::vector<wxGLPoint3D> &list );
-	void LineWidth( float w );
-	void Line( const wxGLPoint3D &p1, const wxGLPoint3D &p2 );
-	void Lines( const std::vector<wxGLPoint3D> &list );
-	void Text( const wxGLPoint3D &p, const wxString &text, 
-		const wxColour &c = *wxBLACK, 
-		const wxBrush &back=*wxTRANSPARENT_BRUSH, const wxFont *font = 0 );
-	void Text( int x, int y, const wxString &text, 
-		const wxColour &c = *wxBLACK, 
-		const wxBrush &back=*wxTRANSPARENT_BRUSH, const wxFont *font = 0 );
-	void Axes(	const wxGLPoint3D &min=wxGLPoint3D(0,0,0), 
-				const wxGLPoint3D &max=wxGLPoint3D(1,1,1),
-				float ticksizepx=9.0f, // in screen pixels
-				bool extend=false,
-				const wxString &xlabel="X", 
-				const wxString &ylabel="Y", 
-				const wxString &zlabel="Z",
-				wxFont *font = 0 );
-
+	void Points(const std::vector<wxGLPoint3D> &list);
+	void LineWidth(float w);
+	void Line(const wxGLPoint3D &p1, const wxGLPoint3D &p2);
+	void Lines(const std::vector<wxGLPoint3D> &list);
+	void Text(const wxGLPoint3D &p, const wxString &text,
+		const wxColour &c = *wxBLACK,
+		const wxBrush &back = *wxTRANSPARENT_BRUSH, const wxFont *font = 0);
+	void Text(int x, int y, const wxString &text,
+		const wxColour &c = *wxBLACK,
+		const wxBrush &back = *wxTRANSPARENT_BRUSH, const wxFont *font = 0);
+	void Axes(const wxGLPoint3D &min = wxGLPoint3D(0, 0, 0),
+		const wxGLPoint3D &max = wxGLPoint3D(1, 1, 1),
+		float ticksizepx = 9.0f, // in screen pixels
+		bool extend = false,
+		const wxString &xlabel = "X",
+		const wxString &ylabel = "Y",
+		const wxString &zlabel = "Z",
+		wxFont *font = 0);
 
 	wxGLContext m_glContext;
 	bool m_pointListMode, m_antiAliasing, m_showStatus;
@@ -97,31 +119,28 @@ protected:
 	wxGLPoint3D m_last3D;
 
 	void makeRasterFont();
-	void printString( const char *s );
-	
-	void OnMenu( wxCommandEvent & );
-	void OnChar( wxKeyEvent & );
-	void OnMouse( wxMouseEvent & );
-	void OnPaint( wxPaintEvent & );
-	void OnSize( wxSizeEvent & );
+	void printString(const char *s);
+
+	void OnMenu(wxCommandEvent &);
+	void OnChar(wxKeyEvent &);
+	void OnMouse(wxMouseEvent &);
+	void OnPaint(wxPaintEvent &);
+	void OnSize(wxSizeEvent &);
 	DECLARE_EVENT_TABLE()
 };
-
 
 class wxGLEasyCanvasTest : public wxGLEasyCanvas
 {
 public:
-	wxGLEasyCanvasTest( wxWindow *parent );
+	wxGLEasyCanvasTest(wxWindow *parent);
 
-	void OnMenu( wxCommandEvent & );
-	void OnRightDown( wxMouseEvent &evt );
-
+	void OnMenu(wxCommandEvent &);
+	void OnRightDown(wxMouseEvent &evt);
 
 protected:
 	virtual void OnRender();
 	std::vector<wxGLPoint3D> m_data;
 	DECLARE_EVENT_TABLE();
 };
-
 
 #endif

@@ -1,3 +1,26 @@
+/***********************************************************************************************************************
+*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+*  following conditions are met:
+*
+*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+*  disclaimer.
+*
+*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+*  following disclaimer in the documentation and/or other materials provided with the distribution.
+*
+*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
+*  products derived from this software without specific prior written permission from the respective party.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
+*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**********************************************************************************************************************/
 
 /*
  * wxDVTimeSeriesCtrl.cpp
@@ -41,674 +64,665 @@ enum { ID_TopCheckbox = wxID_HIGHEST + 1, ID_BottomCheckbox, ID_StatCheckbox };
 
 class wxDVTimeSeriesPlot : public wxPLPlottable
 {
-	private:
-		wxDVTimeSeriesDataSet *m_data;
-		wxColour m_colour;
-		wxDVTimeSeriesStyle m_style;
-		wxDVTimeSeriesType m_seriesType;
-		bool m_ownsDataset;
-		wxDVTimeSeriesPlot *m_stackedOnTopOf;
-		bool m_stacked;
+private:
+	wxDVTimeSeriesDataSet *m_data;
+	wxColour m_colour;
+	wxDVTimeSeriesStyle m_style;
+	wxDVTimeSeriesType m_seriesType;
+	bool m_ownsDataset;
+	wxDVTimeSeriesPlot *m_stackedOnTopOf;
+	bool m_stacked;
 
-	public:
-		wxDVTimeSeriesPlot( wxDVTimeSeriesDataSet *ds, wxDVTimeSeriesType seriesType, bool OwnsDataset = false )
-			: m_data(ds), m_stackedOnTopOf( 0 )
+public:
+	wxDVTimeSeriesPlot(wxDVTimeSeriesDataSet *ds, wxDVTimeSeriesType seriesType, bool OwnsDataset = false)
+		: m_data(ds), m_stackedOnTopOf(0)
+	{
+		assert(ds != 0);
+
+		m_stacked = false;
+		m_colour = *wxRED;
+		m_seriesType = seriesType;
+		m_style = (seriesType == wxDV_RAW || seriesType == wxDV_HOURLY) ? wxDV_NORMAL : wxDV_STEPPED;
+		m_ownsDataset = OwnsDataset;
+	}
+
+	~wxDVTimeSeriesPlot()
+	{
+		if (m_ownsDataset)
 		{
-			assert( ds != 0 );
-
-			m_stacked = false;
-			m_colour = *wxRED;
-			m_seriesType = seriesType;
-			m_style = (seriesType == wxDV_RAW || seriesType == wxDV_HOURLY) ? wxDV_NORMAL : wxDV_STEPPED;
-			m_ownsDataset = OwnsDataset;
+			delete m_data;
 		}
+	}
 
-		~wxDVTimeSeriesPlot()
+	void SetStackingMode(bool b) { m_stacked = b; }
+	bool GetStackingMode() { return m_stacked; }
+
+	void StackOnTopOf(wxDVTimeSeriesPlot *p)
+	{
+		if (!p) { m_stackedOnTopOf = 0; return; }
+
+		wxDVTimeSeriesDataSet *ds = p->GetDataSet();
+		if (ds != 0
+			&& ds->GetOffset() == m_data->GetOffset()
+			&& ds->Length() == m_data->Length()
+			&& ds->GetTimeStep() == m_data->GetTimeStep())
 		{
-			if(m_ownsDataset)
+			m_stackedOnTopOf = p;
+		}
+	}
+
+	bool IsStackedOnTopOf(wxDVTimeSeriesPlot * p)
+	{
+		return m_stackedOnTopOf == p;
+	}
+
+	void SetStyle(wxDVTimeSeriesStyle ss) { m_style = ss; }
+	void SetColour(const wxColour &col) { m_colour = col; }
+
+	virtual wxString GetXDataLabel(wxPLPlot *) const
+	{
+		return _("Hours since 00:00 Jan 1");
+	}
+
+	virtual wxString GetYDataLabel(wxPLPlot *) const
+	{
+		if (!m_data) return wxEmptyString;
+
+		wxString label(
+			m_data->GetGroupName().Len() > 0
+			? m_data->GetGroupName() + ": " + m_data->GetSeriesTitle()
+			: m_data->GetSeriesTitle());
+
+		if (!m_data->GetUnits().IsEmpty())
+			label += " (" + m_data->GetUnits() + ")";
+
+		return label;
+	}
+
+	virtual wxRealPoint At(size_t i) const
+	{
+		return i < m_data->Length()
+			? m_data->At(i)
+			: wxRealPoint(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
+	}
+
+	virtual wxRealPoint StackedAt(size_t i, double *ybase = 0) const
+	{
+		if (m_stackedOnTopOf == this)
+			wxMessageBox("Error - how did a plot get stacked on itself??");
+
+		if (i >= m_data->Length())
+			return wxRealPoint(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
+
+		if (m_stackedOnTopOf != 0 && m_stackedOnTopOf != this)
+		{
+			wxRealPoint base(m_stackedOnTopOf->StackedAt(i, ybase));
+			if (ybase) *ybase = base.y;
+			wxRealPoint cur(m_data->At(i));
+			return wxRealPoint(cur.x, base.y + cur.y);
+		}
+		else
+		{
+			if (ybase) *ybase = 0;
+			return m_data->At(i);
+		}
+	}
+
+	virtual size_t Len() const
+	{
+		return m_data->Length();
+	}
+
+	virtual void Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map)
+	{
+		if (!m_data || m_data->Length() < 2) return;
+
+		size_t len;
+		std::vector< wxRealPoint > points;
+		wxRealPoint rpt;
+		wxRealPoint rpt2;
+		double tempY;
+		wxRealPoint wmin = map.GetWorldMinimum();
+		wxRealPoint wmax = map.GetWorldMaximum();
+
+		dc.Pen(m_colour, 2);
+
+		// check that Y axis is a left axis, so as to
+		// only allow stacking on the left axis.
+		// otherwise, this could result in problems
+		// if a plot is checked for both left and right Y axes,
+		// since this wxDVTimeSeriesPlot instance is the same for both
+		if (m_stacked && map.IsPrimaryXAxis())
+		{
+			len = m_data->Length();
+
+			size_t reserve_len = len;
+			if (m_style == wxDV_STEPPED)
+				reserve_len *= 2;
+
+			// reserve double the baseline need since will
+			// use this array to create the wraparound polygon
+			// for the stacked area
+			points.reserve(reserve_len * 2);
+
+			double timeStep = m_data->GetTimeStep();
+			double lowX;
+			double highX;
+
+			if (m_stackedOnTopOf != 0)
 			{
-				delete m_data;
-			}
-		}
+				std::vector<wxRealPoint> base;
+				base.reserve(reserve_len);
+				for (size_t i = 0; i < len; i++)
+				{
+					double yb = 0;
+					wxRealPoint p(StackedAt(i, &yb));
+					if (p.x < wmin.x || p.x > wmax.x) continue;
 
-		void SetStackingMode( bool b ) { m_stacked = b; }
-		bool GetStackingMode() { return m_stacked; }
-		
-		void StackOnTopOf( wxDVTimeSeriesPlot *p )
-		{
-			if ( !p ) { m_stackedOnTopOf = 0; return; }
+					if (m_style == wxDV_STEPPED)
+					{
+						lowX = GetPeriodLowerBoundary(p.x, timeStep);
+						highX = GetPeriodUpperBoundary(p.x, timeStep);
+						points.push_back(map.ToDevice(lowX, p.y));
+						points.push_back(map.ToDevice(highX, p.y));
+						base.push_back(wxRealPoint(lowX, yb));
+						base.push_back(wxRealPoint(highX, yb));
+					}
+					else
+					{
+						base.push_back(wxRealPoint(p.x, yb));
+						points.push_back(map.ToDevice(p));
+					}
+				}
 
-			wxDVTimeSeriesDataSet *ds = p->GetDataSet();
-			if ( ds != 0
-				&& ds->GetOffset() == m_data->GetOffset()
-				&& ds->Length() == m_data->Length()
-				&& ds->GetTimeStep() == m_data->GetTimeStep() )
-			{
-				m_stackedOnTopOf = p;
-			}
-		}
-
-		bool IsStackedOnTopOf( wxDVTimeSeriesPlot * p )
-		{
-			return m_stackedOnTopOf == p;
-		}
-
-		void SetStyle( wxDVTimeSeriesStyle ss ) { m_style = ss; }
-		void SetColour( const wxColour &col ) { m_colour = col; }
-
-		virtual wxString GetXDataLabel( wxPLPlot * ) const 
-		{
-			return _("Hours since 00:00 Jan 1");
-		}
-
-		virtual wxString GetYDataLabel( wxPLPlot * ) const
-		{
-			if ( !m_data ) return wxEmptyString;
-
-			wxString label( 
-				m_data->GetGroupName().Len() > 0 
-					? m_data->GetGroupName() + ": " + m_data->GetSeriesTitle() 
-					: m_data->GetSeriesTitle() );
-
-			if ( !m_data->GetUnits().IsEmpty() )
-				label += " (" + m_data->GetUnits() + ")";
-
-			return label;
-		}
-		
-		virtual wxRealPoint At( size_t i ) const
-		{
-			return i < m_data->Length() 
-				? m_data->At(i)
-				: wxRealPoint( std::numeric_limits<double>::quiet_NaN(),std::numeric_limits<double>::quiet_NaN() );
-		}
-		
-		virtual wxRealPoint StackedAt( size_t i, double *ybase = 0 ) const
-		{
-			if ( m_stackedOnTopOf == this )
-				wxMessageBox("Error - how did a plot get stacked on itself??" );
-
-			if ( i >= m_data->Length() ) 
-				return wxRealPoint( std::numeric_limits<double>::quiet_NaN(),std::numeric_limits<double>::quiet_NaN() );
-			
-			if ( m_stackedOnTopOf != 0 && m_stackedOnTopOf != this )
-			{
-				wxRealPoint base( m_stackedOnTopOf->StackedAt(i, ybase ) );
-				if ( ybase ) *ybase = base.y;
-				wxRealPoint cur( m_data->At(i)  );
-				return wxRealPoint( cur.x, base.y + cur.y );
+				for (size_t i = 0; i < base.size(); i++)
+					points.push_back(map.ToDevice(base[base.size() - i - 1]));
 			}
 			else
 			{
-				if ( ybase ) *ybase = 0;
-				return m_data->At(i) ;
+				for (size_t i = 0; i < len; i++)
+				{
+					wxRealPoint p(At(i));
+					if (p.x < wmin.x || p.x > wmax.x) continue;
+					if (m_style == wxDV_STEPPED)
+					{
+						lowX = GetPeriodLowerBoundary(p.x, timeStep);
+						highX = GetPeriodUpperBoundary(p.x, timeStep);
+						points.push_back(map.ToDevice(lowX, p.y));
+						points.push_back(map.ToDevice(highX, p.y));
+					}
+					else
+						points.push_back(map.ToDevice(p));
+				}
+
+				points.push_back(wxRealPoint(points[points.size() - 1].x, map.ToDevice(wxRealPoint(0, 0)).y));
+				points.push_back(wxRealPoint(points[0].x, map.ToDevice(wxRealPoint(0, 0)).y));
 			}
 
+			wxRealPoint pos, size;
+			map.GetDeviceExtents(&pos, &size);
+			if (points.size() > (int)(3.0*size.x)) {
+				dc.Text("too many data points: please zoom in", pos);
+				return; // quit if 3x more x coord points than pixels
+			}
+
+			dc.Pen(*wxBLACK, 0, wxPLOutputDevice::NONE);
+			dc.Brush(m_colour);
+			dc.Polygon(points.size(), &points[0], wxPLOutputDevice::WINDING_RULE);
 		}
-
-		virtual size_t Len() const
+		else
 		{
-			return m_data->Length();
-		}
+			// not stacked - just lines
 
-		virtual void Draw( wxPLOutputDevice &dc, const wxPLDeviceMapping &map )
-		{
-			if ( !m_data || m_data->Length() < 2 ) return;
-
-			size_t len;
-			std::vector< wxRealPoint > points;
-			wxRealPoint rpt;
-			wxRealPoint rpt2;
-			double tempY;
-			wxRealPoint wmin = map.GetWorldMinimum();
-			wxRealPoint wmax = map.GetWorldMaximum();
-		
-			dc.Pen( m_colour, 2 );
-
-			// check that Y axis is a left axis, so as to
-			// only allow stacking on the left axis.
-			// otherwise, this could result in problems
-			// if a plot is checked for both left and right Y axes,
-			// since this wxDVTimeSeriesPlot instance is the same for both
-			if ( m_stacked && map.IsPrimaryXAxis() )
+			if (m_style == wxDV_NORMAL)
 			{
 				len = m_data->Length();
+				if (m_data->At(0).x < wmin.x) { len++; }
+				if (m_data->At(m_data->Length() - 1).x > wmax.x) { len++; }
 
-				size_t reserve_len = len;
-				if ( m_style == wxDV_STEPPED )
-					reserve_len *= 2;
+				points.reserve(len);
 
-				// reserve double the baseline need since will
-				// use this array to create the wraparound polygon
-				// for the stacked area
-				points.reserve( reserve_len*2 ); 
-				
+				//If this is a line plot then add a point at the left edge of the graph if there isn't one there in the data
+				if (m_style == wxDV_NORMAL && m_data->At(0).x < wmin.x)
+				{
+					for (size_t i = 1; i < m_data->Length(); i++)
+					{
+						rpt = m_data->At(i);
+						rpt2 = m_data->At(i - 1);
+						if (rpt.x > wmin.x)
+						{
+							tempY = rpt2.y + ((rpt.y - rpt2.y) * (wmin.x - rpt2.x) / (rpt.x - rpt2.x));
+							points.push_back(map.ToDevice(wxRealPoint(wmin.x, tempY)));
+							break;
+						}
+					}
+				}
+
+				// cull data points that get mapped to the same X coordinate on the device
+				// this is a much needed rendering optimization for large datasets
+				size_t i = 0;
+				size_t len = m_data->Length();
+				while (i < len)
+				{
+					rpt = m_data->At(i);
+					if (rpt.x < wmin.x || rpt.x > wmax.x) {
+						i++;
+						continue;
+					}
+
+					wxRealPoint cur(map.ToDevice(rpt));
+
+					size_t jmin = i, jmax = i;
+					double min = rpt.y, max = rpt.y;
+					// scan ahead in the points array to find all values with the same X
+					// coordinate, and the associated min/max Y values
+					size_t j = i + 1;
+					size_t npscan = 0;
+					wxRealPoint rpt2;
+					while (j < len)
+					{
+						rpt2 = m_data->At(j);
+						wxRealPoint cur2(map.ToDevice(rpt2));
+
+						if (wxRound(cur.x) != wxRound(cur2.x))
+							break;
+
+						if (rpt2.y > max) { max = rpt2.y; jmax = j; }
+						if (rpt2.y < min) { min = rpt2.y; jmin = j; }
+
+						npscan++;
+						j++;
+					}
+
+					if (npscan > 0) // duplicate points found for same x coordinate
+					{
+						// replace with just two points
+						points.push_back(map.ToDevice(wxRealPoint(rpt.x, jmax < jmin ? max : min)));
+						points.push_back(map.ToDevice(wxRealPoint(rpt.x, jmax < jmin ? min : max)));
+					}
+					else
+					{
+						// no multiple points with same x coordinate, just keep this point where it is.
+						points.push_back(cur);
+					}
+
+					i = j;
+				}
+
+				//If this is a line plot then add a point at the right edge of the graph if there isn't one there in the data
+				if (m_style == wxDV_NORMAL && m_data->At(m_data->Length() - 1).x > wmax.x)
+				{
+					for (int i = m_data->Length() - 2; i >= 0; i--)
+					{
+						rpt = m_data->At(i);
+						rpt2 = m_data->At(i + 1);
+						if (rpt.x < wmax.x)
+						{
+							tempY = rpt.y + ((rpt2.y - rpt.y) * (wmax.x - rpt.x) / (rpt2.x - rpt.x));
+							points.push_back(map.ToDevice(wxRealPoint(wmax.x, tempY)));
+							break;
+						}
+					}
+				}
+			}
+			else
+			{
+				//For stepped graphs create an array twice as big as the original and replace each single x value with two x values, one with the prior y value and one with the current y value
+				len = m_data->Length() * 2;
+				points.reserve(len);
 				double timeStep = m_data->GetTimeStep();
 				double lowX;
 				double highX;
+				double priorY;
+				double nextY;
 
-				if ( m_stackedOnTopOf != 0 )
+				for (size_t i = 0; i < m_data->Length(); i++)
 				{
-					std::vector<wxRealPoint> base;
-					base.reserve( reserve_len );
-					for( size_t i=0;i<len;i++ )
-					{
-						double yb = 0;
-						wxRealPoint p( StackedAt(i, &yb) );					
-						if ( p.x < wmin.x || p.x > wmax.x ) continue;
+					rpt = m_data->At(i);
+					lowX = GetPeriodLowerBoundary(rpt.x, timeStep);
+					highX = GetPeriodUpperBoundary(rpt.x, timeStep);
 
-						if ( m_style == wxDV_STEPPED )
+					if (lowX >= wmin.x && highX <= wmax.x)	//Draw points for the lower and upper X boundaries of the point's horizontal range for each range that fits in the boundaries of the plot
+					{
+						//If the prior point's lower X boundary is off the left edge of the plot then draw points for the left edge of the plot and the visible point's lower X boundary at the prior point's Y
+						if (i > 0 && GetPeriodLowerBoundary(m_data->At(i - 1).x, timeStep) < wmin.x)
 						{
-							lowX = GetPeriodLowerBoundary( p.x, timeStep );
-							highX = GetPeriodUpperBoundary( p.x, timeStep );
-							points.push_back( map.ToDevice( lowX, p.y ) );
-							points.push_back( map.ToDevice( highX, p.y ) );
-							base.push_back( wxRealPoint(lowX, yb) );
-							base.push_back( wxRealPoint( highX, yb ) );
+							priorY = m_data->At(i - 1).y;
+							points.push_back(map.ToDevice(wxRealPoint(wmin.x, priorY)));
+							points.push_back(map.ToDevice(wxRealPoint(lowX, priorY)));
 						}
-						else
+
+						points.push_back(map.ToDevice(wxRealPoint(lowX, rpt.y)));
+						points.push_back(map.ToDevice(wxRealPoint(highX, rpt.y)));
+
+						//If the next point's upper X boundary is off the right edge of the plot then draw points for the visible point's upper X boundary and the right edge of the plot at the next point's Y
+						if (i < m_data->Length() - 1 && GetPeriodUpperBoundary(m_data->At(i + 1).x, timeStep) > wmax.x)
 						{
-							base.push_back( wxRealPoint( p.x, yb ) );
-							points.push_back( map.ToDevice( p ) );
+							nextY = m_data->At(i + 1).y;
+							points.push_back(map.ToDevice(wxRealPoint(highX, nextY)));
+							points.push_back(map.ToDevice(wxRealPoint(wmax.x, nextY)));
+							break;	//Any future points are outside the bounds of the graph
 						}
 					}
-
-					for( size_t i=0;i<base.size();i++ )
-						points.push_back( map.ToDevice( base[ base.size() - i - 1 ] ) );
-				}
-				else
-				{	
-					for( size_t i=0;i<len;i++ )
+					else if (lowX < wmin.x && highX > wmin.x && highX <= wmax.x)	//Draw points for the plot left edge and point's upper X boundary at the point's Y if the lower boundary (only) is off the plot's left edge
 					{
-						wxRealPoint p( At(i) );					
-						if ( p.x < wmin.x || p.x > wmax.x ) continue;
-						if ( m_style == wxDV_STEPPED )
+						points.push_back(map.ToDevice(wxRealPoint(wmin.x, rpt.y)));
+						points.push_back(map.ToDevice(wxRealPoint(highX, rpt.y)));
+
+						//If the next point's upper X boundary is off the right edge of the plot then draw points for the visible point's upper X boundary and the right edge of the plot at the next point's Y
+						if (i < m_data->Length() - 1 && GetPeriodUpperBoundary(m_data->At(i + 1).x, timeStep) > wmax.x)
 						{
-							lowX = GetPeriodLowerBoundary( p.x, timeStep );
-							highX = GetPeriodUpperBoundary( p.x, timeStep );
-							points.push_back( map.ToDevice( lowX, p.y ) );
-							points.push_back( map.ToDevice( highX, p.y ) );
+							nextY = m_data->At(i + 1).y;
+							points.push_back(map.ToDevice(wxRealPoint(highX, nextY)));
+							points.push_back(map.ToDevice(wxRealPoint(wmax.x, nextY)));
+							break;	//Any future points are outside the bounds of the graph
 						}
-						else
-							points.push_back( map.ToDevice( p ) );
 					}
+					else if (highX > wmax.x && lowX < wmax.x && lowX >= wmin.x)	//Draw points for the point's upper X boundary and the plot right edge at the point's Y if the upper boundary (only) is off the plot's right edge
+					{
+						//If the prior point's lower X boundary is off the left edge of the plot then draw points for the left edge of the plot and the visible point's lower X boundary at the prior point's Y
+						if (i > 0 && GetPeriodLowerBoundary(m_data->At(i - 1).x, timeStep) < wmin.x)
+						{
+							priorY = m_data->At(i - 1).y;
+							points.push_back(map.ToDevice(wxRealPoint(wmin.x, priorY)));
+							points.push_back(map.ToDevice(wxRealPoint(lowX, priorY)));
+						}
 
-					points.push_back( wxRealPoint( points[ points.size()-1 ].x,  map.ToDevice( wxRealPoint(0,0) ).y ) );
-					points.push_back( wxRealPoint( points[ 0 ].x, map.ToDevice( wxRealPoint(0,0) ).y ) );
+						points.push_back(map.ToDevice(wxRealPoint(wmin.x, rpt.y)));
+						points.push_back(map.ToDevice(wxRealPoint(highX, rpt.y)));
+					}
+					else if (lowX < wmin.x && highX > wmax.x)	//Draw points for the plot's left and right edges and point's Y if the point's lower X boundary is off the plot's left edge and the upper X boundary is off the right edge
+					{
+						points.push_back(map.ToDevice(wxRealPoint(wmin.x, rpt.y)));
+						points.push_back(map.ToDevice(wxRealPoint(highX, rpt.y)));
+					}
 				}
+			}
 
-				wxRealPoint pos, size;
-				map.GetDeviceExtents( &pos, &size );
-				if ( points.size() > (int)(3.0*size.x) ) {
-					dc.Text( "too many data points: please zoom in", pos );
-					return; // quit if 3x more x coord points than pixels
-				}
-				
-				dc.Pen( *wxBLACK, 0, wxPLOutputDevice::NONE );
-				dc.Brush( m_colour );
-				dc.Polygon( points.size(), &points[0], wxPLOutputDevice::WINDING_RULE );
+			if (points.size() < 2) return;
+
+			wxRealPoint devpos, devsize;
+			map.GetDeviceExtents(&devpos, &devsize);
+
+			if (points.size() > 4 * devsize.x) {
+				dc.Text("too many data points: please zoom in", devpos);
+				return; // quit if 4x more x coord points than integer device units
+			}
+
+			dc.Lines(points.size(), &points[0]);
+		}
+	}
+
+	virtual wxString GetLabel() const
+	{
+		return GetYDataLabel(NULL);
+		//if ( !m_data ) return wxEmptyString;
+		//else return m_data->GetTitleWithUnits();
+	}
+
+	virtual void DrawInLegend(wxPLOutputDevice &dc, const wxPLRealRect &rct)
+	{
+		dc.Pen(m_colour, 3, wxPLOutputDevice::SOLID, wxPLOutputDevice::MITER, wxPLOutputDevice::BUTT);
+		dc.Line(rct.x, rct.y + rct.height / 2, rct.x + rct.width, rct.y + rct.height / 2);
+	}
+
+	double GetPeriodLowerBoundary(double hourNumber, double timeStep)
+	{
+		if (m_seriesType == wxDV_DAILY)
+		{
+			hourNumber = hourNumber - fmod(hourNumber, 24);
+		}
+		else if (m_seriesType == wxDV_MONTHLY)
+		{
+			double year = hourNumber - fmod(hourNumber, 8760);
+			hourNumber = fmod(hourNumber, 8760);
+
+			if (hourNumber >= 0.0 && hourNumber < 744.0) { hourNumber = 0.0; }
+			else if (hourNumber >= 744.0 && hourNumber < 1416.0) { hourNumber = 744.0; }
+			else if (hourNumber >= 1416.0 && hourNumber < 2160.0) { hourNumber = 1416.0; }
+			else if (hourNumber >= 2160.0 && hourNumber < 2880.0) { hourNumber = 2160.0; }
+			else if (hourNumber >= 2880.0 && hourNumber < 3624.0) { hourNumber = 2880.0; }
+			else if (hourNumber >= 3624.0 && hourNumber < 4344.0) { hourNumber = 3624.0; }
+			else if (hourNumber >= 4344.0 && hourNumber < 5088.0) { hourNumber = 4344.0; }
+			else if (hourNumber >= 5088.0 && hourNumber < 5832.0) { hourNumber = 5088.0; }
+			else if (hourNumber >= 5832.0 && hourNumber < 6552.0) { hourNumber = 5832.0; }
+			else if (hourNumber >= 6552.0 && hourNumber < 7296.0) { hourNumber = 6552.0; }
+			else if (hourNumber >= 7296.0 && hourNumber < 8016.0) { hourNumber = 7296.0; }
+			else if (hourNumber >= 8016.0 && hourNumber < 8760.0) { hourNumber = 8016.0; }
+
+			hourNumber = hourNumber + year;
+		}
+		else
+		{
+			hourNumber = hourNumber - timeStep / 2.0;
+		}
+
+		return hourNumber;
+	}
+
+	double GetPeriodUpperBoundary(double hourNumber, double timeStep)
+	{
+		if (m_seriesType == wxDV_DAILY)
+		{
+			hourNumber = hourNumber - fmod(hourNumber, 24) + 24;
+		}
+		else if (m_seriesType == wxDV_MONTHLY)
+		{
+			double year = hourNumber - fmod(hourNumber, 8760);
+			hourNumber = fmod(hourNumber, 8760);
+
+			if (hourNumber >= 0.0 && hourNumber < 744.0) { hourNumber = 744.0; }
+			else if (hourNumber >= 744.0 && hourNumber < 1416.0) { hourNumber = 1416.0; }
+			else if (hourNumber >= 1416.0 && hourNumber < 2160.0) { hourNumber = 2160.0; }
+			else if (hourNumber >= 2160.0 && hourNumber < 2880.0) { hourNumber = 2880.0; }
+			else if (hourNumber >= 2880.0 && hourNumber < 3624.0) { hourNumber = 3624.0; }
+			else if (hourNumber >= 3624.0 && hourNumber < 4344.0) { hourNumber = 4344.0; }
+			else if (hourNumber >= 4344.0 && hourNumber < 5088.0) { hourNumber = 5088.0; }
+			else if (hourNumber >= 5088.0 && hourNumber < 5832.0) { hourNumber = 5832.0; }
+			else if (hourNumber >= 5832.0 && hourNumber < 6552.0) { hourNumber = 6552.0; }
+			else if (hourNumber >= 6552.0 && hourNumber < 7296.0) { hourNumber = 7296.0; }
+			else if (hourNumber >= 7296.0 && hourNumber < 8016.0) { hourNumber = 8016.0; }
+			else if (hourNumber >= 8016.0 && hourNumber < 8760.0) { hourNumber = 8760.0; }
+
+			hourNumber = hourNumber + year;
+		}
+		else
+		{
+			hourNumber = hourNumber + timeStep / 2.0;
+		}
+
+		return hourNumber;
+	}
+
+	virtual void UpdateSummaryData(bool divide)
+	{
+		double factor = 24.0;
+
+		for (size_t i = 0; i < m_data->Length(); i++)
+		{
+			if (m_seriesType == wxDV_MONTHLY)
+			{
+				factor = fmod(m_data->At(i).x, 8760);
+
+				if (factor >= 0.0 && factor < 744.0) { factor = 744.0; }
+				else if (factor >= 744.0 && factor < 1416.0) { factor = 672.0; }
+				else if (factor >= 1416.0 && factor < 2160.0) { factor = 744.0; }
+				else if (factor >= 2160.0 && factor < 2880.0) { factor = 720.0; }
+				else if (factor >= 2880.0 && factor < 3624.0) { factor = 744.0; }
+				else if (factor >= 3624.0 && factor < 4344.0) { factor = 720.0; }
+				else if (factor >= 4344.0 && factor < 5088.0) { factor = 744.0; }
+				else if (factor >= 5088.0 && factor < 5832.0) { factor = 744.0; }
+				else if (factor >= 5832.0 && factor < 6552.0) { factor = 720.0; }
+				else if (factor >= 6552.0 && factor < 7296.0) { factor = 744.0; }
+				else if (factor >= 7296.0 && factor < 8016.0) { factor = 720.0; }
+				else if (factor >= 8016.0 && factor < 8760.0) { factor = 744.0; }
+			}
+			else if (m_seriesType == wxDV_DAILY)
+			{
+				factor = 24.0;
 			}
 			else
 			{
-				// not stacked - just lines
+				factor = m_data->GetTimeStep();
+			}
 
-				if( m_style == wxDV_NORMAL )
-				{
-					len = m_data->Length();
-					if(m_data->At(0).x < wmin.x) { len++; }
-					if(m_data->At(m_data->Length() - 1).x > wmax.x) { len++; }
-
-					points.reserve( len );
-
-					//If this is a line plot then add a point at the left edge of the graph if there isn't one there in the data
-					if(m_style == wxDV_NORMAL && m_data->At(0).x < wmin.x)
-					{
-						for ( size_t i = 1; i < m_data->Length(); i++ )
-						{
-							rpt = m_data->At(i);
-							rpt2 = m_data->At(i - 1);
-							if ( rpt.x > wmin.x )
-							{
-								tempY = rpt2.y + ((rpt.y - rpt2.y) * (wmin.x - rpt2.x) / (rpt.x - rpt2.x));
-								points.push_back( map.ToDevice( wxRealPoint(wmin.x, tempY) ) );
-								break;
-							}
-						}
-					}
-					
-					// cull data points that get mapped to the same X coordinate on the device
-					// this is a much needed rendering optimization for large datasets
-					size_t i = 0;
-					size_t len = m_data->Length();
-					while( i < len )
-					{
-						rpt = m_data->At(i);
-						if ( rpt.x < wmin.x || rpt.x > wmax.x ) {
-							i++;
-							continue;
-						}
-						
-						wxRealPoint cur( map.ToDevice( rpt ) );
-						
-						size_t jmin=i, jmax=i;
-						double min=rpt.y, max=rpt.y;
-						// scan ahead in the points array to find all values with the same X
-						// coordinate, and the associated min/max Y values
-						size_t j=i+1;
-						size_t npscan = 0;
-						wxRealPoint rpt2;
-						while( j < len )
-						{
-							rpt2 = m_data->At(j);
-							wxRealPoint cur2( map.ToDevice( rpt2 ) );
-
-							if ( wxRound(cur.x) != wxRound(cur2.x) )
-								break;
-
-							if ( rpt2.y > max ) { max = rpt2.y; jmax = j;}
-							if ( rpt2.y < min ) { min = rpt2.y; jmin = j;}
-
-							npscan++;
-							j++;
-						}
-
-						if ( npscan > 0 ) // duplicate points found for same x coordinate
-						{
-							// replace with just two points						
-							points.push_back( map.ToDevice( wxRealPoint( rpt.x, jmax < jmin ? max : min ) ) );
-							points.push_back( map.ToDevice( wxRealPoint( rpt.x, jmax < jmin ? min : max ) ) );
-						}
-						else
-						{
-							// no multiple points with same x coordinate, just keep this point where it is.
-							points.push_back( cur );
-						}
-
-						i=j;
-					}
-
-					//If this is a line plot then add a point at the right edge of the graph if there isn't one there in the data
-					if(m_style == wxDV_NORMAL && m_data->At(m_data->Length() - 1).x > wmax.x)
-					{
-						for ( int i = m_data->Length() - 2; i >= 0; i-- )
-						{
-							rpt = m_data->At(i);
-							rpt2 = m_data->At(i + 1);
-							if ( rpt.x < wmax.x )
-							{
-								tempY = rpt.y + ((rpt2.y - rpt.y) * (wmax.x - rpt.x) / (rpt2.x - rpt.x));
-								points.push_back( map.ToDevice( wxRealPoint(wmax.x, tempY) ) );
-								break;
-							}
-						}
-					}
-				}
-				else
-				{
-					//For stepped graphs create an array twice as big as the original and replace each single x value with two x values, one with the prior y value and one with the current y value
-					len = m_data->Length() * 2;
-					points.reserve( len );
-					double timeStep = m_data->GetTimeStep();
-					double lowX;
-					double highX;
-					double priorY;
-					double nextY;
-
-					for (size_t i = 0; i < m_data->Length(); i++)
-					{
-						rpt = m_data->At(i);
-						lowX = GetPeriodLowerBoundary(rpt.x, timeStep);
-						highX = GetPeriodUpperBoundary(rpt.x, timeStep);
-					
-						if(lowX >= wmin.x && highX <= wmax.x)	//Draw points for the lower and upper X boundaries of the point's horizontal range for each range that fits in the boundaries of the plot
-						{
-							//If the prior point's lower X boundary is off the left edge of the plot then draw points for the left edge of the plot and the visible point's lower X boundary at the prior point's Y
-							if(i > 0 && GetPeriodLowerBoundary(m_data->At(i - 1).x, timeStep) < wmin.x)
-							{
-								priorY = m_data->At(i - 1).y;
-								points.push_back( map.ToDevice( wxRealPoint(wmin.x, priorY) ) );
-								points.push_back( map.ToDevice( wxRealPoint(lowX, priorY) ) );
-							}
-
-							points.push_back( map.ToDevice( wxRealPoint(lowX, rpt.y) ) );
-							points.push_back( map.ToDevice( wxRealPoint(highX, rpt.y) ) );
-
-							//If the next point's upper X boundary is off the right edge of the plot then draw points for the visible point's upper X boundary and the right edge of the plot at the next point's Y
-							if(i < m_data->Length() - 1 && GetPeriodUpperBoundary(m_data->At(i + 1).x, timeStep) > wmax.x)
-							{
-								nextY = m_data->At(i + 1).y;
-								points.push_back( map.ToDevice( wxRealPoint(highX, nextY) ) );
-								points.push_back( map.ToDevice( wxRealPoint(wmax.x, nextY) ) );
-								break;	//Any future points are outside the bounds of the graph
-							}
-						}
-						else if(lowX < wmin.x && highX > wmin.x && highX <= wmax.x)	//Draw points for the plot left edge and point's upper X boundary at the point's Y if the lower boundary (only) is off the plot's left edge
-						{
-							points.push_back( map.ToDevice( wxRealPoint(wmin.x, rpt.y) ) );
-							points.push_back( map.ToDevice( wxRealPoint(highX, rpt.y) ) );
-
-							//If the next point's upper X boundary is off the right edge of the plot then draw points for the visible point's upper X boundary and the right edge of the plot at the next point's Y
-							if(i < m_data->Length() - 1 && GetPeriodUpperBoundary(m_data->At(i + 1).x, timeStep) > wmax.x)
-							{
-								nextY = m_data->At(i + 1).y;
-								points.push_back( map.ToDevice( wxRealPoint(highX, nextY) ) );
-								points.push_back( map.ToDevice( wxRealPoint(wmax.x, nextY) ) );
-								break;	//Any future points are outside the bounds of the graph
-							}
-						}
-						else if(highX > wmax.x && lowX < wmax.x && lowX >= wmin.x)	//Draw points for the point's upper X boundary and the plot right edge at the point's Y if the upper boundary (only) is off the plot's right edge
-						{
-							//If the prior point's lower X boundary is off the left edge of the plot then draw points for the left edge of the plot and the visible point's lower X boundary at the prior point's Y
-							if(i > 0 && GetPeriodLowerBoundary(m_data->At(i - 1).x, timeStep) < wmin.x)
-							{
-								priorY = m_data->At(i - 1).y;
-								points.push_back( map.ToDevice( wxRealPoint(wmin.x, priorY) ) );
-								points.push_back( map.ToDevice( wxRealPoint(lowX, priorY) ) );
-							}
-
-							points.push_back( map.ToDevice( wxRealPoint(wmin.x, rpt.y) ) );
-							points.push_back( map.ToDevice( wxRealPoint(highX, rpt.y) ) );
-						}
-						else if(lowX < wmin.x && highX > wmax.x)	//Draw points for the plot's left and right edges and point's Y if the point's lower X boundary is off the plot's left edge and the upper X boundary is off the right edge
-						{
-							points.push_back( map.ToDevice( wxRealPoint(wmin.x, rpt.y) ) );
-							points.push_back( map.ToDevice( wxRealPoint(highX, rpt.y) ) );
-						}
-					}
-				}
-
-				if ( points.size() < 2 ) return;
-
-				wxRealPoint devpos, devsize;
-				map.GetDeviceExtents( &devpos, &devsize );
-
-				if ( points.size() > 4 * devsize.x ) {
-					dc.Text( "too many data points: please zoom in", devpos );
-					return; // quit if 4x more x coord points than integer device units
-				}
-				
-				dc.Lines( points.size(), &points[0] );
-
+			if (wxDVArrayDataSet *arrdata = dynamic_cast<wxDVArrayDataSet*>(m_data))
+			{
+				if (divide) arrdata->SetY(i, m_data->At(i).y / factor);
+				else arrdata->SetY(i, m_data->At(i).y * factor);
 			}
 		}
+	}
 
-		virtual wxString GetLabel() const
-		{
-			return GetYDataLabel( NULL );
-			//if ( !m_data ) return wxEmptyString;
-			//else return m_data->GetTitleWithUnits();
-		}
-
-		virtual void DrawInLegend( wxPLOutputDevice &dc, const wxPLRealRect &rct )
-		{
-			dc.Pen( m_colour, 3, wxPLOutputDevice::SOLID, wxPLOutputDevice::MITER, wxPLOutputDevice::BUTT );
-			dc.Line( rct.x, rct.y+rct.height/2, rct.x+rct.width, rct.y+rct.height/2 );
-		}
-
-		double GetPeriodLowerBoundary(double hourNumber, double timeStep)
-		{
-			if(m_seriesType == wxDV_DAILY)
-			{
-				hourNumber = hourNumber - fmod(hourNumber, 24);
-			}
-			else if (m_seriesType == wxDV_MONTHLY)
-			{
-				double year = hourNumber - fmod(hourNumber, 8760);
-				hourNumber = fmod(hourNumber, 8760);
-
-				if(hourNumber >= 0.0 && hourNumber < 744.0) { hourNumber = 0.0; }
-				else if(hourNumber >= 744.0 && hourNumber < 1416.0) { hourNumber = 744.0; }
-				else if(hourNumber >= 1416.0 && hourNumber < 2160.0) { hourNumber = 1416.0; }
-				else if(hourNumber >= 2160.0 && hourNumber < 2880.0) { hourNumber = 2160.0; }
-				else if(hourNumber >= 2880.0 && hourNumber < 3624.0) { hourNumber = 2880.0; }
-				else if(hourNumber >= 3624.0 && hourNumber < 4344.0) { hourNumber = 3624.0; }
-				else if(hourNumber >= 4344.0 && hourNumber < 5088.0) { hourNumber = 4344.0; }
-				else if(hourNumber >= 5088.0 && hourNumber < 5832.0) { hourNumber = 5088.0; }
-				else if(hourNumber >= 5832.0 && hourNumber < 6552.0) { hourNumber = 5832.0; }
-				else if(hourNumber >= 6552.0 && hourNumber < 7296.0) { hourNumber = 6552.0; }
-				else if(hourNumber >= 7296.0 && hourNumber < 8016.0) { hourNumber = 7296.0; }
-				else if(hourNumber >= 8016.0 && hourNumber < 8760.0) { hourNumber = 8016.0; }
-
-				hourNumber = hourNumber + year;
-			}
-			else
-			{
-				hourNumber = hourNumber - timeStep/2.0;
-			}
-
-			return hourNumber;
-		}
-
-		double GetPeriodUpperBoundary(double hourNumber, double timeStep)
-		{
-			if(m_seriesType == wxDV_DAILY)
-			{
-				hourNumber = hourNumber - fmod(hourNumber, 24) + 24;
-			}
-			else if (m_seriesType == wxDV_MONTHLY)
-			{
-				double year = hourNumber - fmod(hourNumber, 8760);
-				hourNumber = fmod(hourNumber, 8760);
-
-				if(hourNumber >= 0.0 && hourNumber < 744.0) { hourNumber = 744.0; }
-				else if(hourNumber >= 744.0 && hourNumber < 1416.0) { hourNumber = 1416.0; }
-				else if(hourNumber >= 1416.0 && hourNumber < 2160.0) { hourNumber = 2160.0; }
-				else if(hourNumber >= 2160.0 && hourNumber < 2880.0) { hourNumber = 2880.0; }
-				else if(hourNumber >= 2880.0 && hourNumber < 3624.0) { hourNumber = 3624.0; }
-				else if(hourNumber >= 3624.0 && hourNumber < 4344.0) { hourNumber = 4344.0; }
-				else if(hourNumber >= 4344.0 && hourNumber < 5088.0) { hourNumber = 5088.0; }
-				else if(hourNumber >= 5088.0 && hourNumber < 5832.0) { hourNumber = 5832.0; }
-				else if(hourNumber >= 5832.0 && hourNumber < 6552.0) { hourNumber = 6552.0; }
-				else if(hourNumber >= 6552.0 && hourNumber < 7296.0) { hourNumber = 7296.0; }
-				else if(hourNumber >= 7296.0 && hourNumber < 8016.0) { hourNumber = 8016.0; }
-				else if(hourNumber >= 8016.0 && hourNumber < 8760.0) { hourNumber = 8760.0; }
-
-				hourNumber = hourNumber + year;
-			}
-			else
-			{
-				hourNumber = hourNumber + timeStep/2.0;
-			}
-
-			return hourNumber;
-		}
-
-		virtual void UpdateSummaryData(bool divide)
-		{
-			double factor = 24.0;
-
-			for(size_t i = 0; i < m_data->Length(); i++)
-			{
-				if (m_seriesType == wxDV_MONTHLY)
-				{
-					factor = fmod(m_data->At(i).x, 8760);
-
-					if(factor >= 0.0 && factor < 744.0) { factor = 744.0; }
-					else if(factor >= 744.0 && factor < 1416.0) { factor = 672.0; }
-					else if(factor >= 1416.0 && factor < 2160.0) { factor = 744.0; }
-					else if(factor >= 2160.0 && factor < 2880.0) { factor = 720.0; }
-					else if(factor >= 2880.0 && factor < 3624.0) { factor = 744.0; }
-					else if(factor >= 3624.0 && factor < 4344.0) { factor = 720.0; }
-					else if(factor >= 4344.0 && factor < 5088.0) { factor = 744.0; }
-					else if(factor >= 5088.0 && factor < 5832.0) { factor = 744.0; }
-					else if(factor >= 5832.0 && factor < 6552.0) { factor = 720.0; }
-					else if(factor >= 6552.0 && factor < 7296.0) { factor = 744.0; }
-					else if(factor >= 7296.0 && factor < 8016.0) { factor = 720.0; }
-					else if(factor >= 8016.0 && factor < 8760.0) { factor = 744.0; }
-				}
-				else if (m_seriesType == wxDV_DAILY)
-				{
-					factor = 24.0;
-				}
-				else
-				{
-					factor = m_data->GetTimeStep();
-				}
-
-
-				if ( wxDVArrayDataSet *arrdata = dynamic_cast<wxDVArrayDataSet*>( m_data ) )
-				{
-					if( divide ) arrdata->SetY( i, m_data->At(i).y / factor );
-					else arrdata->SetY( i, m_data->At(i).y * factor );
-				}
-			}
-		}
-
-		wxDVTimeSeriesDataSet *GetDataSet() const { return m_data; }
+	wxDVTimeSeriesDataSet *GetDataSet() const { return m_data; }
 };
 
 BEGIN_EVENT_TABLE(wxDVTimeSeriesSettingsDialog, wxDialog)
-	EVT_CHECKBOX(ID_TopCheckbox, wxDVTimeSeriesSettingsDialog::OnClickTopHandler)
-	EVT_CHECKBOX(ID_BottomCheckbox, wxDVTimeSeriesSettingsDialog::OnClickBottomHandler)
-	EVT_CHECKBOX(ID_StatCheckbox, wxDVTimeSeriesSettingsDialog::OnClickStatHandler)
+EVT_CHECKBOX(ID_TopCheckbox, wxDVTimeSeriesSettingsDialog::OnClickTopHandler)
+EVT_CHECKBOX(ID_BottomCheckbox, wxDVTimeSeriesSettingsDialog::OnClickBottomHandler)
+EVT_CHECKBOX(ID_StatCheckbox, wxDVTimeSeriesSettingsDialog::OnClickStatHandler)
 END_EVENT_TABLE()
 
-wxDVTimeSeriesSettingsDialog::wxDVTimeSeriesSettingsDialog( wxWindow *parent, const wxString &title, 
-	bool isTopRightYVisible, bool isBottomGraphVisible, bool isBottomRightGraphVisible )
-	: wxDialog( parent, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxRESIZE_BORDER|wxDEFAULT_DIALOG_STYLE)
+wxDVTimeSeriesSettingsDialog::wxDVTimeSeriesSettingsDialog(wxWindow *parent, const wxString &title,
+bool isTopRightYVisible, bool isBottomGraphVisible, bool isBottomRightGraphVisible)
+: wxDialog(parent, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxRESIZE_BORDER | wxDEFAULT_DIALOG_STYLE)
 {
-	
-	mSteppedLines = new wxCheckBox( this, wxID_ANY, "Stepped lines" );
-	mStackedArea = new wxCheckBox( this, wxID_ANY, "Stacked area on left Y axis");
-	mStatTypeCheck = new wxCheckBox(this, ID_StatCheckbox, "Show sum over time step" );
-				
-		
+	mSteppedLines = new wxCheckBox(this, wxID_ANY, "Stepped lines");
+	mStackedArea = new wxCheckBox(this, wxID_ANY, "Stacked area on left Y axis");
+	mStatTypeCheck = new wxCheckBox(this, ID_StatCheckbox, "Show sum over time step");
+
 	wxFlexGridSizer *yBoundSizer = new wxFlexGridSizer(4, 2, 2);
 	yBoundSizer->AddSpacer(1);
-	yBoundSizer->Add( new wxStaticText( this, wxID_ANY, "Autoscale" ), 0, wxLEFT|wxRIGHT|wxALIGN_CENTER|wxALIGN_CENTER_VERTICAL, 2 );
-	yBoundSizer->Add( new wxStaticText( this, wxID_ANY, "Y Min" ), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 2 );
-	yBoundSizer->Add( new wxStaticText( this, wxID_ANY, "Y Max" ), 0, wxLEFT|wxRIGHT|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 2 );
+	yBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Autoscale"), 0, wxLEFT | wxRIGHT | wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL, 2);
+	yBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Y Min"), 0, wxLEFT | wxRIGHT | wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
+	yBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Y Max"), 0, wxLEFT | wxRIGHT | wxALIGN_RIGHT | wxALIGN_CENTER_VERTICAL, 2);
 
-	yBoundSizer->Add( new wxStaticText( this, wxID_ANY, "Top left axis:" ), 0, wxLEFT|wxRIGHT|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 3 );
-	yBoundSizer->Add( mTopAutoscaleCheck = new wxCheckBox(this, ID_TopCheckbox, wxEmptyString), 0, wxLEFT|wxRIGHT|wxALIGN_CENTER|wxALIGN_CENTER_VERTICAL,  2);	
-	yBoundSizer->Add( mTopYMinCtrl = new wxNumericCtrl(this), 0, wxLEFT|wxRIGHT, 2);	
-	yBoundSizer->Add( mTopYMaxCtrl = new wxNumericCtrl(this), 0, wxLEFT|wxRIGHT, 2);
+	yBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Top left axis:"), 0, wxLEFT | wxRIGHT | wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 3);
+	yBoundSizer->Add(mTopAutoscaleCheck = new wxCheckBox(this, ID_TopCheckbox, wxEmptyString), 0, wxLEFT | wxRIGHT | wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL, 2);
+	yBoundSizer->Add(mTopYMinCtrl = new wxNumericCtrl(this), 0, wxLEFT | wxRIGHT, 2);
+	yBoundSizer->Add(mTopYMaxCtrl = new wxNumericCtrl(this), 0, wxLEFT | wxRIGHT, 2);
 
-	if ( isTopRightYVisible )
+	if (isTopRightYVisible)
 	{
-		yBoundSizer->Add( new wxStaticText( this, wxID_ANY, "Top right axis:" ), 0, wxLEFT|wxRIGHT|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 3 );
-		yBoundSizer->Add( mTop2AutoscaleCheck = new wxCheckBox(this, ID_TopCheckbox, wxEmptyString), 0, wxLEFT|wxRIGHT|wxALIGN_CENTER|wxALIGN_CENTER_VERTICAL,  2);	
-		yBoundSizer->Add( mTopY2MinCtrl = new wxNumericCtrl(this), 0, wxLEFT|wxRIGHT, 2);	
-		yBoundSizer->Add( mTopY2MaxCtrl = new wxNumericCtrl(this), 0, wxLEFT|wxRIGHT, 2);
+		yBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Top right axis:"), 0, wxLEFT | wxRIGHT | wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 3);
+		yBoundSizer->Add(mTop2AutoscaleCheck = new wxCheckBox(this, ID_TopCheckbox, wxEmptyString), 0, wxLEFT | wxRIGHT | wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL, 2);
+		yBoundSizer->Add(mTopY2MinCtrl = new wxNumericCtrl(this), 0, wxLEFT | wxRIGHT, 2);
+		yBoundSizer->Add(mTopY2MaxCtrl = new wxNumericCtrl(this), 0, wxLEFT | wxRIGHT, 2);
 	}
 	else
 	{
 		mTopY2MinCtrl = mTopY2MaxCtrl = 0;
 		mTop2AutoscaleCheck = 0;
 	}
-	
-	if ( isBottomGraphVisible )
+
+	if (isBottomGraphVisible)
 	{
-		yBoundSizer->Add( new wxStaticText( this, wxID_ANY, "Bottom left axis:" ), 0, wxLEFT|wxRIGHT|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 3 );
-		yBoundSizer->Add( mBottomAutoscaleCheck = new wxCheckBox(this, ID_BottomCheckbox, wxEmptyString), 0, wxLEFT|wxRIGHT|wxALIGN_CENTER|wxALIGN_CENTER_VERTICAL,  2);	
-		yBoundSizer->Add( mBottomYMinCtrl = new wxNumericCtrl(this), 0, wxLEFT|wxRIGHT, 2);	
-		yBoundSizer->Add( mBottomYMaxCtrl = new wxNumericCtrl(this), 0, wxLEFT|wxRIGHT, 2);
+		yBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Bottom left axis:"), 0, wxLEFT | wxRIGHT | wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 3);
+		yBoundSizer->Add(mBottomAutoscaleCheck = new wxCheckBox(this, ID_BottomCheckbox, wxEmptyString), 0, wxLEFT | wxRIGHT | wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL, 2);
+		yBoundSizer->Add(mBottomYMinCtrl = new wxNumericCtrl(this), 0, wxLEFT | wxRIGHT, 2);
+		yBoundSizer->Add(mBottomYMaxCtrl = new wxNumericCtrl(this), 0, wxLEFT | wxRIGHT, 2);
 	}
 	else
 	{
 		mBottomYMinCtrl = mBottomYMaxCtrl = 0;
 		mBottomAutoscaleCheck = 0;
 	}
-	
-	
-	if ( isBottomRightGraphVisible )
+
+	if (isBottomRightGraphVisible)
 	{
-		yBoundSizer->Add( new wxStaticText( this, wxID_ANY, "Bottom right axis:" ), 0, wxLEFT|wxRIGHT|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 3 );
-		yBoundSizer->Add( mBottom2AutoscaleCheck = new wxCheckBox(this, ID_BottomCheckbox, wxEmptyString), 0, wxLEFT|wxRIGHT|wxALIGN_CENTER|wxALIGN_CENTER_VERTICAL,  2);	
-		yBoundSizer->Add( mBottomY2MinCtrl = new wxNumericCtrl(this), 0, wxLEFT|wxRIGHT, 2);	
-		yBoundSizer->Add( mBottomY2MaxCtrl = new wxNumericCtrl(this), 0, wxLEFT|wxRIGHT, 2);
+		yBoundSizer->Add(new wxStaticText(this, wxID_ANY, "Bottom right axis:"), 0, wxLEFT | wxRIGHT | wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL, 3);
+		yBoundSizer->Add(mBottom2AutoscaleCheck = new wxCheckBox(this, ID_BottomCheckbox, wxEmptyString), 0, wxLEFT | wxRIGHT | wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL, 2);
+		yBoundSizer->Add(mBottomY2MinCtrl = new wxNumericCtrl(this), 0, wxLEFT | wxRIGHT, 2);
+		yBoundSizer->Add(mBottomY2MaxCtrl = new wxNumericCtrl(this), 0, wxLEFT | wxRIGHT, 2);
 	}
 	else
 	{
 		mBottomY2MinCtrl = mBottomY2MaxCtrl = 0;
 		mBottom2AutoscaleCheck = 0;
 	}
-			
+
 	wxBoxSizer *boxmain = new wxBoxSizer(wxVERTICAL);
-	boxmain->Add( mSteppedLines, 0, wxALL|wxEXPAND, 10 );
-	boxmain->Add( mStackedArea, 0, wxALL|wxEXPAND, 10 );
-	boxmain->Add( mStatTypeCheck, 0, wxALL|wxEXPAND, 10 );
-	boxmain->Add( new wxStaticLine( this ), 0, wxALL|wxEXPAND, 0 );
-	boxmain->Add( yBoundSizer, 1, wxALL|wxEXPAND, 10 );
-	boxmain->Add( new wxStaticLine( this ), 0, wxALL|wxEXPAND, 0 );
-	boxmain->Add( CreateButtonSizer( wxOK|wxCANCEL ), 0, wxALL|wxEXPAND, 20 );
-		
+	boxmain->Add(mSteppedLines, 0, wxALL | wxEXPAND, 10);
+	boxmain->Add(mStackedArea, 0, wxALL | wxEXPAND, 10);
+	boxmain->Add(mStatTypeCheck, 0, wxALL | wxEXPAND, 10);
+	boxmain->Add(new wxStaticLine(this), 0, wxALL | wxEXPAND, 0);
+	boxmain->Add(yBoundSizer, 1, wxALL | wxEXPAND, 10);
+	boxmain->Add(new wxStaticLine(this), 0, wxALL | wxEXPAND, 0);
+	boxmain->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxALL | wxEXPAND, 20);
+
 	SetSizer(boxmain);
 	Fit();
 }
 
-void wxDVTimeSeriesSettingsDialog::SetTopYBounds( double y1min, double y1max )
+void wxDVTimeSeriesSettingsDialog::SetTopYBounds(double y1min, double y1max)
 {
-	mTopYMinCtrl->SetValue( y1min );
-	mTopYMaxCtrl->SetValue( y1max );
+	mTopYMinCtrl->SetValue(y1min);
+	mTopYMaxCtrl->SetValue(y1max);
 }
 
-
-void wxDVTimeSeriesSettingsDialog::SetTopY2Bounds( double y1min, double y1max )
+void wxDVTimeSeriesSettingsDialog::SetTopY2Bounds(double y1min, double y1max)
 {
-	if ( mTopY2MinCtrl ) mTopY2MinCtrl->SetValue( y1min );
-	if ( mTopY2MaxCtrl ) mTopY2MaxCtrl->SetValue( y1max );
+	if (mTopY2MinCtrl) mTopY2MinCtrl->SetValue(y1min);
+	if (mTopY2MaxCtrl) mTopY2MaxCtrl->SetValue(y1max);
 }
 
-void wxDVTimeSeriesSettingsDialog::SetBottomYBounds( double y2min, double y2max )
+void wxDVTimeSeriesSettingsDialog::SetBottomYBounds(double y2min, double y2max)
 {
-	if ( mBottomYMinCtrl ) mBottomYMinCtrl->SetValue( y2min );
-	if ( mBottomYMaxCtrl ) mBottomYMaxCtrl->SetValue( y2max );
+	if (mBottomYMinCtrl) mBottomYMinCtrl->SetValue(y2min);
+	if (mBottomYMaxCtrl) mBottomYMaxCtrl->SetValue(y2max);
 }
 
-void wxDVTimeSeriesSettingsDialog::SetBottomY2Bounds( double y2min, double y2max )
+void wxDVTimeSeriesSettingsDialog::SetBottomY2Bounds(double y2min, double y2max)
 {
-	if ( mBottomY2MinCtrl ) mBottomY2MinCtrl->SetValue( y2min );
-	if ( mBottomY2MaxCtrl ) mBottomY2MaxCtrl->SetValue( y2max );
+	if (mBottomY2MinCtrl) mBottomY2MinCtrl->SetValue(y2min);
+	if (mBottomY2MaxCtrl) mBottomY2MaxCtrl->SetValue(y2max);
 }
 
-void wxDVTimeSeriesSettingsDialog::GetTopYBounds( double *y1min, double *y1max )
+void wxDVTimeSeriesSettingsDialog::GetTopYBounds(double *y1min, double *y1max)
 {
-	if ( mTopYMinCtrl ) *y1min = mTopYMinCtrl->Value();
-	if ( mTopYMaxCtrl ) *y1max = mTopYMaxCtrl->Value();
+	if (mTopYMinCtrl) *y1min = mTopYMinCtrl->Value();
+	if (mTopYMaxCtrl) *y1max = mTopYMaxCtrl->Value();
 }
 
-void wxDVTimeSeriesSettingsDialog::GetTopY2Bounds( double *y1min, double *y1max )
+void wxDVTimeSeriesSettingsDialog::GetTopY2Bounds(double *y1min, double *y1max)
 {
-	if ( mTopY2MinCtrl ) *y1min = mTopY2MinCtrl->Value();
-	if ( mTopY2MaxCtrl ) *y1max = mTopY2MaxCtrl->Value();
+	if (mTopY2MinCtrl) *y1min = mTopY2MinCtrl->Value();
+	if (mTopY2MaxCtrl) *y1max = mTopY2MaxCtrl->Value();
 }
 
-
-void wxDVTimeSeriesSettingsDialog::GetBottomYBounds( double *y2min, double *y2max )
+void wxDVTimeSeriesSettingsDialog::GetBottomYBounds(double *y2min, double *y2max)
 {
-	if ( mBottomYMinCtrl ) *y2min = mBottomYMinCtrl->Value();
-	if ( mBottomYMaxCtrl ) *y2max = mBottomYMaxCtrl->Value();
+	if (mBottomYMinCtrl) *y2min = mBottomYMinCtrl->Value();
+	if (mBottomYMaxCtrl) *y2max = mBottomYMaxCtrl->Value();
 }
 
-void wxDVTimeSeriesSettingsDialog::GetBottomY2Bounds( double *y2min, double *y2max )
+void wxDVTimeSeriesSettingsDialog::GetBottomY2Bounds(double *y2min, double *y2max)
 {
-	if ( mBottomY2MinCtrl ) *y2min = mBottomY2MinCtrl->Value();
-	if ( mBottomY2MaxCtrl ) *y2max = mBottomY2MaxCtrl->Value();
+	if (mBottomY2MinCtrl) *y2min = mBottomY2MinCtrl->Value();
+	if (mBottomY2MaxCtrl) *y2max = mBottomY2MaxCtrl->Value();
 }
 
-
-void wxDVTimeSeriesSettingsDialog::SetStacked( bool b ) { mStackedArea->SetValue( b ); }
+void wxDVTimeSeriesSettingsDialog::SetStacked(bool b) { mStackedArea->SetValue(b); }
 bool wxDVTimeSeriesSettingsDialog::GetStacked() { return mStackedArea->GetValue(); }
 
-void wxDVTimeSeriesSettingsDialog::SetStyle( wxDVTimeSeriesStyle id ) { mSteppedLines->SetValue( id == wxDV_STEPPED ); }
+void wxDVTimeSeriesSettingsDialog::SetStyle(wxDVTimeSeriesStyle id) { mSteppedLines->SetValue(id == wxDV_STEPPED); }
 wxDVTimeSeriesStyle wxDVTimeSeriesSettingsDialog::GetStyle() { return mSteppedLines->GetValue() ? wxDV_STEPPED : wxDV_NORMAL; }
 
-void wxDVTimeSeriesSettingsDialog::SetStatType( wxDVStatType statType ) { mStatTypeCheck->SetValue( statType == wxDV_SUM ? true : false ); }
+void wxDVTimeSeriesSettingsDialog::SetStatType(wxDVStatType statType) { mStatTypeCheck->SetValue(statType == wxDV_SUM ? true : false); }
 wxDVStatType wxDVTimeSeriesSettingsDialog::GetStatType() { return mStatTypeCheck->GetValue() ? wxDV_SUM : wxDV_AVERAGE; }
 
-void wxDVTimeSeriesSettingsDialog::SetAutoscale( bool b ) 
-{ 
-	mTopAutoscaleCheck->SetValue( b ); 
+void wxDVTimeSeriesSettingsDialog::SetAutoscale(bool b)
+{
+	mTopAutoscaleCheck->SetValue(b);
 	mTopYMaxCtrl->Enable(!b);
 	mTopYMinCtrl->Enable(!b);
 }
 
-void wxDVTimeSeriesSettingsDialog::SetAutoscale2( bool b ) 
-{ 
-	if ( mTop2AutoscaleCheck )
+void wxDVTimeSeriesSettingsDialog::SetAutoscale2(bool b)
+{
+	if (mTop2AutoscaleCheck)
 	{
-		mTop2AutoscaleCheck->SetValue( b ); 
+		mTop2AutoscaleCheck->SetValue(b);
 		mTopY2MaxCtrl->Enable(!b);
 		mTopY2MinCtrl->Enable(!b);
 	}
@@ -717,78 +731,77 @@ void wxDVTimeSeriesSettingsDialog::SetAutoscale2( bool b )
 bool wxDVTimeSeriesSettingsDialog::GetAutoscale() { return mTopAutoscaleCheck->GetValue(); }
 bool wxDVTimeSeriesSettingsDialog::GetAutoscale2() { return mTop2AutoscaleCheck ? mTop2AutoscaleCheck->GetValue() : false; }
 
-void wxDVTimeSeriesSettingsDialog::SetBottomAutoscale( bool b ) 
-{ 
-	if ( mBottomAutoscaleCheck ) {
-		mBottomAutoscaleCheck->SetValue( b ); 
+void wxDVTimeSeriesSettingsDialog::SetBottomAutoscale(bool b)
+{
+	if (mBottomAutoscaleCheck) {
+		mBottomAutoscaleCheck->SetValue(b);
 		mBottomYMaxCtrl->Enable(!b);
 		mBottomYMinCtrl->Enable(!b);
 	}
 }
 bool wxDVTimeSeriesSettingsDialog::GetBottomAutoscale() { return mBottomAutoscaleCheck ? mBottomAutoscaleCheck->GetValue() : false; }
 
-void wxDVTimeSeriesSettingsDialog::SetBottomAutoscale2( bool b ) 
-{ 
-	if ( mBottom2AutoscaleCheck ) {
-		mBottom2AutoscaleCheck->SetValue( b ); 
+void wxDVTimeSeriesSettingsDialog::SetBottomAutoscale2(bool b)
+{
+	if (mBottom2AutoscaleCheck) {
+		mBottom2AutoscaleCheck->SetValue(b);
 		mBottomY2MaxCtrl->Enable(!b);
 		mBottomY2MinCtrl->Enable(!b);
 	}
 }
 bool wxDVTimeSeriesSettingsDialog::GetBottomAutoscale2() { return mBottom2AutoscaleCheck ? mBottom2AutoscaleCheck->GetValue() : false; }
 
-
 void wxDVTimeSeriesSettingsDialog::OnClickTopHandler(wxCommandEvent& event)
 {
-	SetAutoscale( mTopAutoscaleCheck->IsChecked() );
-	if ( mTop2AutoscaleCheck ) SetAutoscale2( mTop2AutoscaleCheck->IsChecked() );
+	SetAutoscale(mTopAutoscaleCheck->IsChecked());
+	if (mTop2AutoscaleCheck) SetAutoscale2(mTop2AutoscaleCheck->IsChecked());
 }
 
 void wxDVTimeSeriesSettingsDialog::OnClickBottomHandler(wxCommandEvent& event)
 {
-	if ( mBottomAutoscaleCheck ) SetBottomAutoscale( mBottomAutoscaleCheck->IsChecked() );
-	if ( mBottom2AutoscaleCheck ) SetBottomAutoscale2( mBottom2AutoscaleCheck->IsChecked() );
+	if (mBottomAutoscaleCheck) SetBottomAutoscale(mBottomAutoscaleCheck->IsChecked());
+	if (mBottom2AutoscaleCheck) SetBottomAutoscale2(mBottom2AutoscaleCheck->IsChecked());
 }
 
 void wxDVTimeSeriesSettingsDialog::OnClickStatHandler(wxCommandEvent& event)
 {
-	SetStatType( mStatTypeCheck->IsChecked() ? wxDV_SUM : wxDV_AVERAGE );
+	SetStatType(mStatTypeCheck->IsChecked() ? wxDV_SUM : wxDV_AVERAGE);
 }
 
 enum{
-		ID_DATA_CHANNEL_SELECTOR = wxID_HIGHEST+1, 
-		ID_GRAPH_SCROLLBAR,
-		ID_PLOT_SURFACE };
+	ID_DATA_CHANNEL_SELECTOR = wxID_HIGHEST + 1,
+	ID_GRAPH_SCROLLBAR,
+	ID_PLOT_SURFACE
+};
 
 BEGIN_EVENT_TABLE(wxDVTimeSeriesCtrl, wxPanel)
-	EVT_BUTTON(wxID_ZOOM_IN, wxDVTimeSeriesCtrl::OnZoomIn)
-	EVT_BUTTON(wxID_ZOOM_OUT, wxDVTimeSeriesCtrl::OnZoomOut)
-	EVT_BUTTON(wxID_ZOOM_FIT, wxDVTimeSeriesCtrl::OnZoomFit)
-	EVT_BUTTON(wxID_PREFERENCES, wxDVTimeSeriesCtrl::OnSettings)
+EVT_BUTTON(wxID_ZOOM_IN, wxDVTimeSeriesCtrl::OnZoomIn)
+EVT_BUTTON(wxID_ZOOM_OUT, wxDVTimeSeriesCtrl::OnZoomOut)
+EVT_BUTTON(wxID_ZOOM_FIT, wxDVTimeSeriesCtrl::OnZoomFit)
+EVT_BUTTON(wxID_PREFERENCES, wxDVTimeSeriesCtrl::OnSettings)
 
-	EVT_MOUSEWHEEL(wxDVTimeSeriesCtrl::OnMouseWheel)
+EVT_MOUSEWHEEL(wxDVTimeSeriesCtrl::OnMouseWheel)
 
-	EVT_PLOT_HIGHLIGHT(ID_PLOT_SURFACE, wxDVTimeSeriesCtrl::OnHighlight)
-	
-	EVT_DVSELECTIONLIST(ID_DATA_CHANNEL_SELECTOR, wxDVTimeSeriesCtrl::OnDataChannelSelection)
+EVT_PLOT_HIGHLIGHT(ID_PLOT_SURFACE, wxDVTimeSeriesCtrl::OnHighlight)
 
-	EVT_COMMAND_SCROLL_THUMBTRACK(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrl::OnGraphScroll)
-	EVT_COMMAND_SCROLL_LINEUP(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrl::OnGraphScrollLineUp)
-	EVT_COMMAND_SCROLL_LINEDOWN(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrl::OnGraphScrollLineDown)
-	//EVT_COMMAND_SCROLL_CHANGED(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrl::OnGraphScroll)
-	EVT_COMMAND_SCROLL_PAGEDOWN(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrl::OnGraphScrollPageDown)
-	EVT_COMMAND_SCROLL_PAGEUP(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrl::OnGraphScrollPageUp)
+EVT_DVSELECTIONLIST(ID_DATA_CHANNEL_SELECTOR, wxDVTimeSeriesCtrl::OnDataChannelSelection)
 
-	EVT_TEXT(wxID_ANY, wxDVTimeSeriesCtrl::OnSearch)
+EVT_COMMAND_SCROLL_THUMBTRACK(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrl::OnGraphScroll)
+EVT_COMMAND_SCROLL_LINEUP(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrl::OnGraphScrollLineUp)
+EVT_COMMAND_SCROLL_LINEDOWN(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrl::OnGraphScrollLineDown)
+//EVT_COMMAND_SCROLL_CHANGED(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrl::OnGraphScroll)
+EVT_COMMAND_SCROLL_PAGEDOWN(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrl::OnGraphScrollPageDown)
+EVT_COMMAND_SCROLL_PAGEUP(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrl::OnGraphScrollPageUp)
+
+EVT_TEXT(wxID_ANY, wxDVTimeSeriesCtrl::OnSearch)
 
 END_EVENT_TABLE()
 
-
 /*Constructors and Destructors*/
 wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, wxDVTimeSeriesType seriesType, wxDVStatType statType)
-	: wxPanel(parent, id)
-{	
-	SetBackgroundColour( *wxWHITE );
+: wxPanel(parent, id)
+{
+	SetBackgroundColour(*wxWHITE);
 	m_srchCtrl = NULL;
 	m_stackingOnYLeft = false;
 	m_topAutoScale = false;
@@ -799,37 +812,37 @@ wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, wxDVTime
 	m_seriesType = seriesType;
 	m_statType = statType;
 
-	m_plotSurface = new wxPLPlotCtrl(this, ID_PLOT_SURFACE); 
-	m_plotSurface->SetBackgroundColour( *wxWHITE );
-	m_plotSurface->SetHighlightMode( wxPLPlotCtrl::HIGHLIGHT_SPAN );
-	m_plotSurface->ShowTitle( false );
-	m_plotSurface->ShowLegend( false );
+	m_plotSurface = new wxPLPlotCtrl(this, ID_PLOT_SURFACE);
+	m_plotSurface->SetBackgroundColour(*wxWHITE);
+	m_plotSurface->SetHighlightMode(wxPLPlotCtrl::HIGHLIGHT_SPAN);
+	m_plotSurface->ShowTitle(false);
+	m_plotSurface->ShowLegend(false);
 	//m_plotSurface->SetLegendLocation( wxPLPlotCtrl::RIGHT );
-	m_plotSurface->SetIncludeLegendOnExport( true );
-	m_plotSurface->ShowGrid( true, true );
-	m_xAxis = new wxPLTimeAxis( 0, 8760 );
-	m_plotSurface->SetXAxis1( m_xAxis );
+	m_plotSurface->SetIncludeLegendOnExport(true);
+	m_plotSurface->ShowGrid(true, true);
+	m_xAxis = new wxPLTimeAxis(0, 8760);
+	m_plotSurface->SetXAxis1(m_xAxis);
 
 	wxBoxSizer *scrollerAndZoomSizer = new wxBoxSizer(wxHORIZONTAL);
 	m_graphScrollBar = new wxScrollBar(this, ID_GRAPH_SCROLLBAR, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL);
-	scrollerAndZoomSizer->Add(m_graphScrollBar, 1, wxALL|wxALIGN_CENTER_VERTICAL, 3);
+	scrollerAndZoomSizer->Add(m_graphScrollBar, 1, wxALL | wxALIGN_CENTER_VERTICAL, 3);
 
-	wxBitmapButton *zoom_in =  new wxBitmapButton( this, wxID_ZOOM_IN, wxBITMAP_PNG_FROM_DATA( zoom_in ));
+	wxBitmapButton *zoom_in = new wxBitmapButton(this, wxID_ZOOM_IN, wxBITMAP_PNG_FROM_DATA(zoom_in));
 	zoom_in->SetToolTip("Zoom in");
-	scrollerAndZoomSizer->Add( zoom_in, 0, wxALL|wxEXPAND, 1);
+	scrollerAndZoomSizer->Add(zoom_in, 0, wxALL | wxEXPAND, 1);
 
-	wxBitmapButton *zoom_out = new wxBitmapButton( this, wxID_ZOOM_OUT, wxBITMAP_PNG_FROM_DATA( zoom_out ));
+	wxBitmapButton *zoom_out = new wxBitmapButton(this, wxID_ZOOM_OUT, wxBITMAP_PNG_FROM_DATA(zoom_out));
 	zoom_out->SetToolTip("Zoom out");
-	scrollerAndZoomSizer->Add( zoom_out, 0, wxALL|wxEXPAND, 1);
+	scrollerAndZoomSizer->Add(zoom_out, 0, wxALL | wxEXPAND, 1);
 
-	wxBitmapButton *zoom_fit = new wxBitmapButton( this, wxID_ZOOM_FIT, wxBITMAP_PNG_FROM_DATA( zoom_fit ));
+	wxBitmapButton *zoom_fit = new wxBitmapButton(this, wxID_ZOOM_FIT, wxBITMAP_PNG_FROM_DATA(zoom_fit));
 	zoom_fit->SetToolTip("Zoom fit");
-	scrollerAndZoomSizer->Add( zoom_fit , 0, wxALL|wxEXPAND, 1);
+	scrollerAndZoomSizer->Add(zoom_fit, 0, wxALL | wxEXPAND, 1);
 
-	wxBitmapButton *pref_btn = new wxBitmapButton( this, wxID_PREFERENCES, wxBITMAP_PNG_FROM_DATA( preferences ));
+	wxBitmapButton *pref_btn = new wxBitmapButton(this, wxID_PREFERENCES, wxBITMAP_PNG_FROM_DATA(preferences));
 	pref_btn->SetToolTip("Edit view settings and graph scaling...");
-	scrollerAndZoomSizer->Add( pref_btn, 0, wxALL|wxEXPAND, 1);
-	
+	scrollerAndZoomSizer->Add(pref_btn, 0, wxALL | wxEXPAND, 1);
+
 	//Contains boxes to turn lines on or off.
 	m_srchCtrl = new wxSearchCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxSize(150, -1), 0);
 	m_dataSelector = new wxDVSelectionListCtrl(this, ID_DATA_CHANNEL_SELECTOR, 2);
@@ -837,16 +850,16 @@ wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, wxDVTime
 	sizer->Add(m_srchCtrl, 0, wxALL | wxEXPAND, 0);
 	sizer->Add(m_dataSelector, 0, wxALL | wxALIGN_CENTER, 0);
 
-	wxBoxSizer *graph_sizer = new wxBoxSizer(wxVERTICAL);	
-	graph_sizer->Add( m_plotSurface, 1, wxEXPAND|wxALL, 4);
-	graph_sizer->Add( scrollerAndZoomSizer, 0, wxEXPAND|wxALL, 0);
+	wxBoxSizer *graph_sizer = new wxBoxSizer(wxVERTICAL);
+	graph_sizer->Add(m_plotSurface, 1, wxEXPAND | wxALL, 4);
+	graph_sizer->Add(scrollerAndZoomSizer, 0, wxEXPAND | wxALL, 0);
 
 	wxBoxSizer *top_sizer = new wxBoxSizer(wxHORIZONTAL);
-	top_sizer->Add( graph_sizer, 1, wxALL|wxEXPAND, 0 );
-	top_sizer->Add( sizer, 0, wxEXPAND, 0);
+	top_sizer->Add(graph_sizer, 1, wxALL | wxEXPAND, 0);
+	top_sizer->Add(sizer, 0, wxEXPAND, 0);
 	SetSizer(top_sizer);
 
-	for (int i=0; i<GRAPH_AXIS_POSITION_COUNT; i++)
+	for (int i = 0; i < GRAPH_AXIS_POSITION_COUNT; i++)
 		m_selectedChannelIndices.push_back(new std::vector<int>());
 
 	UpdateScrollbarPosition();
@@ -856,7 +869,7 @@ wxDVTimeSeriesCtrl::~wxDVTimeSeriesCtrl(void)
 {
 	RemoveAllDataSets();
 
-	for (int i=0; i<GRAPH_AXIS_POSITION_COUNT; i++)
+	for (int i = 0; i < GRAPH_AXIS_POSITION_COUNT; i++)
 		delete m_selectedChannelIndices[i];
 }
 
@@ -871,111 +884,108 @@ wxDVTimeSeriesType wxDVTimeSeriesCtrl::GetTimeSeriesType()
 	return m_seriesType;
 }
 
-
 /*** EVENT HANDLERS ***/
 
 void wxDVTimeSeriesCtrl::OnZoomIn(wxCommandEvent& e)
 {
-	if ( m_plots.size() == 0)
+	if (m_plots.size() == 0)
 		return;
 
 	//Make sure we are not already zoomed in too far.
-	if ( CanZoomIn() )
+	if (CanZoomIn())
 		ZoomFactorAndUpdate(2.0);
 }
 
 void wxDVTimeSeriesCtrl::OnZoomOut(wxCommandEvent& e)
 {
-	if ( m_plots.size() == 0)
+	if (m_plots.size() == 0)
 		return;
 
 	//Make sure we don't zoom out past the data range.
-	if ( CanZoomOut() )
+	if (CanZoomOut())
 		ZoomFactorAndUpdate(0.5);
 }
 void wxDVTimeSeriesCtrl::OnZoomFit(wxCommandEvent& e)
 {
-	ZoomToFit();		
+	ZoomToFit();
 }
 
-void wxDVTimeSeriesCtrl::SetStackingOnYLeft( bool b )
+void wxDVTimeSeriesCtrl::SetStackingOnYLeft(bool b)
 {
 	m_stackingOnYLeft = b;
 	UpdateStacking();
 	Invalidate();
 }
 
-
-void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
+void wxDVTimeSeriesCtrl::OnSettings(wxCommandEvent &e)
 {
 	double y1min = 0, y1max = 0, y2min = 0, y2max = 0;
 	bool isBottomGraphVisible = false;
 
-	for(int i = 0; i < m_dataSelector->Length(); i++)
+	for (int i = 0; i < m_dataSelector->Length(); i++)
 	{
-		if(m_dataSelector->IsSelected(i, 1))
+		if (m_dataSelector->IsSelected(i, 1))
 		{
 			isBottomGraphVisible = true;
 			break;
 		}
 	}
 
-	if ( m_plotSurface->GetYAxis1( wxPLPlotCtrl::PLOT_TOP ) != 0 )
-		m_plotSurface->GetYAxis1( wxPLPlotCtrl::PLOT_TOP )->GetWorld( &y1min, &y1max );
+	if (m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP) != 0)
+		m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP)->GetWorld(&y1min, &y1max);
 
 	double yrmin = 0, yrmax = 0;
-	if ( m_plotSurface->GetYAxis2( wxPLPlotCtrl::PLOT_TOP ) != 0 )
-		m_plotSurface->GetYAxis2( wxPLPlotCtrl::PLOT_TOP )->GetWorld( &yrmin, &yrmax );
+	if (m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_TOP) != 0)
+		m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_TOP)->GetWorld(&yrmin, &yrmax);
 
-	if ( m_plotSurface->GetYAxis1( wxPLPlotCtrl::PLOT_BOTTOM ) != 0 )
-		m_plotSurface->GetYAxis1( wxPLPlotCtrl::PLOT_BOTTOM )->GetWorld( &y2min, &y2max );
+	if (m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM) != 0)
+		m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM)->GetWorld(&y2min, &y2max);
 
 	double y2rmin = 0, y2rmax = 0;
-	if ( m_plotSurface->GetYAxis2( wxPLPlotCtrl::PLOT_BOTTOM ) != 0 )
-		m_plotSurface->GetYAxis2( wxPLPlotCtrl::PLOT_BOTTOM )->GetWorld( &y2rmin, &y2rmax );
+	if (m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_BOTTOM) != 0)
+		m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_BOTTOM)->GetWorld(&y2rmin, &y2rmax);
 
-
-	wxDVTimeSeriesSettingsDialog dlg(  this, "View Settings",  
+	wxDVTimeSeriesSettingsDialog dlg(this, "View Settings",
 		m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_TOP) != 0,
-		isBottomGraphVisible, 
+		isBottomGraphVisible,
 		m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_BOTTOM) != 0);
 	dlg.CentreOnParent();
-	dlg.SetStatType( m_statType );
-	dlg.SetStyle( m_style );
-	dlg.SetStacked( m_stackingOnYLeft );
-	dlg.SetAutoscale( m_topAutoScale );
-	dlg.SetAutoscale2( m_top2AutoScale );
-	dlg.SetBottomAutoscale( m_bottomAutoScale );
-	dlg.SetBottomAutoscale2( m_bottom2AutoScale );
-	dlg.SetTopYBounds( y1min, y1max );
-	dlg.SetTopY2Bounds( yrmin, yrmax );
-	dlg.SetBottomYBounds( y2min, y2max );
-	dlg.SetBottomY2Bounds( y2rmin, y2rmax );
+	dlg.SetStatType(m_statType);
+	dlg.SetStyle(m_style);
+	dlg.SetStacked(m_stackingOnYLeft);
+	dlg.SetAutoscale(m_topAutoScale);
+	dlg.SetAutoscale2(m_top2AutoScale);
+	dlg.SetBottomAutoscale(m_bottomAutoScale);
+	dlg.SetBottomAutoscale2(m_bottom2AutoScale);
+	dlg.SetTopYBounds(y1min, y1max);
+	dlg.SetTopY2Bounds(yrmin, yrmax);
+	dlg.SetBottomYBounds(y2min, y2max);
+	dlg.SetBottomY2Bounds(y2rmin, y2rmax);
 	if (wxID_OK == dlg.ShowModal())
 	{
 		m_stackingOnYLeft = dlg.GetStacked();
 		m_style = dlg.GetStyle();
-		for (size_t i=0; i<m_plots.size(); i++)
-			m_plots[i]->SetStyle( m_style );
+		for (size_t i = 0; i < m_plots.size(); i++)
+			m_plots[i]->SetStyle(m_style);
 
-		if(m_statType != dlg.GetStatType())
+		if (m_statType != dlg.GetStatType())
 		{
 			m_statType = dlg.GetStatType();
 			wxString nonmodifiables;
 
-			for(size_t i = 0; i < m_plots.size(); i++)
+			for (size_t i = 0; i < m_plots.size(); i++)
 			{
 				m_plots[i]->SetStyle((wxDVTimeSeriesStyle)m_style);
 				m_plots[i]->UpdateSummaryData(m_statType == wxDV_AVERAGE ? true : false);
 
-				if ( 0 == dynamic_cast<wxDVArrayDataSet*>( m_plots[i]->GetDataSet() ) )
+				if (0 == dynamic_cast<wxDVArrayDataSet*>(m_plots[i]->GetDataSet()))
 					nonmodifiables += m_plots[i]->GetDataSet()->GetSeriesTitle() + "\n";
 			}
 
-			if ( nonmodifiables.size() > 0 )
-				wxMessageBox("The following plots could not be configured for the modified statistic type:\n\n" + nonmodifiables );
+			if (nonmodifiables.size() > 0)
+				wxMessageBox("The following plots could not be configured for the modified statistic type:\n\n" + nonmodifiables);
 		}
-	
+
 		UpdateStacking();
 
 		m_topAutoScale = dlg.GetAutoscale();
@@ -984,7 +994,7 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 		m_bottom2AutoScale = dlg.GetBottomAutoscale2();
 
 		if (m_topAutoScale)
-		{ 
+		{
 			SetupTopYLeft();
 			AutoscaleYAxis(m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP),
 				*m_selectedChannelIndices[TOP_LEFT_AXIS],
@@ -992,12 +1002,12 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 		}
 		else {
 			double min, max;
-			dlg.GetTopYBounds(&min,&max);
-			SetupTopYLeft( min, max );
+			dlg.GetTopYBounds(&min, &max);
+			SetupTopYLeft(min, max);
 		}
-		
-		if (m_top2AutoScale) 
-		{ 
+
+		if (m_top2AutoScale)
+		{
 			SetupTopYRight(0.0, 0.0);
 			AutoscaleYAxis(m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_TOP),
 				m_selectedChannelIndices[TOP_RIGHT_AXIS]->size() > 0 ? *m_selectedChannelIndices[TOP_RIGHT_AXIS] : *m_selectedChannelIndices[TOP_LEFT_AXIS],
@@ -1005,41 +1015,41 @@ void wxDVTimeSeriesCtrl::OnSettings( wxCommandEvent &e )
 		}
 		else {
 			double min, max;
-			dlg.GetTopY2Bounds(&min,&max);
-			SetupTopYRight( min, max );
+			dlg.GetTopY2Bounds(&min, &max);
+			SetupTopYRight(min, max);
 		}
 
-		if ( m_bottomAutoScale )
+		if (m_bottomAutoScale)
 		{
 			if (m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM))
-				AutoscaleYAxis(m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM), 
-					*m_selectedChannelIndices[BOTTOM_LEFT_AXIS], 
-					true);
+				AutoscaleYAxis(m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM),
+				*m_selectedChannelIndices[BOTTOM_LEFT_AXIS],
+				true);
 		}
 		else
 		{
-			dlg.GetBottomYBounds( &y2min, &y2max );
+			dlg.GetBottomYBounds(&y2min, &y2max);
 
 			if (y2max > y2min)
-			{		
+			{
 				if (m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM))
-					m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM)->SetWorld( y2min, y2max );
+					m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM)->SetWorld(y2min, y2max);
 			}
 		}
 
-		if ( m_bottom2AutoScale )
+		if (m_bottom2AutoScale)
 		{
 			if (m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_BOTTOM))
-				AutoscaleYAxis(m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_BOTTOM), 
-					m_selectedChannelIndices[BOTTOM_RIGHT_AXIS]->size() > 0 ? *m_selectedChannelIndices[BOTTOM_RIGHT_AXIS] : *m_selectedChannelIndices[BOTTOM_LEFT_AXIS], 
-					true);	
+				AutoscaleYAxis(m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_BOTTOM),
+				m_selectedChannelIndices[BOTTOM_RIGHT_AXIS]->size() > 0 ? *m_selectedChannelIndices[BOTTOM_RIGHT_AXIS] : *m_selectedChannelIndices[BOTTOM_LEFT_AXIS],
+				true);
 		}
 		else
 		{
-			dlg.GetBottomY2Bounds( &y2min, &y2max );
+			dlg.GetBottomY2Bounds(&y2min, &y2max);
 			if (y2max > y2min) {
 				if (m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_BOTTOM))
-					m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_BOTTOM)->SetWorld( y2min, y2max );
+					m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_BOTTOM)->SetWorld(y2min, y2max);
 			}
 		}
 
@@ -1056,10 +1066,10 @@ void wxDVTimeSeriesCtrl::OnMouseWheel(wxMouseEvent& e)
 	if (e.ShiftDown()) //shift + wheel: scroll
 	{
 		//Negative rotation will go left.
-		PanByPercent(-0.25 * e.GetWheelRotation() / e.GetWheelDelta()); 
+		PanByPercent(-0.25 * e.GetWheelRotation() / e.GetWheelDelta());
 		update_view = true;
 	}
-	else if ( e.ControlDown() ) //wheel only: zoom
+	else if (e.ControlDown()) //wheel only: zoom
 	{
 		if (e.GetWheelRotation() > 0 && !CanZoomIn()) return;
 		//Center zooming on the location of the mouse.
@@ -1068,19 +1078,18 @@ void wxDVTimeSeriesCtrl::OnMouseWheel(wxMouseEvent& e)
 
 		double min = m_xAxis->GetWorldMin();
 		double max = m_xAxis->GetWorldMax();
-		wxRect rr = m_plotSurface->GetClientRect(); 
-		wxDVPlotHelper::MouseWheelZoom( &min, &max, 
+		wxRect rr = m_plotSurface->GetClientRect();
+		wxDVPlotHelper::MouseWheelZoom(&min, &max,
 			xPos, 0, rr.width, e.GetWheelRotation() / e.GetWheelDelta()); // TODO: replace 0, rr.width with physical xaxis coordinates
 
 		MakeXBoundsNice(&min, &max);
-		m_xAxis->SetWorld( min, max );
+		m_xAxis->SetWorld(min, max);
 		update_view = true;
 	}
 	else
 	{
-		m_dataSelector->GetEventHandler()->ProcessEvent( e );
+		m_dataSelector->GetEventHandler()->ProcessEvent(e);
 	}
-
 
 	if (update_view)
 	{
@@ -1093,14 +1102,14 @@ void wxDVTimeSeriesCtrl::OnMouseWheel(wxMouseEvent& e)
 void wxDVTimeSeriesCtrl::OnHighlight(wxCommandEvent& e)
 {
 	double left, right;
-	m_plotSurface->GetHighlightBounds( &left, &right );
+	m_plotSurface->GetHighlightBounds(&left, &right);
 
 	double leftWorld = 0, rightWorld = 1;
 	double wmin, wmax;
 	m_xAxis->GetWorld(&wmin, &wmax);
 
-	leftWorld = wmin + left/100.0 * (wmax-wmin);
-	rightWorld = wmin + right/100.0 * (wmax-wmin);
+	leftWorld = wmin + left / 100.0 * (wmax - wmin);
+	rightWorld = wmin + right / 100.0 * (wmax - wmin);
 	SetViewRange(leftWorld, rightWorld);
 }
 
@@ -1111,8 +1120,8 @@ void wxDVTimeSeriesCtrl::OnGraphScroll(wxScrollEvent &e)
 	double max = min + dataRange;
 	//double tempMax = GetMaxPossibleTimeForVisibleChannels();
 	//if (max > tempMax) { max = tempMax; }
-	wxDVPlotHelper::SetRangeEndpointsToDays( &min, &max );
-	m_xAxis->SetWorld( min, max );
+	wxDVPlotHelper::SetRangeEndpointsToDays(&min, &max);
+	m_xAxis->SetWorld(min, max);
 	if (m_topAutoScale || m_top2AutoScale || m_bottomAutoScale || m_bottom2AutoScale) { AutoscaleYAxis(true); }
 	Invalidate();
 }
@@ -1181,7 +1190,7 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, bool refresh_ui)
 		double currentHour = 0.0;
 
 		d2 = new wxDVArrayDataSet(d->GetSeriesTitle(), d->GetUnits(), 1.0 / timestep);
-		d2->SetGroupName( d->GetGroupName() );
+		d2->SetGroupName(d->GetGroupName());
 
 		while (nextHour <= MinHrs)
 		{
@@ -1226,7 +1235,7 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, bool refresh_ui)
 		double currentDay = 0.0;
 
 		d2 = new wxDVArrayDataSet(d->GetSeriesTitle(), d->GetUnits(), 24.0 / timestep);
-		d2->SetGroupName( d->GetGroupName() );
+		d2->SetGroupName(d->GetGroupName());
 
 		while (nextDay <= MinHrs)
 		{
@@ -1237,12 +1246,12 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, bool refresh_ui)
 
 		for (size_t i = 0; i < d->Length(); i++)
 		{
-			if(d->At(i).x >= nextDay)
+			if (d->At(i).x >= nextDay)
 			{
-				if(i != 0 && counter != 0)
-				{ 
+				if (i != 0 && counter != 0)
+				{
 					avg = sum / counter;
-					d2->Append(wxRealPoint((double) currentDay + (double)(nextDay - currentDay) / 2.0, (m_statType == wxDV_AVERAGE ? avg : sum))); 
+					d2->Append(wxRealPoint((double)currentDay + (double)(nextDay - currentDay) / 2.0, (m_statType == wxDV_AVERAGE ? avg : sum)));
 					currentDay = nextDay;
 					nextDay += 24.0;
 				}
@@ -1258,9 +1267,9 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, bool refresh_ui)
 		avg = sum / counter;
 
 		//Prevent appending the final point if it represents 12/31 24:00, which the system interprets as 1/1 0:00 and creates a point for January of the next year
-		if(MaxHrs > 0.0 && fmod(MaxHrs, 8760.0) != 0)
+		if (MaxHrs > 0.0 && fmod(MaxHrs, 8760.0) != 0)
 		{
-			d2->Append(wxRealPoint((double) currentDay + (double)(nextDay - currentDay) / 2.0, (m_statType == wxDV_AVERAGE ? avg : sum))); 
+			d2->Append(wxRealPoint((double)currentDay + (double)(nextDay - currentDay) / 2.0, (m_statType == wxDV_AVERAGE ? avg : sum)));
 		}
 	}
 	else if (m_seriesType == wxDV_MONTHLY && timestep < 672.0)	//672 hours = 28 days = shortest possible month
@@ -1272,53 +1281,53 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, bool refresh_ui)
 		double year = 0.0;
 
 		d2 = new wxDVArrayDataSet(d->GetSeriesTitle(), d->GetUnits(), 744.0 / timestep);
-		d2->SetGroupName( d->GetGroupName() );
+		d2->SetGroupName(d->GetGroupName());
 
-		while(MinHrs > 8760.0)
+		while (MinHrs > 8760.0)
 		{
 			year += 8760.0;
 			MinHrs -= 8760.0;
 		}
 
-		if(MinHrs >= 0.0 && MinHrs < 744.0) { currentMonth = year; nextMonth = year + 744.0; }
-		else if(MinHrs >= 744.0 && MinHrs < 1416.0) { currentMonth = year + 744.0; nextMonth = year + 1416.0; }
-		else if(MinHrs >= 1416.0 && MinHrs < 2160.0) { currentMonth = year + 1416.0; nextMonth = year + 2160.0; }
-		else if(MinHrs >= 2160.0 && MinHrs < 2880.0) { currentMonth = year + 2160.0; nextMonth = year + 2880.0; }
-		else if(MinHrs >= 2880.0 && MinHrs < 3624.0) { currentMonth = year + 2880.0; nextMonth = year + 3624.0; }
-		else if(MinHrs >= 3624.0 && MinHrs < 4344.0) { currentMonth = year + 3624.0; nextMonth = year + 4344.0; }
-		else if(MinHrs >= 4344.0 && MinHrs < 5088.0) { currentMonth = year + 4344.0; nextMonth = year + 5088.0; }
-		else if(MinHrs >= 5088.0 && MinHrs < 5832.0) { currentMonth = year + 5088.0; nextMonth = year + 5832.0; }
-		else if(MinHrs >= 5832.0 && MinHrs < 6552.0) { currentMonth = year + 5832.0; nextMonth = year + 6552.0; }
-		else if(MinHrs >= 6552.0 && MinHrs < 7296.0) { currentMonth = year + 6552.0; nextMonth = year + 7296.0; }
-		else if(MinHrs >= 7296.0 && MinHrs < 8016.0) { currentMonth = year + 7296.0; nextMonth = year + 8016.0; }
-		else if(MinHrs >= 8016.0 && MinHrs < 8760.0) { currentMonth = year + 8016.0; nextMonth = year + 8760.0; }
+		if (MinHrs >= 0.0 && MinHrs < 744.0) { currentMonth = year; nextMonth = year + 744.0; }
+		else if (MinHrs >= 744.0 && MinHrs < 1416.0) { currentMonth = year + 744.0; nextMonth = year + 1416.0; }
+		else if (MinHrs >= 1416.0 && MinHrs < 2160.0) { currentMonth = year + 1416.0; nextMonth = year + 2160.0; }
+		else if (MinHrs >= 2160.0 && MinHrs < 2880.0) { currentMonth = year + 2160.0; nextMonth = year + 2880.0; }
+		else if (MinHrs >= 2880.0 && MinHrs < 3624.0) { currentMonth = year + 2880.0; nextMonth = year + 3624.0; }
+		else if (MinHrs >= 3624.0 && MinHrs < 4344.0) { currentMonth = year + 3624.0; nextMonth = year + 4344.0; }
+		else if (MinHrs >= 4344.0 && MinHrs < 5088.0) { currentMonth = year + 4344.0; nextMonth = year + 5088.0; }
+		else if (MinHrs >= 5088.0 && MinHrs < 5832.0) { currentMonth = year + 5088.0; nextMonth = year + 5832.0; }
+		else if (MinHrs >= 5832.0 && MinHrs < 6552.0) { currentMonth = year + 5832.0; nextMonth = year + 6552.0; }
+		else if (MinHrs >= 6552.0 && MinHrs < 7296.0) { currentMonth = year + 6552.0; nextMonth = year + 7296.0; }
+		else if (MinHrs >= 7296.0 && MinHrs < 8016.0) { currentMonth = year + 7296.0; nextMonth = year + 8016.0; }
+		else if (MinHrs >= 8016.0 && MinHrs < 8760.0) { currentMonth = year + 8016.0; nextMonth = year + 8760.0; }
 
 		for (size_t i = 0; i < d->Length(); i++)
 		{
-			if(d->At(i).x >= nextMonth)
+			if (d->At(i).x >= nextMonth)
 			{
-				if(i != 0 && counter != 0)
-				{ 
+				if (i != 0 && counter != 0)
+				{
 					avg = sum / counter;
 
-					d2->Append(wxRealPoint((double) currentMonth + (double)(nextMonth - currentMonth) / 2.0, (m_statType == wxDV_AVERAGE ? avg : sum))); 
+					d2->Append(wxRealPoint((double)currentMonth + (double)(nextMonth - currentMonth) / 2.0, (m_statType == wxDV_AVERAGE ? avg : sum)));
 
 					currentMonth = nextMonth;
-					if(nextMonth == 744.0 + year) { nextMonth = 1416.0 + year; }
-					else if(nextMonth == 1416.0 + year) { nextMonth = 2160.0 + year; }
-					else if(nextMonth == 2160.0 + year) { nextMonth = 2880.0 + year; }
-					else if(nextMonth == 2880.0 + year) { nextMonth = 3624.0 + year; }
-					else if(nextMonth == 3624.0 + year) { nextMonth = 4344.0 + year; }
-					else if(nextMonth == 4344.0 + year) { nextMonth = 5088.0 + year; }
-					else if(nextMonth == 5088.0 + year) { nextMonth = 5832.0 + year; }
-					else if(nextMonth == 5832.0 + year) { nextMonth = 6552.0 + year; }
-					else if(nextMonth == 6552.0 + year) { nextMonth = 7296.0 + year; }
-					else if(nextMonth == 7296.0 + year) { nextMonth = 8016.0 + year; }
-					else if(nextMonth == 8016.0 + year) { nextMonth = 8760.0 + year; }
-					else if(nextMonth == 8760.0 + year) 
-					{ 
+					if (nextMonth == 744.0 + year) { nextMonth = 1416.0 + year; }
+					else if (nextMonth == 1416.0 + year) { nextMonth = 2160.0 + year; }
+					else if (nextMonth == 2160.0 + year) { nextMonth = 2880.0 + year; }
+					else if (nextMonth == 2880.0 + year) { nextMonth = 3624.0 + year; }
+					else if (nextMonth == 3624.0 + year) { nextMonth = 4344.0 + year; }
+					else if (nextMonth == 4344.0 + year) { nextMonth = 5088.0 + year; }
+					else if (nextMonth == 5088.0 + year) { nextMonth = 5832.0 + year; }
+					else if (nextMonth == 5832.0 + year) { nextMonth = 6552.0 + year; }
+					else if (nextMonth == 6552.0 + year) { nextMonth = 7296.0 + year; }
+					else if (nextMonth == 7296.0 + year) { nextMonth = 8016.0 + year; }
+					else if (nextMonth == 8016.0 + year) { nextMonth = 8760.0 + year; }
+					else if (nextMonth == 8760.0 + year)
+					{
 						year += 8760.0;
-						nextMonth = 744.0 + year; 
+						nextMonth = 744.0 + year;
 					}
 				}
 
@@ -1333,15 +1342,15 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, bool refresh_ui)
 		avg = sum / counter;
 
 		//Prevent appending the final point if it represents 12/31 24:00, which the system interprets as 1/1 0:00 and creates a point for January of the next year
-		if(MaxHrs > 0.0 && fmod(MaxHrs, 8760.0) != 0)
+		if (MaxHrs > 0.0 && fmod(MaxHrs, 8760.0) != 0)
 		{
-			d2->Append(wxRealPoint((double) currentMonth + (double)(nextMonth - currentMonth) / 2.0, (m_statType == wxDV_AVERAGE ? avg : sum))); 
+			d2->Append(wxRealPoint((double)currentMonth + (double)(nextMonth - currentMonth) / 2.0, (m_statType == wxDV_AVERAGE ? avg : sum)));
 		}
 	}
-	
+
 	if (!IsDataSetEmpty)
 	{
-		if(m_seriesType == wxDV_RAW)
+		if (m_seriesType == wxDV_RAW)
 		{
 			p = new wxDVTimeSeriesPlot(d, m_seriesType);
 		}
@@ -1350,11 +1359,11 @@ void wxDVTimeSeriesCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, bool refresh_ui)
 			p = new wxDVTimeSeriesPlot(d2, m_seriesType, true);
 		}
 
-		p->SetStyle( m_style );
+		p->SetStyle(m_style);
 		m_plots.push_back(p); //Add to data sets list.
-		m_dataSelector->Append( d->GetTitleWithUnits(), d->GetGroupName() );
+		m_dataSelector->Append(d->GetTitleWithUnits(), d->GetGroupName());
 
-		if ( refresh_ui )
+		if (refresh_ui)
 		{
 			Layout();
 			RefreshDisabledCheckBoxes();
@@ -1367,7 +1376,7 @@ bool wxDVTimeSeriesCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 	wxDVTimeSeriesPlot *plotToRemove = NULL;
 	int removedIndex = 0;
 	//Find the plottable:
-	for (size_t i=0; i<m_plots.size(); i++)
+	for (size_t i = 0; i < m_plots.size(); i++)
 	{
 		if (m_plots[i]->GetDataSet() == d)
 		{
@@ -1382,11 +1391,11 @@ bool wxDVTimeSeriesCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 
 	m_dataSelector->RemoveAt(removedIndex);
 
-	for (int i=0; i<wxPLPlotCtrl::NPLOTPOS; i++)
+	for (int i = 0; i < wxPLPlotCtrl::NPLOTPOS; i++)
 		m_plotSurface->RemovePlot(plotToRemove);
 
-	m_plots.erase( m_plots.begin() + removedIndex); //This is more efficient than remove when we already know the index.
-	
+	m_plots.erase(m_plots.begin() + removedIndex); //This is more efficient than remove when we already know the index.
+
 	// make sure an erased plot is nolonger referenced in stacking
 	UpdateStacking();
 
@@ -1394,9 +1403,9 @@ bool wxDVTimeSeriesCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 
 	//We base our logic for showing/hiding plots, etc on indices, so when a single data set is removed
 	//we have to re-index everything.
-	for (size_t i=0; i<m_selectedChannelIndices.size(); i++)
+	for (size_t i = 0; i < m_selectedChannelIndices.size(); i++)
 	{
-		for(size_t k=0; k<m_selectedChannelIndices[i]->size(); k++)
+		for (size_t k = 0; k<m_selectedChannelIndices[i]->size(); k++)
 		{
 			if ((*m_selectedChannelIndices[i])[k] > removedIndex)
 				(*m_selectedChannelIndices[i])[k]--;
@@ -1408,33 +1417,32 @@ bool wxDVTimeSeriesCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 	return true;
 }
 
-void wxDVTimeSeriesCtrl::RemoveAllDataSets( )
+void wxDVTimeSeriesCtrl::RemoveAllDataSets()
 {
-	ClearAllChannelSelections( wxPLPlotCtrl::PLOT_BOTTOM );
-	ClearAllChannelSelections( wxPLPlotCtrl::PLOT_TOP );
+	ClearAllChannelSelections(wxPLPlotCtrl::PLOT_BOTTOM);
+	ClearAllChannelSelections(wxPLPlotCtrl::PLOT_TOP);
 
 	/*
 	//Remove plottables from plot surfaces
 	for (size_t i=0; i<m_selectedChannelIndices.size(); i++)
 	{
-		for (size_t k=0; k<m_selectedChannelIndices[i]->size(); k++)
-			m_plotSurface->RemovePlot(m_plots[(*m_selectedChannelIndices[i])[k]] );
+	for (size_t k=0; k<m_selectedChannelIndices[i]->size(); k++)
+	m_plotSurface->RemovePlot(m_plots[(*m_selectedChannelIndices[i])[k]] );
 
-		m_selectedChannelIndices[i]->clear();
+	m_selectedChannelIndices[i]->clear();
 	}
-	
+
 	Invalidate();
 	*/
-	
+
 	m_dataSelector->RemoveAll();
 
 	//Remove all data sets. Deleting a data set also deletes its plottable.
-	for(size_t i=0; i<m_plots.size(); i++)
+	for (size_t i = 0; i < m_plots.size(); i++)
 		delete m_plots[i];
 
 	m_plots.clear();
 }
-
 
 /*** VIEW METHODS ***/
 
@@ -1450,7 +1458,7 @@ double wxDVTimeSeriesCtrl::GetViewMax()
 
 void wxDVTimeSeriesCtrl::SetViewMin(double min)
 {
-	m_xAxis->SetWorldMin( min );
+	m_xAxis->SetWorldMin(min);
 	AutoscaleYAxis();
 	UpdateScrollbarPosition();
 	Invalidate();
@@ -1458,7 +1466,7 @@ void wxDVTimeSeriesCtrl::SetViewMin(double min)
 
 void wxDVTimeSeriesCtrl::SetViewMax(double max)
 {
-	m_xAxis->SetWorldMax( max );
+	m_xAxis->SetWorldMax(max);
 	AutoscaleYAxis();
 	UpdateScrollbarPosition();
 	Invalidate();
@@ -1474,11 +1482,11 @@ void wxDVTimeSeriesCtrl::SetViewRange(double min, double max)
 	Invalidate();
 }
 
-void wxDVTimeSeriesCtrl::SetStyle( wxDVTimeSeriesStyle sty )
+void wxDVTimeSeriesCtrl::SetStyle(wxDVTimeSeriesStyle sty)
 {
-	m_style = sty;	
-	for (size_t i=0; i<m_plots.size(); i++)
-		m_plots[i]->SetStyle( m_style );
+	m_style = sty;
+	for (size_t i = 0; i < m_plots.size(); i++)
+		m_plots[i]->SetStyle(m_style);
 	UpdateStacking();
 	Invalidate();
 }
@@ -1486,36 +1494,36 @@ void wxDVTimeSeriesCtrl::SetStyle( wxDVTimeSeriesStyle sty )
 void wxDVTimeSeriesCtrl::GetVisibleDataMinAndMax(double* min, double* max, const std::vector<int>& selectedChannelIndices)
 {
 	*min = 1000000000;
-	*max = 0; 
+	*max = 0;
 
 	bool has_stacking = false;
-	
-	for( size_t i=0;i<selectedChannelIndices.size();i++ )
-		if ( m_plots[selectedChannelIndices[i]]->GetStackingMode() )
+
+	for (size_t i = 0; i < selectedChannelIndices.size(); i++)
+		if (m_plots[selectedChannelIndices[i]]->GetStackingMode())
 			has_stacking = true;
 
-	if ( has_stacking )
-	{		
+	if (has_stacking)
+	{
 		double worldMin = m_xAxis->GetWorldMin();
 		double worldMax = m_xAxis->GetWorldMax();
 
-		for(size_t i=0; i<selectedChannelIndices.size(); i++)
+		for (size_t i = 0; i < selectedChannelIndices.size(); i++)
 		{
 			wxDVTimeSeriesPlot *plot = m_plots[selectedChannelIndices[i]];
-			for( size_t j=0;j<plot->Len();j++ )
+			for (size_t j = 0; j < plot->Len(); j++)
 			{
-				wxRealPoint p( plot->StackedAt(j) );
-				if ( p.x < worldMin || p.x > worldMax )
+				wxRealPoint p(plot->StackedAt(j));
+				if (p.x < worldMin || p.x > worldMax)
 					continue;
-				if ( p.y > *max )
+				if (p.y > *max)
 					*max = p.y;
-				if ( p.y < *min )
+				if (p.y < *min)
 					*min = p.y;
 			}
 		}
 
-		if ( *min > 0 ) *min = 0;
-		if ( *max < 0 ) *max = 0;
+		if (*min > 0) *min = 0;
+		if (*max < 0) *max = 0;
 	}
 	else
 	{
@@ -1526,24 +1534,24 @@ void wxDVTimeSeriesCtrl::GetVisibleDataMinAndMax(double* min, double* max, const
 			double worldMin = m_xAxis->GetWorldMin();
 			double worldMax = m_xAxis->GetWorldMax();
 
-			for(size_t i=0; i<selectedChannelIndices.size(); i++)
+			for (size_t i = 0; i < selectedChannelIndices.size(); i++)
 			{
 				m_plots[selectedChannelIndices[i]]->GetDataSet()->GetMinAndMaxInRange(&tempMin, &tempMax, worldMin, worldMax);
 				if (tempMin < *min)
 					*min = tempMin;
 				if (tempMax > *max)
-					*max = tempMax;		
+					*max = tempMax;
 			}
 		}
 		else
 		{
-			for(size_t i=0; i<selectedChannelIndices.size(); i++)
+			for (size_t i = 0; i < selectedChannelIndices.size(); i++)
 			{
 				m_plots[selectedChannelIndices[i]]->GetDataSet()->GetDataMinAndMax(&tempMin, &tempMax);
 				if (tempMin < *min)
 					*min = tempMin;
 				if (tempMax > *max)
-					*max = tempMax;		
+					*max = tempMax;
 			}
 		}
 	}
@@ -1556,16 +1564,16 @@ void wxDVTimeSeriesCtrl::GetAllDataMinAndMax(double* min, double* max, const std
 
 	bool has_stacking = false;
 
-	for (size_t i = 0; i<selectedChannelIndices.size(); i++)
+	for (size_t i = 0; i < selectedChannelIndices.size(); i++)
 		if (m_plots[selectedChannelIndices[i]]->GetStackingMode())
 			has_stacking = true;
 
 	if (has_stacking)
 	{
-		for (size_t i = 0; i<selectedChannelIndices.size(); i++)
+		for (size_t i = 0; i < selectedChannelIndices.size(); i++)
 		{
 			wxDVTimeSeriesPlot *plot = m_plots[selectedChannelIndices[i]];
-			for (size_t j = 0; j<plot->Len(); j++)
+			for (size_t j = 0; j < plot->Len(); j++)
 			{
 				wxRealPoint p(plot->StackedAt(j));
 				if (p.y > *max)
@@ -1582,7 +1590,7 @@ void wxDVTimeSeriesCtrl::GetAllDataMinAndMax(double* min, double* max, const std
 	{
 		double tempMin = 0;
 		double tempMax = 0;
-		for (size_t i = 0; i<selectedChannelIndices.size(); i++)
+		for (size_t i = 0; i < selectedChannelIndices.size(); i++)
 		{
 			m_plots[selectedChannelIndices[i]]->GetDataSet()->GetDataMinAndMax(&tempMin, &tempMax);
 			if (tempMin < *min)
@@ -1596,7 +1604,7 @@ void wxDVTimeSeriesCtrl::GetAllDataMinAndMax(double* min, double* max, const std
 double wxDVTimeSeriesCtrl::GetMinPossibleTimeForVisibleChannels()
 {
 	double min = 1000000000;
-	for(size_t i=0; i<m_plots.size(); i++)
+	for (size_t i = 0; i < m_plots.size(); i++)
 	{
 		if (m_dataSelector->IsRowSelected(i))
 		{
@@ -1611,7 +1619,7 @@ double wxDVTimeSeriesCtrl::GetMinPossibleTimeForVisibleChannels()
 double wxDVTimeSeriesCtrl::GetMaxPossibleTimeForVisibleChannels()
 {
 	double max = 0;
-	for(size_t i=0; i<m_plots.size(); i++)
+	for (size_t i = 0; i<m_plots.size(); i++)
 	{
 		if (m_dataSelector->IsRowSelected(i))
 		{
@@ -1636,7 +1644,7 @@ void wxDVTimeSeriesCtrl::KeepNewBoundsWithinLimits(double* newMin, double* newMa
 	//This can only happen zooming out.
 	int visDataMin = m_plots[0]->GetDataSet()->GetMinHours();
 	int visDataMax = m_plots[0]->GetDataSet()->GetMaxHours();
-	for (size_t i=1; i<m_plots.size(); i++)
+	for (size_t i = 1; i < m_plots.size(); i++)
 	{
 		if (m_dataSelector->IsRowSelected(i))
 		{
@@ -1660,12 +1668,11 @@ void wxDVTimeSeriesCtrl::KeepNewBoundsWithinLimits(double* newMin, double* newMa
 			*newMin = visDataMin;
 		*newMax = visDataMax;
 	}
-		
 }
 
 void wxDVTimeSeriesCtrl::KeepNewBoundsWithinLowerLimit(double* newMin, double* newMax)
 {
-	//Don't zoom in too far.  
+	//Don't zoom in too far.
 	double lowerLim = 12;
 
 	if (*newMax - *newMin > lowerLim)
@@ -1673,7 +1680,7 @@ void wxDVTimeSeriesCtrl::KeepNewBoundsWithinLowerLimit(double* newMin, double* n
 
 	int visDataMin = m_plots[0]->GetDataSet()->GetMinHours();
 	int visDataMax = m_plots[0]->GetDataSet()->GetMaxHours();
-	for (size_t i=1; i<m_plots.size(); i++)
+	for (size_t i = 1; i < m_plots.size(); i++)
 	{
 		if (m_dataSelector->IsRowSelected(i))
 		{
@@ -1708,7 +1715,6 @@ void wxDVTimeSeriesCtrl::KeepNewBoundsWithinLowerLimit(double* newMin, double* n
 	}
 }
 
-
 /*** GRAPH RELATED METHODS ***/
 
 bool wxDVTimeSeriesCtrl::CanZoomIn()
@@ -1716,20 +1722,20 @@ bool wxDVTimeSeriesCtrl::CanZoomIn()
 	if (!m_xAxis) return false;
 	//Don't zoom in past 12 hours.
 	double min, max;
-	m_xAxis->GetWorld(&min,&max);
-	return (max-min) > 12;
+	m_xAxis->GetWorld(&min, &max);
+	return (max - min) > 12;
 }
 
 bool wxDVTimeSeriesCtrl::CanZoomOut()
 {
 	double min, max;
-	m_xAxis->GetWorld(&min,&max);
+	m_xAxis->GetWorld(&min, &max);
 	//Don't zoom out past data range.
-	for (size_t i=0; i<m_selectedChannelIndices.size(); i++)
+	for (size_t i = 0; i < m_selectedChannelIndices.size(); i++)
 	{
-		for (size_t k=0; k<m_selectedChannelIndices[i]->size(); k++)
+		for (size_t k = 0; k < m_selectedChannelIndices[i]->size(); k++)
 		{
-			if ( max-min < m_plots[(*m_selectedChannelIndices[i])[k]]->GetDataSet()->GetTotalHours())
+			if (max - min < m_plots[(*m_selectedChannelIndices[i])[k]]->GetDataSet()->GetTotalHours())
 				return true;
 		}
 	}
@@ -1753,7 +1759,7 @@ void wxDVTimeSeriesCtrl::ZoomToFit()
 {
 	double min = GetMinPossibleTimeForVisibleChannels();
 	double max = GetMaxPossibleTimeForVisibleChannels();
-	if ( max <= min || (min==0&&max==0) )
+	if (max <= min || (min == 0 && max == 0))
 	{
 		min = 0;
 		max = 8760;
@@ -1769,10 +1775,10 @@ void wxDVTimeSeriesCtrl::PanByPercent(double p)
 	if (!m_xAxis) return;
 
 	double min, max;
-	m_xAxis->GetWorld(&min,&max);
+	m_xAxis->GetWorld(&min, &max);
 
-	double newMin = min + (max-min) * p;
-	double newMax = max + (max-min) * p;
+	double newMin = min + (max - min) * p;
+	double newMax = max + (max - min) * p;
 
 	double highestTimeValue = GetMaxPossibleTimeForVisibleChannels();
 	if (newMax > highestTimeValue)
@@ -1809,7 +1815,7 @@ void wxDVTimeSeriesCtrl::PanByPercent(double p)
 
 void wxDVTimeSeriesCtrl::UpdateScrollbarPosition()
 {
-	if(m_plots.size() == 0)
+	if (m_plots.size() == 0)
 	{
 		//Don't Call m_plotSurface1->GetXAxis1()->WorldLength() because we don't have a graph yet.
 		m_graphScrollBar->SetScrollbar(0, 1, 1, 1, true);
@@ -1826,39 +1832,38 @@ void wxDVTimeSeriesCtrl::UpdateScrollbarPosition()
 		double timeMin = GetMinPossibleTimeForVisibleChannels();
 		range = GetMaxPossibleTimeForVisibleChannels() - timeMin;
 		int position = m_xAxis->GetWorldMin() - timeMin;
-		
+
 		m_graphScrollBar->SetScrollbar(position, thumbSize, range, pageSize, true);
 	}
 }
 
-void wxDVTimeSeriesCtrl::SetupTopYLeft( double min, double max )
+void wxDVTimeSeriesCtrl::SetupTopYLeft(double min, double max)
 {
 	wxPLAxis *axis = m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP);
-	if ( !axis ) return;
-	m_topAutoScale = ( !wxIsNaN(min) && !wxIsNaN(max) &&  min >= max );
-	if ( m_topAutoScale )
-		AutoscaleYAxis( axis, *m_selectedChannelIndices[TOP_LEFT_AXIS], true);
-	else if ( max > min )
+	if (!axis) return;
+	m_topAutoScale = (!wxIsNaN(min) && !wxIsNaN(max) && min >= max);
+	if (m_topAutoScale)
+		AutoscaleYAxis(axis, *m_selectedChannelIndices[TOP_LEFT_AXIS], true);
+	else if (max > min)
 	{
-		axis->SetWorld( min, max );
+		axis->SetWorld(min, max);
 		m_plotSurface->Invalidate();
 	}
-
 }
 
-void wxDVTimeSeriesCtrl::SetupTopYRight( double min, double max )
+void wxDVTimeSeriesCtrl::SetupTopYRight(double min, double max)
 {
 	m_top2AutoScale = false;
 
 	wxPLAxis *axis = m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_TOP);
-	if ( !axis ) return;	
-	
-	m_top2AutoScale = ( !wxIsNaN(min) && !wxIsNaN(max) &&  min >= max );
-	if ( m_top2AutoScale )
-		AutoscaleYAxis( axis, *m_selectedChannelIndices[TOP_RIGHT_AXIS], true);
-	else if ( max > min )
+	if (!axis) return;
+
+	m_top2AutoScale = (!wxIsNaN(min) && !wxIsNaN(max) && min >= max);
+	if (m_top2AutoScale)
+		AutoscaleYAxis(axis, *m_selectedChannelIndices[TOP_RIGHT_AXIS], true);
+	else if (max > min)
 	{
-		axis->SetWorld( min, max );
+		axis->SetWorld(min, max);
 		m_plotSurface->Invalidate();
 	}
 }
@@ -1870,20 +1875,19 @@ void wxDVTimeSeriesCtrl::AutoscaleYAxis(bool forceUpdate, bool ScaleOverAllData)
 		AutoscaleYAxis(m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_TOP), *m_selectedChannelIndices[TOP_LEFT_AXIS], forceUpdate, ScaleOverAllData);
 
 	if (wxPLAxis *axis = m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_TOP))
-		AutoscaleYAxis(axis, m_selectedChannelIndices[TOP_RIGHT_AXIS]->size() > 0 ? *m_selectedChannelIndices[TOP_RIGHT_AXIS] : *m_selectedChannelIndices[TOP_LEFT_AXIS], 
-				forceUpdate, ScaleOverAllData);
-	
+		AutoscaleYAxis(axis, m_selectedChannelIndices[TOP_RIGHT_AXIS]->size() > 0 ? *m_selectedChannelIndices[TOP_RIGHT_AXIS] : *m_selectedChannelIndices[TOP_LEFT_AXIS],
+		forceUpdate, ScaleOverAllData);
 
 	if (m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM))
 		AutoscaleYAxis(m_plotSurface->GetYAxis1(wxPLPlotCtrl::PLOT_BOTTOM), *m_selectedChannelIndices[BOTTOM_LEFT_AXIS], forceUpdate, ScaleOverAllData);
-	
+
 	if (m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_BOTTOM))
-		AutoscaleYAxis(m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_BOTTOM), 
-			m_selectedChannelIndices[BOTTOM_RIGHT_AXIS]->size() > 0 ? *m_selectedChannelIndices[BOTTOM_RIGHT_AXIS] : *m_selectedChannelIndices[BOTTOM_LEFT_AXIS], 
-			forceUpdate, ScaleOverAllData);
+		AutoscaleYAxis(m_plotSurface->GetYAxis2(wxPLPlotCtrl::PLOT_BOTTOM),
+		m_selectedChannelIndices[BOTTOM_RIGHT_AXIS]->size() > 0 ? *m_selectedChannelIndices[BOTTOM_RIGHT_AXIS] : *m_selectedChannelIndices[BOTTOM_LEFT_AXIS],
+		forceUpdate, ScaleOverAllData);
 }
 
-void wxDVTimeSeriesCtrl::AutoscaleYAxis( wxPLAxis *axisToScale, const std::vector<int>& selectedChannelIndices, bool forceUpdate, bool ScaleOverAllData)
+void wxDVTimeSeriesCtrl::AutoscaleYAxis(wxPLAxis *axisToScale, const std::vector<int>& selectedChannelIndices, bool forceUpdate, bool ScaleOverAllData)
 {
 	//If autoscaling is off don't scale y1 axis
 	// But do scale y2 axis (since we don't allow manual scaling there for UI simplicity).
@@ -1894,8 +1898,8 @@ void wxDVTimeSeriesCtrl::AutoscaleYAxis( wxPLAxis *axisToScale, const std::vecto
 
 	//Force Update is used to rescale even if data is still in acceptable range
 	bool needsRescale = false;
-	double dataMax; 
-	double dataMin; 
+	double dataMax;
+	double dataMin;
 	double timestep = 1.0;
 
 	if (ScaleOverAllData)
@@ -1908,12 +1912,12 @@ void wxDVTimeSeriesCtrl::AutoscaleYAxis( wxPLAxis *axisToScale, const std::vecto
 	}
 
 	//If the maximum of the visible data is outside the acceptable range
-	if(forceUpdate || (dataMax > 0 && (dataMax >= axisToScale->GetWorldMax() || dataMax < axisToScale->GetWorldMax()/2.0)))
+	if (forceUpdate || (dataMax > 0 && (dataMax >= axisToScale->GetWorldMax() || dataMax < axisToScale->GetWorldMax() / 2.0)))
 		needsRescale = true;
 
-	if(forceUpdate || (dataMin < 0 && (dataMin <= axisToScale->GetWorldMin() || dataMin > axisToScale->GetWorldMin()/2.0)))
+	if (forceUpdate || (dataMin < 0 && (dataMin <= axisToScale->GetWorldMin() || dataMin > axisToScale->GetWorldMin() / 2.0)))
 		needsRescale = true;
-	
+
 	if (needsRescale)
 	{
 		wxPLAxis::ExtendBoundsToNiceNumber(&dataMax, &dataMin);
@@ -1929,11 +1933,11 @@ void wxDVTimeSeriesCtrl::AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPo
 	wxString YLabelText;
 
 	//Set our line colour correctly.  Assigned by data selection window.
-	m_plots[idx]->SetColour(m_dataSelector->GetColourForIndex(index) );
-	
+	m_plots[idx]->SetColour(m_dataSelector->GetColourForIndex(index));
+
 	wxPLPlotCtrl::AxisPos yap = wxPLPlotCtrl::Y_LEFT;
 	wxString units = m_plots[idx]->GetDataSet()->GetUnits();
-		
+
 	wxString y1Units = NO_UNITS, y2Units = NO_UNITS;
 
 	if (m_plotSurface->GetYAxis1(pPos))
@@ -1962,10 +1966,10 @@ void wxDVTimeSeriesCtrl::AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPo
 	{
 		yap = wxPLPlotCtrl::Y_RIGHT;
 	}
-	
-	m_plotSurface->AddPlot( m_plots[index], wxPLPlotCtrl::X_BOTTOM, yap, pPos, false );
+
+	m_plotSurface->AddPlot(m_plots[index], wxPLPlotCtrl::X_BOTTOM, yap, pPos, false);
 	m_plotSurface->GetAxis(yap, pPos)->SetUnits(units);
-		
+
 	UpdateStacking();
 
 	//Calculate index from 0-3.  0,1 are top graph L,R axis.  2,3 are L,R axis on bottom graph.
@@ -1987,8 +1991,8 @@ void wxDVTimeSeriesCtrl::AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPo
 		|| (pPos == wxPLPlotCtrl::PLOT_BOTTOM && m_selectedChannelIndices[2]->size() == 1 && yap == wxPLPlotCtrl::Y_LEFT)
 		|| (pPos == wxPLPlotCtrl::PLOT_BOTTOM && m_selectedChannelIndices[3]->size() == 1 && yap == wxPLPlotCtrl::Y_RIGHT)
 		)
-	{ 
-		YLabelText = m_plots[idx]->GetDataSet()->GetLabel(); 
+	{
+		YLabelText = m_plots[idx]->GetDataSet()->GetLabel();
 	}
 	m_plotSurface->GetAxis(yap, pPos)->SetLabel(YLabelText);
 
@@ -2010,12 +2014,12 @@ void wxDVTimeSeriesCtrl::RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos 
 
 	if (pPos == wxPLPlotCtrl::PLOT_BOTTOM)
 		graphIndex += 2;
-	for (int i = graphIndex; i < graphIndex+2; i++)
+	for (int i = graphIndex; i < graphIndex + 2; i++)
 	{
-		std::vector<int>::iterator it = std::find( m_selectedChannelIndices[i]->begin(), m_selectedChannelIndices[i]->end(), index );
-		if ( it != m_selectedChannelIndices[i]->end())
+		std::vector<int>::iterator it = std::find(m_selectedChannelIndices[i]->begin(), m_selectedChannelIndices[i]->end(), index);
+		if (it != m_selectedChannelIndices[i]->end())
 		{
-			m_selectedChannelIndices[i]->erase( it );
+			m_selectedChannelIndices[i]->erase(it);
 			graphIndex = i;
 			break;
 		}
@@ -2024,16 +2028,16 @@ void wxDVTimeSeriesCtrl::RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos 
 	bool keepAxis = false;
 	if (m_selectedChannelIndices[graphIndex]->size() > 0)
 		keepAxis = true;
-	
+
 	wxPLPlotCtrl::AxisPos ryap;
 	wxPLPlotCtrl::PlotPos rppos;
-	m_plotSurface->GetPlotPosition( m_plots[index], 0, &ryap, &rppos );
+	m_plotSurface->GetPlotPosition(m_plots[index], 0, &ryap, &rppos);
 
 	m_plotSurface->RemovePlot(m_plots[index], pPos);
 
 	// reset the stacking info for this plot upon removal
-	m_plots[index]->SetStackingMode( false );
-	m_plots[index]->StackOnTopOf( 0 );
+	m_plots[index]->SetStackingMode(false);
+	m_plots[index]->StackOnTopOf(0);
 
 	// if there was another plot stacked on top of this one, reset that plot's stacking
 	// pointer to the previous plot in the list that is on the same axis
@@ -2042,10 +2046,9 @@ void wxDVTimeSeriesCtrl::RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos 
 	//See if axis is still in use or not, and to some cleanup.
 	wxPLLinearAxis *axisThatWasUsed = 0;
 	if (graphIndex % 2 == 0)
-		axisThatWasUsed = dynamic_cast<wxPLLinearAxis*>( m_plotSurface->GetYAxis1(pPos) );
+		axisThatWasUsed = dynamic_cast<wxPLLinearAxis*>(m_plotSurface->GetYAxis1(pPos));
 	else
-		axisThatWasUsed = dynamic_cast<wxPLLinearAxis*>( m_plotSurface->GetYAxis2(pPos) );
-
+		axisThatWasUsed = dynamic_cast<wxPLLinearAxis*>(m_plotSurface->GetYAxis2(pPos));
 
 	if (!keepAxis)
 	{
@@ -2084,17 +2087,17 @@ void wxDVTimeSeriesCtrl::RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos 
 				//Set the y axis to the left side (instead of the right), making sure that we preserve any zoom factor
 				double wmin, wmax;
 				m_xAxis->GetWorld(&wmin, &wmax);
-				for (size_t i=0; i<m_selectedChannelIndices[graphIndex]->size(); i++)
+				for (size_t i = 0; i < m_selectedChannelIndices[graphIndex]->size(); i++)
 				{
 					m_plotSurface->RemovePlot(m_plots[(*m_selectedChannelIndices[graphIndex])[i]], pPos);
-					m_plotSurface->AddPlot( m_plots[(*m_selectedChannelIndices[graphIndex])[i]], 
+					m_plotSurface->AddPlot(m_plots[(*m_selectedChannelIndices[graphIndex])[i]],
 						wxPLPlotCtrl::X_BOTTOM, wxPLPlotCtrl::Y_LEFT, pPos);
 				}
 				SetViewRange(wmin, wmax);
 
 				UpdateStacking();
 
-				m_plotSurface->GetYAxis1(pPos)->SetUnits( m_plots[(*m_selectedChannelIndices[graphIndex])[0]]->GetDataSet()->GetUnits() );
+				m_plotSurface->GetYAxis1(pPos)->SetUnits(m_plots[(*m_selectedChannelIndices[graphIndex])[0]]->GetDataSet()->GetUnits());
 				SetYAxisLabelText();
 				AutoscaleYAxisByPlot(graphIndex % 2 == 0, pPos == wxPLPlotCtrl::PLOT_TOP, graphIndex);
 			}
@@ -2111,23 +2114,23 @@ void wxDVTimeSeriesCtrl::RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos 
 	Invalidate();
 }
 
-void wxDVTimeSeriesCtrl::StackUp( wxPLPlotCtrl::AxisPos yap, wxPLPlotCtrl::PlotPos ppos )
+void wxDVTimeSeriesCtrl::StackUp(wxPLPlotCtrl::AxisPos yap, wxPLPlotCtrl::PlotPos ppos)
 {
 	wxPLPlotCtrl::AxisPos tyap;
 	wxPLPlotCtrl::PlotPos tppos;
 	std::vector<wxDVTimeSeriesPlot*> stack;
 
-	for( size_t i=0;i<m_plotSurface->GetPlotCount();i++ )
+	for (size_t i = 0; i < m_plotSurface->GetPlotCount(); i++)
 	{
-		if ( wxDVTimeSeriesPlot *cur = dynamic_cast<wxDVTimeSeriesPlot*>( m_plotSurface->GetPlot(i) ) )
+		if (wxDVTimeSeriesPlot *cur = dynamic_cast<wxDVTimeSeriesPlot*>(m_plotSurface->GetPlot(i)))
 		{
-			if ( std::find( stack.begin(), stack.end(), cur ) == stack.end() 
-				&& m_plotSurface->GetPlotPosition( cur, 0, &tyap, &tppos )
-				&& tyap == yap && tppos == ppos )
+			if (std::find(stack.begin(), stack.end(), cur) == stack.end()
+				&& m_plotSurface->GetPlotPosition(cur, 0, &tyap, &tppos)
+				&& tyap == yap && tppos == ppos)
 			{
-				cur->SetStackingMode( true );
-				cur->StackOnTopOf( stack.size() > 0 ? stack.back() : NULL );
-				stack.push_back( cur );
+				cur->SetStackingMode(true);
+				cur->StackOnTopOf(stack.size() > 0 ? stack.back() : NULL);
+				stack.push_back(cur);
 			}
 		}
 	}
@@ -2135,21 +2138,21 @@ void wxDVTimeSeriesCtrl::StackUp( wxPLPlotCtrl::AxisPos yap, wxPLPlotCtrl::PlotP
 
 void wxDVTimeSeriesCtrl::ClearStacking()
 {
-	for( size_t i=0;i<m_plots.size();i++ )
+	for (size_t i = 0; i < m_plots.size(); i++)
 	{
-		m_plots[i]->SetStackingMode( false );
-		m_plots[i]->StackOnTopOf( NULL );
+		m_plots[i]->SetStackingMode(false);
+		m_plots[i]->StackOnTopOf(NULL);
 	}
 }
 
 void wxDVTimeSeriesCtrl::UpdateStacking()
 {
 	ClearStacking();
-	if ( m_stackingOnYLeft )
+	if (m_stackingOnYLeft)
 	{
 		// update all stacking pointers for plots.
-		StackUp( wxPLPlotCtrl::Y_LEFT, wxPLPlotCtrl::PLOT_TOP );
-		StackUp( wxPLPlotCtrl::Y_LEFT, wxPLPlotCtrl::PLOT_BOTTOM );
+		StackUp(wxPLPlotCtrl::Y_LEFT, wxPLPlotCtrl::PLOT_TOP);
+		StackUp(wxPLPlotCtrl::Y_LEFT, wxPLPlotCtrl::PLOT_BOTTOM);
 	}
 }
 
@@ -2182,11 +2185,11 @@ void wxDVTimeSeriesCtrl::ClearAllChannelSelections(wxPLPlotCtrl::PlotPos pPos)
 	int graphIndex = 0;
 	if (pPos == wxPLPlotCtrl::PLOT_BOTTOM)
 		graphIndex += 2;
-	for (int i=graphIndex; i<graphIndex+2; i++)
+	for (int i = graphIndex; i < graphIndex + 2; i++)
 	{
-		for (size_t j=0; j<m_selectedChannelIndices[i]->size(); j++)
+		for (size_t j = 0; j < m_selectedChannelIndices[i]->size(); j++)
 		{
-			m_plotSurface->RemovePlot(m_plots[m_selectedChannelIndices[i]->at(j)] ); 
+			m_plotSurface->RemovePlot(m_plots[m_selectedChannelIndices[i]->at(j)]);
 		}
 		m_selectedChannelIndices[i]->clear();
 	}
@@ -2210,8 +2213,8 @@ void wxDVTimeSeriesCtrl::RefreshDisabledCheckBoxes(wxPLPlotCtrl::PlotPos pPos)
 {
 	wxString axis1Label = NO_UNITS;
 	wxString axis2Label = NO_UNITS;
-	
-	if(m_plotSurface->GetYAxis1(pPos))
+
+	if (m_plotSurface->GetYAxis1(pPos))
 		axis1Label = m_plotSurface->GetYAxis1(pPos)->GetUnits();
 	if (m_plotSurface->GetYAxis2(pPos))
 		axis2Label = m_plotSurface->GetYAxis2(pPos)->GetUnits();
@@ -2220,15 +2223,15 @@ void wxDVTimeSeriesCtrl::RefreshDisabledCheckBoxes(wxPLPlotCtrl::PlotPos pPos)
 		&& axis2Label != NO_UNITS
 		&& axis1Label != axis2Label)
 	{
-		for (int i=0; i<m_dataSelector->Length(); i++)
+		for (int i = 0; i < m_dataSelector->Length(); i++)
 		{
-			m_dataSelector->Enable(i, pPos, axis1Label == m_plots[i]->GetDataSet()->GetUnits() 
+			m_dataSelector->Enable(i, pPos, axis1Label == m_plots[i]->GetDataSet()->GetUnits()
 				|| axis2Label == m_plots[i]->GetDataSet()->GetUnits());
 		}
 	}
 	else
 	{
-		for (int i=0; i<m_dataSelector->Length(); i++)
+		for (int i = 0; i < m_dataSelector->Length(); i++)
 		{
 			m_dataSelector->Enable(i, pPos, true);
 		}
@@ -2256,7 +2259,7 @@ void wxDVTimeSeriesCtrl::SetSelectedNamesForColIndex(const wxString& names, int 
 
 	wxStringTokenizer tkz(names, ";");
 
-	while(tkz.HasMoreTokens())
+	while (tkz.HasMoreTokens())
 	{
 		wxString token = tkz.GetNextToken();
 

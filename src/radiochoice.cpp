@@ -1,21 +1,45 @@
+/***********************************************************************************************************************
+*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+*  following conditions are met:
+*
+*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+*  disclaimer.
+*
+*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+*  following disclaimer in the documentation and/or other materials provided with the distribution.
+*
+*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
+*  products derived from this software without specific prior written permission from the respective party.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
+*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**********************************************************************************************************************/
+
 #include "wex/radiochoice.h"
 #include "wex/utils.h"
 
 enum { ID_CHILD_RADIO = wxID_HIGHEST + 938 };
 
 BEGIN_EVENT_TABLE(wxRadioChoice, wxPanel)
-	EVT_RADIOBUTTON( ID_CHILD_RADIO, wxRadioChoice::OnRadio)
-	EVT_SIZE( wxRadioChoice::OnResize )
+EVT_RADIOBUTTON(ID_CHILD_RADIO, wxRadioChoice::OnRadio)
+EVT_SIZE(wxRadioChoice::OnResize)
 END_EVENT_TABLE()
 
 static int s_minHeight = -1;
 
-wxRadioChoice::wxRadioChoice( wxWindow *parent, int id, const wxPoint &pos, const wxSize &size)
-	: wxPanel( parent, id, pos, size, wxTAB_TRAVERSAL )
+wxRadioChoice::wxRadioChoice(wxWindow *parent, int id, const wxPoint &pos, const wxSize &size)
+	: wxPanel(parent, id, pos, size, wxTAB_TRAVERSAL)
 {
-	if ( s_minHeight < 0 ) s_minHeight = (int)(21.0*wxGetScreenHDScale());
+	if (s_minHeight < 0) s_minHeight = (int)(21.0*wxGetScreenHDScale());
 
-	SetBackgroundColour( parent->GetBackgroundColour() );
+	SetBackgroundColour(parent->GetBackgroundColour());
 	m_showCaptions = true;
 	m_horizontal = false;
 	m_evenly = false;
@@ -23,7 +47,7 @@ wxRadioChoice::wxRadioChoice( wxWindow *parent, int id, const wxPoint &pos, cons
 
 bool wxRadioChoice::Enable(bool b)
 {
-	for (size_t i=0;i<m_buttons.size();i++)
+	for (size_t i = 0; i < m_buttons.size(); i++)
 		m_buttons[i]->Enable(b);
 	return wxWindow::Enable(b);
 }
@@ -44,7 +68,7 @@ bool wxRadioChoice::IsEnabled(int idx)
 
 void wxRadioChoice::OnRadio(wxCommandEvent &evt)
 {
-	wxCommandEvent radioclick(wxEVT_COMMAND_RADIOBUTTON_SELECTED , GetId() );
+	wxCommandEvent radioclick(wxEVT_COMMAND_RADIOBUTTON_SELECTED, GetId());
 	radioclick.SetEventObject(this);
 	radioclick.SetString(GetValue());
 	radioclick.SetInt(GetSelection());
@@ -61,26 +85,26 @@ void wxRadioChoice::Add(const wxString &caption, bool arrange)
 	wxString label;
 	if (m_showCaptions) label = caption;
 
-	wxRadioButton *b = new wxRadioButton(this, ID_CHILD_RADIO, label );
-	b->SetBackgroundColour( GetParent()->GetBackgroundColour() );
+	wxRadioButton *b = new wxRadioButton(this, ID_CHILD_RADIO, label);
+	b->SetBackgroundColour(GetParent()->GetBackgroundColour());
 	m_buttons.push_back(b);
 	m_captions.Add(caption);
-	
+
 	if (arrange)
 		Rearrange();
 }
 
 void wxRadioChoice::Add(const wxArrayString &list)
 {
-	for (int i=0;i<(int)list.size();i++)
-		Add( list[i], false );
+	for (int i = 0; i < (int)list.size(); i++)
+		Add(list[i], false);
 
 	Rearrange();
 }
 
 int wxRadioChoice::Find(const wxString &caption)
 {
-	for (size_t i=0;i<m_buttons.size();i++)
+	for (size_t i = 0; i < m_buttons.size(); i++)
 		if (m_captions[i] == caption)
 			return i;
 
@@ -97,40 +121,40 @@ void wxRadioChoice::Remove(int idx)
 	if (idx >= 0 && idx < (int)m_buttons.size())
 	{
 		m_buttons[idx]->Destroy();
-		m_buttons.erase( m_buttons.begin() + idx );
-		m_captions.RemoveAt( idx );
+		m_buttons.erase(m_buttons.begin() + idx);
+		m_captions.RemoveAt(idx);
 		Rearrange();
 	}
 }
 
 void wxRadioChoice::Remove(const wxString &caption)
 {
-	Remove( Find(caption) );
+	Remove(Find(caption));
 }
 
 wxSize wxRadioChoice::DoGetBestSize() const
 {
-	wxSize size( 0, 0 );
-	if ( m_horizontal )
+	wxSize size(0, 0);
+	if (m_horizontal)
 	{
-		for( size_t i=0;i<m_buttons.size();i++ )
+		for (size_t i = 0; i < m_buttons.size(); i++)
 		{
 			m_buttons[i]->InvalidateBestSize();
-			wxSize s( m_buttons[i]->GetBestSize() );
-			if ( s.y < s_minHeight ) s.y = s_minHeight;
-			if ( s.y > size.y ) size.y = s.y;
+			wxSize s(m_buttons[i]->GetBestSize());
+			if (s.y < s_minHeight) s.y = s_minHeight;
+			if (s.y > size.y) size.y = s.y;
 			size.x += s.x;
 		}
 	}
 	else
 	{
 		// vertical layout
-		for( size_t i=0;i<m_buttons.size();i++ )
+		for (size_t i = 0; i < m_buttons.size(); i++)
 		{
 			m_buttons[i]->InvalidateBestSize();
-			wxSize s( m_buttons[i]->GetBestSize() );
-			if ( s.y < s_minHeight ) s.y = s_minHeight;
-			if( s.x > size.x ) size.x = s.x;
+			wxSize s(m_buttons[i]->GetBestSize());
+			if (s.y < s_minHeight) s.y = s_minHeight;
+			if (s.x > size.x) size.x = s.x;
 			size.y += s.y;
 		}
 	}
@@ -140,7 +164,7 @@ wxSize wxRadioChoice::DoGetBestSize() const
 
 void wxRadioChoice::Clear()
 {
-	for (size_t i=0;i<m_buttons.size();i++)
+	for (size_t i = 0; i < m_buttons.size(); i++)
 		m_buttons[i]->Destroy();
 
 	m_captions.Clear();
@@ -150,7 +174,7 @@ void wxRadioChoice::Clear()
 
 int wxRadioChoice::GetSelection()
 {
-	for (size_t i=0;i<m_buttons.size();i++)
+	for (size_t i = 0; i < m_buttons.size(); i++)
 		if (m_buttons[i]->GetValue())
 			return i;
 
@@ -186,35 +210,35 @@ void wxRadioChoice::Rearrange()
 
 	GetClientSize(&c_width, &c_height);
 
-	if ( m_horizontal )
+	if (m_horizontal)
 	{
 		int b_width = c_width;
-		if ( m_buttons.size() > 0 )
+		if (m_buttons.size() > 0)
 			b_width /= m_buttons.size();
 		int x = 0;
-		for (size_t i=0;i<m_buttons.size();i++)
+		for (size_t i = 0; i < m_buttons.size(); i++)
 		{
-			m_buttons[i]->SetSize(x,0,b_width, c_height);
+			m_buttons[i]->SetSize(x, 0, b_width, c_height);
 			x += b_width;
 		}
 	}
 	else
 	{
 		int b_height = s_minHeight;
-		if ( m_buttons.size() > 0 )
+		if (m_buttons.size() > 0)
 		{
 			int best_height = m_buttons[0]->GetBestSize().GetHeight();
-			if ( best_height > s_minHeight )
+			if (best_height > s_minHeight)
 				b_height = best_height;
 
-			if ( m_evenly );
-				b_height = c_height / m_buttons.size();
+			if (m_evenly);
+			b_height = c_height / m_buttons.size();
 		}
 
 		int y = 0;
-		for (size_t i=0;i<m_buttons.size();i++)
+		for (size_t i = 0; i < m_buttons.size(); i++)
 		{
-			m_buttons[i]->SetSize(0,y,c_width, b_height);
+			m_buttons[i]->SetSize(0, y, c_width, b_height);
 			y += b_height;
 		}
 	}
@@ -229,11 +253,11 @@ void wxRadioChoice::ShowCaptions(bool b)
 	if (m_captions.size() != m_buttons.size())
 		return;
 
-	for (size_t i=0;i<m_buttons.size();i++)
+	for (size_t i = 0; i < m_buttons.size(); i++)
 	{
 		wxString label;
 		if (m_showCaptions) label = m_captions[i];
-		m_buttons[i]->SetLabel( label );
+		m_buttons[i]->SetLabel(label);
 	}
 
 	Refresh();
@@ -244,7 +268,7 @@ bool wxRadioChoice::CaptionsShown()
 	return m_showCaptions;
 }
 
-void wxRadioChoice::SetHorizontal( bool b )
+void wxRadioChoice::SetHorizontal(bool b)
 {
 	m_horizontal = b;
 	Rearrange();
@@ -255,23 +279,23 @@ bool wxRadioChoice::IsHorizontal()
 	return m_horizontal;
 }
 
-void wxRadioChoice::LayoutEvenly( bool b )
+void wxRadioChoice::LayoutEvenly(bool b)
 {
 	m_evenly = b;
 	Rearrange();
 }
 
-void wxRadioChoice::SetLabel( int idx, const wxString &lbl )
+void wxRadioChoice::SetLabel(int idx, const wxString &lbl)
 {
-	if ( idx < (int) m_buttons.size() )
+	if (idx < (int)m_buttons.size())
 	{
-		m_buttons[idx]->SetLabel( lbl );
+		m_buttons[idx]->SetLabel(lbl);
 		InvalidateBestSize();
 	}
 }
 
-wxString wxRadioChoice::GetLabel( int idx )
+wxString wxRadioChoice::GetLabel(int idx)
 {
-	if ( idx < (int) m_buttons.size() ) return m_buttons[idx]->GetLabel();
+	if (idx < (int)m_buttons.size()) return m_buttons[idx]->GetLabel();
 	else return wxEmptyString;
 }

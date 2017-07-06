@@ -1,3 +1,27 @@
+/***********************************************************************************************************************
+*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+*  following conditions are met:
+*
+*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+*  disclaimer.
+*
+*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+*  following disclaimer in the documentation and/or other materials provided with the distribution.
+*
+*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
+*  products derived from this software without specific prior written permission from the respective party.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
+*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**********************************************************************************************************************/
+
 #ifndef __DVPlotCtrl_h
 #define __DVPlotCtrl_h
 
@@ -23,10 +47,10 @@
 class wxDVPlotCtrl : public wxMetroNotebook
 {
 public:
-	wxDVPlotCtrl(wxWindow* parent, wxWindowID id = wxID_ANY, 
-		const wxPoint& pos = wxDefaultPosition, 
+	wxDVPlotCtrl(wxWindow* parent, wxWindowID id = wxID_ANY,
+		const wxPoint& pos = wxDefaultPosition,
 		const wxSize& size = wxDefaultSize,
-		long style = wxMT_LIGHTTHEME );
+		long style = wxMT_LIGHTTHEME);
 	virtual ~wxDVPlotCtrl();
 
 	//When a data set is added, wxDVTimeSeriesCtrl takes ownership and will delete it upon destruction.
@@ -40,25 +64,25 @@ public:
 
 	//These methods get and set the view perspective to resume later with the same view.
 	wxDVPlotCtrlSettings GetPerspective();
-	void SetPerspective( wxDVPlotCtrlSettings& settings);
+	void SetPerspective(wxDVPlotCtrlSettings& settings);
 
 	enum { TAB_TS = 0, TAB_HTS, TAB_DTS, TAB_MTS, TAB_DMAP, TAB_PROFILE, TAB_PDF, TAB_DC, TAB_SCATTER };
 
-	void SelectTabIndex( size_t index);
-	void SelectDataIndex( size_t index, bool allTabs = false);
-	void SelectDataIndexOnTab( size_t index, int tab);
-	
-	void SetTimeSeriesMode( int mode );
-	void SetupTopYLeft( double min, double max );
-	void SetupTopYRight( double min, double max );
-	void SetTimeSeriesRange( double start, double end );
-	void SetSelectedNames( const wxArrayString &names );
+	void SelectTabIndex(size_t index);
+	void SelectDataIndex(size_t index, bool allTabs = false);
+	void SelectDataIndexOnTab(size_t index, int tab);
+
+	void SetTimeSeriesMode(int mode);
+	void SetupTopYLeft(double min, double max);
+	void SetupTopYRight(double min, double max);
+	void SetTimeSeriesRange(double start, double end);
+	void SetSelectedNames(const wxArrayString &names);
 
 	void SelectDataOnBlankTabs();
-	
+
 	void DisplayTabs();
 	double GetMinTimeStep();
-	
+
 private:
 	std::vector<wxDVTimeSeriesDataSet*> m_dataSets;
 
@@ -73,8 +97,7 @@ private:
 	wxDVDCCtrl *m_durationCurve;
 	wxDVScatterPlotCtrl *m_scatterPlot;
 
-DECLARE_EVENT_TABLE()
+	DECLARE_EVENT_TABLE()
 };
 
 #endif
-

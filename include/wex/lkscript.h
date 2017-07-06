@@ -1,3 +1,27 @@
+/***********************************************************************************************************************
+*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+*  following conditions are met:
+*
+*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+*  disclaimer.
+*
+*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+*  following disclaimer in the documentation and/or other materials provided with the distribution.
+*
+*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
+*  products derived from this software without specific prior written permission from the respective party.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
+*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**********************************************************************************************************************/
+
 #ifndef __lkscript_h
 #define __lkscript_h
 
@@ -35,42 +59,42 @@ lk::fcall_t* wxLKStdOutFunctions(); // out, outln:  must use an extended wxLKScr
 
 class wxPLPlotCtrl;
 
-// if parent=NULL and no_parent=true, then the plot will have no parent.  
-// otherwise, even if parent=NULL, LK will use the currently active 
+// if parent=NULL and no_parent=true, then the plot will have no parent.
+// otherwise, even if parent=NULL, LK will use the currently active
 // toplevel window as the parent.
-void wxLKSetToplevelParentForPlots( wxWindow *parent ); 
-void wxLKSetPlotTarget( wxPLPlotCtrl *plot );
+void wxLKSetToplevelParentForPlots(wxWindow *parent);
+void wxLKSetPlotTarget(wxPLPlotCtrl *plot);
 wxPLPlotCtrl *wxLKGetPlotTarget();
 
 class wxLKDebugger;
-class wxLKScriptCtrl : 
-	public wxCodeEditCtrl, 
+class wxLKScriptCtrl :
+	public wxCodeEditCtrl,
 	public wxThreadHelper
 {
 public:
 
-	wxLKScriptCtrl( wxWindow *parent, int id = wxID_ANY,
+	wxLKScriptCtrl(wxWindow *parent, int id = wxID_ANY,
 		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize,
-		unsigned long libs = wxLK_STDLIB_ALL );
+		unsigned long libs = wxLK_STDLIB_ALL);
 
 	virtual ~wxLKScriptCtrl();
-	
-	void SetSyntaxCheck( bool on );
 
-	virtual bool OnEval( int line );
-	virtual void OnOutput( const wxString & );
-	virtual void OnSyntaxCheck( int line = -1, const wxString &error = wxEmptyString );
-	
-	void RegisterLibrary( lk::fcall_t *funcs, const wxString &group = "Miscellaneous", void *user_data = 0);
+	void SetSyntaxCheck(bool on);
+
+	virtual bool OnEval(int line);
+	virtual void OnOutput(const wxString &);
+	virtual void OnSyntaxCheck(int line = -1, const wxString &error = wxEmptyString);
+
+	void RegisterLibrary(lk::fcall_t *funcs, const wxString &group = "Miscellaneous", void *user_data = 0);
 
 	wxString GetHtmlDocs();
-	void ShowHelpDialog( wxWindow *custom_parent = 0 );
+	void ShowHelpDialog(wxWindow *custom_parent = 0);
 
 	bool IsScriptRunning();
 	bool IsStopFlagSet();
 	void Stop();
 
-	void SetWorkDir( const wxString &path );
+	void SetWorkDir(const wxString &path);
 	wxString GetWorkDir();
 	bool Execute();
 	bool CompileAndLoad();
@@ -80,8 +104,7 @@ public:
 	bool Debug(int mode);
 
 	lk::env_t *GetEnvironment() { return m_env; }
-	
-	
+
 	struct libdata
 	{
 		lk::fcall_t *library;
@@ -99,14 +122,13 @@ private:
 	wxArrayString m_syntaxErrorMessages;
 	wxCriticalSection m_syntaxCheckCS;
 
-
 	virtual wxThread::ExitCode Entry();
 	void OnSyntaxCheckThreadFinished(wxThreadEvent& evt);
 	void StartSyntaxCheckThread();
 
-	void OnScriptTextChanged( wxStyledTextEvent & );
-	void OnMarginClick( wxStyledTextEvent & );
-	void OnTimer( wxTimerEvent & );
+	void OnScriptTextChanged(wxStyledTextEvent &);
+	void OnMarginClick(wxStyledTextEvent &);
+	void OnTimer(wxTimerEvent &);
 
 	wxTimer m_timer;
 
@@ -118,14 +140,14 @@ private:
 		wxLKScriptCtrl *m_lcs;
 		size_t m_counter;
 	public:
-		my_vm( wxLKScriptCtrl *lcs );
-		virtual bool on_run( const lk::srcpos_t &sp );
+		my_vm(wxLKScriptCtrl *lcs);
+		virtual bool on_run(const lk::srcpos_t &sp);
 	};
 	lk::bytecode m_bc;
 	my_vm m_vm;
 
 	wxString m_assemblyText;
-	
+
 	bool m_scriptRunning;
 	bool m_stopScriptFlag;
 	wxWindow *m_topLevelWindow;
@@ -148,44 +170,43 @@ public:
 	virtual wxLKScriptWindow *Create() = 0;
 };
 
-class wxLKScriptWindow  : public wxFrame
+class wxLKScriptWindow : public wxFrame
 {
 public:
-	wxLKScriptWindow( wxWindow *parent, int id = wxID_ANY, 
-		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxScaleSize( 760, 800 ) );
-	
-	static wxLKScriptWindowFactory &GetFactory();
-	static void SetFactory( wxLKScriptWindowFactory *f );
+	wxLKScriptWindow(wxWindow *parent, int id = wxID_ANY,
+		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxScaleSize(760, 800));
 
-	static wxLKScriptWindow *CreateNewWindow( bool show = true );
+	static wxLKScriptWindowFactory &GetFactory();
+	static void SetFactory(wxLKScriptWindowFactory *f);
+
+	static wxLKScriptWindow *CreateNewWindow(bool show = true);
 	static void OpenFiles();
 	static std::vector<wxLKScriptWindow*> GetWindows();
-	static wxLKScriptWindow *FindOpenFile( const wxString &file );
+	static wxLKScriptWindow *FindOpenFile(const wxString &file);
 	static bool CloseAll();
 
-	void AddOutput( const wxString &out );
+	void AddOutput(const wxString &out);
 	void ClearOutput();
-
 
 	bool Save();
 	bool SaveAs();
-	bool Load( const wxString &file );
-	bool Write( const wxString &file );
+	bool Load(const wxString &file);
+	bool Write(const wxString &file);
 	wxString GetFileName();
 
-	bool Find( const wxString &text, bool match_case, bool whole_word, bool at_beginning,
-		int *pos, int *line, wxString *line_text );
+	bool Find(const wxString &text, bool match_case, bool whole_word, bool at_beginning,
+		int *pos, int *line, wxString *line_text);
 
 	bool IsModified();
 	wxLKScriptCtrl *GetEditor();
-	
+
 	virtual void OnHelp();
 	virtual bool RunScript();
 	virtual void StopScript();
 
 protected:
 	bool QueryAndCanClose();
-	static void OpenFilesInternal( wxLKScriptWindow *current = 0);
+	static void OpenFilesInternal(wxLKScriptWindow *current = 0);
 
 	wxBoxSizer *m_toolbar;
 
@@ -201,12 +222,11 @@ protected:
 	void UpdateWindowTitle();
 
 private:
-	void OnCommand( wxCommandEvent & );
-	void OnModified( wxStyledTextEvent & );
-	void OnClose( wxCloseEvent & );
+	void OnCommand(wxCommandEvent &);
+	void OnModified(wxStyledTextEvent &);
+	void OnClose(wxCloseEvent &);
 
 	DECLARE_EVENT_TABLE();
 };
 
 #endif
-
