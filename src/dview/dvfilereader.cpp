@@ -1304,8 +1304,6 @@ void wxDVFileReader::NonuniformTimestepInterpolation(const std::vector<wxDateTim
 
 	wxTimeSpan timeSpan = times.at(times.size() - 1) - times.at(0);
 
-	int expectedVectorLength = timeSpan.GetMinutes();
-
 	for (size_t i = 1; i < times.size(); i++){
 		timeSpan = times[i] - times[i - 1];
 		wxLongLong intervalInSeconds = timeSpan.GetSeconds();
@@ -1354,7 +1352,7 @@ bool wxDVFileReader::IsEnergyPlus(sqlite3 * db)
 		int code = sqlite3_step(sqlStmtPtr);
 		if (code == SQLITE_ROW) {
 			wxString version_line = ColumnText(sqlite3_column_text(sqlStmtPtr, 0));
-			success = version_line.Find(eP);
+			success = (version_line.Find(eP)!=0);
 		}
 		sqlite3_finalize(sqlStmtPtr);
 	}
@@ -1427,8 +1425,7 @@ bool wxDVFileReader::IsDate(wxString stringToCheck)
 	{
 		c = str.at(i);
 
-		if (AMPMposition = 0 && (c == 'a' || c == 'p' || c == 'm' || c == 'A' || c == 'P' || c == 'M')) { AMPMposition = i; } // warning C4706: assignment within conditional expression
-
+		if (AMPMposition == 0 && (c == 'a' || c == 'p' || c == 'm' || c == 'A' || c == 'P' || c == 'M')) { AMPMposition = i; } 
 		if (AMPMposition > 0 && i > AMPMposition + 1) { return false; }
 
 		if (i == 0 && c != '0' && c != '1' && c != '2' && c != '3' && c != '4' && c != '5' && c != '6' && c != '7' && c != '8' && c != '9') { return false; }

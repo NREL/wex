@@ -321,8 +321,8 @@ void dvStatisticsTreeModel::Refresh(std::vector<wxDVVariableStatistics*> stats, 
 	dvStatisticsTreeModelNode *monthNode;
 	StatisticsPoint p;
 	wxString groupName = "";
-
-	//Clear existing nodes
+	 
+	//Clear existing nodes 
 	if (m_root == NULL)
 	{
 		m_root = new dvStatisticsTreeModelNode(NULL, "All");
