@@ -131,8 +131,8 @@ public:
 
 		cfg.Read("LastDirectory", &mLastDir);
 
-		int x, y, width, height;
-		bool maximized;
+		int x=0, y=0, width=0, height=0;
+		bool maximized=false;
 
 		if (cfg.Read("FrameX", &x)
 			&& cfg.Read("FrameY", &y)
@@ -142,7 +142,7 @@ public:
 		{
 			if (width < 700) width = 700;
 			if (height < 450) height = 450;
-
+			 
 			SetPosition(wxPoint(x, y));
 			SetClientSize(width, height);
 			if (maximized)
