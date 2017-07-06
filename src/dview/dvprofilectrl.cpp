@@ -598,9 +598,9 @@ void wxDVProfileCtrl::ShowPlotAtIndex(int i)
 		m_plotSurfaces[j]->GetAxis(yap)->SetUnits(units);
 
 		YLabelText = units;
-		for (size_t i = 0; i < m_dataSelector->Length(); i++)
+		for (size_t k = 0; k < m_dataSelector->Length(); k++)
 		{
-			if (m_dataSelector->IsSelected(i, 0) && m_plots[i]->dataset->GetUnits() == units)
+			if (m_dataSelector->IsSelected(k, 0) && m_plots[i]->dataset->GetUnits() == units)
 			{
 				if (yap == wxPLPlotCtrl::Y_LEFT)
 				{

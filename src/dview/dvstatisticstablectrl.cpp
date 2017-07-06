@@ -314,7 +314,7 @@ unsigned int dvStatisticsTreeModel::GetChildren(const wxDataViewItem &parent, wx
 void dvStatisticsTreeModel::Refresh(std::vector<wxDVVariableStatistics*> stats, bool showMonths)
 {
 	wxDVStatisticsDataSet *ds;
-	dvStatisticsTreeModelNode *groupNode;
+	dvStatisticsTreeModelNode *groupNode = NULL;
 	dvStatisticsTreeModelNode *variableNode;
 	dvStatisticsTreeModelNode *monthNode;
 	StatisticsPoint p;
