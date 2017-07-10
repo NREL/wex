@@ -804,7 +804,17 @@ END_EVENT_TABLE()
 
 /*Constructors and Destructors*/
 wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, wxDVTimeSeriesType seriesType, wxDVStatType statType)
-: wxPanel(parent, id)
+: wxPanel(parent, id),
+TopYMax(0),
+TopYMin(0),
+TopY2Max(0),
+TopY2Min(0),
+BottomYMax(0),
+BottomYMin(0),
+BottomY2Max(0),
+BottomY2Min(0),
+m_timer(nullptr),
+m_counter(0)
 {
 	SetBackgroundColour(*wxWHITE);
 	m_srchCtrl = NULL;
