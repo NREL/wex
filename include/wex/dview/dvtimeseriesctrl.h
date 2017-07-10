@@ -237,19 +237,19 @@ private:
 
 	void OnTimer(wxTimerEvent& event);
 
-	double TopYMax = 0;
-	double TopYMin = 0;
-	double TopY2Max = 0;
-	double TopY2Min = 0;
-	double BottomYMax = 0;
-	double BottomYMin = 0;
-	double BottomY2Max = 0;
-	double BottomY2Min = 0;
+	double TopYMax;
+	double TopYMin;
+	double TopY2Max;
+	double TopY2Min;
+	double BottomYMax;
+	double BottomYMin;
+	double BottomY2Max;
+	double BottomY2Min;
 
-	wxTimer * m_timer = nullptr;
+	wxTimer * m_timer;
 
 	std::vector<std::pair<int, int> > m_selections;
-	unsigned m_counter = 0;
+	unsigned m_counter;
 
 	DECLARE_EVENT_TABLE();
 };
