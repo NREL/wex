@@ -8,7 +8,7 @@ The WEX libraries require [LK](https://github.com/NREL/lk) for scripting funtion
 
 1. Build LK.
 
-2. Create an environment variable called `LK` that points to the folder containing the LK libraries.
+2. Create an environment variable called `LKDIR` that points to the folder containing the LK libraries.
 
 # Windows
 
