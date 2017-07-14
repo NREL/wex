@@ -53,4 +53,4 @@ If you would like to submit code to fix an issue or add a feature, you can use G
 
 # License
 
-WEX is licensed under an MIT [license](license.md).
+WEX is licensed under an MIT [license](LICENSE.md).
