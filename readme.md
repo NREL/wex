@@ -1,6 +1,11 @@
 # WEX: Extensions Library for wxWidgets
 
-WEX is a library of extensions to the [wxWidgets](https://www.wxwidgets.org/) cross-platform user interface (UI) library. These extensions are for custom UI widgets developed for the National Renewable Energy Laboratory's [System Advisor Model (SAM)](https://sam.nrel.gov) and [DView](https://github.com/NREL/wex/wiki/DView) data visualization software.
+[WEX](wiki) is a library of extensions to the [wxWidgets](https://www.wxwidgets.org/) cross-platform user interface (UI) library. These extensions are for custom UI widgets developed for the National Renewable Energy Laboratory's [System Advisor Model (SAM)](https://sam.nrel.gov) and [DView](https://github.com/NREL/wex/wiki/DView) data visualization software.
+
+WEX also includes two executable programs:
+
+_lkscript_ is a code editor for the [LK](https://github.com/NREL/lk) scripting language.
+_dview_ is the [DView](https://github.com/NREL/wex/wiki/DView) visualization software for time series data.
 
 # Prerequisites
 
@@ -21,8 +26,13 @@ wexvc13wx3.lib
 wexvc13wx3d.lib
 wexvc13wx3x64.lib
 wexvc13wx3x64d.lib
-/build_vc2013/dview.exe
-/build_vc2013/sandbox.exe
+```
+You should also see versions of the following executable programs (lkscript may be in a separate subfolder):
+
+```
+dview
+lkscript
+sandbox
 ```
 
 WEX requires libcurl and SSL libraries for HTTP and HTTPS. Those libraires are precompiled for Windows and included in [build_vc2013/libcurl_ssl_win32] and [build_vc2013/libcurl_ssl_x64]. If you want to rebuild those libraries to incorporate security patches, see [Building libcurl+ssl using VS Express 2013 For Windows Desktop](build_libcurl_ssl_for_windows.md).
