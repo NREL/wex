@@ -1,6 +1,6 @@
 # WEX: Extensions Library for wxWidgets
 
-[WEX](wiki) is a library of extensions to the [wxWidgets](https://www.wxwidgets.org/) cross-platform user interface (UI) library. These extensions are for custom UI widgets developed for the National Renewable Energy Laboratory's [System Advisor Model (SAM)](https://sam.nrel.gov) and [DView](https://github.com/NREL/wex/wiki/DView) data visualization software.
+[WEX](/wiki) is a library of extensions to the [wxWidgets](https://www.wxwidgets.org/) cross-platform user interface (UI) library. These extensions are for custom UI widgets developed for the National Renewable Energy Laboratory's [System Advisor Model (SAM)](https://sam.nrel.gov) and [DView](https://github.com/NREL/wex/wiki/DView) data visualization software.
 
 WEX also includes two executable programs:
 
