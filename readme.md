@@ -39,11 +39,11 @@ WEX requires libcurl and SSL libraries for HTTP and HTTPS. Those libraires are p
 
 # Mac
 
-Makefiles for Mac OS are in the [build_osx](build_osx) folder.
+Makefiles for Mac OS are in the [build_osx](build_osx) folder. Minimum OS X version is 10.9. MacOS 10.12 is used with macosx-version-min=10.9 flag set for wex and SAM releases.
 
 # Linux
 
-Makefiles for Linux are in the [build_linux](build_linux) folder.
+Makefiles for Linux are in the [build_linux](build_linux) folder. Minimum requirements: gcc 4.8.5 and glibc 2.17. CentOS 7 is mimimum build platform used for wex and SAM releases.
 
 # Contributing
 
