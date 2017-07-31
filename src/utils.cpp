@@ -28,6 +28,11 @@
 #include <wx/zstream.h>
 
 #include "wex/utils.h"
+
+#ifdef _MSC_VER  /* Microsoft Visual C++ -- warning level 4 */
+#pragma warning( disable : 4996)  /* function was declared deprecated(strdup, etc.) */
+#endif
+
 /*
 bool AllocReadLine(FILE *fp, wxString &buf, int prealloc)
 {
