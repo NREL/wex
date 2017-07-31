@@ -1352,7 +1352,7 @@ bool wxDVFileReader::IsEnergyPlus(sqlite3 * db)
 		int code = sqlite3_step(sqlStmtPtr);
 		if (code == SQLITE_ROW) {
 			wxString version_line = ColumnText(sqlite3_column_text(sqlStmtPtr, 0));
-			success = (version_line.Find(eP)!=0);
+			success = (version_line.Find(eP) != 0);
 		}
 		sqlite3_finalize(sqlStmtPtr);
 	}
@@ -1425,7 +1425,7 @@ bool wxDVFileReader::IsDate(wxString stringToCheck)
 	{
 		c = str.at(i);
 
-		if (AMPMposition == 0 && (c == 'a' || c == 'p' || c == 'm' || c == 'A' || c == 'P' || c == 'M')) { AMPMposition = i; } 
+		if (AMPMposition == 0 && (c == 'a' || c == 'p' || c == 'm' || c == 'A' || c == 'P' || c == 'M')) { AMPMposition = i; }
 		if (AMPMposition > 0 && i > AMPMposition + 1) { return false; }
 
 		if (i == 0 && c != '0' && c != '1' && c != '2' && c != '3' && c != '4' && c != '5' && c != '6' && c != '7' && c != '8' && c != '9') { return false; }
@@ -1559,6 +1559,8 @@ void wxDVFileReader::InitUnitConversions()
 	m_unitConversions.emplace_back("W/m-K", "Btu/h-ft-F", 0.577796066000163);
 	m_unitConversions.emplace_back("W/person", "W/person", 1);
 	m_unitConversions.emplace_back("%", "%", 1);
+	m_unitConversions.emplace_back("ach", "ach", 1);
+	m_unitConversions.emplace_back("ACH", "ACH", 1);
 }
 
 bool wxDVFileReader::ConvertUnits(std::string & units, std::vector<double> & values, bool convertSIToIP)
