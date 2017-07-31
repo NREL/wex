@@ -28,6 +28,11 @@
 #include <wx/zstream.h>
 
 #include "wex/utils.h"
+
+#ifdef _MSC_VER  /* Microsoft Visual C++ -- warning level 4 */
+#pragma warning( disable : 4996)  /* function was declared deprecated(strdup, etc.) */
+#endif
+
 /*
 bool AllocReadLine(FILE *fp, wxString &buf, int prealloc)
 {
@@ -1415,7 +1420,7 @@ wxString wxGetMD5(const wxString &string)
 	MD5_CTX ctx;
 	char tmp[40];		// MD5 are fixed sized to 32 chars
 
-	char *buf = _strdup((const char*)string.c_str());
+	char *buf = strdup((const char*)string.c_str());
 
 	MD5Init(&ctx);
 	MD5Update(&ctx, (unsigned char*)buf, strlen(buf));
