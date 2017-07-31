@@ -90,6 +90,7 @@ public:
 		mRecentMenu = new wxMenu;
 		mFileMenu = new wxMenu;
 		mFileMenu->Append(wxID_OPEN, "Open...\tCtrl-O");
+		mFileMenu->Append(wxID_ADD, "Append...\tCtrl-A");
 		mFileMenu->Append(wxID_CLEAR, "Clear\tCtrl-W");
 		mFileMenu->AppendSeparator();
 		mFileMenu->Append(ID_RECENT_FILES, "Recent", mRecentMenu);
@@ -131,8 +132,8 @@ public:
 
 		cfg.Read("LastDirectory", &mLastDir);
 
-		int x=0, y=0, width=0, height=0;
-		bool maximized=false;
+		int x = 0, y = 0, width = 0, height = 0;
+		bool maximized = false;
 
 		if (cfg.Read("FrameX", &x)
 			&& cfg.Read("FrameY", &y)
@@ -293,11 +294,18 @@ public:
 		Destroy();
 	}
 
-	bool Load(const wxArrayString& filenames)
+	bool Load(const wxArrayString& filenames, bool append = true)
 	{
 		bool FileExists = false;
 
 		wxBeginBusyCursor();
+
+		if (!append) {
+			// clear everything first
+			mPlotCtrl->RemoveAllDataSets();
+			mFileNames.Clear();
+		}
+
 		for (size_t i = 0; i < filenames.GetCount(); i++)
 		{
 			for (size_t j = 0; j < mFileNames.GetCount(); j++)
@@ -330,14 +338,14 @@ public:
 		return true;
 	}
 
-	void Open()
+	void Open(bool append = true)
 	{
 		wxFileDialog fdlg(this, "Open Data File", mLastDir, "", "All Files|*.*|CSV Files(*.csv)|*.csv|TXT Files(*.txt)|*.txt|SQL Files(*.sql)|*.sqlv|TMY3 Files(*.tmy3)|*.tmy3|EPW Files(*.epw)|*.epw", wxFD_OPEN | wxFD_MULTIPLE);
 		wxArrayString myFilePaths;
 		if (fdlg.ShowModal() == wxID_OK)
 		{
 			fdlg.GetPaths(myFilePaths);
-			Load(myFilePaths);
+			Load(myFilePaths, append);
 		}
 	}
 
@@ -346,6 +354,9 @@ public:
 		switch (evt.GetId())
 		{
 		case wxID_OPEN:
+			Open(false);
+			break;
+		case wxID_ADD:
 			Open();
 			break;
 		case wxID_CLEAR:
@@ -373,6 +384,7 @@ public:
 BEGIN_EVENT_TABLE(DViewFrame, wxFrame)
 
 EVT_MENU(wxID_OPEN, DViewFrame::OnCommand)
+EVT_MENU(wxID_ADD, DViewFrame::OnCommand)
 EVT_MENU(wxID_CLEAR, DViewFrame::OnCommand)
 EVT_MENU(wxID_EXIT, DViewFrame::OnCommand)
 EVT_MENU(wxID_ABOUT, DViewFrame::OnCommand)
