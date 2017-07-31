@@ -637,7 +637,7 @@ unsigned int QuadContourGenerator::follow_boundary(
 	bool stop = false;
 	long& quad = quad_edge.quad;
 
-	while (true) {
+	for (;;) {
 		// Levels of start and end points of quad_edge.
 		unsigned int start_level =
 			(first_edge ? Z_LEVEL(get_edge_point_index(quad_edge, true))
@@ -776,7 +776,7 @@ void QuadContourGenerator::follow_interior(ContourLine& contour_line,
 	CacheItem saddle_mask = (level_index == 1 ? MASK_SADDLE_1 : MASK_SADDLE_2);
 	Dir dir = Dir_Straight;
 
-	while (true) {
+	for (;;) {
 		assert(!EXISTS_NONE(quad) && "Quad does not exist");
 		assert(!(_cache[quad] & visited_mask) && "Quad already visited");
 
@@ -1653,7 +1653,7 @@ ContourLine* QuadContourGenerator::start_filled(
 	// If starts on interior, can only finish on interior.
 	// If starts on boundary, can only finish on boundary.
 
-	while (true) {
+	for (;;) {
 		if (boundary_or_interior == Interior) {
 			double level = (level_index == 1 ? lower_level : upper_level);
 			follow_interior(*contour_line, quad_edge, level_index, level,

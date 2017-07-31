@@ -502,7 +502,7 @@ void wxDiurnalPeriodCtrl::Paste()
 				for (int c = 0; c < m_ncols; c++)
 				{
 					long val = 0;
-					if (as_ndx < as.Count())
+					if (as_ndx < (int)as.Count())
 						as[as_ndx].ToLong(&val);
 					if ((val <= m_max) && (val >= m_min))
 						VALUE(r, c) = val;

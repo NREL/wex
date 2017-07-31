@@ -143,7 +143,7 @@ bool wxExcelAutomation::CloseAllNoSave()
 {
 	int count = 0;
 	bool ok = true;
-	while ( (ok=WorkbookCount(count)) && count > 0)
+	while ( ((ok=WorkbookCount(count))!=0) && count > 0)
 	{
 		if (!SetWorkbook(1))
 			return false;

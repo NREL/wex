@@ -49,7 +49,7 @@ public:
 		wxInitAllImageHandlers();
 		wxFrame *frm = new wxFrame(NULL, wxID_ANY, "SchedCtrl", wxDefaultPosition, wxSize(300, 200));
 		frm->SetBackgroundColour(*wxWHITE);
-		wxStaticBitmap *bitmap = new wxStaticBitmap(frm, wxID_ANY, wxBITMAP_PNG_FROM_DATA(time));
+//		wxStaticBitmap *bitmap = new wxStaticBitmap(frm, wxID_ANY, wxBITMAP_PNG_FROM_DATA(time));
 
 		frm->Show();
 		return true;
@@ -354,7 +354,7 @@ void TestContourPlot()
 	wxPLPlotCtrl *plot = new wxPLPlotCtrl(frame, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 	plot->SetBackgroundColour(*wxWHITE);
 	plot->SetHighlightMode(wxPLPlotCtrl::HIGHLIGHT_ZOOM);
-	int np = 49;
+//	int np = 49;
 
 	double zmin = 1e99, zmax = -1e99;
 	wxMatrix<double> XX, YY, ZZ;
@@ -573,7 +573,7 @@ void TestPLPolarPlot(wxWindow *parent)
 
 	plot->ShowGrid(true, true);
 
-	double pi = 4.0 * atan(1.0);
+//	double pi = 4.0 * atan(1.0);
 	std::vector< wxRealPoint > sine_data;
 	for (double x = 0; x < 361; x += 1)
 	{
@@ -719,12 +719,12 @@ public:
 		panel->SetSizer(main);
 	}
 
-	void OnNumeric(wxCommandEvent &evt)
+	void OnNumeric(wxCommandEvent &)
 	{
 		m_log->AppendText(wxString::Format("%d --> numeric changed %.6lf\n", ++m_counter, m_num->Value()));
 	}
 
-	void OnExtText(wxCommandEvent &evt)
+	void OnExtText(wxCommandEvent &)
 	{
 		m_log->AppendText(wxString::Format("%d --> exttext changed\n", ++m_counter));
 	}
@@ -739,7 +739,7 @@ public:
 		m_log->AppendText(wxString::Format("popup menu item clicked: %d\n", evt.GetId()));
 	}
 
-	void OnMenuTest(wxCommandEvent &evt)
+	void OnMenuTest(wxCommandEvent &)
 	{
 		m_log->AppendText("menu popup initiated\n");
 		wxMetroPopupMenu menu;
@@ -877,145 +877,146 @@ public:
 
 		return true;
 
-		//TestFormDesigner();
+		////TestFormDesigner();
+		////return true;
+
+		////wxMessageBox(wxString::Format("Can handle gzip? %d", wxZlibInputStream::CanHandleGZip() ? 1 : 0 ) );
+
+		////bool ok = wxGunzipFile( "c:/users/adobos/desktop/geostellar/weather/weather_074654025.tm2.gz",
+		////	"c:/users/adobos/desktop/geostellar/weather/unzipped.tm2" );
+
+		////if (ok) wxMessageBox("unzipped ok" );
+		////else wxMessageBox("error");
+
+		//m_locale.Init();
+
+		//wxLogWindow *log = new wxLogWindow(0, "Log");
+		//wxLog::SetActiveTarget(log);
+		//log->Show();
+
+		//wxFrame *frame2 = new wxFrame(0, wxID_ANY, "radiochoice");
+		//wxRadioChoice *rad = new wxRadioChoice(frame2, wxID_ANY);
+		//rad->SetHorizontal(true);
+		//rad->Add("Choice 1 ");
+		//rad->Add("Choice 2 ----- x ");
+		//wxBoxSizer *sizer2 = new wxBoxSizer(wxHORIZONTAL);
+		//sizer2->Add(rad, 1, wxALL | wxEXPAND, 10);
+		//sizer2->Add(new wxNumericCtrl(frame2, wxID_ANY, 1000000, wxNUMERIC_UNSIGNED), 0, wxALL | wxEXPAND, 10);
+		//frame2->SetSizerAndFit(sizer2);
+		//frame2->Show();
+		//wxSize size2(rad->GetBestSize());
+		//wxMessageBox(wxString::Format("%d %d", size2.x, size2.y));
+
+		////wxFrame *frame = new NumericTest();
+		////frame->Show();
+
+		////
+
+		////TestSnapLayout( 0 );
 		//return true;
 
-		//wxMessageBox(wxString::Format("Can handle gzip? %d", wxZlibInputStream::CanHandleGZip() ? 1 : 0 ) );
+		////TestDVSelectionCtrl();
 
-		//bool ok = wxGunzipFile( "c:/users/adobos/desktop/geostellar/weather/weather_074654025.tm2.gz",
-		//	"c:/users/adobos/desktop/geostellar/weather/unzipped.tm2" );
+		////TestPLPolarPlot(0);
 
-		//if (ok) wxMessageBox("unzipped ok" );
-		//else wxMessageBox("error");
+		////TestWindRose(0);
 
-		m_locale.Init();
-
-		wxLogWindow *log = new wxLogWindow(0, "Log");
-		wxLog::SetActiveTarget(log);
-		log->Show();
-
-		wxFrame *frame2 = new wxFrame(0, wxID_ANY, "radiochoice");
-		wxRadioChoice *rad = new wxRadioChoice(frame2, wxID_ANY);
-		rad->SetHorizontal(true);
-		rad->Add("Choice 1 ");
-		rad->Add("Choice 2 ----- x ");
-		wxBoxSizer *sizer2 = new wxBoxSizer(wxHORIZONTAL);
-		sizer2->Add(rad, 1, wxALL | wxEXPAND, 10);
-		sizer2->Add(new wxNumericCtrl(frame2, wxID_ANY, 1000000, wxNUMERIC_UNSIGNED), 0, wxALL | wxEXPAND, 10);
-		frame2->SetSizerAndFit(sizer2);
-		frame2->Show();
-		wxSize size2(rad->GetBestSize());
-		wxMessageBox(wxString::Format("%d %d", size2.x, size2.y));
-
-		//wxFrame *frame = new NumericTest();
+		///*
+		//wxFrame *frame = new wxFrame(NULL, wxID_ANY, "Test LKEdit", wxDefaultPosition, wxSize(600,400) );
+		//new wxLKScriptCtrl(frame, wxID_ANY );
 		//frame->Show();
+		//*/
 
+		//wxFrame *frm = new wxFrame(NULL, wxID_ANY, "SchedCtrl", wxDefaultPosition, wxSize(1100, 700));
+		//frm->SetBackgroundColour(*wxWHITE);
+
+		//wxBoxSizer *tools = new wxBoxSizer(wxHORIZONTAL);
+		//tools->Add(new wxMetroButton(frm, wxID_ANY, wxEmptyString, wxBITMAP_PNG_FROM_DATA(demo_bitmap), wxDefaultPosition, wxDefaultSize), 0, wxALL | wxEXPAND, 0);
+		//tools->Add(new wxMetroButton(frm, wxID_ANY, "New", wxBITMAP_PNG_FROM_DATA(cirplus), wxDefaultPosition, wxDefaultSize), 0, wxALL | wxEXPAND, 0);
+		//wxMetroTabList *tabs = new wxMetroTabList(frm, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxMT_MENUBUTTONS);
+		//tabs->Append("photovoltaic #1");
+		//tabs->Append("solar water");
+		//tabs->Append("power tower steam");
+		//tools->Add(tabs, 1, wxALL | wxEXPAND, 0);
+		//tools->Add(new wxMetroButton(frm, wxID_ANY, wxEmptyString, wxBITMAP_PNG_FROM_DATA(qmark), wxDefaultPosition, wxDefaultSize), 0, wxALL | wxEXPAND, 0);
+		////tools->Add( new wxMetroButton( frm, wxID_ANY, wxEmptyString, wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_DOWNARROW), 0, wxALL|wxEXPAND, 0 );
+
+		//wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+		//sizer->Add(tools, 0, wxALL | wxEXPAND, 0);
+		//sizer->Add(new wxMetroButton(frm, wxID_ANY, "Start", wxBITMAP_PNG_FROM_DATA(demo_bitmap), wxDefaultPosition, wxDefaultSize, wxMB_RIGHTARROW), 0, wxALL, 3);
+		//sizer->Add(new wxMetroButton(frm, wxID_ANY, "Stretched Start", wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_RIGHTARROW), 0, wxALL | wxEXPAND, 3);
+		//sizer->Add(new wxMetroButton(frm, wxID_ANY, "Test button"), 0, wxALL, 3);
+		//sizer->Add(new wxMetroButton(frm, wxID_ANY, "Popup menu", wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_DOWNARROW), 0, wxALL, 3);
+		//sizer->Add(new wxMetroButton(frm, wxID_ANY, "Left align label", wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_ALIGNLEFT), 0, wxEXPAND | wxALL, 3);
+		//sizer->Add(new wxMetroButton(frm, wxID_ANY, "Left align arrow", wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_ALIGNLEFT | wxMB_RIGHTARROW), 0, wxEXPAND | wxALL, 3);
+		//sizer->Add(new wxMetroButton(frm, wxID_ANY, wxEmptyString, wxBITMAP_PNG_FROM_DATA(demo_bitmap), wxDefaultPosition, wxDefaultSize), 0, wxALL, 3);
+
+		//MyNoteTest *nb = new MyNoteTest(frm);
+
+		///*wxPanel *p = new wxPanel( nb );
+		//p->SetBackgroundColour(*wxRED);
+		//nb->AddPage( p, "Case 2: PV+debt" );
+
+		//p = new wxPanel( nb );
+		//p->SetBackgroundColour(*wxBLUE);
+		//nb->AddPage( p, "Case 1: PV" );
+
+		//nb->AddPage( new wxPanel( nb ), "Wind system" );
+		//nb->AddPage( new wxPanel( nb ), "solar water heat" );*/
+		//sizer->Add(nb, 1, wxALL | wxEXPAND, 0);
+
+		//wxMetroNotebook *nb2 = new wxMetroNotebook(frm, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxMT_LIGHTTHEME);
+		//nb2->AddPage(new wxPanel(nb), "Base Case");
+		//nb2->AddPage(new wxPanel(nb), "Parametrics");
+		//nb2->AddPage(new wxPanel(nb), "Sensitivities");
+		//nb2->AddPage(new wxPanel(nb), "Statistics");
+		//nb2->AddPage(new wxPanel(nb), "Scripting");
+		//sizer->Add(nb2, 1, wxALL | wxEXPAND, 0);
+
+		////wxDiurnalPeriodCtrl *sch = new wxDiurnalPeriodCtrl( frm, wxID_ANY );
+		////sch->SetupTOUGrid();
+		////sizer->Add( sch, 1, wxALL|wxEXPAND, 5 );
+
+		//frm->SetSizer(sizer);
+		//frm->Show();
+	
+		///*
+
+		//	//	TestPLPlot( 0 );
+
+		//	/*
+		//	wxChar sep = ',';
+		//	bool use_thousep = wxNumberFormatter::GetThousandsSeparatorIfUsed(&sep);
+		//	wxMessageBox( m_locale.GetLocale() + "\n" + wxString::Format( "thousep? %d sep=%c\n\n", use_thousep ? 1:0, (char)sep)
+		//	+ wxNumberFormatter::ToString( 12490589.02, 2, wxNumberFormatter::Style_WithThousandsSep ) );
+
+		//	wxFrame *top = new wxFrame(NULL, wxID_ANY, "CSV Read Test", wxDefaultPosition, wxSize(500,500));
+
+		//	wxDiurnalPeriodCtrl *sched = new wxDiurnalPeriodCtrl( top, wxID_ANY );
+		//	sched->SetupTOUGrid();
+
+		//	wxGrid *grid = new wxGrid( top, wxID_ANY );
+
+		//	wxCSVData csv;
+		//	wxStopWatch sw;
+		//	bool ok = csv.ReadFile( "c:/Users/adobos/Desktop/csv_test.csv" );
+		//	int msec = sw.Time();
+		//	csv.WriteFile("c:/Users/adobos/Desktop/csv_test2.csv");
+		//	int nr = (int)csv.NumRows()+1;
+		//	int nc = (int)csv.NumCols()+1;
+		//	top->SetTitle( wxString::Format("CSVRead: (%d ms) %d %s [%d x %d]", msec, csv.GetErrorLine(), ok?"ok":"fail", nr, nc) );
+
+		//	if (nr > 0 && nc > 0)
+		//	{
+		//	grid->CreateGrid( nr, nc );
+		//	for ( size_t r = 0; r < nr; r++ )
+		//	for ( size_t c = 0; c < nc; c++ )
+		//	grid->SetCellValue( r, c, csv(r,c) );
+		//	}
+		//	*/
+
+		//return true;
 		//
-
-		//TestSnapLayout( 0 );
-		return true;
-
-		//TestDVSelectionCtrl();
-
-		//TestPLPolarPlot(0);
-
-		//TestWindRose(0);
-
-		/*
-		wxFrame *frame = new wxFrame(NULL, wxID_ANY, "Test LKEdit", wxDefaultPosition, wxSize(600,400) );
-		new wxLKScriptCtrl(frame, wxID_ANY );
-		frame->Show();
-		*/
-
-		wxFrame *frm = new wxFrame(NULL, wxID_ANY, "SchedCtrl", wxDefaultPosition, wxSize(1100, 700));
-		frm->SetBackgroundColour(*wxWHITE);
-
-		wxBoxSizer *tools = new wxBoxSizer(wxHORIZONTAL);
-		tools->Add(new wxMetroButton(frm, wxID_ANY, wxEmptyString, wxBITMAP_PNG_FROM_DATA(demo_bitmap), wxDefaultPosition, wxDefaultSize), 0, wxALL | wxEXPAND, 0);
-		tools->Add(new wxMetroButton(frm, wxID_ANY, "New", wxBITMAP_PNG_FROM_DATA(cirplus), wxDefaultPosition, wxDefaultSize), 0, wxALL | wxEXPAND, 0);
-		wxMetroTabList *tabs = new wxMetroTabList(frm, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxMT_MENUBUTTONS);
-		tabs->Append("photovoltaic #1");
-		tabs->Append("solar water");
-		tabs->Append("power tower steam");
-		tools->Add(tabs, 1, wxALL | wxEXPAND, 0);
-		tools->Add(new wxMetroButton(frm, wxID_ANY, wxEmptyString, wxBITMAP_PNG_FROM_DATA(qmark), wxDefaultPosition, wxDefaultSize), 0, wxALL | wxEXPAND, 0);
-		//tools->Add( new wxMetroButton( frm, wxID_ANY, wxEmptyString, wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_DOWNARROW), 0, wxALL|wxEXPAND, 0 );
-
-		wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-		sizer->Add(tools, 0, wxALL | wxEXPAND, 0);
-		sizer->Add(new wxMetroButton(frm, wxID_ANY, "Start", wxBITMAP_PNG_FROM_DATA(demo_bitmap), wxDefaultPosition, wxDefaultSize, wxMB_RIGHTARROW), 0, wxALL, 3);
-		sizer->Add(new wxMetroButton(frm, wxID_ANY, "Stretched Start", wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_RIGHTARROW), 0, wxALL | wxEXPAND, 3);
-		sizer->Add(new wxMetroButton(frm, wxID_ANY, "Test button"), 0, wxALL, 3);
-		sizer->Add(new wxMetroButton(frm, wxID_ANY, "Popup menu", wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_DOWNARROW), 0, wxALL, 3);
-		sizer->Add(new wxMetroButton(frm, wxID_ANY, "Left align label", wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_ALIGNLEFT), 0, wxEXPAND | wxALL, 3);
-		sizer->Add(new wxMetroButton(frm, wxID_ANY, "Left align arrow", wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_ALIGNLEFT | wxMB_RIGHTARROW), 0, wxEXPAND | wxALL, 3);
-		sizer->Add(new wxMetroButton(frm, wxID_ANY, wxEmptyString, wxBITMAP_PNG_FROM_DATA(demo_bitmap), wxDefaultPosition, wxDefaultSize), 0, wxALL, 3);
-
-		MyNoteTest *nb = new MyNoteTest(frm);
-
-		/*wxPanel *p = new wxPanel( nb );
-		p->SetBackgroundColour(*wxRED);
-		nb->AddPage( p, "Case 2: PV+debt" );
-
-		p = new wxPanel( nb );
-		p->SetBackgroundColour(*wxBLUE);
-		nb->AddPage( p, "Case 1: PV" );
-
-		nb->AddPage( new wxPanel( nb ), "Wind system" );
-		nb->AddPage( new wxPanel( nb ), "solar water heat" );*/
-		sizer->Add(nb, 1, wxALL | wxEXPAND, 0);
-
-		wxMetroNotebook *nb2 = new wxMetroNotebook(frm, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxMT_LIGHTTHEME);
-		nb2->AddPage(new wxPanel(nb), "Base Case");
-		nb2->AddPage(new wxPanel(nb), "Parametrics");
-		nb2->AddPage(new wxPanel(nb), "Sensitivities");
-		nb2->AddPage(new wxPanel(nb), "Statistics");
-		nb2->AddPage(new wxPanel(nb), "Scripting");
-		sizer->Add(nb2, 1, wxALL | wxEXPAND, 0);
-
-		//wxDiurnalPeriodCtrl *sch = new wxDiurnalPeriodCtrl( frm, wxID_ANY );
-		//sch->SetupTOUGrid();
-		//sizer->Add( sch, 1, wxALL|wxEXPAND, 5 );
-
-		frm->SetSizer(sizer);
-		frm->Show();
-
-		/*
-
-			//	TestPLPlot( 0 );
-
-			/*
-			wxChar sep = ',';
-			bool use_thousep = wxNumberFormatter::GetThousandsSeparatorIfUsed(&sep);
-			wxMessageBox( m_locale.GetLocale() + "\n" + wxString::Format( "thousep? %d sep=%c\n\n", use_thousep ? 1:0, (char)sep)
-			+ wxNumberFormatter::ToString( 12490589.02, 2, wxNumberFormatter::Style_WithThousandsSep ) );
-
-			wxFrame *top = new wxFrame(NULL, wxID_ANY, "CSV Read Test", wxDefaultPosition, wxSize(500,500));
-
-			wxDiurnalPeriodCtrl *sched = new wxDiurnalPeriodCtrl( top, wxID_ANY );
-			sched->SetupTOUGrid();
-
-			wxGrid *grid = new wxGrid( top, wxID_ANY );
-
-			wxCSVData csv;
-			wxStopWatch sw;
-			bool ok = csv.ReadFile( "c:/Users/adobos/Desktop/csv_test.csv" );
-			int msec = sw.Time();
-			csv.WriteFile("c:/Users/adobos/Desktop/csv_test2.csv");
-			int nr = (int)csv.NumRows()+1;
-			int nc = (int)csv.NumCols()+1;
-			top->SetTitle( wxString::Format("CSVRead: (%d ms) %d %s [%d x %d]", msec, csv.GetErrorLine(), ok?"ok":"fail", nr, nc) );
-
-			if (nr > 0 && nc > 0)
-			{
-			grid->CreateGrid( nr, nc );
-			for ( size_t r = 0; r < nr; r++ )
-			for ( size_t c = 0; c < nc; c++ )
-			grid->SetCellValue( r, c, csv(r,c) );
-			}
-			*/
-
-		return true;
 	}
 };
 

@@ -4729,9 +4729,10 @@
 #ifdef FT_CONFIG_OPTION_PIC
   Fail:
     ft_pic_container_destroy( library );
-#endif
+
     FT_FREE( library );
     return error;
+#endif
   }
 
 

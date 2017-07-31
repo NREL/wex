@@ -167,7 +167,7 @@ void wxPLColourMap::Render(wxPLOutputDevice &dc, const wxPLRealRect &geom)
 	else
 	{
 		double yTextStep = colourBarHeight / (m_labels.size() - 1.0);
-		double step = (m_max - m_min) / (m_labels.size() - 1.0);
+//		double step = (m_max - m_min) / (m_labels.size() - 1.0);
 		for (size_t i = 0; i < m_labels.size(); i++)
 			dc.Text(m_labels[i], xTextPos, geom.y + wxCoord(m_labels.size() - 1 - i)*yTextStep);
 	}
@@ -184,7 +184,7 @@ wxColour wxPLColourMap::ColourForValue(double val)
 		: (val - m_min) / (m_max - m_min)
 		));
 
-	if (position >= 0 && position < m_colourList.size())
+	if (position >= 0 && position < (int)m_colourList.size())
 		return m_colourList[position];
 	else if (position < 0)
 		return m_colourList.front();

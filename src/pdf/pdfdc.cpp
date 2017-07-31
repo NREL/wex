@@ -142,7 +142,7 @@ wxPdfDCImpl::wxPdfDCImpl(wxPdfDC* owner, const wxPrintData& data)
   m_ok = true;
 }
 
-wxPdfDCImpl::wxPdfDCImpl(wxPdfDC* owner, const wxString& file, int w, int h)
+wxPdfDCImpl::wxPdfDCImpl(wxPdfDC* owner, const wxString& file, int , int )
   : wxDCImpl(owner)
 {
   Init();
@@ -730,8 +730,8 @@ wxPdfDCImpl::DoDrawArc(wxCoord x1, wxCoord y1,
     const double end   = angleByCoords(x2, y2, xc, yc);
     const double xx1 = ScaleLogicalToPdfX(x1);
     const double yy1 = ScaleLogicalToPdfY(y1);
-    const double xx2 = ScaleLogicalToPdfX(x2);
-    const double yy2 = ScaleLogicalToPdfY(y2);
+//    const double xx2 = ScaleLogicalToPdfX(x2);
+//    const double yy2 = ScaleLogicalToPdfY(y2);
     const double xxc = ScaleLogicalToPdfX(xc);
     const double yyc = ScaleLogicalToPdfY(yc);
     const double rx = xx1 - xxc;

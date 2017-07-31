@@ -66,7 +66,7 @@ bool wxRadioChoice::IsEnabled(int idx)
 		return false;
 }
 
-void wxRadioChoice::OnRadio(wxCommandEvent &evt)
+void wxRadioChoice::OnRadio(wxCommandEvent &)
 {
 	wxCommandEvent radioclick(wxEVT_COMMAND_RADIOBUTTON_SELECTED, GetId());
 	radioclick.SetEventObject(this);
@@ -231,8 +231,8 @@ void wxRadioChoice::Rearrange()
 			if (best_height > s_minHeight)
 				b_height = best_height;
 
-			if (m_evenly);
-			b_height = c_height / m_buttons.size();
+			if (m_evenly)
+				b_height = c_height / m_buttons.size();
 		}
 
 		int y = 0;

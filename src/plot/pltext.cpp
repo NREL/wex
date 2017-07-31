@@ -739,8 +739,8 @@ bool wxFreeTypeFontStyle(int ifnt, bool *bold, bool *italic)
 {
 	if (ifnt >= 0 && ifnt < (int)ft_faces.size())
 	{
-		if (bold) *bold = ft_faces[ifnt].face->style_flags & FT_STYLE_FLAG_BOLD;
-		if (italic) *italic = ft_faces[ifnt].face->style_flags & FT_STYLE_FLAG_ITALIC;
+		if (bold) *bold = (ft_faces[ifnt].face->style_flags & FT_STYLE_FLAG_BOLD) > 0;
+		if (italic) *italic = (ft_faces[ifnt].face->style_flags & FT_STYLE_FLAG_ITALIC) > 0;
 		return true;
 	}
 	else
@@ -751,7 +751,7 @@ unsigned char *wxFreeTypeFontData(int ifnt, size_t *len)
 {
 	if (ifnt >= 0 && ifnt < (int)ft_faces.size())
 	{
-		if (ft_faces[ifnt].builtin && ifnt < gs_inflatedFontData.size())
+		if (ft_faces[ifnt].builtin && ifnt < (int)gs_inflatedFontData.size())
 		{
 			if (len) *len = gs_inflatedFontData[ifnt]->size();
 			return &(*gs_inflatedFontData[ifnt])[0];
@@ -817,7 +817,7 @@ static void wxFreeTypeGlyph(unsigned char *rgb, unsigned char *alpha,
 		for (j = y, q = 0; j < y_max; j++, q++)
 		{
 			if ( i < 0      || j < 0       ||
-				i >= width || j >= height )
+				i >= (int)width || j >= (int)height )
 				continue;
 
 			int index = j*width + i;
@@ -1000,7 +1000,7 @@ void wxFreeTypeDraw(wxImage *img, bool init_img, const wxPoint &pos,
 	if (init_img)
 	{
 		// initialize rgb and alpha
-		for (size_t i = 0; i < size.x*size.y; i++)
+		for (int i = 0; i < size.x*size.y; i++)
 		{
 			rgb[3 * i] = R;
 			rgb[3 * i + 1] = G;
@@ -1024,7 +1024,7 @@ void wxFreeTypeDraw(wxImage *img, bool init_img, const wxPoint &pos,
 	matrix.yx = (FT_Fixed)(sin(angle) * 0x10000L);
 	matrix.yy = (FT_Fixed)(cos(angle) * 0x10000L);
 
-	bool use_kerning = FT_HAS_KERNING(face);
+	bool use_kerning = (FT_HAS_KERNING(face) > 0);
 	FT_UInt previous = 0, glyph_index;
 
 	FT_Vector pen;
@@ -1100,8 +1100,8 @@ wxSize wxFreeTypeMeasure(int fnt, double points, unsigned int dpi, const wxStrin
 	FT_UInt previous, glyph_index;
 	int pen_x = 0;
 	int pen_y = 0;
-	int px_ascent = ((double)face->ascender) / ((double)face->units_per_EM) * points * dpi / 72.0;
-	bool use_kerning = FT_HAS_KERNING(face);
+//	int px_ascent = ((double)face->ascender) / ((double)face->units_per_EM) * points * dpi / 72.0;
+	bool use_kerning = (FT_HAS_KERNING(face) > 0);
 	previous = 0;
 	for (wxString::const_iterator it = text.begin(); it != text.end(); ++it)
 	{
@@ -1219,7 +1219,7 @@ wxFreeTypeDemo::wxFreeTypeDemo(wxWindow *parent)
 
 int wxFreeTypeDemo::Face(int i)
 {
-	if (i <= faces.size())
+	if (i <= (int)faces.size())
 		return i;
 	else
 		return faces.size() - 1;

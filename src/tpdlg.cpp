@@ -134,7 +134,7 @@ void wxThreadProgressDialog::ShowBars(int n)
 	if (n < 0) n = m_progbars.size();
 	for (size_t i = 0; i < m_progbars.size(); i++)
 	{
-		bool show = (i < n);
+		bool show = ((int)i < n);
 		m_labels[i]->Show(show);
 		m_progbars[i]->Show(show);
 		m_percents[i]->Show(show);
@@ -166,7 +166,7 @@ void wxThreadProgressDialog::Log(const wxString &text)
 
 void wxThreadProgressDialog::Update(int ThreadNum, float percent, const wxString &text)
 {
-	if (ThreadNum >= 0 && ThreadNum < m_progbars.size())
+	if (ThreadNum >= 0 && ThreadNum < (int)m_progbars.size())
 	{
 		m_progbars[ThreadNum]->SetValue((int)percent);
 		m_percents[ThreadNum]->ChangeValue(wxString::Format("%.1f %%", percent));
@@ -214,7 +214,7 @@ void wxThreadProgressDialog::Finalize(const wxString &title)
 	}
 }
 
-void wxThreadProgressDialog::OnCancel(wxCommandEvent &evt)
+void wxThreadProgressDialog::OnCancel(wxCommandEvent &)
 {
 	m_canceled = true;
 	if (IsModal())

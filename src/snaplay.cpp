@@ -338,7 +338,7 @@ void wxSnapLayout::AutoLayout2()
 	// find the max extents and setup the scrollbars
 	size_t ymax = 0;
 	for (size_t i = 0; i<m_list.size(); i++)
-		if (m_list[i]->active.y + m_list[i]->active.height > ymax)
+		if (m_list[i]->active.y + m_list[i]->active.height > (int)ymax)
 			ymax = m_list[i]->active.y + m_list[i]->active.height;
 
 	SetScrollbars(1, 1, client.x, ymax, vsx / m_scrollRate, vsy / m_scrollRate);
@@ -350,6 +350,7 @@ void wxSnapLayout::AutoLayout()
 	AutoLayout2();
 	return;
 
+/*
 	m_targets.clear();
 
 	if (m_list.size() == 0) return;
@@ -363,12 +364,12 @@ void wxSnapLayout::AutoLayout()
 	int row_min_height = 10000;
 	int row_max_height = 0;
 
-	size_t nn = m_list.size();
+//	size_t nn = m_list.size();
 
 	int irow = 0;
 	int icol = 0;
 	int idx = 0;
-	while (idx < m_list.size())
+	while (idx < (int)m_list.size())
 	{
 		layout_box &l = *m_list[idx];
 		wxSize sz(l.req.x <= 0 || l.req.y <= 0 ? l.win->GetBestSize() : l.req);
@@ -436,6 +437,7 @@ void wxSnapLayout::AutoLayout()
 
 	SetScrollbars(1, 1, client.x, y + row_max_height, vs.x, vs.y);
 	SetScrollRate(30, 30);
+	*/
 }
 
 wxSnapLayout::layout_box *wxSnapLayout::CheckActive(const wxPoint &p, int *handle)
@@ -487,7 +489,7 @@ void wxSnapLayout::OnLeftDown(wxMouseEvent &evt)
 		CaptureMouse();
 }
 
-void wxSnapLayout::OnLeaveWindow(wxMouseEvent &evt)
+void wxSnapLayout::OnLeaveWindow(wxMouseEvent &)
 {
 	if (m_sizeHover >= 0 || m_moveHover >= 0)
 	{
@@ -497,7 +499,7 @@ void wxSnapLayout::OnLeaveWindow(wxMouseEvent &evt)
 	}
 }
 
-void wxSnapLayout::OnLeftUp(wxMouseEvent &evt)
+void wxSnapLayout::OnLeftUp(wxMouseEvent &)
 {
 	if (HasCapture())
 		ReleaseMouse();
