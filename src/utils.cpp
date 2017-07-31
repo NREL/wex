@@ -1415,7 +1415,7 @@ wxString wxGetMD5(const wxString &string)
 	MD5_CTX ctx;
 	char tmp[40];		// MD5 are fixed sized to 32 chars
 
-	char *buf = _strdup((const char*)string.c_str());
+	char *buf = strdup((const char*)string.c_str());
 
 	MD5Init(&ctx);
 	MD5Update(&ctx, (unsigned char*)buf, strlen(buf));
