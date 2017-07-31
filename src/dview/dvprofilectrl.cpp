@@ -880,7 +880,7 @@ void wxDVProfileCtrl::ShowPlotAtIndex(int i)
 
 		YLabelText = units;
 
-		for (size_t k = 0; k < m_dataSelector->Length(); k++)
+		for (int k = 0; k < m_dataSelector->Length(); k++)
 
 		{
 			if (m_dataSelector->IsSelected(k, 0) && m_plots[i]->dataset->GetUnits() == units)

@@ -2520,7 +2520,7 @@ void wxUIFormEditor::DrawMultiSelBox()
 #ifdef __WXOSX__
 	wxBrush brush(wxColour(240, 240, 240, 130));
 #else
-	wxBrush brush(*wxWHITE, wxTRANSPARENT);
+	wxBrush brush(*wxWHITE, wxBRUSHSTYLE_TRANSPARENT);
 #endif
 	wxPen pen(wxColour(90, 90, 90));
 #else
@@ -2555,7 +2555,7 @@ void wxUIFormEditor::DrawMoveResizeOutlines()
 #ifdef __WXOSX__
 	wxBrush brush(wxColour(240, 240, 240, 130));
 #else
-	wxBrush brush(*wxWHITE, wxTRANSPARENT);
+	wxBrush brush(*wxWHITE, wxBRUSHSTYLE_TRANSPARENT);
 #endif
 
 #else
@@ -2563,7 +2563,7 @@ void wxUIFormEditor::DrawMoveResizeOutlines()
 	wxBrush brush(*wxWHITE, wxTRANSPARENT);
 #endif
 
-	wxPen pen(wxColour(90, 90, 90), 1, wxSOLID);
+	wxPen pen(wxColour(90, 90, 90), 1, wxPENSTYLE_SOLID);
 	pen.SetCap(wxCAP_BUTT);
 	pen.SetJoin(wxJOIN_MITER);
 
@@ -2835,7 +2835,7 @@ void wxUIFormEditor::OnPaint(wxPaintEvent &)
 			dc.SetClippingRegion(rct);
 			if (objs[i]->DrawDottedOutline() && !m_viewMode)
 			{
-				wxPen p = wxPen(*wxBLACK, 1, wxDOT);
+				wxPen p = wxPen(*wxBLACK, 1, wxPENSTYLE_DOT);
 				p.SetCap(wxCAP_BUTT);
 				p.SetJoin(wxJOIN_MITER);
 				dc.SetPen(p);

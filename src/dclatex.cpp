@@ -97,7 +97,7 @@ wxLatexDCImpl::~wxLatexDCImpl()
 
 	// Adjust width:
 	double pxToCm = 2.54 / m_dpi;
-	double widthX = (maxX - minX) * pxToCm; // width in cm
+//	double widthX = (maxX - minX) * pxToCm; // width in cm
 
 	wxString buffer;
 	buffer.Printf(
@@ -140,7 +140,7 @@ void wxLatexDCImpl::DoDrawLine(wxCoord x1, wxCoord y1, wxCoord x2, wxCoord y2)
 	wxCHECK_RET(m_OK, wxT("invalid latex dc"));
 
 	wxString filled = "[";
-	if (m_pen.GetStyle() != wxTRANSPARENT)
+	if (m_pen.GetStyle() != wxPENSTYLE_TRANSPARENT)
 	{
 		filled = filled + CreatePenString(m_pen);
 	}
@@ -168,7 +168,7 @@ void wxLatexDCImpl::DoDrawLines(int n, const wxPoint points[], wxCoord xoffset, 
 	if (n <= 0) return;
 
 	wxString filled = "[";
-	if (m_pen.GetStyle() != wxTRANSPARENT)
+	if (m_pen.GetStyle() != wxPENSTYLE_TRANSPARENT)
 	{
 		filled = filled + CreatePenString(m_pen);
 	}
@@ -204,7 +204,7 @@ void wxLatexDCImpl::DoDrawPoint(wxCoord x1, wxCoord y1)
 	wxCHECK_RET(m_OK, wxT("invalid latex dc"));
 
 	wxString filled = "[";
-	if (m_pen.GetStyle() != wxTRANSPARENT)
+	if (m_pen.GetStyle() != wxPENSTYLE_TRANSPARENT)
 	{
 		filled = filled + CreatePenString(m_pen);
 	}
@@ -337,7 +337,7 @@ void wxLatexDCImpl::DoDrawRotatedText(const wxString& sText, wxCoord x, wxCoord 
 }
 
 void wxLatexDCImpl::DrawLabelLatex(const wxString& text, const wxRect& rect,
-	int alignment, int indexAccel)
+	int alignment, int )
 {
 	wxCHECK_RET(m_OK, wxT("invalid latex dc"));
 
@@ -437,11 +437,11 @@ void wxLatexDCImpl::DoDrawRoundedRectangle(wxCoord x, wxCoord y, wxCoord width, 
 	width--;
 	height--;
 	wxString filled = "[";
-	if (m_brush.GetStyle() != wxTRANSPARENT) {
+	if (m_brush.GetStyle() != wxBRUSHSTYLE_TRANSPARENT) {
 		filled = filled + CreateBrushString(m_brush);
 	}
 
-	if (m_pen.GetStyle() != wxTRANSPARENT)
+	if (m_pen.GetStyle() != wxPENSTYLE_TRANSPARENT)
 	{
 		filled = filled + CreatePenString(m_pen);
 	}
@@ -464,16 +464,16 @@ void wxLatexDCImpl::DoDrawRoundedRectangle(wxCoord x, wxCoord y, wxCoord width, 
 	CalcBoundingBox(x + width, y + height);
 }
 
-void wxLatexDCImpl::DoDrawPolygon(int n, const wxPoint points[], wxCoord xoffset, wxCoord yoffset, wxPolygonFillMode fillStyle)
+void wxLatexDCImpl::DoDrawPolygon(int n, const wxPoint points[], wxCoord xoffset, wxCoord yoffset, wxPolygonFillMode )
 {
 	wxCHECK_RET(m_OK, wxT("invalid latex dc"));
 
 	wxString filled = "[";
-	if (m_brush.GetStyle() != wxTRANSPARENT) {
+	if (m_brush.GetStyle() != wxBRUSHSTYLE_TRANSPARENT) {
 		filled = filled + CreateBrushString(m_brush);
 	}
 
-	if (m_pen.GetStyle() != wxTRANSPARENT)
+	if (m_pen.GetStyle() != wxPENSTYLE_TRANSPARENT)
 	{
 		filled = filled + CreatePenString(m_pen);
 	}
@@ -510,11 +510,11 @@ void wxLatexDCImpl::DoDrawEllipse(wxCoord x, wxCoord y, wxCoord w, wxCoord h)
 	wxCHECK_RET(m_OK, wxT("invalid latex dc"));
 
 	wxString filled = "[";
-	if (m_brush.GetStyle() != wxTRANSPARENT) {
+	if (m_brush.GetStyle() != wxBRUSHSTYLE_TRANSPARENT) {
 		filled = filled + CreateBrushString(m_brush);
 	}
 
-	if (m_pen.GetStyle() != wxTRANSPARENT)
+	if (m_pen.GetStyle() != wxPENSTYLE_TRANSPARENT)
 	{
 		filled = filled + CreatePenString(m_pen);
 	}
@@ -569,11 +569,11 @@ void wxLatexDCImpl::DoDrawArc(wxCoord x1, wxCoord y1, wxCoord x2, wxCoord y2, wx
 	int i_radius = wxRound(radius);
 
 	wxString filled = "[";
-	if (m_brush.GetStyle() != wxTRANSPARENT) {
+	if (m_brush.GetStyle() != wxBRUSHSTYLE_TRANSPARENT) {
 		filled = filled + CreateBrushString(m_brush);
 	}
 
-	if (m_pen.GetStyle() != wxTRANSPARENT)
+	if (m_pen.GetStyle() != wxPENSTYLE_TRANSPARENT)
 	{
 		filled = filled + CreatePenString(m_pen);
 	}
@@ -616,11 +616,11 @@ void wxLatexDCImpl::DoDrawEllipticArc(wxCoord x, wxCoord y, wxCoord w, wxCoord h
 	}
 
 	wxString filled = "[";
-	if (m_brush.GetStyle() != wxTRANSPARENT) {
+	if (m_brush.GetStyle() != wxBRUSHSTYLE_TRANSPARENT) {
 		filled = filled + CreateBrushString(m_brush);
 	}
 
-	if (m_pen.GetStyle() != wxTRANSPARENT)
+	if (m_pen.GetStyle() != wxPENSTYLE_TRANSPARENT)
 	{
 		filled = filled + CreatePenString(m_pen);
 	}
@@ -673,9 +673,9 @@ void wxLatexDCImpl::SetPen(const wxPen& pen)
 }
 
 // export a bitmap as a raster image in png
-bool wxLatexDCImpl::DoBlit(wxCoord xdest, wxCoord ydest, wxCoord width, wxCoord height,
-	wxDC* source, wxCoord xsrc, wxCoord ysrc,
-	wxRasterOperationMode logicalFunc /*= wxCOPY*/, bool useMask /*= FALSE*/,
+bool wxLatexDCImpl::DoBlit(wxCoord , wxCoord , wxCoord , wxCoord ,
+	wxDC* , wxCoord , wxCoord ,
+	wxRasterOperationMode  /*= wxCOPY*/, bool  /*= FALSE*/,
 	wxCoord /*xsrcMask = -1*/, wxCoord /*ysrcMask = -1*/)
 {
 	wxFAIL_MSG(wxT("wxLatexDCImpl::DoBlit not implemented."));
@@ -687,7 +687,7 @@ void wxLatexDCImpl::DoDrawIcon(const class wxIcon & myIcon, wxCoord x, wxCoord y
 	DoDrawBitmap(myIcon, x, y, true);
 }
 
-void wxLatexDCImpl::DoDrawBitmap(const class wxBitmap & bmp, wxCoord x, wxCoord y, bool  WXUNUSED(bTransparent) /*=0*/)
+void wxLatexDCImpl::DoDrawBitmap(const class wxBitmap & , wxCoord , wxCoord , bool  WXUNUSED(bTransparent) /*=0*/)
 {
 	wxFAIL_MSG(wxT("wxLatexDCImpl::DoDrawBitmap not implemented."));
 }

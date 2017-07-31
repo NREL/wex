@@ -704,7 +704,7 @@ void wxSnapLayout::OnPaint(wxPaintEvent &)
 
 	if (m_active != 0 && m_handle < 0)
 	{
-		dc.SetBrush(wxBrush(wxMetroTheme::Colour(wxMT_HIGHLIGHT), wxSOLID));
+		dc.SetBrush(wxBrush(wxMetroTheme::Colour(wxMT_HIGHLIGHT), wxBRUSHSTYLE_SOLID));
 		for (size_t i = 0; i < m_targets.size(); i++)
 			dc.DrawRectangle(m_targets[i].target);
 	}
@@ -715,7 +715,7 @@ void wxSnapLayout::OnPaint(wxPaintEvent &)
 		dc.DrawRectangle(m_curtarget->target);
 	}
 
-	dc.SetBrush(wxBrush(wxColour(230, 230, 230), wxSOLID));
+	dc.SetBrush(wxBrush(wxColour(230, 230, 230), wxBRUSHSTYLE_SOLID));
 
 	if (m_sizeHover >= 0)
 	{

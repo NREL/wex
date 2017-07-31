@@ -1511,7 +1511,6 @@ wxJSONReader::ReadValue(wxInputStream& is, int ch, wxJSONValue& val)
 	// the value is not syntactically correct
 	AddError(_T("Literal \'%s\' is incorrect (did you forget quotes?)"), s);
 	return nextCh;
-	return nextCh;
 }
 
 //! Read a 4-hex-digit unicode character.

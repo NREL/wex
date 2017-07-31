@@ -663,7 +663,7 @@ void wxGLEasyCanvas::OnPaint(wxPaintEvent &)
 	SwapBuffers();
 }
 
-void wxGLEasyCanvas::OnSize(wxSizeEvent &evt)
+void wxGLEasyCanvas::OnSize(wxSizeEvent &)
 {
 	Refresh(false);
 }
@@ -693,7 +693,7 @@ void wxGLEasyCanvasTest::OnMenu(wxCommandEvent &evt)
 		{
 			if (FILE *fp = fopen(dlg.GetPath().c_str(), "r"))
 			{
-				wxGLPoint3D min(1e38, 1e38, 1e38), max(-1e38, -1e38, -1e38);
+				wxGLPoint3D min(1e38f, 1e38f, 1e38f), max(-1e38f, -1e38f, -1e38f);
 				char buf[512];
 				m_data.clear();
 				m_data.reserve(20000);
@@ -741,7 +741,7 @@ void wxGLEasyCanvasTest::OnRender()
 	Axes(wxGLPoint3D(-3, -10, 0), wxGLPoint3D(4, 7, 1));
 }
 
-void wxGLEasyCanvasTest::OnRightDown(wxMouseEvent &evt)
+void wxGLEasyCanvasTest::OnRightDown(wxMouseEvent &)
 {
 	wxMenu menu;
 	menu.Append(wxID_OPEN, "Open...");
