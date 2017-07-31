@@ -1642,7 +1642,7 @@ public:
 			keys.Sort();
 
 			for (size_t k = 0; k < keys.size(); k++)
-				if (val = F.env.lookup(keys[k], false))
+				if ((val = F.env.lookup(keys[k], false)) != 0)
 					sout += "    " + keys[k] + "  =  " + val->as_string() + "\n";
 		}
 

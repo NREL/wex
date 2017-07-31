@@ -241,11 +241,11 @@ std::vector<wxString> wxPLHistogramPlot::GetExportableDatasetHeaders(wxUniChar s
 	return tt;
 }
 
-std::vector<wxRealPoint> wxPLHistogramPlot::GetExportableDataset(double Xmin, double Xmax, bool visible_only) const
+std::vector<wxRealPoint> wxPLHistogramPlot::GetExportableDataset(double , double , bool ) const
 {
 	std::vector<wxRealPoint> data;
 
-	for (int i = 0; i < m_numberOfBins; i++)
+	for (int i = 0; i < (int)m_numberOfBins; i++)
 	{
 		data.push_back(wxRealPoint((HistBinAt(i).x + HistBinAt(i).y) / 2.0, HistAt(i)));
 	}

@@ -58,7 +58,7 @@ wxColour wxDVAutoColourAssigner::AssignLineColour(int index)
 	ColourPair cp;
 	wxColour tempColor = *wxRED;
 	int tempUseCount = 1000000000;	//Start with an impossibly high number of uses.  We'll reduce it until we find the lowest use count.
-	int colorIndex;
+	int colorIndex=0;
 
 	for (size_t i = 0; i < mAvailableColours.size(); i++)
 	{

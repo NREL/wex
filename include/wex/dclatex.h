@@ -97,7 +97,7 @@ public:
 	virtual void SetBackground(const wxBrush &brush);
 	virtual void SetBackgroundMode(int mode);
 	virtual void SetBrush(const wxBrush& brush);
-	virtual void SetFont(const wxFont& font)
+	virtual void SetFont(const wxFont& )
 	{
 		wxFAIL_MSG(wxT("wxLatexDC::SetFont() not implemented"));
 	}
@@ -175,15 +175,15 @@ private:
 			*y = m_height;
 	}
 
-	virtual void DoGetTextExtent(const wxString& string, wxCoord *w, wxCoord *h,
-		wxCoord *descent = NULL,
-		wxCoord *externalLeading = NULL,
-		const wxFont *font = NULL) const
+	virtual void DoGetTextExtent(const wxString& , wxCoord *, wxCoord *,
+		wxCoord * = NULL,
+		wxCoord * = NULL,
+		const wxFont * = NULL) const
 	{
 		wxFAIL_MSG(wxT("wxLatexDC::DoGetTextExtent not yet implemented"));
 	}
 
-	virtual void DoSetDeviceClippingRegion(const wxRegion& region)
+	virtual void DoSetDeviceClippingRegion(const wxRegion& )
 	{
 		wxFAIL_MSG(wxT("wxLatexDC::DoSetDeviceClippingRegion not yet implemented"));
 	}

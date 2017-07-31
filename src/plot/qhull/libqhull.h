@@ -652,6 +652,13 @@ struct qhT {
   qh internal constants
     internal constants for Qhull
 */
+#ifdef _MSC_VER
+#define __COMPILER__  "Visual C++"
+#pragma warning(disable: 4324)  // ignore warning for x64 alignment. Microsoft but per 
+// https://connect.microsoft.com/VisualStudio/feedback/details/604477/warning-c4324-raised-in-error-in-64-bit-builds
+#endif
+
+
   char qhull[sizeof("qhull")]; /* "qhull" for checking ownership while debugging */
   jmp_buf errexit;        /* exit label for qh_errexit, defined by setjmp() and NOerrexit */
   char jmpXtra[40];       /* extra bytes in case jmp_buf is defined wrong by compiler */

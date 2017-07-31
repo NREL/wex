@@ -235,8 +235,8 @@ static void TranslateBrush(wxBrush *b, const wxColour &c, wxPLOutputDevice::Styl
 	switch (sty)
 	{
 	case wxPLOutputDevice::NONE: *b = *wxTRANSPARENT_BRUSH; break;
-	case wxPLOutputDevice::HATCH: b->SetStyle(wxCROSSDIAG_HATCH); break;
-	default: b->SetStyle(wxSOLID); break;
+	case wxPLOutputDevice::HATCH: b->SetStyle(wxBRUSHSTYLE_CROSSDIAG_HATCH); break;
+	default: b->SetStyle(wxBRUSHSTYLE_SOLID); break;
 	}
 }
 
@@ -441,7 +441,7 @@ void wxPLGraphicsOutputDevice::Line(double x1, double y1, double x2, double y2)
 void wxPLGraphicsOutputDevice::Lines(size_t n, const wxRealPoint *pts)
 {
 	wxPoint2DDouble* pointsD = new wxPoint2DDouble[n];
-	for (int i = 0; i < n; ++i)
+	for (size_t i = 0; i < n; ++i)
 	{
 		pointsD[i].m_x = SCALE(pts[i].x);
 		pointsD[i].m_y = SCALE(pts[i].y);
@@ -458,7 +458,7 @@ void wxPLGraphicsOutputDevice::Polygon(size_t n, const wxRealPoint *pts, FillRul
 		closeIt = true;
 
 	wxPoint2DDouble* pointsD = new wxPoint2DDouble[n + (closeIt ? 1 : 0)];
-	for (int i = 0; i < n; ++i)
+	for (size_t i = 0; i < n; ++i)
 	{
 		pointsD[i].m_x = SCALE(pts[i].x);
 		pointsD[i].m_y = SCALE(pts[i].y);

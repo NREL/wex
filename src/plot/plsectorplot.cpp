@@ -292,7 +292,7 @@ void wxPLSectorPlot::Invalidate(std::vector<sector> &list)
 	}
 }
 
-void wxPLSectorPlot::DrawInLegend(wxPLOutputDevice &dc, const wxPLRealRect &rct)
+void wxPLSectorPlot::DrawInLegend(wxPLOutputDevice &, const wxPLRealRect &)
 {
 	// nothing to do - don't want it to show up in legend
 }

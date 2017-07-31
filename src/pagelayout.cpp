@@ -71,7 +71,7 @@ void wxScreenOutputDevice::LineStyle(float thick, int sty)
 {
 	int pixels = thick*m_lc->GetPPI();
 	if (pixels < 1) pixels = 1;
-	m_pen.SetStyle(sty == DOTTED ? wxDOT : wxSOLID);
+	m_pen.SetStyle(sty == DOTTED ? wxPENSTYLE_DOT : wxPENSTYLE_SOLID);
 	m_pen.SetWidth(pixels);
 	m_dc.SetPen(m_pen);
 }
@@ -88,7 +88,7 @@ void wxScreenOutputDevice::Rect(float x, float y, float width, float height, boo
 {
 	wxPoint topleft;
 	m_lc->PageToScreen(x, y, &topleft.x, &topleft.y);
-	m_brush.SetStyle(fill ? wxSOLID : wxTRANSPARENT);
+	m_brush.SetStyle(fill ? wxBRUSHSTYLE_SOLID : wxBRUSHSTYLE_TRANSPARENT);
 	m_pen.SetWidth(1);
 	m_dc.SetPen(m_pen);
 	m_dc.SetBrush(m_brush);
@@ -109,7 +109,7 @@ void wxScreenOutputDevice::Circle(float x, float y, float radius, bool fill)
 	m_lc->PageToScreen(x, y, &center.x, &center.y);
 
 	m_pen.SetWidth(1);
-	m_brush.SetStyle(fill ? wxSOLID : wxTRANSPARENT);
+	m_brush.SetStyle(fill ? wxBRUSHSTYLE_SOLID : wxBRUSHSTYLE_TRANSPARENT);
 	m_dc.SetPen(m_pen);
 	m_dc.SetBrush(m_brush);
 
@@ -122,7 +122,7 @@ void wxScreenOutputDevice::Arc(float x, float y, float width, float height, floa
 	m_lc->PageToScreen(x, y, &topleft.x, &topleft.y);
 
 	m_pen.SetWidth(1);
-	m_brush.SetStyle(fill ? wxSOLID : wxTRANSPARENT);
+	m_brush.SetStyle(fill ? wxBRUSHSTYLE_SOLID : wxBRUSHSTYLE_TRANSPARENT);
 	m_dc.SetPen(m_pen);
 	m_dc.SetBrush(m_brush);
 
@@ -998,7 +998,7 @@ void wxPageLayoutCtrl::DrawPageOutline(wxDC &dc)
 		m_page->layout_cache.height);
 
 	// draw grid
-	wxPen grid_pen(wxColour(220, 220, 220), 1, wxDOT);
+	wxPen grid_pen(wxColour(220, 220, 220), 1, wxPENSTYLE_DOT);
 	dc.SetPen(grid_pen);
 	dc.SetBrush(*wxTRANSPARENT_BRUSH);
 
@@ -1029,7 +1029,7 @@ void wxPageLayoutCtrl::DrawPageOutline(wxDC &dc)
 		}
 
 		// draw margin box
-		grid_pen.SetStyle(wxSOLID);
+		grid_pen.SetStyle(wxPENSTYLE_SOLID);
 		dc.SetPen(grid_pen);
 		wxPoint topleft, bottomright;
 		PageToScreen(left, top, &topleft.x, &topleft.y);
@@ -1081,7 +1081,7 @@ void wxPageLayoutCtrl::OnPaint(wxPaintEvent &)
 
 			if (m_showOutlines)
 			{
-				dc.SetPen(wxPen(*wxBLUE, 1, wxDOT));
+				dc.SetPen(wxPen(*wxBLUE, 1, wxPENSTYLE_DOT));
 				dc.SetBrush(*wxTRANSPARENT_BRUSH);
 				dc.DrawRectangle(tl.x, tl.y, width*m_ppi, height*m_ppi);
 			}
@@ -1093,10 +1093,10 @@ void wxPageLayoutCtrl::OnPaint(wxPaintEvent &)
 				wxRect rct(tl.x, tl.y, width*m_ppi, height*m_ppi);
 
 				dc.SetPen(wxPen(m_selectColour));
-				dc.SetBrush(wxBrush(m_selectColour, wxTRANSPARENT));
+				dc.SetBrush(wxBrush(m_selectColour, wxBRUSHSTYLE_TRANSPARENT));
 				dc.DrawRectangle(rct);
 
-				dc.SetBrush(wxBrush(m_selectColour, wxSOLID));
+				dc.SetBrush(wxBrush(m_selectColour, wxBRUSHSTYLE_SOLID));
 
 				// left side
 				dc.DrawRectangle(rct.x - RSZBOXW, rct.y - RSZBOXW, RSZBOXW, RSZBOXW);
@@ -1846,8 +1846,8 @@ void wxPageLayoutCtrl::DrawMultiSelBox()
 	PrepareDC(dc);
 
 	dc.SetLogicalFunction(wxINVERT);
-	wxBrush brush(*wxWHITE, wxTRANSPARENT);
-	wxPen pen(*wxBLACK, 2, wxSOLID);
+	wxBrush brush(*wxWHITE, wxBRUSHSTYLE_TRANSPARENT);
+	wxPen pen(*wxBLACK, 2, wxPENSTYLE_SOLID);
 	pen.SetCap(wxCAP_BUTT);
 	pen.SetJoin(wxJOIN_MITER);
 	dc.SetBrush(brush);
@@ -1875,8 +1875,8 @@ void wxPageLayoutCtrl::DrawMoveResizeOutlines()
 	wxClientDC dc(this);
 	PrepareDC(dc);
 	dc.SetLogicalFunction(wxINVERT);
-	wxBrush brush(*wxWHITE, wxTRANSPARENT);
-	wxPen pen(*wxBLACK, 2, wxSOLID);
+	wxBrush brush(*wxWHITE, wxBRUSHSTYLE_TRANSPARENT);
+	wxPen pen(*wxBLACK, 2, wxPENSTYLE_SOLID);
 	pen.SetCap(wxCAP_BUTT);
 	pen.SetJoin(wxJOIN_MITER);
 	dc.SetBrush(brush);

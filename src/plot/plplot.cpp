@@ -960,14 +960,14 @@ void wxPLPlot::WriteDataAsText(wxUniChar sep, wxOutputStream &os, bool visible_o
 		{
 			includeXForPlot[i] = true;
 		}
-		else if (histPlot = dynamic_cast<wxPLHistogramPlot*>(plot))
+		else if ((histPlot = dynamic_cast<wxPLHistogramPlot*>(plot)) != 0)
 		{
 			includeXForPlot[i] = true;
 
 			//For CDF plots there is no X data label. The closest useful label is the Y label of the companion PDF histogram plot, so we need to store for use by the CDF plot.
 			if (xDataLabel.IsEmpty()) { xDataLabel = m_plots[i].plot->GetYDataLabel(this); }
 		}
-		else if (histPlot = dynamic_cast<wxPLHistogramPlot*>(m_plots[i - 1].plot))
+		else if ((histPlot = dynamic_cast<wxPLHistogramPlot*>(m_plots[i - 1].plot)) !=0)
 		{
 			includeXForPlot[i] = true;
 		}
@@ -976,7 +976,7 @@ void wxPLPlot::WriteDataAsText(wxUniChar sep, wxOutputStream &os, bool visible_o
 			includeXForPlot[i] = (m_plots[i].plot->GetXDataLabel(this) != m_plots[i - 1].plot->GetXDataLabel(this));
 		}
 
-		if (histPlot = dynamic_cast<wxPLHistogramPlot*>(m_plots[i].plot))
+		if ((histPlot = dynamic_cast<wxPLHistogramPlot*>(m_plots[i].plot)) != 0)
 		{
 			//Do nothing
 		}
@@ -1552,7 +1552,7 @@ void wxPLPlot::DrawAnnotations(wxPLOutputDevice &dc, const wxPLRealRect &plotare
 				xax = GetAxis(m_annotations[i].xap);
 				yax = GetAxis(m_annotations[i].yap);
 
-				if (m_annotations[i].ppos < m_plotRects.size())
+				if (m_annotations[i].ppos < (int)m_plotRects.size())
 				{
 					wxPLRealRect &bb = m_plotRects[m_annotations[i].ppos];
 					xmin = bb.x;
@@ -1999,7 +1999,7 @@ void wxPLPlot::UpdateAxes(bool recalc_all)
 		}
 	}
 
-	for (int i = position; i < m_plots.size(); i++)
+	for (int i = position; i < (int)m_plots.size(); i++)
 	{
 		wxPLPlottable *p = m_plots[i].plot;
 		AxisPos xap = m_plots[i].xap;

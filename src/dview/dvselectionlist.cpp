@@ -521,7 +521,7 @@ void wxDVSelectionListCtrl::OnPaint(wxPaintEvent &)
 			m_groups[g].geom = wxRect(0, y, windowRect.width, m_groupHeight);
 			dc.SetFont(font_bold);
 			dc.SetPen(wxPen(bg, 1));
-			dc.SetBrush(wxBrush(wxColour(50, 50, 50), wxSOLID)); // warning C4996: 'wxBrush::wxBrush': deprecated: use wxBRUSHSTYLE_XXX constants
+			dc.SetBrush(wxBrush(wxColour(50, 50, 50), wxBRUSHSTYLE_SOLID)); // warning C4996: 'wxBrush::wxBrush': deprecated: use wxBRUSHSTYLE_XXX constants
 			dc.DrawRectangle(m_groups[g].geom);
 			dc.SetTextForeground(*wxWHITE);
 			wxBitmap &bit = (m_collapsedGroups.Index(m_groups[g].label) >= 0) ? s_cirPlus : s_cirMinus;
@@ -550,7 +550,7 @@ void wxDVSelectionListCtrl::OnPaint(wxPaintEvent &)
 			if (!(m_style&wxDVSEL_NO_COLOURS) && IsRowSelected(items[i]->row_index, Start_Col))
 			{
 				dc.SetPen(wxPen(bg, 1));
-				dc.SetBrush(wxBrush(items[i]->color, wxSOLID));
+				dc.SetBrush(wxBrush(items[i]->color, wxBRUSHSTYLE_SOLID));
 				dc.DrawRectangle(m_xOffset - 4,
 					y,
 					m_numCols*m_boxSize + (m_numCols - 1)*yoff + 8,
@@ -717,7 +717,7 @@ void wxDVSelectionListCtrl::HandleRadio(int r, int c)
 	{
 		for (size_t k = 0; k < m_itemList.size(); k++)
 		{
-			m_itemList[k]->value[0] = (k == r);
+			m_itemList[k]->value[0] = ((int)k == r);
 			HandleLineColour(k);
 		}
 	}
@@ -726,7 +726,7 @@ void wxDVSelectionListCtrl::HandleRadio(int r, int c)
 	{
 		for (size_t k = 0; k < m_itemList.size(); k++)
 		{
-			m_itemList[k]->value[1] = (k == r);
+			m_itemList[k]->value[1] = ((int)k == r);
 			HandleLineColour(k);
 		}
 	}

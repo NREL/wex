@@ -132,21 +132,21 @@ public:
 		wxArrayString items = Property("Items").GetStringList();
 		wxChoice *cbo = new wxChoice(parent, wxID_ANY, GetPosition(), GetSize(), items);
 		int sel = Property("Selection").GetInteger();
-		if (sel >= 0 && sel < items.Count()) cbo->SetSelection(sel);
+		if (sel >= 0 && sel < (int)items.Count()) cbo->SetSelection(sel);
 		return AssignNative(cbo);
 	}
 	virtual void OnPropertyChanged(const wxString &id, wxUIProperty *p)
 	{
 		if (wxChoice *cbo = GetNative<wxChoice>())
 		{
-			if (id == "Selection" && p->GetInteger() >= 0 && p->GetInteger() < cbo->GetCount())
+			if (id == "Selection" && p->GetInteger() >= 0 && p->GetInteger() < (int)cbo->GetCount())
 				cbo->SetSelection(p->GetInteger());
 			else if (id == "Items")
 			{
 				int sel = cbo->GetSelection();
 				cbo->Clear();
 				cbo->Append(p->GetStringList());
-				if (sel >= 0 && sel < cbo->GetCount()) cbo->SetSelection(sel);
+				if (sel >= 0 && sel < (int)cbo->GetCount()) cbo->SetSelection(sel);
 			}
 		}
 	}
@@ -155,7 +155,7 @@ public:
 		wxRendererNative::Get().DrawComboBox(win, dc, geom);
 		int sel = Property("Selection").GetInteger();
 		wxArrayString items = Property("Items").GetStringList();
-		if (sel >= 0 && sel < items.Count())
+		if (sel >= 0 && sel < (int)items.Count())
 		{
 			dc.SetFont(*wxNORMAL_FONT);
 			dc.SetTextForeground(*wxBLACK);
@@ -236,25 +236,25 @@ public:
 		wxArrayString items = Property("Items").GetStringList();
 		wxListBox *list = new wxListBox(parent, wxID_ANY, GetPosition(), GetSize(), items, wxLB_SINGLE | wxLB_ALWAYS_SB);
 		int sel = Property("Selection").GetInteger();
-		if (sel >= 0 && sel < items.Count()) list->SetSelection(sel);
+		if (sel >= 0 && sel < (int)items.Count()) list->SetSelection(sel);
 		return AssignNative(list);
 	}
 	virtual void OnPropertyChanged(const wxString &id, wxUIProperty *p)
 	{
 		if (wxListBox *cbo = GetNative<wxListBox>())
 		{
-			if (id == "Selection" && p->GetInteger() >= 0 && p->GetInteger() < cbo->GetCount())
+			if (id == "Selection" && p->GetInteger() >= 0 && p->GetInteger() < (int)cbo->GetCount())
 				cbo->SetSelection(p->GetInteger());
 			else if (id == "Items")
 			{
 				int sel = cbo->GetSelection();
 				cbo->Clear();
 				cbo->Append(p->GetStringList());
-				if (sel >= 0 && sel < cbo->GetCount()) cbo->SetSelection(sel);
+				if (sel >= 0 && sel < (int)cbo->GetCount()) cbo->SetSelection(sel);
 			}
 		}
 	}
-	virtual void Draw(wxWindow *win, wxDC &dc, const wxRect &geom)
+	virtual void Draw(wxWindow *, wxDC &dc, const wxRect &geom)
 	{
 		dc.SetBrush(*wxWHITE_BRUSH);
 		dc.SetPen(wxPen(wxColour(135, 135, 135)));
@@ -269,7 +269,7 @@ public:
 		dc.SetPen(*wxTRANSPARENT_PEN);
 		for (size_t i = 0; i < items.Count() && y < geom.y + geom.height; i++)
 		{
-			if (i == sel) dc.DrawRectangle(geom.x + 1, y - 1, geom.width - 2, dc.GetCharHeight() + 2);
+			if ((int)i == sel) dc.DrawRectangle(geom.x + 1, y - 1, geom.width - 2, dc.GetCharHeight() + 2);
 
 			dc.DrawText(items[i], geom.x + 3, y);
 			y += dc.GetCharHeight() + 2;
@@ -302,7 +302,7 @@ public:
 		wxArrayString checked = wxStringTokenize(Property("Checked").GetString(), ",");
 		for (size_t i = 0; i < checked.size(); i++)	{
 			int idx = atoi(checked[i].c_str());
-			if (idx >= 0 && idx < clb->GetCount()) clb->Check(idx);
+			if (idx >= 0 && idx < (int)clb->GetCount()) clb->Check(idx);
 		}
 	}
 	virtual wxWindow *CreateNative(wxWindow *parent) {
@@ -314,7 +314,7 @@ public:
 	virtual void OnPropertyChanged(const wxString &id, wxUIProperty *p)	{
 		if (wxCheckListBox *clb = GetNative<wxCheckListBox>()) {
 			if (id == "Items") {
-				int sel = clb->GetSelection();
+//				int sel = clb->GetSelection();
 				clb->Clear();
 				clb->Append(p->GetStringList());
 			}
@@ -374,7 +374,7 @@ public:
 	virtual wxUIObject *Duplicate() { wxUIObject *o = new wxUILabelObject; o->Copy(this); return o; }
 	virtual bool IsNativeObject() { return false; }
 	virtual bool DrawDottedOutline() { return true; }
-	virtual void Draw(wxWindow *win, wxDC &dc, const wxRect &r) {
+	virtual void Draw(wxWindow *, wxDC &dc, const wxRect &r) {
 		if (IsVisible())
 		{
 			wxLabelDraw(dc, r, *wxNORMAL_FONT, Property("Caption").GetString(),
@@ -407,7 +407,7 @@ public:
 		wxRadioChoice *rc = new wxRadioChoice(parent, wxID_ANY, GetPosition(), GetSize());
 		rc->Add(items);
 		int sel = Property("Selection").GetInteger();
-		if (sel >= 0 && sel < items.Count()) rc->SetSelection(sel);
+		if (sel >= 0 && sel < (int)items.Count()) rc->SetSelection(sel);
 		rc->ShowCaptions(Property("ShowCaptions").GetBoolean());
 		rc->SetHorizontal(Property("Horizontal").GetBoolean());
 		return AssignNative(rc);
@@ -448,7 +448,7 @@ public:
 			for (size_t i = 0; i < items.Count() && y < geom.y + geom.height; i++)
 			{
 				int flags = 0;
-				if (i == sel) flags = wxCONTROL_CHECKED;
+				if ((int)i == sel) flags = wxCONTROL_CHECKED;
 				wxRendererNative::Get().DrawRadioBitmap(win, dc, wxRect(geom.x + 1, y + itemheight / 2 - optsize.y / 2, optsize.x, optsize.y), flags);
 				if (showCaps) dc.DrawText(items[i], geom.x + optsize.GetWidth() + 3, y + itemheight / 2 - dc.GetCharHeight() / 2);
 				y += itemheight;
@@ -460,7 +460,7 @@ public:
 			for (size_t i = 0; i < items.size(); i++)
 			{
 				int flags = 0;
-				if (i == sel) flags = wxCONTROL_CHECKED;
+				if ((int)i == sel) flags = wxCONTROL_CHECKED;
 				wxRendererNative::Get().DrawRadioBitmap(win, dc, wxRect(geom.x + i*itemwidth, geom.y + geom.height / 2 - optsize.y / 2, optsize.x, optsize.y), flags);
 				if (showCaps) dc.DrawText(items[i], geom.x + i*itemwidth + optsize.x + 1, geom.y + geom.height / 2 - dc.GetCharHeight() / 2);
 			}
@@ -503,7 +503,7 @@ public:
 			else if (id == "Editable") txt->SetEditable(p->GetBoolean());
 		}
 	}
-	virtual void Draw(wxWindow *win, wxDC &dc, const wxRect &geom)
+	virtual void Draw(wxWindow *, wxDC &dc, const wxRect &geom)
 	{
 		dc.SetPen(*wxLIGHT_GREY_PEN);
 		dc.SetBrush(wxBrush(Property("BackColour").GetColour()));
@@ -535,7 +535,7 @@ public:
 		txt->SetEditable(Property("Editable").GetBoolean());
 		return AssignNative(txt);
 	}
-	virtual void Draw(wxWindow *win, wxDC &dc, const wxRect &geom)
+	virtual void Draw(wxWindow *, wxDC &dc, const wxRect &geom)
 	{
 		dc.SetPen(*wxLIGHT_GREY_PEN);
 		dc.SetBrush(wxBrush(Property("BackColour").GetColour()));
@@ -608,7 +608,7 @@ public:
 			else if (id == "Editable") num->SetEditable(p->GetBoolean());
 		}
 	}
-	virtual void Draw(wxWindow *win, wxDC &dc, const wxRect &geom)
+	virtual void Draw(wxWindow *, wxDC &dc, const wxRect &geom)
 	{
 		dc.SetPen(*wxLIGHT_GREY_PEN);
 		dc.SetBrush(wxBrush(Property("BackColour").GetColour()));
@@ -642,7 +642,7 @@ public:
 	virtual wxUIObject *Duplicate() { wxUIObject *o = new wxUIImageObject; o->Copy(this); return o; }
 	virtual bool IsNativeObject() { return false; }
 	virtual bool DrawDottedOutline() { return true; }
-	virtual void Draw(wxWindow *win, wxDC &dc, const wxRect &geom)
+	virtual void Draw(wxWindow *, wxDC &dc, const wxRect &geom)
 	{
 		wxImage img = Property("Image").GetImage();
 		if (img.IsOk())
@@ -695,7 +695,7 @@ public:
 			else if (id == "Max") sli->SetMax(p->GetInteger());
 		}
 	}
-	virtual void Draw(wxWindow *win, wxDC &dc, const wxRect &geom)
+	virtual void Draw(wxWindow *, wxDC &dc, const wxRect &geom)
 	{
 		dc.SetBrush(wxBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE)));
 		dc.SetPen(wxPen(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE)));
@@ -740,7 +740,7 @@ public:
 		}
 	}
 
-	virtual void Draw(wxWindow *win, wxDC &dc, const wxRect &geom)
+	virtual void Draw(wxWindow *, wxDC &dc, const wxRect &geom)
 	{
 		dc.SetFont(*wxNORMAL_FONT);
 		dc.SetTextForeground(*wxBLUE);
@@ -790,7 +790,7 @@ public:
 			if (id == "Max") dp->SetMax(p->GetInteger());
 		}
 	}
-	virtual void Draw(wxWindow *win, wxDC &dc, const wxRect &geom)
+	virtual void Draw(wxWindow *, wxDC &dc, const wxRect &geom)
 	{
 		dc.SetPen(*wxBLACK_PEN);
 		dc.SetBrush(*wxLIGHT_GREY_BRUSH);
@@ -1209,7 +1209,7 @@ bool wxUIObject::IsWithin(int xx, int yy)
 		&& yy >= y && yy < y + height);
 }
 
-void wxUIObject::Draw(wxWindow *win, wxDC &dc, const wxRect &geom)
+void wxUIObject::Draw(wxWindow *, wxDC &dc, const wxRect &geom)
 {
 	dc.SetPen(*wxBLACK_PEN);
 	dc.SetBrush(*wxLIGHT_GREY_BRUSH);
@@ -2520,7 +2520,7 @@ void wxUIFormEditor::DrawMultiSelBox()
 #ifdef __WXOSX__
 	wxBrush brush(wxColour(240, 240, 240, 130));
 #else
-	wxBrush brush(*wxWHITE, wxTRANSPARENT);
+	wxBrush brush(*wxWHITE, wxBRUSHSTYLE_TRANSPARENT);
 #endif
 	wxPen pen(wxColour(90, 90, 90));
 #else
@@ -2555,7 +2555,7 @@ void wxUIFormEditor::DrawMoveResizeOutlines()
 #ifdef __WXOSX__
 	wxBrush brush(wxColour(240, 240, 240, 130));
 #else
-	wxBrush brush(*wxWHITE, wxTRANSPARENT);
+	wxBrush brush(*wxWHITE, wxBRUSHSTYLE_TRANSPARENT);
 #endif
 
 #else
@@ -2563,7 +2563,7 @@ void wxUIFormEditor::DrawMoveResizeOutlines()
 	wxBrush brush(*wxWHITE, wxTRANSPARENT);
 #endif
 
-	wxPen pen(wxColour(90, 90, 90), 1, wxSOLID);
+	wxPen pen(wxColour(90, 90, 90), 1, wxPENSTYLE_SOLID);
 	pen.SetCap(wxCAP_BUTT);
 	pen.SetJoin(wxJOIN_MITER);
 
@@ -2835,7 +2835,7 @@ void wxUIFormEditor::OnPaint(wxPaintEvent &)
 			dc.SetClippingRegion(rct);
 			if (objs[i]->DrawDottedOutline() && !m_viewMode)
 			{
-				wxPen p = wxPen(*wxBLACK, 1, wxDOT);
+				wxPen p = wxPen(*wxBLACK, 1, wxPENSTYLE_DOT);
 				p.SetCap(wxCAP_BUTT);
 				p.SetJoin(wxJOIN_MITER);
 				dc.SetPen(p);

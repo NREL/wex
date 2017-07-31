@@ -97,11 +97,11 @@ void wxLabel::SetRelativeSize(int sz)
 	m_relSize = sz;
 }
 
-void wxLabel::OnPaint(wxPaintEvent &evt)
+void wxLabel::OnPaint(wxPaintEvent &)
 {
 	wxAutoBufferedPaintDC pdc(this);
 	PrepareDC(pdc);
-	pdc.SetClippingRegion(this->GetUpdateRegion());
+	pdc.SetDeviceClippingRegion(this->GetUpdateRegion());
 
 	pdc.SetBackground(wxBrush(GetBackgroundColour()));
 	pdc.Clear();
@@ -115,12 +115,12 @@ void wxLabel::OnPaint(wxPaintEvent &evt)
 	pdc.DestroyClippingRegion();
 }
 
-void wxLabel::OnErase(wxEraseEvent &evt)
+void wxLabel::OnErase(wxEraseEvent &)
 {
 	// nothing to do
 }
 
-void wxLabel::OnResize(wxSizeEvent &evt)
+void wxLabel::OnResize(wxSizeEvent &)
 {
 	Refresh();
 }

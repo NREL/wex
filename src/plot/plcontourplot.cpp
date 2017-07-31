@@ -130,7 +130,7 @@ void wxPLContourPlot::RebuildContours()
 	QuadContourGenerator qcg(m_x, m_y, m_z, m_mask, true, 0);
 	if (!m_filled)
 	{
-		for (int k = 0; k < m_levels.size(); k++)
+		for (size_t k = 0; k < m_levels.size(); k++)
 		{
 			double zval = m_levels[k];
 			std::vector<ContourLine*> list;
@@ -151,7 +151,7 @@ void wxPLContourPlot::RebuildContours()
 	}
 	else
 	{
-		for (int k = 0; k < m_levels.size() - 1; k++)
+		for (size_t k = 0; k < m_levels.size() - 1; k++)
 		{
 			double zlow = m_levels[k];
 			double zhigh = m_levels[k + 1];
@@ -263,7 +263,7 @@ void wxPLContourPlot::Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map)
 	{
 		dc.NoPen();
 
-		int ipoly = 0;
+//		int ipoly = 0;
 		for (size_t i = 0; i < m_cPolys.size(); i++)
 		{
 			double zmid = 0.5*(m_cPolys[i].z + m_cPolys[i].zmax);
@@ -299,7 +299,7 @@ void wxPLContourPlot::Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map)
 #endif
 }
 
-void wxPLContourPlot::DrawInLegend(wxPLOutputDevice &dc, const wxPLRealRect &rct)
+void wxPLContourPlot::DrawInLegend(wxPLOutputDevice &, const wxPLRealRect &)
 {
 	// currently nothing to show in legend...?
 }

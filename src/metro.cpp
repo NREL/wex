@@ -454,7 +454,7 @@ void wxMetroTabList::ReorderLeft(size_t idx)
 		m_items[idx - 1] = m_items[idx];
 		m_items[idx] = x;
 
-		if (m_selection == idx) m_selection--;
+		if (m_selection == (int)idx) m_selection--;
 
 		m_hoverIdx = -1;
 		Refresh();
@@ -469,7 +469,7 @@ void wxMetroTabList::ReorderRight(size_t idx)
 		m_items[idx + 1] = m_items[idx];
 		m_items[idx] = x;
 
-		if (m_selection == idx) m_selection++;
+		if (m_selection == (int)idx) m_selection++;
 
 		m_hoverIdx = -1;
 		Refresh();
@@ -478,7 +478,7 @@ void wxMetroTabList::ReorderRight(size_t idx)
 
 wxPoint wxMetroTabList::GetPopupMenuPosition(int index)
 {
-	if (index >= 0 && index < m_items.size())	return ClientToScreen(wxPoint(m_items[index].x_start, GetClientSize().y));
+	if (index >= 0 && index < (int)m_items.size())	return ClientToScreen(wxPoint(m_items[index].x_start, GetClientSize().y));
 	else return wxDefaultPosition;
 }
 
@@ -517,8 +517,8 @@ void wxMetroTabList::Clear()
 
 void wxMetroTabList::SetSelection(size_t i)
 {
-	m_selection = i;
-	if (m_selection >= m_items.size())
+	m_selection = (int)i;
+	if (m_selection >= (int)m_items.size())
 		m_selection = m_items.size() - 1;
 }
 
@@ -539,7 +539,7 @@ size_t wxMetroTabList::GetSelection()
 
 wxString wxMetroTabList::GetStringSelection()
 {
-	if (m_selection >= 0 && m_selection < m_items.size())
+	if (m_selection >= 0 && m_selection < (int)m_items.size())
 		return m_items[m_selection].label;
 	else
 		return wxEmptyString;
@@ -655,7 +655,7 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 
 		if (!light)
 		{
-			wxColour col(i == m_hoverIdx || i == m_selection
+			wxColour col((int)i == m_hoverIdx || (int)i == m_selection
 				? wxMetroTheme::Colour(wxMT_HOVER)
 				: wxMetroTheme::Colour(wxMT_FOREGROUND));
 			dc.SetPen(wxPen(col, 1));
@@ -663,7 +663,7 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 			dc.DrawRectangle(m_items[i].x_start, 0, m_items[i].width, cheight);
 
 			if (m_items[i].button
-				&& m_hoverIdx == i
+				&& m_hoverIdx == (int)i
 				&&  m_buttonHover)
 			{
 				dc.SetPen(wxPen(wxMetroTheme::Colour(light ? wxMT_HIGHLIGHT : wxMT_DIMHOVER), 1));
@@ -676,9 +676,9 @@ void wxMetroTabList::OnPaint(wxPaintEvent &)
 		wxColour text(*wxWHITE);
 		if (light)
 		{
-			text = (i == (int)m_selection
+			text = ((int)i == m_selection
 				? wxMetroTheme::Colour(wxMT_FOREGROUND)
-				: (i == m_hoverIdx
+				: ((int)i == m_hoverIdx
 				? wxMetroTheme::Colour(wxMT_SELECT)
 				: wxMetroTheme::Colour(wxMT_TEXT)));
 		}
@@ -753,7 +753,7 @@ void wxMetroTabList::OnLeftDown(wxMouseEvent &evt)
 		}
 	}
 
-	if (m_selection >= 0 && m_selection < m_items.size()
+	if (m_selection >= 0 && m_selection < (int)m_items.size()
 		&& m_dotdotWidth > 0 && mouse_x > cwidth - m_dotdotWidth)
 	{
 		wxMetroPopupMenu menu(m_style&wxMT_LIGHTTHEME ? wxMT_LIGHTTHEME : 0);
@@ -1109,7 +1109,7 @@ wxWindow *wxMetroNotebook::RemovePage(size_t ndx)
 	wxWindow *win = GetPage(ndx);
 
 	int cursel = m_list->GetSelection();
-	if (cursel >= ndx)
+	if (cursel >= (int)ndx)
 	{
 		cursel--;
 		if (cursel < 0)
@@ -1128,7 +1128,7 @@ wxWindow *wxMetroNotebook::RemovePage(size_t ndx)
 
 	UpdateTabList();
 
-	if (m_list->GetSelection() != cursel)
+	if ((int)m_list->GetSelection() != cursel)
 		m_list->SetSelection(cursel);
 
 	UpdateLayout();
@@ -1183,7 +1183,7 @@ void wxMetroNotebook::SetSelection(size_t id)
 {
 	if (id >= m_pages.size()) return;
 
-	if (m_sel == id) return;
+	if (m_sel == (int)id) return;
 
 	if (m_sel >= 0)
 	{
@@ -1211,7 +1211,7 @@ size_t wxMetroNotebook::GetPageCount() const
 	return m_pages.size();
 }
 
-void wxMetroNotebook::OnSize(wxSizeEvent &evt)
+void wxMetroNotebook::OnSize(wxSizeEvent &)
 {
 	UpdateLayout();
 }
@@ -1274,7 +1274,7 @@ void wxMetroNotebook::OnTabList(wxCommandEvent &evt)
 
 void wxMetroNotebook::SwitchPage(size_t i)
 {
-	if (i == GetSelection()) return;
+	if ((int)i == GetSelection()) return;
 
 	wxNotebookEvent evt(wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGING, GetId());
 	evt.SetEventObject(this);
@@ -1421,7 +1421,7 @@ void wxMetroListBox::Invalidate()
 	dc.SetFont(GetFont());
 
 	int y = 0;
-	for (int i = 0; i < m_items.size(); i++)
+	for (size_t i = 0; i < m_items.size(); i++)
 	{
 		int height = dc.GetCharHeight() + m_space;
 		m_items[i].geom.x = 0;
@@ -1436,12 +1436,12 @@ void wxMetroListBox::Invalidate()
 	Refresh();
 }
 
-void wxMetroListBox::OnResize(wxSizeEvent &evt)
+void wxMetroListBox::OnResize(wxSizeEvent &)
 {
 	Invalidate();
 }
 
-void wxMetroListBox::OnPaint(wxPaintEvent &evt)
+void wxMetroListBox::OnPaint(wxPaintEvent &)
 {
 	wxAutoBufferedPaintDC dc(this);
 	DoPrepareDC(dc);
@@ -1456,14 +1456,14 @@ void wxMetroListBox::OnPaint(wxPaintEvent &evt)
 	dc.SetFont(GetFont());
 	dc.SetTextForeground(*wxBLACK);
 	int height = dc.GetCharHeight();
-	for (int i = 0; i < m_items.size(); i++)
+	for (size_t i = 0; i < m_items.size(); i++)
 	{
-		wxColour bcol = (m_selectedIdx == i) ? wxColour(50, 50, 50) :
-			((m_hoverIdx == i) ? wxColour(231, 231, 231) : GetBackgroundColour());
+		wxColour bcol = (m_selectedIdx == (int)i) ? wxColour(50, 50, 50) :
+			((m_hoverIdx == (int)i) ? wxColour(231, 231, 231) : GetBackgroundColour());
 		dc.SetPen(wxPen(bcol));
 		dc.SetBrush(wxBrush(bcol));
 		dc.DrawRectangle(m_items[i].geom);
-		dc.SetTextForeground((m_selectedIdx == i) ? *wxWHITE : *wxBLACK);
+		dc.SetTextForeground((m_selectedIdx == (int)i) ? *wxWHITE : *wxBLACK);
 		dc.DrawText(m_items[i].name, m_space / 2, m_items[i].geom.y + m_items[i].geom.height / 2 - height / 2);
 	}
 }
@@ -1482,7 +1482,7 @@ void wxMetroListBox::OnLeftDown(wxMouseEvent &evt)
 
 	SetFocus();
 
-	for (int i = 0; i<m_items.size(); i++)
+	for (size_t i = 0; i<m_items.size(); i++)
 	{
 		if (evt.GetY() + vsy > m_items[i].geom.y
 			&& evt.GetY() + vsy < m_items[i].geom.y + m_items[i].geom.height)
@@ -1503,7 +1503,7 @@ void wxMetroListBox::OnLeftDown(wxMouseEvent &evt)
 	Refresh();
 }
 
-void wxMetroListBox::OnDClick(wxMouseEvent &evt)
+void wxMetroListBox::OnDClick(wxMouseEvent &)
 {
 	wxCommandEvent selevt(wxEVT_COMMAND_LISTBOX_DOUBLECLICKED, this->GetId());
 	selevt.SetEventObject(this);
@@ -1519,14 +1519,14 @@ void wxMetroListBox::OnMouseMove(wxMouseEvent &evt)
 	vsx *= SCRL_RATE;
 	vsy *= SCRL_RATE;
 
-	for (int i = 0; i<m_items.size(); i++)
+	for (size_t i = 0; i<m_items.size(); i++)
 	{
 		if (evt.GetY() + vsy > m_items[i].geom.y
 			&& evt.GetY() + vsy < m_items[i].geom.y + m_items[i].geom.height)
 		{
-			if (m_hoverIdx != i)
+			if (m_hoverIdx != (int)i)
 			{
-				m_hoverIdx = i;
+				m_hoverIdx = (int)i;
 				Refresh();
 			}
 
@@ -1541,7 +1541,7 @@ void wxMetroListBox::OnMouseMove(wxMouseEvent &evt)
 	}
 }
 
-void wxMetroListBox::OnLeave(wxMouseEvent &evt)
+void wxMetroListBox::OnLeave(wxMouseEvent &)
 {
 	m_hoverIdx = -1;
 	Refresh();
