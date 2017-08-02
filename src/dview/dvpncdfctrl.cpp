@@ -137,8 +137,112 @@ const wxSize& size, long style, const wxString& name)
 
 wxDVPnCdfCtrl::~wxDVPnCdfCtrl()
 {
+	WriteState(m_filename);
+
 	for (size_t i = 0; i < m_cdfPlotData.size(); i++)
 		delete m_cdfPlotData[i];
+}
+
+void wxDVPnCdfCtrl::ReadState(std::string filename)
+{
+	wxConfig cfg("DView", "NREL");
+
+	wxString s;
+	bool success;
+	bool debugging = false;
+	std::string key = filename;
+	std::string tabName("PDFCDF");
+
+	key = tabName + "ExcludeZeros";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+	m_hideZeros->SetValue((s == "false") ? false : true);
+	ShowZerosClick();
+
+	key = tabName + "PlotType";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+	m_PlotTypeDisplayed->SetSelection(wxAtoi(s));
+	PlotTypeSelection();
+
+	key = tabName + "Normalize";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+	m_normalizeChoice->SetSelection(wxAtoi(s));
+	NormalizeChoice();
+
+	key = tabName + "Bins";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+	m_binsCombo->SetSelection(wxAtoi(s));
+	BinComboSelection();
+
+	key = tabName + "Selections";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+
+	wxStringTokenizer tokenizer(s, ",");
+	while (tokenizer.HasMoreTokens())
+	{
+		wxString str = tokenizer.GetNextToken();
+		SelectDataSetAtIndex(wxAtoi(str));
+	}
+
+	// Set this value after settings selections, so they don't get stepped on
+	key = tabName + "YMax";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+	m_maxTextBox->SetValue(s);
+	EnterYMax();
+}
+
+void wxDVPnCdfCtrl::WriteState(std::string filename)
+{
+	wxConfig cfg("DView", "NREL");
+
+	m_filename = filename;
+
+	bool success;
+	bool debugging = false;
+	std::string s;
+	std::string key = filename;
+	std::string tabName("PDFCDF");
+	std::stringstream  ss;
+
+	key = tabName + "YMax";
+	s = m_maxTextBox->GetValue();
+	success = cfg.Write(key, s.c_str());
+	if (debugging) assert(success);
+
+	key = tabName + "ExcludeZeros";
+	s = (m_hideZeros->GetValue()) ? "true" : "false";
+	success = cfg.Write(key, s.c_str());
+	if (debugging) assert(success);
+
+	key = tabName + "PlotType";
+	s = wxString::Format(wxT("%d"), (int)m_PlotTypeDisplayed->GetSelection());
+	success = cfg.Write(key, s.c_str());
+	if (debugging) assert(success);
+
+	key = tabName + "Normalize";
+	s = wxString::Format(wxT("%d"), (int)m_normalizeChoice->GetSelection());
+	success = cfg.Write(key, s.c_str());
+	if (debugging) assert(success);
+
+	key = tabName + "Bins";
+	s = wxString::Format(wxT("%d"), (int)m_binsCombo->GetSelection());
+	success = cfg.Write(key, s.c_str());
+	if (debugging) assert(success);
+
+	auto selections = this->m_selector->GetSelectionsInCol();
+	for (auto selection : selections){
+		ss << selection;
+		ss << ',';
+	}
+	s = ss.str();
+	key = tabName + "Selections";
+	success = cfg.Write(key, s.c_str());
+	if (debugging) assert(success);
 }
 
 // *** DATA SET FUNCTIONS ***
@@ -432,6 +536,11 @@ void wxDVPnCdfCtrl::OnSearch(wxCommandEvent&)
 
 void wxDVPnCdfCtrl::OnEnterYMax(wxCommandEvent&)
 {
+	EnterYMax();
+}
+
+void wxDVPnCdfCtrl::EnterYMax()
+{
 	double val;
 	if (m_maxTextBox->GetValue().ToDouble(&val))
 	{
@@ -441,6 +550,11 @@ void wxDVPnCdfCtrl::OnEnterYMax(wxCommandEvent&)
 }
 
 void wxDVPnCdfCtrl::OnBinComboSelection(wxCommandEvent&)
+{
+	BinComboSelection();
+}
+
+void wxDVPnCdfCtrl::BinComboSelection()
 {
 	if (m_selectedDataSetIndex < 0 || m_selectedDataSetIndex >= static_cast<int>(m_dataSets.size()))
 		return;
@@ -482,6 +596,11 @@ void wxDVPnCdfCtrl::OnBinTextEnter(wxCommandEvent&)
 
 void wxDVPnCdfCtrl::OnNormalizeChoice(wxCommandEvent&)
 {
+	NormalizeChoice();
+}
+
+void wxDVPnCdfCtrl::NormalizeChoice()
+{
 	SetNormalizeType(wxPLHistogramPlot::NormalizeType(m_normalizeChoice->GetSelection()));
 	m_plotSurface->GetYAxis1()->SetWorldMax(m_pdfPlot->GetNiceYMax());
 	m_maxTextBox->SetValue(wxString::Format("%lg", m_pdfPlot->GetNiceYMax()));
@@ -489,6 +608,11 @@ void wxDVPnCdfCtrl::OnNormalizeChoice(wxCommandEvent&)
 }
 
 void wxDVPnCdfCtrl::OnShowZerosClick(wxCommandEvent&)
+{
+	ShowZerosClick();
+}
+
+void wxDVPnCdfCtrl::ShowZerosClick()
 {
 	bool ignoreZeros = m_hideZeros->GetValue();
 	//int index = -1;
@@ -509,6 +633,11 @@ void wxDVPnCdfCtrl::OnShowZerosClick(wxCommandEvent&)
 }
 
 void wxDVPnCdfCtrl::OnPlotTypeSelection(wxCommandEvent&)
+{
+	PlotTypeSelection();
+}
+
+void wxDVPnCdfCtrl::PlotTypeSelection()
 {
 	int type = m_PlotTypeDisplayed->GetSelection();
 

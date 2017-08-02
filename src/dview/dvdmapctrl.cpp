@@ -22,25 +22,29 @@
 *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-#include <wx/choice.h>
-#include <wx/scrolbar.h>
-#include <wx/textctrl.h>
-#include "wx/srchctrl.h"
-
-#include "wex/plot/plplotctrl.h"
-#include "wex/plot/plaxis.h"
-
-#include "wex/dview/dvtimeseriesdataset.h"
-#include "wex/dview/dvselectionlist.h"
-#include "wex/plot/plcolourmap.h"
-#include "wex/dview/dvplothelper.h"
 #include "wex/dview/dvdmapctrl.h"
+#include "wex/dview/dvplothelper.h"
+#include "wex/dview/dvselectionlist.h"
+#include "wex/dview/dvtimeseriesdataset.h"
 
+#include "wex/icons/zoom_fit.cpng"
 #include "wex/icons/zoom_in.cpng"
 #include "wex/icons/zoom_out.cpng"
-#include "wex/icons/zoom_fit.cpng"
+
+#include "wex/plot/plaxis.h"
+#include "wex/plot/plcolourmap.h"
+#include "wex/plot/plplotctrl.h"
+
+#include <wx/choice.h>
+#include <wx/config.h>
+#include <wx/scrolbar.h>
+#include "wx/srchctrl.h"
+#include <wx/textctrl.h>
+#include <wx/tokenzr.h>
 
 #include <algorithm>
+#include <sstream>
+#include <string>
 
 class wxDVDMapPlot : public wxPLPlottable
 {
@@ -282,8 +286,100 @@ wxTAB_TRAVERSAL)
 
 wxDVDMapCtrl::~wxDVDMapCtrl()
 {
+	WriteState(m_filename);
+
 	m_plotSurface->ReleaseSideWidget(wxPLPlotCtrl::Y_RIGHT);
 	delete m_colourMap;
+}
+
+void wxDVDMapCtrl::ReadState(std::string filename)
+{
+	wxConfig cfg("DView", "NREL");
+
+	wxString s;
+	bool success;
+	bool debugging = false;
+	std::string key = filename;
+	std::string tabName("HeatMap");
+
+	key = tabName + "ColorMap";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+	m_colourMapSelector->SetSelection(wxAtoi(s));
+	ColourMapSelection();
+
+	key = tabName + "ReverseColors";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+	m_reverseColours->SetValue((s == "false") ? false : true);
+	ReverseColours();
+
+	key = tabName + "Selections";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+
+	wxStringTokenizer tokenizer(s, ",");
+	while (tokenizer.HasMoreTokens())
+	{
+		wxString str = tokenizer.GetNextToken();
+		SelectDataSetAtIndex(wxAtoi(str));
+	}
+
+	// Set these values after settings selections, so they don't get stepped on
+	key = tabName + "Min";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+	m_minTextBox->SetValue(s);
+	ColourMapMinChanged();
+
+	key = tabName + "Max";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+	m_maxTextBox->SetValue(s);
+	ColourMapMaxChanged();
+}
+
+void wxDVDMapCtrl::WriteState(std::string filename)
+{
+	wxConfig cfg("DView", "NREL");
+
+	m_filename = filename;
+
+	bool success;
+	bool debugging = false;
+	std::string s;
+	std::string key = filename;
+	std::string tabName("HeatMap");
+	std::stringstream  ss;
+
+	key = tabName + "ColorMap";
+	s = wxString::Format(wxT("%d"), (int)m_colourMapSelector->GetSelection());
+	success = cfg.Write(key, s.c_str());
+	if (debugging) assert(success);
+
+	key = tabName + "ReverseColors";
+	s = (m_reverseColours->GetValue()) ? "true" : "false";
+	success = cfg.Write(key, s.c_str());
+	if (debugging) assert(success);
+
+	key = tabName + "Min";
+	s = m_minTextBox->GetValue();
+	success = cfg.Write(key, s.c_str());
+	if (debugging) assert(success);
+
+	key = tabName + "Max";
+	s = m_maxTextBox->GetValue();
+	success = cfg.Write(key, s.c_str());
+	if (debugging) assert(success);
+
+	auto selections = m_selector->GetSelectionsInCol();
+	for (auto selection : selections){
+		ss << selection;
+		ss << ',';
+	}
+	key = tabName + "Selections";
+	success = cfg.Write(key, ss.str().c_str());
+	if (debugging) assert(success);
 }
 
 /*Member Functions*/
@@ -677,16 +773,31 @@ void wxDVDMapCtrl::OnSearch(wxCommandEvent &)
 
 void wxDVDMapCtrl::OnColourMapSelection(wxCommandEvent &)
 {
+	ColourMapSelection();
+}
+
+void wxDVDMapCtrl::ColourMapSelection()
+{
 	SetColourMapName(m_colourMapSelector->GetStringSelection());
 }
 
 void wxDVDMapCtrl::OnReverseColours(wxCommandEvent &)
+{
+	ReverseColours();
+}
+
+void wxDVDMapCtrl::ReverseColours()
 {
 	m_colourMap->SetReversed(m_reverseColours->GetValue());
 	m_plotSurface->Refresh();
 }
 
 void wxDVDMapCtrl::OnColourMapMinChanged(wxCommandEvent &)
+{
+	ColourMapMinChanged();
+}
+
+void wxDVDMapCtrl::ColourMapMinChanged()
 {
 	double val;
 	if (m_minTextBox->GetValue().ToDouble(&val))
@@ -697,6 +808,11 @@ void wxDVDMapCtrl::OnColourMapMinChanged(wxCommandEvent &)
 }
 
 void wxDVDMapCtrl::OnColourMapMaxChanged(wxCommandEvent &)
+{
+	ColourMapMaxChanged();
+}
+
+void wxDVDMapCtrl::ColourMapMaxChanged()
 {
 	double val;
 	if (m_maxTextBox->GetValue().ToDouble(&val))

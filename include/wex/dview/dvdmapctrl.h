@@ -33,22 +33,22 @@
  * The plot surface takes care of the actual drawing.
  */
 
-#include <vector>
-
 #include <wx/panel.h>
 
-class wxPLTimeAxis;
-class wxPLLinearAxis;
-class wxPLPlotCtrl;
-class wxScrollBar;
-class wxChoice;
-class wxTextCtrl;
+#include <vector>
+
 class wxCheckBox;
-class wxDVTimeSeriesDataSet;
-class wxPLColourMap;
+class wxChoice;
 class wxDVDMapPlot;
 class wxDVSelectionListCtrl;
+class wxDVTimeSeriesDataSet;
+class wxPLColourMap;
+class wxPLLinearAxis;
+class wxPLPlotCtrl;
+class wxPLTimeAxis;
+class wxScrollBar;
 class wxSearchCtrl;
+class wxTextCtrl;
 
 class wxDVDMapCtrl : public wxPanel
 {
@@ -110,6 +110,9 @@ public:
 
 	void ZoomFactorAndUpdate(double factor, double shiftPercent = 0.0);
 
+	void ReadState(std::string filename);
+	void WriteState(std::string filename);
+
 	/*Event Handlers*/
 	void OnDataChannelSelection(wxCommandEvent& e);
 	void OnSearch(wxCommandEvent& e);
@@ -139,6 +142,11 @@ public:
 	void Invalidate(); // recalculate and rerender plot
 
 private:
+	void ColourMapSelection();
+	void ReverseColours();
+	void ColourMapMinChanged();
+	void ColourMapMaxChanged();
+
 	wxDVSelectionListCtrl *m_selector;
 	wxSearchCtrl *m_srchCtrl;
 	wxChoice *m_colourMapSelector;
@@ -158,6 +166,8 @@ private:
 
 	wxScrollBar *m_xGraphScroller;
 	wxScrollBar *m_yGraphScroller;
+
+	std::string m_filename;
 
 	/*
 	double mXWorldMin, mXWorldMax;

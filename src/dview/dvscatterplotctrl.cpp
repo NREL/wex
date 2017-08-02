@@ -22,23 +22,23 @@
 *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-#include <limits>
-#include <numeric>
-#include <algorithm>
-#include <string>
-#include <sstream>
-
-#include <wx/wx.h>
-#include <wx/tokenzr.h>
-#include "wx/srchctrl.h"
-#include <wx/config.h>
+#include "wex/dview/dvscatterplotctrl.h"
+#include "wex/dview/dvselectionlist.h"
+#include "wex/dview/dvtimeseriesdataset.h"
 
 #include "wex/plot/plplotctrl.h"
 #include "wex/plot/plscatterplot.h"
 
-#include "wex/dview/dvtimeseriesdataset.h"
-#include "wex/dview/dvselectionlist.h"
-#include "wex/dview/dvscatterplotctrl.h"
+#include <wx/config.h>
+#include "wx/srchctrl.h"
+#include <wx/tokenzr.h>
+#include <wx/wx.h>
+
+#include <algorithm>
+#include <limits>
+#include <numeric>
+#include <sstream>
+#include <string>
 
 static const wxString NO_UNITS("ThereAreNoUnitsForThisAxis.");
 
@@ -119,6 +119,94 @@ const wxSize& size, long style, const wxString& name)
 	m_xDataIndex = -1;
 
 	m_showLine = false;
+}
+
+wxDVScatterPlotCtrl::~wxDVScatterPlotCtrl()
+{
+	WriteState(m_filename);
+}
+
+void wxDVScatterPlotCtrl::ReadState(std::string filename)
+{
+	wxConfig cfg("DView", "NREL");
+
+	wxString s;
+	bool success;
+	bool debugging = false;
+	std::string key = filename;
+	std::string tabName("Scatter");
+
+	key = tabName + "ShowLine";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+	m_showPerfAgreeLine->SetValue((s == "false") ? false : true);
+	// Must manually call the function as wxWidgets does not emit a signal when a widget state is set programmatically
+	ShowLine();
+
+	key = tabName + "Selections";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+
+	{
+		wxStringTokenizer tokenizer(s, ",");
+		while (tokenizer.HasMoreTokens())
+		{
+			wxString str = tokenizer.GetNextToken();
+			SelectXDataAtIndex(wxAtoi(str));
+		}
+	}
+
+	key = tabName + "Selections1";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+
+	{
+		wxStringTokenizer tokenizer(s, ",");
+		while (tokenizer.HasMoreTokens())
+		{
+			wxString str = tokenizer.GetNextToken();
+			SelectYDataAtIndex(GetScatterSelectionList()->GetUnsortedRowIndex(wxAtoi(str)));
+		}
+	}
+}
+
+void wxDVScatterPlotCtrl::WriteState(std::string filename)
+{
+	wxConfig cfg("DView", "NREL");
+
+	m_filename = filename;
+
+	bool success;
+	bool debugging = false;
+	std::string s;
+	std::string key = filename;
+	std::string tabName("Scatter");
+	std::stringstream  ss;
+
+	key = tabName + "ShowLine";
+	s = (m_showPerfAgreeLine->GetValue()) ? "true" : "false";
+	success = cfg.Write(key, s.c_str());
+	if (debugging) assert(success);
+
+	auto selections = m_dataSelectionList->GetSelectionsInCol();
+	for (auto selection : selections){
+		ss << selection;
+		ss << ',';
+	}
+	key = tabName + "Selections";
+	success = cfg.Write(key, ss.str().c_str());
+	if (debugging) assert(success);
+
+	ss.clear();
+	ss.str(std::string());
+	auto selections1 = m_dataSelectionList->GetSelectionsInCol(1);
+	for (auto selection : selections1){
+		ss << selection;
+		ss << ',';
+	}
+	key = tabName + "Selections1";
+	success = cfg.Write(key, ss.str().c_str());
+	if (debugging) assert(success);
 }
 
 //*** DATA SET HANDLING ***
@@ -351,6 +439,11 @@ void wxDVScatterPlotCtrl::OnChannelSelection(wxCommandEvent &)
 }
 
 void wxDVScatterPlotCtrl::OnShowLine(wxCommandEvent&)
+{
+	ShowLine();
+}
+
+void wxDVScatterPlotCtrl::ShowLine()
 {
 	m_showLine = m_showPerfAgreeLine->GetValue();
 	UpdatePlotWithChannelSelections();

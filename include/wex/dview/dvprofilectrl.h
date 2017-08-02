@@ -25,17 +25,20 @@
 #ifndef __DV_ProfileCtrl_h
 #define __DV_ProfileCtrl_h
 
-#include <vector>
-#include <wx/panel.h>
-
 #include "wex/plot/plplotctrl.h"
 
-class wxDVTimeSeriesDataSet;
-class wxPLLinePlot;
-class wxDVSelectionListCtrl;
-class wxGridSizer;
+#include <wx/panel.h>
+
+#include <vector>
+
 class wxCheckBox;
+class wxDVSelectionListCtrl;
+class wxDVTimeSeriesDataSet;
+class wxGridSizer;
+class wxPLLinePlot;
 class wxSearchCtrl;
+class wxTimer;
+class wxTimerEvent;
 
 class wxDVProfileCtrl : public wxPanel
 {
@@ -62,6 +65,9 @@ public:
 	void SetSelectedNames(const wxString& names);
 	void SelectDataSetAtIndex(int index);
 	int GetNumberOfSelections();
+
+	void ReadState(std::string filename);
+	void WriteState(std::string filename);
 
 	class VerticalLabelCtrl;
 
@@ -95,7 +101,17 @@ private:
 	VerticalLabelCtrl *m_leftAxisLabel;
 	VerticalLabelCtrl *m_rightAxisLabel;
 
+	std::string m_filename;
+
 	void CalculateProfilePlotData(PlotSet *ps);
+	void MonthSelection(unsigned index);
+
+	void OnTimer(wxTimerEvent& event);
+
+	wxTimer * m_timer;
+
+	std::vector<int> m_selections;
+	unsigned m_counter;
 
 	DECLARE_EVENT_TABLE();
 };
