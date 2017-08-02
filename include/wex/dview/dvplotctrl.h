@@ -34,15 +34,15 @@
 
 #include "wex/metro.h"
 
-#include "wex/dview/dvtimeseriesdataset.h"
-#include "wex/dview/dvtimeseriesctrl.h"
-#include "wex/dview/dvdmapctrl.h"
-#include "wex/dview/dvprofilectrl.h"
-#include "wex/dview/dvpncdfctrl.h"
 #include "wex/dview/dvdcctrl.h"
-#include "wex/dview/dvscatterplotctrl.h"
+#include "wex/dview/dvdmapctrl.h"
 #include "wex/dview/dvplotctrlsettings.h"
+#include "wex/dview/dvpncdfctrl.h"
+#include "wex/dview/dvprofilectrl.h"
+#include "wex/dview/dvscatterplotctrl.h"
 #include "wex/dview/dvstatisticstablectrl.h"
+#include "wex/dview/dvtimeseriesctrl.h"
+#include "wex/dview/dvtimeseriesdataset.h"
 
 class wxDVPlotCtrl : public wxMetroNotebook
 {
@@ -59,6 +59,9 @@ public:
 	void RemoveDataSet(wxDVTimeSeriesDataSet *d);
 	//RemoveAll deletes data sets.
 	void RemoveAllDataSets();
+
+	void ReadState(std::string filename);
+	void WriteState(std::string filename);
 
 	wxDVStatisticsTableCtrl* GetStatisticsTable();
 

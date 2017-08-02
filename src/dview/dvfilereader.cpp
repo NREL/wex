@@ -22,16 +22,9 @@
 *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-#include "../src/sqlite3.h"
-
-#include <algorithm>
-#include <iostream>
-#include <map>
-#include <sstream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <tuple>
-#include <vector>
+#include "wex/dview/dvfilereader.h"
+#include "wex/dview/dvplotctrl.h"
+#include "wex/dview/dvtimeseriesdataset.h"
 
 #include <wx/filefn.h>
 #include <wx/filename.h>
@@ -43,9 +36,16 @@
 #include <wx/txtstrm.h>
 #include <wx/wfstream.h>
 
-#include "wex/dview/dvfilereader.h"
-#include "wex/dview/dvplotctrl.h"
-#include "wex/dview/dvtimeseriesdataset.h"
+#include <algorithm>
+#include <iostream>
+#include <map>
+#include <sstream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <tuple>
+#include <vector>
+
+#include "../src/sqlite3.h"
 
 vector<tuple<string, string, double> > m_unitConversions;
 
@@ -728,9 +728,9 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 		dataSets[i]->SetGroupName(groupNames[i].size() > 1 ? groupNames[i] : wxFileNameFromPath(filename));
 		plotWin->AddDataSet(dataSets[i], (i == dataSets.size() - 1) /* update_ui ? */);
 	}
-	plotWin->SelectDataOnBlankTabs(); // Evan TODO not needed when ReadState used
 	plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
 	plotWin->Thaw();
+	plotWin->ReadState(filename.ToStdString());
 
 	wxLogStatus("Read %i lines of data points.\n", line);
 	wxLogDebug("wxDVFileReader::FastRead [ncol=%d nalloc = %d lnchars=%d] = %d msec\n", columns, prealloc_data, lnchars, (int)sw.Time());
@@ -827,8 +827,8 @@ void wxDVFileReader::ReadDataFromCSV(wxDVPlotCtrl *plotWin, const wxString& file
 		dataSets[i]->SetGroupName(wxFileNameFromPath(filename));
 		plotWin->AddDataSet(dataSets[i], (i == dataSets.size() - 1));
 	}
-	plotWin->SelectDataOnBlankTabs(); // Evan TODO not needed with ReadState method
 	plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
+	plotWin->ReadState(filename.ToStdString());
 }
 
 bool wxDVFileReader::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& filename)
@@ -926,9 +926,8 @@ bool wxDVFileReader::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& file
 		dataSets[i]->SetGroupName(wxFileNameFromPath(filename));
 		plotWin->AddDataSet(dataSets[i], (i == dataSets.size() - 1));
 	}
-	plotWin->SelectDataOnBlankTabs(); // Evan TODO not needed when ReadState used
 	plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
-
+	plotWin->ReadState(filename.ToStdString());
 	return true;
 }
 
@@ -1275,9 +1274,9 @@ bool wxDVFileReader::ReadSQLFile(wxDVPlotCtrl* plotWin, const wxString& filename
 			dataSets[i]->SetGroupName(groupNames[i].size() > 1 ? groupNames[i] : wxFileNameFromPath(filename));
 			plotWin->AddDataSet(dataSets[i], (i == dataSets.size() - 1) /* update_ui ? */);
 		}
-		plotWin->SelectDataOnBlankTabs(); // Evan TODO not needed when ReadState used
 		plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
 		plotWin->Thaw();
+		plotWin->ReadState(filename.ToStdString());
 
 		//wxLogStatus("Read %i lines of data points.\n", line);
 		//wxLogDebug("wxDVFileReader::ReadSQLFile [ncol=%d nalloc = %d lnchars=%d] = %d msec\n", columns, prealloc_data, lnchars, (int)sw.Time());

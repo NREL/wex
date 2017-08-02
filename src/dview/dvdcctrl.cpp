@@ -22,19 +22,23 @@
 *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-#include <algorithm>
-#include <numeric>
-#include <limits>
-
-#include <wx/tokenzr.h>
-#include <wx/busyinfo.h>
-#include "wx/srchctrl.h"
+#include "wex/dview/dvdcctrl.h"
+#include "wex/dview/dvselectionlist.h"
+#include "wex/dview/dvtimeseriesdataset.h"
 
 #include "wex/plot/pllineplot.h"
 
-#include "wex/dview/dvtimeseriesdataset.h"
-#include "wex/dview/dvselectionlist.h"
-#include "wex/dview/dvdcctrl.h"
+#include <wx/app.h>
+#include <wx/busyinfo.h>
+#include <wx/config.h>
+#include "wx/srchctrl.h"
+#include <wx/tokenzr.h>
+
+#include <algorithm>
+#include <limits>
+#include <numeric>
+#include <sstream>
+#include <string>
 
 static const wxString NO_UNITS("ThereAreNoUnitsForThisAxis.");
 
@@ -64,6 +68,8 @@ wxDVDCCtrl::wxDVDCCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos,
 
 wxDVDCCtrl::~wxDVDCCtrl()
 {
+	WriteState(m_filename);
+
 	for (size_t i = 0; i < m_plots.size(); i++)
 	{
 		// remove it first in case it's shown to release ownership
@@ -72,6 +78,50 @@ wxDVDCCtrl::~wxDVDCCtrl()
 		// destructor of PlotSet will delete the actual plot
 		delete m_plots[i];
 	}
+}
+
+void wxDVDCCtrl::ReadState(std::string filename)
+{
+	wxConfig cfg("DView", "NREL");
+
+	wxString s;
+	bool success;
+	bool debugging = false;
+	std::string key = filename;
+	std::string tabName("DurationCurve");
+
+	key = tabName + "Selections";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+
+	wxStringTokenizer tokenizer(s, ",");
+	while (tokenizer.HasMoreTokens())
+	{
+		wxString str = tokenizer.GetNextToken();
+		SelectDataSetAtIndex(wxAtoi(str));
+	}
+}
+
+void wxDVDCCtrl::WriteState(std::string filename)
+{
+	wxConfig cfg("DView", "NREL");
+
+	m_filename = filename;
+
+	bool success;
+	bool debugging = false;
+	std::string key = filename;
+	std::string tabName("DurationCurve");
+	std::stringstream  ss;
+
+	auto selections = m_dataSelector->GetSelectionsInCol();
+	for (auto selection : selections){
+		ss << selection;
+		ss << ',';
+	}
+	key = tabName + "Selections";
+	success = cfg.Write(key, ss.str().c_str());
+	if (debugging) assert(success);
 }
 
 BEGIN_EVENT_TABLE(wxDVDCCtrl, wxPanel)

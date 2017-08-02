@@ -35,26 +35,27 @@
  * This control will display a line plot on a time series axis.
  */
 
-#include <wx/panel.h>
-#include <wx/dialog.h>
+#include "wex/dview/dvplothelper.h"
 #include "wex/numeric.h"
 #include "wex/plot/plplotctrl.h"
-#include "wex/dview/dvplothelper.h"
+#include <wx/dialog.h>
+#include <wx/panel.h>
 
-class wxDVTimeSeriesDataSet;
-class wxPLTimeAxis;
-class wxPLLinePlot;
-class wxDVSelectionListCtrl;
-class wxGridSizer;
 class wxCheckBox;
+class wxDVSelectionListCtrl;
+class wxDVTimeSeriesDataSet;
 class wxDVTimeSeriesPlot;
-class wxScrollBar;
+class wxGridSizer;
+class wxPLLinePlot;
+class wxPLTimeAxis;
 class wxRadioChoice;
+class wxScrollBar;
 class wxSearchCtrl;
+class wxTimer;
 
 enum wxDVStatType { wxDV_AVERAGE, wxDV_SUM };
-enum wxDVTimeSeriesType { wxDV_RAW, wxDV_HOURLY, wxDV_DAILY, wxDV_MONTHLY };
 enum wxDVTimeSeriesStyle { wxDV_NORMAL, wxDV_STEPPED };
+enum wxDVTimeSeriesType { wxDV_RAW, wxDV_HOURLY, wxDV_DAILY, wxDV_MONTHLY };
 
 class wxDVTimeSeriesSettingsDialog : public wxDialog
 {
@@ -128,7 +129,7 @@ public:
 	void SetTopSelectedNames(const wxString& names);
 	void SetBottomSelectedNames(const wxString& names);
 	void SetSelectedNamesForColIndex(const wxString& names, int index);
-	void SelectDataSetAtIndex(int index);
+	void SelectDataSetAtIndex(int index, unsigned column = 0);
 	int GetNumberOfSelections();
 
 	//View Setters/Getters
@@ -171,6 +172,9 @@ public:
 	void UpdateStacking();
 
 	void Invalidate();
+
+	void ReadState(std::string filename);
+	void WriteState(std::string filename);
 
 protected:
 
@@ -226,6 +230,7 @@ private:
 	bool m_stackingOnYLeft;
 	wxDVTimeSeriesType m_seriesType;
 	wxDVStatType m_statType;
+	std::string m_filename;
 
 	void AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPos, int index);
 	void RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPos, int index);
@@ -237,19 +242,22 @@ private:
 
 	void OnTimer(wxTimerEvent& event);
 
-	double TopYMax;
-	double TopYMin;
-	double TopY2Max;
-	double TopY2Min;
-	double BottomYMax;
-	double BottomYMin;
-	double BottomY2Max;
-	double BottomY2Min;
+	//double TopYMax; // Evan TODO
+	//double TopYMin;
+	//double TopY2Max;
+	//double TopY2Min;
+	//double BottomYMax;
+	//double BottomYMin;
+	//double BottomY2Max;
+	//double BottomY2Min;
 
 	wxTimer * m_timer;
 
 	std::vector<std::pair<int, int> > m_selections;
 	unsigned m_counter;
+
+	double m_xAxixWorldMin;
+	double m_xAxixWorldMax;
 
 	DECLARE_EVENT_TABLE();
 };

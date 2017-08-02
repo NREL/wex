@@ -32,31 +32,31 @@
  * for axis labels.  If no year is specified, we use 1970 because the year doesn't matter.
  */
 
-#include <algorithm>
-#include <string>
-#include <sstream>
+#include <wex/radiochoice.h>
 
-#include <wx/scrolbar.h>
-#include <wx/gbsizer.h>
-#include <wx/tokenzr.h>
-#include <wx/statline.h>
-#include <wx/gdicmn.h>
-#include "wx/srchctrl.h"
-#include <wx/config.h>
-#include <wx/timer.h>
+#include "wex/dview/dvselectionlist.h"
+#include "wex/dview/dvtimeseriesctrl.h"
+#include "wex/dview/dvtimeseriesdataset.h"
+
+#include "wex/icons/preferences.cpng"
+#include "wex/icons/zoom_fit.cpng"
+#include "wex/icons/zoom_in.cpng"
+#include "wex/icons/zoom_out.cpng"
 
 #include "wex/plot/pllineplot.h"
 
-#include "wex/icons/zoom_in.cpng"
-#include "wex/icons/zoom_out.cpng"
-#include "wex/icons/zoom_fit.cpng"
-#include "wex/icons/preferences.cpng"
+#include <wx/config.h>
+#include <wx/gbsizer.h>
+#include <wx/gdicmn.h>
+#include <wx/scrolbar.h>
+#include "wx/srchctrl.h"
+#include <wx/statline.h>
+#include <wx/timer.h>
+#include <wx/tokenzr.h>
 
-#include "wex/dview/dvselectionlist.h"
-#include "wex/dview/dvtimeseriesdataset.h"
-#include "wex/dview/dvtimeseriesctrl.h"
-
-#include <wex/radiochoice.h>
+#include <algorithm>
+#include <sstream>
+#include <string>
 
 #if defined(__WXOSX__)||defined(__WXGTK__)
 #include <cmath>
@@ -800,21 +800,25 @@ EVT_COMMAND_SCROLL_PAGEUP(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrl::OnGraphScrollP
 
 EVT_TEXT(wxID_ANY, wxDVTimeSeriesCtrl::OnSearch)
 
+EVT_TIMER(ID_Timer, OnTimer)
+
 END_EVENT_TABLE()
 
 /*Constructors and Destructors*/
 wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, wxDVTimeSeriesType seriesType, wxDVStatType statType)
 : wxPanel(parent, id),
-TopYMax(0),
-TopYMin(0),
-TopY2Max(0),
-TopY2Min(0),
-BottomYMax(0),
-BottomYMin(0),
-BottomY2Max(0),
-BottomY2Min(0),
+//TopYMax(0), // Evan TODO
+//TopYMin(0),
+//TopY2Max(0),
+//TopY2Min(0),
+//BottomYMax(0),
+//BottomYMin(0),
+//BottomY2Max(0),
+//BottomY2Min(0),
 m_timer(nullptr),
-m_counter(0)
+m_counter(0),
+m_xAxixWorldMin(0),
+m_xAxixWorldMax(0)
 {
 	SetBackgroundColour(*wxWHITE);
 	m_srchCtrl = NULL;
@@ -878,14 +882,252 @@ m_counter(0)
 		m_selectedChannelIndices.push_back(new std::vector<int>());
 
 	UpdateScrollbarPosition();
+
+	m_timer = new wxTimer(this, ID_Timer);
 }
 
 wxDVTimeSeriesCtrl::~wxDVTimeSeriesCtrl(void)
 {
+	WriteState(m_filename);
+
 	RemoveAllDataSets();
 
 	for (int i = 0; i < GRAPH_AXIS_POSITION_COUNT; i++)
 		delete m_selectedChannelIndices[i];
+}
+
+void wxDVTimeSeriesCtrl::ReadState(std::string filename)
+{
+	wxConfig cfg("DView", "NREL");
+
+	wxString s;
+	bool success;
+	bool debugging = false;
+	std::string key = filename;
+	std::string tabName(GetTabName());
+
+	key = tabName + "AxisMin";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+	m_xAxixWorldMin = wxAtoi(s);
+
+	key = tabName + "AxisMax";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+	m_xAxixWorldMax = wxAtoi(s);
+
+	key = tabName + "StatType";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+	m_statType = static_cast<wxDVStatType>(wxAtoi(s));
+
+	key = tabName + "Style";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+	m_style = static_cast<wxDVTimeSeriesStyle>(wxAtoi(s));
+
+	key = tabName + "Stack";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+	m_stackingOnYLeft = (s == "false") ? false : true;
+
+	key = tabName + "TopAutoscaleCheck";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+	m_topAutoScale = (s == "false") ? false : true;
+
+	key = tabName + "Top2AutoscaleCheck";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+	m_top2AutoScale = (s == "false") ? false : true;
+
+	key = tabName + "BottomAutoscaleCheck";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+	m_bottomAutoScale = (s == "false") ? false : true;
+
+	key = tabName + "Bottom2AutoscaleCheck";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+	m_bottom2AutoScale = (s == "false") ? false : true;
+
+	//TopYMaxCtrl; // Evan TODO
+	//TopYMinCtrl;
+	//TopY2MaxCtrl;
+	//TopY2MinCtrl;
+	//BottomYMaxCtrl;
+	//BottomYMinCtrl;
+	//BottomY2MaxCtrl;
+	//BottomY2MinCtrl;
+
+	key = tabName + "Selections";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+
+	{
+		wxStringTokenizer tokenizer(s, ",");
+		while (tokenizer.HasMoreTokens())
+		{
+			wxString str = tokenizer.GetNextToken();
+			m_dataSelector->SelectRowInCol(wxAtoi(str));
+			auto p = std::make_pair(wxAtoi(str), 0);
+			m_selections.push_back(p);
+		}
+	}
+
+	key = tabName + "Selections1";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+
+	{
+		wxStringTokenizer tokenizer(s, ",");
+		while (tokenizer.HasMoreTokens())
+		{
+			wxString str = tokenizer.GetNextToken();
+			m_dataSelector->SelectRowInCol(wxAtoi(str), 1);
+			auto p = std::make_pair(wxAtoi(str), 1);
+			m_selections.push_back(p);
+		}
+	}
+
+	m_counter = 0;
+	m_timer->Start(10);
+}
+
+void wxDVTimeSeriesCtrl::OnTimer(wxTimerEvent&)
+{
+	if (m_counter < m_selections.size()) {
+		AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos(m_selections[m_counter].second), m_selections[m_counter].first);
+		m_counter++;
+	}
+	else if (m_selections.size() > 0 && m_counter == m_selections.size()) {
+		wxDVPlotHelper::ZoomFactor(&m_xAxixWorldMin, &m_xAxixWorldMax, 1, 0);
+		MakeXBoundsNice(&m_xAxixWorldMin, &m_xAxixWorldMax);
+		m_xAxis->SetWorld(m_xAxixWorldMin, m_xAxixWorldMax);
+		AutoscaleYAxis(true);
+		UpdateScrollbarPosition();
+		Invalidate();
+
+		m_counter = 0;
+		m_timer->Stop();
+	}
+	else {
+		m_timer->Stop();
+
+		SelectDataSetAtIndex(0);
+		ZoomToFit();
+	}
+}
+
+void wxDVTimeSeriesCtrl::WriteState(std::string filename)
+{
+	wxConfig cfg("DView", "NREL");
+
+	m_filename = filename;
+
+	bool success;
+	bool debugging = false;
+	std::string s;
+	std::string key = filename;
+	std::string tabName(GetTabName());
+	std::stringstream ss;
+
+	key = tabName + "AxisMin";
+	s = wxString::Format(wxT("%f"), (double)m_xAxis->GetWorldMin());
+	success = cfg.Write(key, s.c_str());
+	if (debugging) assert(success);
+
+	key = tabName + "AxisMax";
+	s = wxString::Format(wxT("%f"), (double)m_xAxis->GetWorldMax());
+	success = cfg.Write(key, s.c_str());
+	if (debugging) assert(success);
+
+	key = tabName + "StatType";
+	s = wxString::Format(wxT("%d"), (int)m_statType);
+	success = cfg.Write(key, s.c_str());
+	if (debugging) assert(success);
+
+	key = tabName + "Style";
+	s = wxString::Format(wxT("%d"), (int)m_style);
+	success = cfg.Write(key, s.c_str());
+	if (debugging) assert(success);
+
+	key = tabName + "Stack";
+	s = (m_stackingOnYLeft == false) ? "false" : "true";
+	success = cfg.Write(key, s.c_str());
+	if (debugging) assert(success);
+
+	key = tabName + "TopAutoscaleCheck";
+	s = (m_topAutoScale == false) ? "false" : "true";
+	success = cfg.Write(key, s.c_str());
+	if (debugging) assert(success);
+
+	key = tabName + "Top2AutoscaleCheck";
+	s = (m_top2AutoScale == false) ? "false" : "true";
+	success = cfg.Write(key, s.c_str());
+	if (debugging) assert(success);
+
+	key = tabName + "BottomAutoscaleCheck";
+	s = (m_bottomAutoScale == false) ? "false" : "true";
+	success = cfg.Write(key, s.c_str());
+	if (debugging) assert(success);
+
+	key = tabName + "Bottom2AutoscaleCheck";
+	s = (m_bottom2AutoScale == false) ? "false" : "true";
+	success = cfg.Write(key, s.c_str());
+	if (debugging) assert(success);
+
+	//TopYMaxCtrl; // Evan TODO
+	//TopYMinCtrl;
+	//TopY2MaxCtrl;
+	//TopY2MinCtrl;
+	//BottomYMaxCtrl;
+	//BottomYMinCtrl;
+	//BottomY2MaxCtrl;
+	//BottomY2MinCtrl;
+
+	auto selections = m_dataSelector->GetSelectionsInCol();
+	for (auto selection : selections){
+		ss << selection;
+		ss << ',';
+	}
+	key = tabName + "Selections";
+	success = cfg.Write(key, ss.str().c_str());
+	if (debugging) assert(success);
+
+	ss.clear();
+	ss.str(std::string());
+	auto selections1 = m_dataSelector->GetSelectionsInCol(1);
+	for (auto selection : selections1){
+		ss << selection;
+		ss << ',';
+	}
+	key = tabName + "Selections1";
+	success = cfg.Write(key, ss.str().c_str());
+	if (debugging) assert(success);
+}
+
+std::string wxDVTimeSeriesCtrl::GetTabName()
+{
+	std::string tabName;
+	switch (m_seriesType) {
+	case wxDV_RAW:
+		tabName = "Timeseries";
+		break;
+	case wxDV_HOURLY:
+		tabName = "Hourly";
+		break;
+	case wxDV_DAILY:
+		tabName = "Daily";
+		break;
+	case wxDV_MONTHLY:
+		tabName = "Monthly";
+		break;
+	default:
+		// Oops, shouldn't be here
+		assert(false);
+	}
+	return tabName;
 }
 
 void wxDVTimeSeriesCtrl::Invalidate()
@@ -2284,10 +2526,20 @@ void wxDVTimeSeriesCtrl::SetSelectedNamesForColIndex(const wxString& names, int 
 	}
 }
 
-void wxDVTimeSeriesCtrl::SelectDataSetAtIndex(int index)
+void wxDVTimeSeriesCtrl::SelectDataSetAtIndex(int index, unsigned column)
 {
-	m_dataSelector->SelectRowInCol(index, 0);
-	AddGraphAfterChannelSelection(wxPLPlotCtrl::PLOT_TOP, index);
+	if (column == 0){
+		m_dataSelector->SelectRowInCol(index, column);
+		AddGraphAfterChannelSelection(wxPLPlotCtrl::PLOT_TOP, index);
+	}
+	else if (column == 1) {
+		m_dataSelector->SelectRowInCol(index, column);
+		AddGraphAfterChannelSelection(wxPLPlotCtrl::PLOT_BOTTOM, index);
+	}
+	else {
+		// Should not get here
+		assert(false);
+	}
 }
 
 int wxDVTimeSeriesCtrl::GetNumberOfSelections()

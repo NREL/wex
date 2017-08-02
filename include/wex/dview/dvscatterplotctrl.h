@@ -26,18 +26,22 @@
 #define __DVScatterplotCtrl_h
 
 #include <wx/panel.h>
+
 #include <vector>
 
-class wxPLPlotCtrl;
+class wxCheckBox;
 class wxDVSelectionListCtrl;
 class wxDVTimeSeriesDataSet;
 class wxSearchCtrl;
+class wxPLPlotCtrl;
 
 class wxDVScatterPlotCtrl : public wxPanel
 {
 public:
 	wxDVScatterPlotCtrl(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition,
 		const wxSize& size = wxDefaultSize, long style = wxTAB_TRAVERSAL, const wxString& name = "panel");
+
+	virtual ~wxDVScatterPlotCtrl();
 
 	void AddDataSet(wxDVTimeSeriesDataSet* d, bool update_ui);
 	void RemoveDataSet(wxDVTimeSeriesDataSet* d);
@@ -49,6 +53,8 @@ public:
 	void SelectXDataAtIndex(int index);
 	void SelectYDataAtIndex(int index);
 	bool IsAnythingSelected();
+	void ReadState(std::string filename);
+	void WriteState(std::string filename);
 
 	//EVENT HANDLERS
 	void OnChannelSelection(wxCommandEvent &);
@@ -57,6 +63,8 @@ public:
 	void OnSearch(wxCommandEvent& e);
 
 private:
+	std::string m_filename;
+
 	std::vector<wxDVTimeSeriesDataSet*> m_dataSets;
 
 	wxDVSelectionListCtrl *m_dataSelectionList;
@@ -73,6 +81,7 @@ private:
 	void RemoveYAxisChannel(int index);
 	void UpdatePlotWithChannelSelections();
 	void RefreshDisabledCheckBoxes();
+	void ShowLine();
 
 	DECLARE_EVENT_TABLE()
 };

@@ -28,22 +28,22 @@
 * This class Is a wxPanel that contains a table of statistics for the associated dataset
 */
 
-#include <wx/scrolbar.h>
-#include <wx/gbsizer.h>
-#include <wx/tokenzr.h>
-#include <wx/statline.h>
-#include <wx/gdicmn.h>
-#include <wx/filename.h>
+#include "wex/dview/dvstatisticstablectrl.h"
+
 #include <wx/clipbrd.h>
-#include <wx/menu.h>
-#include <wx/wfstream.h>
-#include <wx/txtstrm.h>
-#include <wx/sstream.h>
 #include <wx/config.h>
+#include <wx/filename.h>
+#include <wx/gbsizer.h>
+#include <wx/gdicmn.h>
+#include <wx/menu.h>
+#include <wx/scrolbar.h>
+#include <wx/sstream.h>
+#include <wx/statline.h>
+#include <wx/tokenzr.h>
+#include <wx/txtstrm.h>
+#include <wx/wfstream.h>
 
 #include <math.h>
-
-#include "wex/dview/dvstatisticstablectrl.h"
 
 #ifdef __WXMSW__
 #include "wex/ole/excelauto.h"
@@ -321,8 +321,8 @@ void dvStatisticsTreeModel::Refresh(std::vector<wxDVVariableStatistics*> stats, 
 	dvStatisticsTreeModelNode *monthNode;
 	StatisticsPoint p;
 	wxString groupName = "";
-	 
-	//Clear existing nodes 
+
+	//Clear existing nodes
 	if (m_root == NULL)
 	{
 		m_root = new dvStatisticsTreeModelNode(NULL, "All");
@@ -477,7 +477,43 @@ wxDVStatisticsTableCtrl::wxDVStatisticsTableCtrl(wxWindow *parent, wxWindowID id
 
 wxDVStatisticsTableCtrl::~wxDVStatisticsTableCtrl(void)
 {
+	WriteState(m_filename);
 	RemoveAllDataSets();
+}
+
+void wxDVStatisticsTableCtrl::ReadState(std::string filename)
+{
+	wxConfig cfg("DView", "NREL");
+
+	wxString s;
+	bool success;
+	bool debugging = false;
+	std::string key = filename;
+	std::string tabName("Statistics");
+
+	key = tabName + "ShowMonths";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+	m_chkShowMonths->SetValue((s == "false") ? false : true);
+	ShowMonths();
+}
+
+void wxDVStatisticsTableCtrl::WriteState(std::string filename)
+{
+	wxConfig cfg("DView", "NREL");
+
+	m_filename = filename;
+
+	bool success;
+	bool debugging = false;
+	std::string s;
+	std::string key = filename;
+	std::string tabName("Statistics");
+
+	key = tabName + "ShowMonths";
+	s = (m_chkShowMonths->GetValue()) ? "true" : "false";
+	success = cfg.Write(key, s.c_str());
+	if (debugging) assert(success);
 }
 
 void wxDVStatisticsTableCtrl::Invalidate()
@@ -744,6 +780,11 @@ void wxDVStatisticsTableCtrl::OnPopupMenu(wxCommandEvent &evt)
 }
 
 void wxDVStatisticsTableCtrl::OnShowMonthsClick(wxCommandEvent &)
+{
+	ShowMonths();
+}
+
+void wxDVStatisticsTableCtrl::ShowMonths()
 {
 	m_showMonths = m_chkShowMonths->GetValue();
 	RebuildDataViewCtrl();

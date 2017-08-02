@@ -22,24 +22,24 @@
 *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-#include <wx/wx.h>
-#include <wx/aui/aui.h>
-
-#include "wex/plot/plhistplot.h"
+#include "wex/metro.h"
 
 #include "wex/dview/dvplotctrl.h"
 #include "wex/dview/dvselectionlist.h"
-#include "wex/plot/plcolourmap.h"
 
-#include "wex/icons/time.cpng"
-#include "wex/icons/dmap.cpng"
-#include "wex/icons/calendar.cpng"
 #include "wex/icons/barchart.cpng"
+#include "wex/icons/calendar.cpng"
 #include "wex/icons/curve.cpng"
+#include "wex/icons/dmap.cpng"
 #include "wex/icons/scatter.cpng"
+#include "wex/icons/time.cpng"
 
-#include "wex/metro.h"
+#include "wex/plot/plcolourmap.h"
+#include "wex/plot/plhistplot.h"
+
 #include <algorithm>
+#include <wx/aui/aui.h>
+#include <wx/wx.h>
 
 enum {
 	TAB_TIME_SERIES = 0,
@@ -147,6 +147,34 @@ void wxDVPlotCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 	m_scatterPlot->RemoveDataSet(d);
 
 	m_dataSets.erase(std::find(m_dataSets.begin(), m_dataSets.end(), d));
+}
+
+void wxDVPlotCtrl::ReadState(std::string filename)
+{
+	m_timeSeries->ReadState(filename);
+	m_hourlyTimeSeries->ReadState(filename);
+	m_dailyTimeSeries->ReadState(filename);
+	m_monthlyTimeSeries->ReadState(filename);
+	m_dMap->ReadState(filename);
+	m_profilePlots->ReadState(filename);
+	m_statisticsTable->ReadState(filename);
+	m_pnCdf->ReadState(filename);
+	m_durationCurve->ReadState(filename);
+	m_scatterPlot->ReadState(filename);
+}
+
+void wxDVPlotCtrl::WriteState(std::string filename)
+{
+	m_timeSeries->WriteState(filename);
+	m_hourlyTimeSeries->WriteState(filename);
+	m_dailyTimeSeries->WriteState(filename);
+	m_monthlyTimeSeries->WriteState(filename);
+	m_dMap->WriteState(filename);
+	m_profilePlots->WriteState(filename);
+	m_statisticsTable->WriteState(filename);
+	m_pnCdf->WriteState(filename);
+	m_durationCurve->WriteState(filename);
+	m_scatterPlot->WriteState(filename);
 }
 
 void wxDVPlotCtrl::SetTimeSeriesMode(int mode)

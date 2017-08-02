@@ -32,14 +32,14 @@
 
 #include "wex/dview/dvtimeseriesdataset.h"
 
-class wxPlPlotCtrl;
-class wxPLLinePlot;
-class wxComboBox;
-class wxChoice;
-class wxTextCtrl;
 class wxCheckBox;
+class wxChoice;
+class wxComboBox;
 class wxDVSelectionListCtrl;
+class wxPLLinePlot;
+class wxPlPlotCtrl;
 class wxSearchCtrl;
+class wxTextCtrl;
 
 class wxDVPnCdfCtrl : public wxPanel
 {
@@ -70,6 +70,9 @@ public:
 	void ChangePlotDataTo(wxDVTimeSeriesDataSet* d, bool forceDataRefresh = false);
 	void RebuildPlotSurface(double maxYPercent);
 
+	void ReadState(std::string filename);
+	void WriteState(std::string filename);
+
 	// Event Handlers
 	void OnDataChannelSelection(wxCommandEvent& e);
 	void OnSearch(wxCommandEvent& e);
@@ -82,6 +85,7 @@ public:
 	void OnPlotTypeSelection(wxCommandEvent &);
 
 private:
+	std::string m_filename;
 	std::vector<wxDVTimeSeriesDataSet*> m_dataSets;
 	int m_selectedDataSetIndex;
 	std::vector< std::vector<wxRealPoint>* > m_cdfPlotData; //We track cdf plots since they take long to calculate.
@@ -103,6 +107,12 @@ private:
 	void UpdateYAxisLabel();
 
 	void InvalidatePlot();
+
+	void EnterYMax();
+	void ShowZerosClick();
+	void PlotTypeSelection();
+	void NormalizeChoice();
+	void BinComboSelection();
 
 	DECLARE_EVENT_TABLE()
 };
