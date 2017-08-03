@@ -187,6 +187,10 @@ void wxDVPnCdfCtrl::ReadState(std::string filename)
 		wxString str = tokenizer.GetNextToken();
 		SelectDataSetAtIndex(wxAtoi(str));
 	}
+	
+	if (m_selector->GetSelectedNamesInCol().size() == 0) {
+		SelectDataSetAtIndex(0);
+	}
 
 	// Set this value after settings selections, so they don't get stepped on
 	key = tabName + "YMax";

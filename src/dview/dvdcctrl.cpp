@@ -100,6 +100,10 @@ void wxDVDCCtrl::ReadState(std::string filename)
 		wxString str = tokenizer.GetNextToken();
 		SelectDataSetAtIndex(wxAtoi(str));
 	}
+
+	if (GetDataSelectionList()->GetSelectedNamesInCol().size() == 0) {
+		SelectDataSetAtIndex(0);
+	}
 }
 
 void wxDVDCCtrl::WriteState(std::string filename)

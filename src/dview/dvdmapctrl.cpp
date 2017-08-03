@@ -344,6 +344,10 @@ void wxDVDMapCtrl::ReadState(std::string filename)
 		SelectDataSetAtIndex(wxAtoi(str));
 	}
 
+	if (m_selector->GetSelectedNamesInCol().size() == 0) {
+		SelectDataSetAtIndex(0);
+	}
+
 	// Set these values after settings selections, so they don't get stepped on
 	key = tabName + "Min";
 	success = cfg.Read(key, &s);

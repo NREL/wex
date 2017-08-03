@@ -168,6 +168,14 @@ void wxDVScatterPlotCtrl::ReadState(std::string filename)
 			SelectYDataAtIndex(GetScatterSelectionList()->GetUnsortedRowIndex(wxAtoi(str)));
 		}
 	}
+
+	if (GetScatterSelectionList()->GetSelectedNamesInCol(0).size() == 0) {
+		SelectXDataAtIndex(0);
+	}
+
+	if (GetScatterSelectionList()->GetSelectedNamesInCol(1).size() == 0) {
+		SelectYDataAtIndex(GetScatterSelectionList()->GetUnsortedRowIndex(1));
+	}
 }
 
 void wxDVScatterPlotCtrl::WriteState(std::string filename)

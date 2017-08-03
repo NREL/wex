@@ -322,8 +322,13 @@ void wxDVProfileCtrl::ReadState(std::string filename)
 		while (tokenizer.HasMoreTokens())
 		{
 			wxString str = tokenizer.GetNextToken();
+			m_dataSelector->SelectRowInCol(wxAtoi(str));
 			m_selections.push_back(wxAtoi(str));
 		}
+	}
+
+	if (GetDataSelectionList()->GetSelectedNamesInCol().size() == 0){
+		SelectDataSetAtIndex(0);
 	}
 
 	m_counter = 0;
