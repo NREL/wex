@@ -137,8 +137,6 @@ const wxSize& size, long style, const wxString& name)
 
 wxDVPnCdfCtrl::~wxDVPnCdfCtrl()
 {
-	WriteState(m_filename);
-
 	for (size_t i = 0; i < m_cdfPlotData.size(); i++)
 		delete m_cdfPlotData[i];
 }
@@ -150,34 +148,36 @@ void wxDVPnCdfCtrl::ReadState(std::string filename)
 	wxString s;
 	bool success;
 	bool debugging = false;
-	std::string key = filename;
-	std::string tabName("PDFCDF");
 
-	key = tabName + "ExcludeZeros";
+	std::string prefix = "/AppState/" + filename + "/PDFCDF/";
+
+	std::string key("");
+
+	key = prefix + "ExcludeZeros";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_hideZeros->SetValue((s == "false") ? false : true);
 	ShowZerosClick();
 
-	key = tabName + "PlotType";
+	key = prefix + "PlotType";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_PlotTypeDisplayed->SetSelection(wxAtoi(s));
 	PlotTypeSelection();
 
-	key = tabName + "Normalize";
+	key = prefix + "Normalize";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_normalizeChoice->SetSelection(wxAtoi(s));
 	NormalizeChoice();
 
-	key = tabName + "Bins";
+	key = prefix + "Bins";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_binsCombo->SetSelection(wxAtoi(s));
 	BinComboSelection();
 
-	key = tabName + "Selections";
+	key = prefix + "Selections";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 
@@ -187,13 +187,13 @@ void wxDVPnCdfCtrl::ReadState(std::string filename)
 		wxString str = tokenizer.GetNextToken();
 		SelectDataSetAtIndex(wxAtoi(str));
 	}
-	
+
 	if (m_selector->GetSelectedNamesInCol().size() == 0) {
 		SelectDataSetAtIndex(0);
 	}
 
 	// Set this value after settings selections, so they don't get stepped on
-	key = tabName + "YMax";
+	key = prefix + "YMax";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_maxTextBox->SetValue(s);
@@ -204,36 +204,36 @@ void wxDVPnCdfCtrl::WriteState(std::string filename)
 {
 	wxConfig cfg("DView", "NREL");
 
-	m_filename = filename;
-
 	bool success;
 	bool debugging = false;
 	std::string s;
-	std::string key = filename;
-	std::string tabName("PDFCDF");
 	std::stringstream  ss;
 
-	key = tabName + "YMax";
+	std::string prefix = "/AppState/" + filename + "/PDFCDF/";
+
+	std::string key("");
+
+	key = prefix + "YMax";
 	s = m_maxTextBox->GetValue();
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
 
-	key = tabName + "ExcludeZeros";
+	key = prefix + "ExcludeZeros";
 	s = (m_hideZeros->GetValue()) ? "true" : "false";
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
 
-	key = tabName + "PlotType";
+	key = prefix + "PlotType";
 	s = wxString::Format(wxT("%d"), (int)m_PlotTypeDisplayed->GetSelection());
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
 
-	key = tabName + "Normalize";
+	key = prefix + "Normalize";
 	s = wxString::Format(wxT("%d"), (int)m_normalizeChoice->GetSelection());
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
 
-	key = tabName + "Bins";
+	key = prefix + "Bins";
 	s = wxString::Format(wxT("%d"), (int)m_binsCombo->GetSelection());
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
@@ -244,7 +244,7 @@ void wxDVPnCdfCtrl::WriteState(std::string filename)
 		ss << ',';
 	}
 	s = ss.str();
-	key = tabName + "Selections";
+	key = prefix + "Selections";
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
 }

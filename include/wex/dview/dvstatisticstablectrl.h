@@ -157,11 +157,11 @@ public:
 	void Invalidate();
 	void ReadState(std::string filename);
 	void WriteState(std::string filename);
+
 	wxMenu &GetContextMenu() { return m_contextMenu; }
 	void OnShowMonthsClick(wxCommandEvent &e);
 
 private:
-	std::string m_filename;
 	std::vector<wxDVVariableStatistics*> m_variableStatistics;
 	wxDataViewCtrl *m_ctrl;
 	wxObjectDataPtr<dvStatisticsTreeModel> m_StatisticsModel;

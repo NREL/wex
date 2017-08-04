@@ -888,8 +888,6 @@ m_xAxixWorldMax(0)
 
 wxDVTimeSeriesCtrl::~wxDVTimeSeriesCtrl(void)
 {
-	WriteState(m_filename);
-
 	RemoveAllDataSets();
 
 	for (int i = 0; i < GRAPH_AXIS_POSITION_COUNT; i++)
@@ -903,50 +901,52 @@ void wxDVTimeSeriesCtrl::ReadState(std::string filename)
 	wxString s;
 	bool success;
 	bool debugging = false;
-	std::string key = filename;
-	std::string tabName(GetTabName());
 
-	key = tabName + "AxisMin";
+	std::string prefix = "/AppState/" + filename + "/" + GetTabName() + "/";
+
+	std::string key("");
+
+	key = prefix + "AxisMin";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_xAxixWorldMin = wxAtoi(s);
 
-	key = tabName + "AxisMax";
+	key = prefix + "AxisMax";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_xAxixWorldMax = wxAtoi(s);
 
-	key = tabName + "StatType";
+	key = prefix + "StatType";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_statType = static_cast<wxDVStatType>(wxAtoi(s));
 
-	key = tabName + "Style";
+	key = prefix + "Style";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_style = static_cast<wxDVTimeSeriesStyle>(wxAtoi(s));
 
-	key = tabName + "Stack";
+	key = prefix + "Stack";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_stackingOnYLeft = (s == "false") ? false : true;
 
-	key = tabName + "TopAutoscaleCheck";
+	key = prefix + "TopAutoscaleCheck";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_topAutoScale = (s == "false") ? false : true;
 
-	key = tabName + "Top2AutoscaleCheck";
+	key = prefix + "Top2AutoscaleCheck";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_top2AutoScale = (s == "false") ? false : true;
 
-	key = tabName + "BottomAutoscaleCheck";
+	key = prefix + "BottomAutoscaleCheck";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_bottomAutoScale = (s == "false") ? false : true;
 
-	key = tabName + "Bottom2AutoscaleCheck";
+	key = prefix + "Bottom2AutoscaleCheck";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_bottom2AutoScale = (s == "false") ? false : true;
@@ -960,7 +960,7 @@ void wxDVTimeSeriesCtrl::ReadState(std::string filename)
 	//BottomY2MaxCtrl;
 	//BottomY2MinCtrl;
 
-	key = tabName + "Selections";
+	key = prefix + "Selections";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 
@@ -975,7 +975,7 @@ void wxDVTimeSeriesCtrl::ReadState(std::string filename)
 		}
 	}
 
-	key = tabName + "Selections1";
+	key = prefix + "Selections1";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 
@@ -1023,56 +1023,58 @@ void wxDVTimeSeriesCtrl::WriteState(std::string filename)
 {
 	wxConfig cfg("DView", "NREL");
 
-	m_filename = filename;
-
 	bool success;
 	bool debugging = false;
 	std::string s;
-	std::string key = filename;
-	std::string tabName(GetTabName());
 	std::stringstream ss;
 
-	key = tabName + "AxisMin";
+	// wxFileName::GetPathSeparator() Evan NOTE: is this needed for cross-platform?
+
+	std::string prefix = "/AppState/" + filename + "/" + GetTabName() + "/";
+
+	std::string key("");
+
+	key = prefix + "AxisMin";
 	s = wxString::Format(wxT("%f"), (double)m_xAxis->GetWorldMin());
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
 
-	key = tabName + "AxisMax";
+	key = prefix + "AxisMax";
 	s = wxString::Format(wxT("%f"), (double)m_xAxis->GetWorldMax());
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
 
-	key = tabName + "StatType";
+	key = prefix + "StatType";
 	s = wxString::Format(wxT("%d"), (int)m_statType);
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
 
-	key = tabName + "Style";
+	key = prefix + "Style";
 	s = wxString::Format(wxT("%d"), (int)m_style);
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
 
-	key = tabName + "Stack";
+	key = prefix + "Stack";
 	s = (m_stackingOnYLeft == false) ? "false" : "true";
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
 
-	key = tabName + "TopAutoscaleCheck";
+	key = prefix + "TopAutoscaleCheck";
 	s = (m_topAutoScale == false) ? "false" : "true";
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
 
-	key = tabName + "Top2AutoscaleCheck";
+	key = prefix + "Top2AutoscaleCheck";
 	s = (m_top2AutoScale == false) ? "false" : "true";
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
 
-	key = tabName + "BottomAutoscaleCheck";
+	key = prefix + "BottomAutoscaleCheck";
 	s = (m_bottomAutoScale == false) ? "false" : "true";
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
 
-	key = tabName + "Bottom2AutoscaleCheck";
+	key = prefix + "Bottom2AutoscaleCheck";
 	s = (m_bottom2AutoScale == false) ? "false" : "true";
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
@@ -1091,7 +1093,7 @@ void wxDVTimeSeriesCtrl::WriteState(std::string filename)
 		ss << selection;
 		ss << ',';
 	}
-	key = tabName + "Selections";
+	key = prefix + "Selections";
 	success = cfg.Write(key, ss.str().c_str());
 	if (debugging) assert(success);
 
@@ -1102,7 +1104,7 @@ void wxDVTimeSeriesCtrl::WriteState(std::string filename)
 		ss << selection;
 		ss << ',';
 	}
-	key = tabName + "Selections1";
+	key = prefix + "Selections1";
 	success = cfg.Write(key, ss.str().c_str());
 	if (debugging) assert(success);
 }
