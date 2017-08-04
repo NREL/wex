@@ -294,17 +294,11 @@ public:
 		Destroy();
 	}
 
-	bool Load(const wxArrayString& filenames, bool append = true)
+	bool Load(const wxArrayString& filenames)
 	{
 		bool FileExists = false;
 
 		wxBeginBusyCursor();
-
-		if (!append) {
-			// clear everything first
-			mPlotCtrl->RemoveAllDataSets();
-			mFileNames.Clear();
-		}
 
 		for (size_t i = 0; i < filenames.GetCount(); i++)
 		{
@@ -338,14 +332,14 @@ public:
 		return true;
 	}
 
-	void Open(bool append = true)
+	void Open()
 	{
 		wxFileDialog fdlg(this, "Open Data File", mLastDir, "", "All Files|*.*|CSV Files(*.csv)|*.csv|TXT Files(*.txt)|*.txt|SQL Files(*.sql)|*.sqlv|TMY3 Files(*.tmy3)|*.tmy3|EPW Files(*.epw)|*.epw", wxFD_OPEN | wxFD_MULTIPLE);
 		wxArrayString myFilePaths;
 		if (fdlg.ShowModal() == wxID_OK)
 		{
 			fdlg.GetPaths(myFilePaths);
-			Load(myFilePaths, append);
+			Load(myFilePaths);
 		}
 	}
 
@@ -354,12 +348,20 @@ public:
 		switch (evt.GetId())
 		{
 		case wxID_OPEN:
-			Open(false);
+			// clear everything first
+			mPlotCtrl->RemoveAllDataSets();
+			mFileNames.Clear();
+			mPlotCtrl->SetOkToAccessState(true);
+			Open();
 			break;
 		case wxID_ADD:
+			// not able to persist app data specific to this file
+			// due to other file(s) already open
+			mPlotCtrl->SetOkToAccessState(false);
 			Open();
 			break;
 		case wxID_CLEAR:
+			mPlotCtrl->SetOkToAccessState(true);
 			mPlotCtrl->RemoveAllDataSets();
 			mFileNames.Clear();
 			break;

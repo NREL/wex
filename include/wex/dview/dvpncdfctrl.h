@@ -85,7 +85,6 @@ public:
 	void OnPlotTypeSelection(wxCommandEvent &);
 
 private:
-	std::string m_filename;
 	std::vector<wxDVTimeSeriesDataSet*> m_dataSets;
 	int m_selectedDataSetIndex;
 	std::vector< std::vector<wxRealPoint>* > m_cdfPlotData; //We track cdf plots since they take long to calculate.

@@ -280,7 +280,6 @@ m_counter(0)
 
 wxDVProfileCtrl::~wxDVProfileCtrl()
 {
-	WriteState(m_filename);
 	// remove all the plots manually from the 13 plot surface widgets
 	// this regains ownership of the plots that are shown so that they can
 	// be deleted in the destructor  ~PlotSet
@@ -295,13 +294,17 @@ wxDVProfileCtrl::~wxDVProfileCtrl()
 void wxDVProfileCtrl::ReadState(std::string filename)
 {
 	wxConfig cfg("DView", "NREL");
+
 	wxString s;
 	bool success;
 	bool debugging = false;
 	unsigned count = 0;
-	std::string key = filename;
-	std::string tabName("Profile");
-	key = tabName + "Checkboxes";
+
+	std::string prefix = "/AppState/" + filename + "/Profile/";
+
+	std::string key("");
+
+	key = prefix + "Checkboxes";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	{
@@ -314,7 +317,7 @@ void wxDVProfileCtrl::ReadState(std::string filename)
 		}
 	}
 
-	key = tabName + "Selections";
+	key = prefix + "Selections";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	{
@@ -355,13 +358,15 @@ void wxDVProfileCtrl::OnTimer(wxTimerEvent&)
 void wxDVProfileCtrl::WriteState(std::string filename)
 {
 	wxConfig cfg("DView", "NREL");
-	m_filename = filename;
+
 	bool success;
 	bool debugging = false;
 	std::string s;
-	std::string key = filename;
-	std::string tabName("Profile");
 	std::stringstream  ss;
+
+	std::string prefix = "/AppState/" + filename + "/Profile/";
+
+	std::string key("");
 
 	for (auto checkbox : m_monthCheckBoxes){
 		std::string temp((checkbox->GetValue()) ? "true" : "false");
@@ -369,7 +374,7 @@ void wxDVProfileCtrl::WriteState(std::string filename)
 		ss << ',';
 	}
 	s = ss.str();
-	key = tabName + "Checkboxes";
+	key = prefix + "Checkboxes";
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
 	ss.clear();
@@ -380,7 +385,7 @@ void wxDVProfileCtrl::WriteState(std::string filename)
 		ss << ',';
 	}
 	s = ss.str();
-	key = tabName + "Selections";
+	key = prefix + "Selections";
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
 }

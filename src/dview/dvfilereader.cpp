@@ -730,6 +730,7 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 	}
 	plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
 	plotWin->Thaw();
+
 	plotWin->ReadState(filename.ToStdString());
 
 	wxLogStatus("Read %i lines of data points.\n", line);
@@ -828,6 +829,7 @@ void wxDVFileReader::ReadDataFromCSV(wxDVPlotCtrl *plotWin, const wxString& file
 		plotWin->AddDataSet(dataSets[i], (i == dataSets.size() - 1));
 	}
 	plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
+
 	plotWin->ReadState(filename.ToStdString());
 }
 
@@ -927,7 +929,9 @@ bool wxDVFileReader::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& file
 		plotWin->AddDataSet(dataSets[i], (i == dataSets.size() - 1));
 	}
 	plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
+
 	plotWin->ReadState(filename.ToStdString());
+
 	return true;
 }
 
@@ -1276,6 +1280,7 @@ bool wxDVFileReader::ReadSQLFile(wxDVPlotCtrl* plotWin, const wxString& filename
 		}
 		plotWin->GetStatisticsTable()->RebuildDataViewCtrl();	//We must do this only after all datasets have been added
 		plotWin->Thaw();
+
 		plotWin->ReadState(filename.ToStdString());
 
 		//wxLogStatus("Read %i lines of data points.\n", line);

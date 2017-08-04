@@ -477,7 +477,6 @@ wxDVStatisticsTableCtrl::wxDVStatisticsTableCtrl(wxWindow *parent, wxWindowID id
 
 wxDVStatisticsTableCtrl::~wxDVStatisticsTableCtrl(void)
 {
-	WriteState(m_filename);
 	RemoveAllDataSets();
 }
 
@@ -488,10 +487,12 @@ void wxDVStatisticsTableCtrl::ReadState(std::string filename)
 	wxString s;
 	bool success;
 	bool debugging = false;
-	std::string key = filename;
-	std::string tabName("Statistics");
 
-	key = tabName + "ShowMonths";
+	std::string prefix = "/AppState/" + filename + "/Statistics/";
+
+	std::string key("");
+
+	key = prefix + "ShowMonths";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_chkShowMonths->SetValue((s == "false") ? false : true);
@@ -502,15 +503,15 @@ void wxDVStatisticsTableCtrl::WriteState(std::string filename)
 {
 	wxConfig cfg("DView", "NREL");
 
-	m_filename = filename;
-
 	bool success;
 	bool debugging = false;
 	std::string s;
-	std::string key = filename;
-	std::string tabName("Statistics");
 
-	key = tabName + "ShowMonths";
+	std::string prefix = "/AppState/" + filename + "/Statistics/";
+
+	std::string key("");
+
+	key = prefix + "ShowMonths";
 	s = (m_chkShowMonths->GetValue()) ? "true" : "false";
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);

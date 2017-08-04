@@ -295,8 +295,6 @@ m_xAxixWorldMax(0)
 
 wxDVDMapCtrl::~wxDVDMapCtrl()
 {
-	WriteState(m_filename);
-
 	m_plotSurface->ReleaseSideWidget(wxPLPlotCtrl::Y_RIGHT);
 	delete m_colourMap;
 }
@@ -308,32 +306,34 @@ void wxDVDMapCtrl::ReadState(std::string filename)
 	wxString s;
 	bool success;
 	bool debugging = false;
-	std::string key = filename;
-	std::string tabName("HeatMap");
 
-	key = tabName + "AxisMin";
+	std::string prefix = "/AppState/" + filename + "/HeatMap/";
+
+	std::string key("");
+
+	key = prefix + "AxisMin";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_xAxixWorldMin = wxAtoi(s);
 
-	key = tabName + "AxisMax";
+	key = prefix + "AxisMax";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_xAxixWorldMax = wxAtoi(s);
 
-	key = tabName + "ColorMap";
+	key = prefix + "ColorMap";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_colourMapSelector->SetSelection(wxAtoi(s));
 	ColourMapSelection();
 
-	key = tabName + "ReverseColors";
+	key = prefix + "ReverseColors";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_reverseColours->SetValue((s == "false") ? false : true);
 	ReverseColours();
 
-	key = tabName + "Selections";
+	key = prefix + "Selections";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 
@@ -349,13 +349,13 @@ void wxDVDMapCtrl::ReadState(std::string filename)
 	}
 
 	// Set these values after settings selections, so they don't get stepped on
-	key = tabName + "Min";
+	key = prefix + "Min";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_minTextBox->SetValue(s);
 	ColourMapMinChanged();
 
-	key = tabName + "Max";
+	key = prefix + "Max";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_maxTextBox->SetValue(s);
@@ -385,41 +385,41 @@ void wxDVDMapCtrl::WriteState(std::string filename)
 {
 	wxConfig cfg("DView", "NREL");
 
-	m_filename = filename;
-
 	bool success;
 	bool debugging = false;
 	std::string s;
-	std::string key = filename;
-	std::string tabName("HeatMap");
 	std::stringstream  ss;
 
-	key = tabName + "AxisMin";
+	std::string prefix = "/AppState/" + filename + "/HeatMap/";
+
+	std::string key("");
+
+	key = prefix + "AxisMin";
 	s = wxString::Format(wxT("%f"), (double)m_xAxis->GetWorldMin());
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
 
-	key = tabName + "AxisMax";
+	key = prefix + "AxisMax";
 	s = wxString::Format(wxT("%f"), (double)m_xAxis->GetWorldMax());
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
 
-	key = tabName + "ColorMap";
+	key = prefix + "ColorMap";
 	s = wxString::Format(wxT("%d"), (int)m_colourMapSelector->GetSelection());
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
 
-	key = tabName + "ReverseColors";
+	key = prefix + "ReverseColors";
 	s = (m_reverseColours->GetValue()) ? "true" : "false";
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
 
-	key = tabName + "Min";
+	key = prefix + "Min";
 	s = m_minTextBox->GetValue();
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
 
-	key = tabName + "Max";
+	key = prefix + "Max";
 	s = m_maxTextBox->GetValue();
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
@@ -429,7 +429,7 @@ void wxDVDMapCtrl::WriteState(std::string filename)
 		ss << selection;
 		ss << ',';
 	}
-	key = tabName + "Selections";
+	key = prefix + "Selections";
 	success = cfg.Write(key, ss.str().c_str());
 	if (debugging) assert(success);
 }

@@ -101,8 +101,6 @@ private:
 	VerticalLabelCtrl *m_leftAxisLabel;
 	VerticalLabelCtrl *m_rightAxisLabel;
 
-	std::string m_filename;
-
 	void CalculateProfilePlotData(PlotSet *ps);
 	void MonthSelection(unsigned index);
 

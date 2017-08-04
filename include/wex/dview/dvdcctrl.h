@@ -67,7 +67,6 @@ private:
 	wxPLPlotCtrl *m_plotSurface;
 	wxDVSelectionListCtrl *m_dataSelector;
 	wxSearchCtrl * m_srchCtrl;
-	std::string m_filename;
 
 	struct PlotSet
 	{

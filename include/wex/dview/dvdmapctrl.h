@@ -170,8 +170,6 @@ private:
 	wxScrollBar *m_xGraphScroller;
 	wxScrollBar *m_yGraphScroller;
 
-	std::string m_filename;
-
 	/*
 	double mXWorldMin, mXWorldMax;
 	double mYWorldMin, mYWorldMax;

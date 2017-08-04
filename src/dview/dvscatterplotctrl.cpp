@@ -123,7 +123,6 @@ const wxSize& size, long style, const wxString& name)
 
 wxDVScatterPlotCtrl::~wxDVScatterPlotCtrl()
 {
-	WriteState(m_filename);
 }
 
 void wxDVScatterPlotCtrl::ReadState(std::string filename)
@@ -133,17 +132,19 @@ void wxDVScatterPlotCtrl::ReadState(std::string filename)
 	wxString s;
 	bool success;
 	bool debugging = false;
-	std::string key = filename;
-	std::string tabName("Scatter");
 
-	key = tabName + "ShowLine";
+	std::string prefix = "/AppState/" + filename + "/Scatter/";
+
+	std::string key("");
+
+	key = prefix + "ShowLine";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_showPerfAgreeLine->SetValue((s == "false") ? false : true);
 	// Must manually call the function as wxWidgets does not emit a signal when a widget state is set programmatically
 	ShowLine();
 
-	key = tabName + "Selections";
+	key = prefix + "Selections";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 
@@ -156,7 +157,7 @@ void wxDVScatterPlotCtrl::ReadState(std::string filename)
 		}
 	}
 
-	key = tabName + "Selections1";
+	key = prefix + "Selections1";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 
@@ -182,16 +183,16 @@ void wxDVScatterPlotCtrl::WriteState(std::string filename)
 {
 	wxConfig cfg("DView", "NREL");
 
-	m_filename = filename;
-
 	bool success;
 	bool debugging = false;
 	std::string s;
-	std::string key = filename;
-	std::string tabName("Scatter");
 	std::stringstream  ss;
 
-	key = tabName + "ShowLine";
+	std::string prefix = "/AppState/" + filename + "/Scatter/";
+
+	std::string key("");
+
+	key = prefix + "ShowLine";
 	s = (m_showPerfAgreeLine->GetValue()) ? "true" : "false";
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
@@ -201,7 +202,7 @@ void wxDVScatterPlotCtrl::WriteState(std::string filename)
 		ss << selection;
 		ss << ',';
 	}
-	key = tabName + "Selections";
+	key = prefix + "Selections";
 	success = cfg.Write(key, ss.str().c_str());
 	if (debugging) assert(success);
 
@@ -212,7 +213,7 @@ void wxDVScatterPlotCtrl::WriteState(std::string filename)
 		ss << selection;
 		ss << ',';
 	}
-	key = tabName + "Selections1";
+	key = prefix + "Selections1";
 	success = cfg.Write(key, ss.str().c_str());
 	if (debugging) assert(success);
 }

@@ -68,8 +68,6 @@ wxDVDCCtrl::wxDVDCCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos,
 
 wxDVDCCtrl::~wxDVDCCtrl()
 {
-	WriteState(m_filename);
-
 	for (size_t i = 0; i < m_plots.size(); i++)
 	{
 		// remove it first in case it's shown to release ownership
@@ -87,10 +85,12 @@ void wxDVDCCtrl::ReadState(std::string filename)
 	wxString s;
 	bool success;
 	bool debugging = false;
-	std::string key = filename;
-	std::string tabName("DurationCurve");
 
-	key = tabName + "Selections";
+	std::string prefix = "/AppState/" + filename + "/DurationCurve/";
+
+	std::string key("");
+
+	key = prefix + "Selections";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 
@@ -110,20 +110,20 @@ void wxDVDCCtrl::WriteState(std::string filename)
 {
 	wxConfig cfg("DView", "NREL");
 
-	m_filename = filename;
-
 	bool success;
 	bool debugging = false;
-	std::string key = filename;
-	std::string tabName("DurationCurve");
 	std::stringstream  ss;
+
+	std::string prefix = "/AppState/" + filename + "/DurationCurve/";
+
+	std::string key("");
 
 	auto selections = m_dataSelector->GetSelectionsInCol();
 	for (auto selection : selections){
 		ss << selection;
 		ss << ',';
 	}
-	key = tabName + "Selections";
+	key = prefix + "Selections";
 	success = cfg.Write(key, ss.str().c_str());
 	if (debugging) assert(success);
 }
