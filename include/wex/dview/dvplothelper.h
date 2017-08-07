@@ -35,7 +35,7 @@
 
 namespace wxDVPlotHelper
 {
-	static int recursionDepth;
+	//static int recursionDepth;
 
 	void ZoomFactor(double* worldMin, double* worldMax, double factor, double shiftPercent = 0);
 	void MouseWheelZoom(double* worldMin, double* worldMax, wxCoord center, wxCoord physMin, wxCoord physMax, int step);
