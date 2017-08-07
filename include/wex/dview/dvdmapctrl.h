@@ -148,7 +148,7 @@ private:
 	void ReverseColours();
 	void ColourMapMinChanged();
 	void ColourMapMaxChanged();
-	void wxDVDMapCtrl::OnTimer(wxTimerEvent&);
+	void OnTimer(wxTimerEvent&);
 
 	wxDVSelectionListCtrl *m_selector;
 	wxSearchCtrl *m_srchCtrl;
