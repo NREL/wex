@@ -800,7 +800,7 @@ EVT_COMMAND_SCROLL_PAGEUP(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrl::OnGraphScrollP
 
 EVT_TEXT(wxID_ANY, wxDVTimeSeriesCtrl::OnSearch)
 
-EVT_TIMER(ID_Timer, OnTimer)
+EVT_TIMER(ID_Timer, wxDVTimeSeriesCtrl::OnTimer)
 
 END_EVENT_TABLE()
 

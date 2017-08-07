@@ -203,7 +203,7 @@ EVT_DVSELECTIONLIST(ID_DATA_SELECTOR, wxDVProfileCtrl::OnDataChannelSelection)
 EVT_COMMAND_RANGE(ID_JAN_CHECK, ID_ANNUAL_CHECK, wxEVT_COMMAND_CHECKBOX_CLICKED, wxDVProfileCtrl::OnMonthSelection)
 EVT_CHECKBOX(ID_SEL_ALL_CHECK, wxDVProfileCtrl::OnSelAllMonths)
 EVT_TEXT(wxID_ANY, wxDVProfileCtrl::OnSearch)
-EVT_TIMER(ID_Timer, OnTimer)
+EVT_TIMER(ID_Timer, wxDVProfileCtrl::OnTimer)
 END_EVENT_TABLE()
 
 wxDVProfileCtrl::wxDVProfileCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos,
