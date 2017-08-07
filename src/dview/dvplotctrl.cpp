@@ -196,11 +196,6 @@ void wxDVPlotCtrl::WriteState(std::string filename)
 	m_scatterPlot->WriteState(m_filename);
 }
 
-void wxDVPlotCtrl::SetOkToAccessState(bool okToAccessState)
-{
-	m_okToAccessState = okToAccessState;
-}
-
 void wxDVPlotCtrl::SetTimeSeriesMode(int mode)
 {
 	if (mode == 2)
