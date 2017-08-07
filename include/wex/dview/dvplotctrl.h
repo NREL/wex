@@ -62,7 +62,7 @@ public:
 
 	void ReadState(std::string filename);
 	void WriteState(std::string filename);
-	void SetOkToAccessState(bool okToAccessState);
+	void SetOkToAccessState(bool okToAccessState) { m_okToAccessState = okToAccessState; }
 
 	wxDVStatisticsTableCtrl* GetStatisticsTable();
 
