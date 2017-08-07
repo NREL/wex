@@ -190,7 +190,7 @@ EVT_COMMAND_SCROLL_PAGEDOWN(ID_GRAPH_Y_SCROLLBAR, wxDVDMapCtrl::OnYScrollPageDow
 
 EVT_TEXT(wxID_ANY, wxDVDMapCtrl::OnSearch)
 
-EVT_TIMER(ID_Timer, OnTimer)
+EVT_TIMER(ID_Timer, wxDVDMapCtrl::OnTimer)
 
 END_EVENT_TABLE()
 
