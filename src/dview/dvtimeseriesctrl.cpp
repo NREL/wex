@@ -898,6 +898,11 @@ void wxDVTimeSeriesCtrl::ReadState(std::string filename)
 {
 	wxConfig cfg("DView", "NREL");
 
+	// Note: on Mac, these settings are stored in a plist file,
+	// "DView Preferences" in folder ~/Library/Preferences.
+	// On Windows, these settings are stored in the registry
+	// in key HKEY_CURRENT_USER/Software/NREL/DView
+
 	wxString s;
 	bool success;
 	bool debugging = false;
