@@ -298,3 +298,7 @@ __pycache__/
 *.bin
 *.mod
 
+
+build_osx/Sandbox
+
+build_osx/Sandbox\.app/Contents/
