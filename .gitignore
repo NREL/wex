@@ -302,3 +302,7 @@ __pycache__/
 build_osx/Sandbox
 
 build_osx/Sandbox\.app/Contents/
+
+build_osx/DView
+
+build_osx/DView\.app/Contents/
