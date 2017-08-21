@@ -110,9 +110,9 @@ void wxDVSelectionListCtrl::Filter(const wxString &filter)
 		for (size_t i = 0; i < m_itemList.size(); i++)
 		{
 			row_item *ri = m_itemList[i];
-			if (filter.Len() <= 2 && ri->label.Left(filter.Len()).Lower() == filter)
+			if (filter.Len() <= 2 && ri->label.Left(filter.Len()).Lower() == filter.Lower())
 				ri->shown = true;
-			else if (ri->label.Lower().Find(filter) >= 0)
+			else if (ri->label.Lower().Find(filter.Lower()) >= 0)
 				ri->shown = true;
 			else
 				ri->shown = false;
