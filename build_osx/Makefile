@@ -20,7 +20,6 @@ OBJECTS = \
 	ftgasp.o \
 	ftglyph.o \
 	ftinit.o \
-	ftlcdfil.o \
 	ftstroke.o \
 	ftsynth.o \
 	ftsystem.o \
@@ -35,21 +34,21 @@ OBJECTS = \
 	smooth.o \
 	truetype.o \
 	type1.o \
-	clipper.o\
+	clipper.o \
 	gleasy.o \
+	registration.o \
 	easycurl.o \
 	snaplay.o \
 	pagelayout.o \
 	pageobjects.o \
 	csv.o \
 	exttree.o \
+	tpdlg.o \
 	label.o \
 	exttext.o \
 	radiochoice.o \
 	metro.o \
 	uiform.o \
-	registration.o \
-	tpdlg.o \
 	diurnal.o \
 	utils.o \
 	lkscript.o \
@@ -58,7 +57,6 @@ OBJECTS = \
 	jsonreader.o \
 	jsonval.o \
 	jsonwriter.o \
-	md5.o \
 	numeric.o \
 	mplcontour.o \
 	plannotation.o \
@@ -70,8 +68,8 @@ OBJECTS = \
 	plcolourmap.o \
 	dvdcctrl.o \
 	dvdmapctrl.o \
-	dvfilereader.o \
 	dvplotctrl.o \
+	dvfilereader.o \
 	dvplotctrlsettings.o \
 	dvplothelper.o \
 	dvpncdfctrl.o \
@@ -80,9 +78,9 @@ OBJECTS = \
 	dvselectionlist.o \
 	dvtimeseriesctrl.o \
 	dvtimeseriesdataset.o \
-	ploutdev.o \
-	plplot.o \
 	plaxis.o \
+	plplot.o \
+	ploutdev.o \
 	plbarplot.o \
 	plhistplot.o \
 	pllineplot.o \
@@ -152,6 +150,7 @@ OBJECTS = \
 
 $(TARGET) : $(OBJECTS)
 	ar rs $@ $^
+
 
 DEPENDS = $(OBJECTS:.o=.d)
 
