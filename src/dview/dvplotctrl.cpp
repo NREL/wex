@@ -22,6 +22,10 @@
 *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
+#include <algorithm>
+#include <wx/aui/aui.h>
+#include <wx/wx.h>
+
 #include "wex/metro.h"
 
 #include "wex/dview/dvplotctrl.h"
@@ -36,10 +40,6 @@
 
 #include "wex/plot/plcolourmap.h"
 #include "wex/plot/plhistplot.h"
-
-#include <algorithm>
-#include <wx/aui/aui.h>
-#include <wx/wx.h>
 
 enum {
 	TAB_TIME_SERIES = 0,

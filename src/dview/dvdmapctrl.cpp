@@ -22,6 +22,18 @@
 *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
+#include <algorithm>
+#include <sstream>
+#include <string>
+
+
+#include <wx/choice.h>
+#include <wx/config.h>
+#include <wx/scrolbar.h>
+#include "wx/srchctrl.h"
+#include <wx/textctrl.h>
+#include <wx/tokenzr.h>
+
 #include "wex/dview/dvdmapctrl.h"
 #include "wex/dview/dvplothelper.h"
 #include "wex/dview/dvselectionlist.h"
@@ -35,17 +47,6 @@
 #include "wex/plot/plcolourmap.h"
 #include "wex/plot/plplotctrl.h"
 
-#include <wx/choice.h>
-#include <wx/config.h>
-#include <wx/scrolbar.h>
-#include "wx/srchctrl.h"
-#include <wx/textctrl.h>
-#include <wx/timer.h>
-#include <wx/tokenzr.h>
-
-#include <algorithm>
-#include <sstream>
-#include <string>
 
 class wxDVDMapPlot : public wxPLPlottable
 {

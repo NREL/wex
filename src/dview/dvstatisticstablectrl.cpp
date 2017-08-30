@@ -28,7 +28,7 @@
 * This class Is a wxPanel that contains a table of statistics for the associated dataset
 */
 
-#include "wex/dview/dvstatisticstablectrl.h"
+#include <math.h>
 
 #include <wx/clipbrd.h>
 #include <wx/config.h>
@@ -43,7 +43,7 @@
 #include <wx/txtstrm.h>
 #include <wx/wfstream.h>
 
-#include <math.h>
+#include "wex/dview/dvstatisticstablectrl.h"
 
 #ifdef __WXMSW__
 #include "wex/ole/excelauto.h"

@@ -35,17 +35,22 @@
 #include <wx/wxprec.h>
 
 #ifndef WX_PRECOMP
+
 #include <wx/wx.h>
+
 #endif
 
-#include "wex/dview/dvtimeseriesdataset.h"
+#include <wx/dataview.h>
+
+#include <wx/panel.h>
+
+#include <wx/menu.h>
+
+#include <wx/stream.h>
 
 #include "wex/numeric.h"
 
-#include <wx/dataview.h>
-#include <wx/menu.h>
-#include <wx/panel.h>
-#include <wx/stream.h>
+#include "wex/dview/dvtimeseriesdataset.h"
 
 enum { ID_STATISTICS_CTRL = 50, };
 
