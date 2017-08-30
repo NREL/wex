@@ -62,6 +62,7 @@ public:
 
 	void ReadState(std::string filename);
 	void WriteState(std::string filename);
+	void SetOkToAccessState(bool okToAccessState) { m_okToAccessState = okToAccessState; }
 
 	wxDVStatisticsTableCtrl* GetStatisticsTable();
 
@@ -99,6 +100,10 @@ private:
 	wxDVPnCdfCtrl *m_pnCdf;
 	wxDVDCCtrl *m_durationCurve;
 	wxDVScatterPlotCtrl *m_scatterPlot;
+
+	std::string m_filename;
+
+	bool m_okToAccessState;
 
 	DECLARE_EVENT_TABLE()
 };

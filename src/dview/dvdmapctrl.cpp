@@ -151,7 +151,8 @@ public:
 enum {
 	ID_DATA_SELECTOR = wxID_HIGHEST + 1,
 	ID_COLOURMAP_SELECTOR_CHOICE, ID_GRAPH_SCROLLBAR, ID_GRAPH_Y_SCROLLBAR,
-	ID_MIN_Z_INPUT, ID_MAX_Z_INPUT, ID_DMAP_SURFACE, ID_RESET_MIN_MAX, ID_REVERSE_COLOURS
+	ID_MIN_Z_INPUT, ID_MAX_Z_INPUT, ID_DMAP_SURFACE, ID_RESET_MIN_MAX, ID_REVERSE_COLOURS,
+	ID_Timer
 };
 
 static const double MIN_ZOOM_LENGTH = 7 * 24;
@@ -190,6 +191,8 @@ EVT_COMMAND_SCROLL_PAGEDOWN(ID_GRAPH_Y_SCROLLBAR, wxDVDMapCtrl::OnYScrollPageDow
 
 EVT_TEXT(wxID_ANY, wxDVDMapCtrl::OnSearch)
 
+EVT_TIMER(ID_Timer, wxDVDMapCtrl::OnTimer)
+
 END_EVENT_TABLE()
 
 wxDVDMapCtrl::wxDVDMapCtrl(wxWindow* parent,
@@ -200,7 +203,10 @@ const wxSize& size)
 id,
 pos,
 size,
-wxTAB_TRAVERSAL)
+wxTAB_TRAVERSAL),
+m_timer(nullptr),
+m_xAxixWorldMin(0),
+m_xAxixWorldMax(0)
 {
 	m_currentlyShownDataSet = 0;
 	m_srchCtrl = NULL;
@@ -284,12 +290,12 @@ wxTAB_TRAVERSAL)
 	mainSizer->Add(leftSizer, 1, wxALL | wxEXPAND, 0);
 	mainSizer->Add(sizer, 0, wxALL | wxEXPAND, 0);
 	SetSizer(mainSizer);
+
+	m_timer = new wxTimer(this, ID_Timer);
 }
 
 wxDVDMapCtrl::~wxDVDMapCtrl()
 {
-	WriteState(m_filename);
-
 	m_plotSurface->ReleaseSideWidget(wxPLPlotCtrl::Y_RIGHT);
 	delete m_colourMap;
 }
@@ -301,22 +307,34 @@ void wxDVDMapCtrl::ReadState(std::string filename)
 	wxString s;
 	bool success;
 	bool debugging = false;
-	std::string key = filename;
-	std::string tabName("HeatMap");
 
-	key = tabName + "ColorMap";
+	std::string prefix = "/AppState/" + filename + "/HeatMap/";
+
+	std::string key("");
+
+	key = prefix + "AxisMin";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+	m_xAxixWorldMin = wxAtoi(s);
+
+	key = prefix + "AxisMax";
+	success = cfg.Read(key, &s);
+	if (debugging) assert(success);
+	m_xAxixWorldMax = wxAtoi(s);
+
+	key = prefix + "ColorMap";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_colourMapSelector->SetSelection(wxAtoi(s));
 	ColourMapSelection();
 
-	key = tabName + "ReverseColors";
+	key = prefix + "ReverseColors";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_reverseColours->SetValue((s == "false") ? false : true);
 	ReverseColours();
 
-	key = tabName + "Selections";
+	key = prefix + "Selections";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 
@@ -327,49 +345,82 @@ void wxDVDMapCtrl::ReadState(std::string filename)
 		SelectDataSetAtIndex(wxAtoi(str));
 	}
 
+	if (m_selector->GetSelectedNamesInCol().size() == 0) {
+		SelectDataSetAtIndex(0);
+	}
+
 	// Set these values after settings selections, so they don't get stepped on
-	key = tabName + "Min";
+	key = prefix + "Min";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_minTextBox->SetValue(s);
 	ColourMapMinChanged();
 
-	key = tabName + "Max";
+	key = prefix + "Max";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
 	m_maxTextBox->SetValue(s);
 	ColourMapMaxChanged();
+
+	m_timer->Start(10);
+}
+
+void wxDVDMapCtrl::OnTimer(wxTimerEvent&)
+{
+	if (GetNumberOfSelections() > 0) {
+		wxDVPlotHelper::ZoomFactor(&m_xAxixWorldMin, &m_xAxixWorldMax, 1, 0);
+		MakeXBoundsNice(&m_xAxixWorldMin, &m_xAxixWorldMax);
+		m_xAxis->SetWorld(m_xAxixWorldMin, m_xAxixWorldMax);
+		UpdateScrollbarPosition();
+		Invalidate();
+		m_timer->Stop();
+	}
+	else {
+		m_timer->Stop();
+
+		SelectDataSetAtIndex(0);
+	}
 }
 
 void wxDVDMapCtrl::WriteState(std::string filename)
 {
 	wxConfig cfg("DView", "NREL");
 
-	m_filename = filename;
-
 	bool success;
 	bool debugging = false;
 	std::string s;
-	std::string key = filename;
-	std::string tabName("HeatMap");
 	std::stringstream  ss;
 
-	key = tabName + "ColorMap";
+	std::string prefix = "/AppState/" + filename + "/HeatMap/";
+
+	std::string key("");
+
+	key = prefix + "AxisMin";
+	s = wxString::Format(wxT("%f"), (double)m_xAxis->GetWorldMin());
+	success = cfg.Write(key, s.c_str());
+	if (debugging) assert(success);
+
+	key = prefix + "AxisMax";
+	s = wxString::Format(wxT("%f"), (double)m_xAxis->GetWorldMax());
+	success = cfg.Write(key, s.c_str());
+	if (debugging) assert(success);
+
+	key = prefix + "ColorMap";
 	s = wxString::Format(wxT("%d"), (int)m_colourMapSelector->GetSelection());
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
 
-	key = tabName + "ReverseColors";
+	key = prefix + "ReverseColors";
 	s = (m_reverseColours->GetValue()) ? "true" : "false";
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
 
-	key = tabName + "Min";
+	key = prefix + "Min";
 	s = m_minTextBox->GetValue();
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
 
-	key = tabName + "Max";
+	key = prefix + "Max";
 	s = m_maxTextBox->GetValue();
 	success = cfg.Write(key, s.c_str());
 	if (debugging) assert(success);
@@ -379,7 +430,7 @@ void wxDVDMapCtrl::WriteState(std::string filename)
 		ss << selection;
 		ss << ',';
 	}
-	key = tabName + "Selections";
+	key = prefix + "Selections";
 	success = cfg.Write(key, ss.str().c_str());
 	if (debugging) assert(success);
 }

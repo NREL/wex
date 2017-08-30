@@ -63,8 +63,6 @@ public:
 	void OnSearch(wxCommandEvent& e);
 
 private:
-	std::string m_filename;
-
 	std::vector<wxDVTimeSeriesDataSet*> m_dataSets;
 
 	wxDVSelectionListCtrl *m_dataSelectionList;

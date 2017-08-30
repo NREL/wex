@@ -230,7 +230,6 @@ private:
 	bool m_stackingOnYLeft;
 	wxDVTimeSeriesType m_seriesType;
 	wxDVStatType m_statType;
-	std::string m_filename;
 
 	void AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPos, int index);
 	void RemoveGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPos, int index);

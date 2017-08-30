@@ -61,7 +61,8 @@ END_EVENT_TABLE()
 /* Constructors and Destructors */
 wxDVPlotCtrl::wxDVPlotCtrl(wxWindow* parent, wxWindowID id,
 const wxPoint& pos, const wxSize& size, long style)
-: wxMetroNotebook(parent, id, pos, size, style)
+: wxMetroNotebook(parent, id, pos, size, style),
+m_okToAccessState(false)
 {
 	AddPage(m_timeSeries = new wxDVTimeSeriesCtrl(this, wxID_ANY, wxDV_RAW, wxDV_AVERAGE), "Time series", true);
 	AddPage(m_hourlyTimeSeries = new wxDVTimeSeriesCtrl(this, wxID_ANY, wxDV_HOURLY, wxDV_AVERAGE), "Hourly");
@@ -77,6 +78,10 @@ const wxPoint& pos, const wxSize& size, long style)
 
 wxDVPlotCtrl::~wxDVPlotCtrl()
 {
+	if (m_okToAccessState && m_filename.length() > 0) {
+		WriteState(m_filename);
+	}
+
 	for (size_t i = 0; i < m_dataSets.size(); i++)
 		delete m_dataSets[i];
 }
@@ -135,6 +140,8 @@ void wxDVPlotCtrl::AddDataSet(wxDVTimeSeriesDataSet *d, bool update_ui)
 
 void wxDVPlotCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 {
+	if (!this->m_okToAccessState) return;
+
 	m_timeSeries->RemoveDataSet(d);
 	m_hourlyTimeSeries->RemoveDataSet(d);
 	m_dailyTimeSeries->RemoveDataSet(d);
@@ -149,32 +156,44 @@ void wxDVPlotCtrl::RemoveDataSet(wxDVTimeSeriesDataSet *d)
 	m_dataSets.erase(std::find(m_dataSets.begin(), m_dataSets.end(), d));
 }
 
-void wxDVPlotCtrl::ReadState(std::string filename)
+void wxDVPlotCtrl::ReadState(std::string fullFilenameWithPAth)
 {
-	m_timeSeries->ReadState(filename);
-	m_hourlyTimeSeries->ReadState(filename);
-	m_dailyTimeSeries->ReadState(filename);
-	m_monthlyTimeSeries->ReadState(filename);
-	m_dMap->ReadState(filename);
-	m_profilePlots->ReadState(filename);
-	m_statisticsTable->ReadState(filename);
-	m_pnCdf->ReadState(filename);
-	m_durationCurve->ReadState(filename);
-	m_scatterPlot->ReadState(filename);
+	if (!this->m_okToAccessState) return;
+
+	wxFileName fn(fullFilenameWithPAth);
+	// Evan NOTE: rather than use GetFullName, perhaps it would be better
+	// to use the complete path, sans slashes, for better uniqueness
+	m_filename = fn.GetFullName().ToStdString();
+
+	m_timeSeries->ReadState(m_filename);
+	m_hourlyTimeSeries->ReadState(m_filename);
+	m_dailyTimeSeries->ReadState(m_filename);
+	m_monthlyTimeSeries->ReadState(m_filename);
+	m_dMap->ReadState(m_filename);
+	m_profilePlots->ReadState(m_filename);
+	m_statisticsTable->ReadState(m_filename);
+	m_pnCdf->ReadState(m_filename);
+	m_durationCurve->ReadState(m_filename);
+	m_scatterPlot->ReadState(m_filename);
 }
 
 void wxDVPlotCtrl::WriteState(std::string filename)
 {
-	m_timeSeries->WriteState(filename);
-	m_hourlyTimeSeries->WriteState(filename);
-	m_dailyTimeSeries->WriteState(filename);
-	m_monthlyTimeSeries->WriteState(filename);
-	m_dMap->WriteState(filename);
-	m_profilePlots->WriteState(filename);
-	m_statisticsTable->WriteState(filename);
-	m_pnCdf->WriteState(filename);
-	m_durationCurve->WriteState(filename);
-	m_scatterPlot->WriteState(filename);
+	if (!this->m_okToAccessState) return;
+
+	//wxFileName fn(filename);
+	//m_filename = fn.GetFullName().ToStdString();
+
+	m_timeSeries->WriteState(m_filename);
+	m_hourlyTimeSeries->WriteState(m_filename);
+	m_dailyTimeSeries->WriteState(m_filename);
+	m_monthlyTimeSeries->WriteState(m_filename);
+	m_dMap->WriteState(m_filename);
+	m_profilePlots->WriteState(m_filename);
+	m_statisticsTable->WriteState(m_filename);
+	m_pnCdf->WriteState(m_filename);
+	m_durationCurve->WriteState(m_filename);
+	m_scatterPlot->WriteState(m_filename);
 }
 
 void wxDVPlotCtrl::SetTimeSeriesMode(int mode)

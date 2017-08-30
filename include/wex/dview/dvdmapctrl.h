@@ -49,6 +49,8 @@ class wxPLTimeAxis;
 class wxScrollBar;
 class wxSearchCtrl;
 class wxTextCtrl;
+class wxTimer;
+class wxTimerEvent;
 
 class wxDVDMapCtrl : public wxPanel
 {
@@ -146,6 +148,7 @@ private:
 	void ReverseColours();
 	void ColourMapMinChanged();
 	void ColourMapMaxChanged();
+	void OnTimer(wxTimerEvent&);
 
 	wxDVSelectionListCtrl *m_selector;
 	wxSearchCtrl *m_srchCtrl;
@@ -167,14 +170,17 @@ private:
 	wxScrollBar *m_xGraphScroller;
 	wxScrollBar *m_yGraphScroller;
 
-	std::string m_filename;
-
 	/*
 	double mXWorldMin, mXWorldMax;
 	double mYWorldMin, mYWorldMax;
 
 	double mOrigXMin, mOrigXMax, mOrigYMin, mOrigYMax;
 	*/
+
+	wxTimer * m_timer;
+
+	double m_xAxixWorldMin;
+	double m_xAxixWorldMax;
 
 	DECLARE_EVENT_TABLE()
 };
