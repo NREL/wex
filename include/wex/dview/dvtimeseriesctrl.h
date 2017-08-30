@@ -35,11 +35,11 @@
  * This control will display a line plot on a time series axis.
  */
 
-#include "wex/dview/dvplothelper.h"
+#include <wx/panel.h>
+#include <wx/dialog.h>
 #include "wex/numeric.h"
 #include "wex/plot/plplotctrl.h"
-#include <wx/dialog.h>
-#include <wx/panel.h>
+#include "wex/dview/dvplothelper.h"
 
 class wxCheckBox;
 class wxDVSelectionListCtrl;

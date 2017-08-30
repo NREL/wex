@@ -25,13 +25,13 @@
 #ifndef __DV_ProfileCtrl_h
 #define __DV_ProfileCtrl_h
 
-#include "wex/plot/plplotctrl.h"
-
+#include <vector>
 #include <wx/panel.h>
 
-#include <vector>
+#include "wex/plot/plplotctrl.h"
 
-class wxCheckBox;
+class wxDVTimeSeriesDataSet;
+class wxPLLinePlot;
 class wxDVSelectionListCtrl;
 class wxDVTimeSeriesDataSet;
 class wxGridSizer;

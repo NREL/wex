@@ -22,23 +22,22 @@
 *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-#include "wex/dview/dvdcctrl.h"
-#include "wex/dview/dvselectionlist.h"
-#include "wex/dview/dvtimeseriesdataset.h"
-
-#include "wex/plot/pllineplot.h"
-
-#include <wx/app.h>
-#include <wx/busyinfo.h>
-#include <wx/config.h>
-#include "wx/srchctrl.h"
-#include <wx/tokenzr.h>
-
 #include <algorithm>
 #include <limits>
 #include <numeric>
 #include <sstream>
 #include <string>
+#include <wx/app.h>
+#include <wx/busyinfo.h>
+#include <wx/config.h>
+#include <wx/tokenzr.h>
+
+#include "wx/srchctrl.h"
+
+#include "wex/plot/pllineplot.h"
+#include "wex/dview/dvdcctrl.h"
+#include "wex/dview/dvselectionlist.h"
+#include "wex/dview/dvtimeseriesdataset.h"
 
 static const wxString NO_UNITS("ThereAreNoUnitsForThisAxis.");
 

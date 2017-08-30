@@ -25,15 +25,13 @@
 #ifndef __DVDCCtrl_h
 #define __DVDCCtrl_h
 
+#include <vector>
+#include <wx/panel.h>
 #include "wex/plot/plplotctrl.h"
 
-#include <wx/panel.h>
-
-#include <vector>
-
-class wxDVSelectionListCtrl;
 class wxDVTimeSeriesDataSet;
 class wxPLLinePlot;
+class wxDVSelectionListCtrl;
 class wxSearchCtrl;
 
 class wxDVDCCtrl : public wxPanel

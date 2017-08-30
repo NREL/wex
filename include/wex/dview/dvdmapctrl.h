@@ -33,9 +33,9 @@
  * The plot surface takes care of the actual drawing.
  */
 
-#include <wx/panel.h>
-
 #include <vector>
+
+#include <wx/panel.h>
 
 class wxCheckBox;
 class wxChoice;

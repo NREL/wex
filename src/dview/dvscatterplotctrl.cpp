@@ -22,6 +22,17 @@
 *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
+#include <algorithm>
+#include <limits>
+#include <numeric>
+#include <sstream>
+#include <string>
+
+#include <wx/wx.h>
+#include <wx/config.h>
+#include "wx/srchctrl.h"
+#include <wx/tokenzr.h>
+
 #include "wex/dview/dvscatterplotctrl.h"
 #include "wex/dview/dvselectionlist.h"
 #include "wex/dview/dvtimeseriesdataset.h"
@@ -29,16 +40,6 @@
 #include "wex/plot/plplotctrl.h"
 #include "wex/plot/plscatterplot.h"
 
-#include <wx/config.h>
-#include "wx/srchctrl.h"
-#include <wx/tokenzr.h>
-#include <wx/wx.h>
-
-#include <algorithm>
-#include <limits>
-#include <numeric>
-#include <sstream>
-#include <string>
 
 static const wxString NO_UNITS("ThereAreNoUnitsForThisAxis.");
 

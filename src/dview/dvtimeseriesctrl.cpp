@@ -32,6 +32,19 @@
  * for axis labels.  If no year is specified, we use 1970 because the year doesn't matter.
  */
 
+#include <algorithm>
+#include <sstream>
+#include <string>
+
+#include <wx/config.h>
+#include <wx/gbsizer.h>
+#include <wx/gdicmn.h>
+#include <wx/scrolbar.h>
+#include "wx/srchctrl.h"
+#include <wx/statline.h>
+#include <wx/timer.h>
+#include <wx/tokenzr.h>
+
 #include <wex/radiochoice.h>
 
 #include "wex/dview/dvselectionlist.h"
@@ -44,19 +57,6 @@
 #include "wex/icons/zoom_out.cpng"
 
 #include "wex/plot/pllineplot.h"
-
-#include <wx/config.h>
-#include <wx/gbsizer.h>
-#include <wx/gdicmn.h>
-#include <wx/scrolbar.h>
-#include "wx/srchctrl.h"
-#include <wx/statline.h>
-#include <wx/timer.h>
-#include <wx/tokenzr.h>
-
-#include <algorithm>
-#include <sstream>
-#include <string>
 
 #if defined(__WXOSX__)||defined(__WXGTK__)
 #include <cmath>
@@ -800,7 +800,7 @@ EVT_COMMAND_SCROLL_PAGEUP(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrl::OnGraphScrollP
 
 EVT_TEXT(wxID_ANY, wxDVTimeSeriesCtrl::OnSearch)
 
-EVT_TIMER(ID_Timer, OnTimer)
+EVT_TIMER(ID_Timer, wxDVTimeSeriesCtrl::OnTimer)
 
 END_EVENT_TABLE()
 

@@ -22,9 +22,18 @@
 *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-#include "wex/dview/dvfilereader.h"
-#include "wex/dview/dvplotctrl.h"
-#include "wex/dview/dvtimeseriesdataset.h"
+#include "../src/sqlite3.h"
+
+#include <algorithm>
+#include <iostream>
+#include <map>
+#include <sstream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <tuple>
+#include <vector>
+
+
 
 #include <wx/filefn.h>
 #include <wx/filename.h>
@@ -36,16 +45,10 @@
 #include <wx/txtstrm.h>
 #include <wx/wfstream.h>
 
-#include <algorithm>
-#include <iostream>
-#include <map>
-#include <sstream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <tuple>
-#include <vector>
+#include "wex/dview/dvfilereader.h"
+#include "wex/dview/dvplotctrl.h"
+#include "wex/dview/dvtimeseriesdataset.h"
 
-#include "../src/sqlite3.h"
 
 vector<tuple<string, string, double> > m_unitConversions;
 
