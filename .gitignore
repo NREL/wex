@@ -306,3 +306,5 @@ build_osx/DView\.app/Contents/
 build_osx/Sandbox
 
 build_osx/Sandbox\.app/Contents/
+
+make_out
