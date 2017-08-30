@@ -5,7 +5,7 @@ LKLIB = lkosxwx3.a
 
 CC = gcc -mmacosx-version-min=10.9
 CXX = g++ -mmacosx-version-min=10.9
-CFLAGS = -fPIC -Wall -O2 `wx-config-3 --cflags` -I../include -I../src/freetype/include -DFT2_BUILD_LIBRARY -DOPJ_STATIC -DFT_CONFIG_MODULES_H=\"slimftmodules.h\" -DFT_CONFIG_OPTIONS_H=\"slimftoptions.h\" -I$(LKDIR)/include  -DWX_PRECOMP -O2 -arch x86_64  -fno-common
+CFLAGS = -fPIC -Wall -O2 -arch x86_64 `wx-config-3 --cflags` -I../include -I../src/freetype/include -DFT2_BUILD_LIBRARY -DOPJ_STATIC -DFT_CONFIG_MODULES_H=\"slimftmodules.h\" -DFT_CONFIG_OPTIONS_H=\"slimftoptions.h\" -I$(LKDIR)/include  -DWX_PRECOMP -O2 -arch x86_64  -fno-common
 CXXFLAGS = $(CFLAGS) -std=gnu++11
 LDFLAGS =  -arch x86_64  -framework IOKit -framework Carbon -framework Cocoa -framework AudioToolbox -framework System -framework OpenGL 
 
@@ -20,6 +20,7 @@ OBJECTS = \
 	ftgasp.o \
 	ftglyph.o \
 	ftinit.o \
+	ftlcdfil.o \
 	ftstroke.o \
 	ftsynth.o \
 	ftsystem.o \
