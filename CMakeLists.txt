@@ -1,5 +1,5 @@
 Project(wex C CXX)
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.7)
 set(CMAKE_CXX_STANDARD 11)
 
 set(LK_DIR CACHE PATH "LK root directory")
