@@ -8,7 +8,7 @@ set(CURL_DIR CACHE PATH "Curl root directory")
 find_package(wxWidgets REQUIRED net gl core base adv html xml)
 include(${wxWidgets_USE_FILE})
 
-if( UNIX AND NOT APPLE
+if( UNIX AND NOT APPLE )
   find_package(Fontconfig REQUIRED)
 endif()
 
