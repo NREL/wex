@@ -8,6 +8,10 @@ set(CURL_DIR CACHE PATH "Curl root directory")
 find_package(wxWidgets REQUIRED net gl core base adv html xml)
 include(${wxWidgets_USE_FILE})
 
+if( UNIX AND NOT APPLE
+  find_package(Fontconfig REQUIRED)
+endif()
+
 if( WIN32 )
   find_package(OpenGL REQUIRED)
 endif()
@@ -207,7 +211,7 @@ target_link_libraries(DView wex)
 if( WIN32 )
   target_link_libraries(DView Winhttp)
 elseif( UNIX AND NOT APPLE )
-  target_link_libraries(DView ${CMAKE_DL_LIBS})
+  target_link_libraries(DView ${CMAKE_DL_LIBS} ${FONTCONFIG_LIBRARIES})
 endif()
 
 
