@@ -206,7 +206,10 @@ target_link_libraries(DView wex)
 
 if( WIN32 )
   target_link_libraries(DView Winhttp)
+elseif( UNIX AND NOT APPLE )
+  target_link_libraries(DView ${CMAKE_DL_LIBS})
 endif()
+
 
 install(TARGETS DView DESTINATION . )
 
