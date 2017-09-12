@@ -9,7 +9,7 @@ find_package(wxWidgets REQUIRED net gl core base adv html xml)
 include(${wxWidgets_USE_FILE})
 
 if( UNIX AND NOT APPLE )
-  find_package(Fontconfig REQUIRED)
+  find_library(FONTCONFIG_LIBRARY NAMES fontconfig)
 endif()
 
 if( WIN32 )
@@ -211,7 +211,7 @@ target_link_libraries(DView wex)
 if( WIN32 )
   target_link_libraries(DView Winhttp)
 elseif( UNIX AND NOT APPLE )
-  target_link_libraries(DView ${CMAKE_DL_LIBS} ${FONTCONFIG_LIBRARIES})
+  target_link_libraries(DView ${CMAKE_DL_LIBS} ${FONTCONFIG_LIBRARY})
 endif()
 
 
