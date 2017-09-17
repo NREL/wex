@@ -22,6 +22,8 @@
 *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
+#include <fstream>
+
 #include <wx/textctrl.h>
 #include <wx/stattext.h>
 #include <wx/sizer.h>
@@ -68,15 +70,15 @@ static bool GetFileRegistration(wxString *email, wxString *key)
 		first_run = false;
 
 		wxString regfile(gs_regData->GetLocalRegistrationFile());
-		if (FILE *f = fopen(regfile.c_str(), "r"))
+		std::ifstream f(regfile.c_str());
+		if (f.is_open())
 		{
-			char buf[256];
-			fgets(buf, 255, f);
-			s_email = wxString(buf).Trim().Trim(true);
-			fgets(buf, 255, f);
-			s_key = wxString(buf).Trim().Trim(true);
-			fclose(f);
-
+		  	std::string line;
+		  	getline(f, line);
+			s_email = wxString(line).Trim().Trim(true);
+		  	getline(f, line);
+			s_key = wxString(line).Trim().Trim(true);
+			f.close();
 			s_filereg = s_email.Find("@") != wxNOT_FOUND && s_key.Find("-") != wxNOT_FOUND;
 		}
 	}

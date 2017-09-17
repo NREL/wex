@@ -389,7 +389,8 @@ static bool ReadWeatherFileLine(FILE *fp, int type,
 	}
 	else if (type == WF_TM3)
 	{
-		fgets(buf, 1024, fp);
+	  	if (fgets(buf, sizeof(buf), fp) == NULL)
+			return false;
 		int ncols = cstrlocate(buf, cols, 128, ',');
 
 		if (ncols < 68)
@@ -429,7 +430,8 @@ static bool ReadWeatherFileLine(FILE *fp, int type,
 	}
 	else if (type == WF_EPW)
 	{
-		fgets(buf, 1024, fp);
+	  	if (fgets(buf, sizeof(buf), fp) == NULL)
+			return false;
 		int ncols = cstrlocate(buf, cols, 128, ',');
 
 		if (ncols < 32)
