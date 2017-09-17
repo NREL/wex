@@ -395,7 +395,7 @@ double wxPLLinearAxis::DetermineLargeTickStep(double physical_len, bool &should_
 	double mantissa = pow(10.0, log10(approxTickStep) - exponent);
 
 	// determine next whole mantissa below the approx one.
-	size_t mantissaIndex = m_mantissas.size() - 1;
+	ssize_t mantissaIndex = m_mantissas.size() - 1;
 	for (size_t i = 1; i < m_mantissas.size(); ++i)
 	{
 		if (mantissa < m_mantissas[i])
@@ -407,7 +407,7 @@ double wxPLLinearAxis::DetermineLargeTickStep(double physical_len, bool &should_
 
 	// then choose next largest spacing.
 	mantissaIndex += 1;
-	if (mantissaIndex == m_mantissas.size())
+	if (mantissaIndex == static_cast<ssize_t>(m_mantissas.size()))
 	{
 		mantissaIndex = 0;
 		exponent += 1.0;
