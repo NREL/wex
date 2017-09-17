@@ -19,7 +19,9 @@
 #include <wx/debug.h>
 #include <wx/log.h>
 
+#if wxUSE_LOG_TRACE
 static const wxChar* writerTraceMask = _T("traceWriter");
+#endif
 
 /*! \class wxJSONWriter
  \brief The JSON document writer

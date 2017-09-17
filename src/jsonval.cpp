@@ -23,11 +23,13 @@
 
 WX_DEFINE_OBJARRAY(wxJSONInternalArray);
 
+#if wxUSE_LOG_TRACE
 // the trace mask used in wxLogTrace() function
 // static const wxChar* traceMask = wxT("jsonval");
 static const wxChar* traceMask = wxT("jsonval");
 static const wxChar* compareTraceMask = wxT("sameas");
 static const wxChar* cowTraceMask = wxT("traceCOW");
+#endif
 
 double json_double(const wxJSONValue &jv, double defaultval, bool *Exists)
 {
