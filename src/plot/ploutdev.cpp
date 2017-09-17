@@ -87,6 +87,8 @@ void wxPLPdfOutputDevice::Pen(const wxColour &c, double size,
 		dash.Add(2.0*dsize);
 		dash.Add(dsize);
 		break;
+	default:
+	  	break;
 	}
 	style.SetDash(dash);
 
