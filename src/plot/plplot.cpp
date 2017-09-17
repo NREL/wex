@@ -1794,6 +1794,8 @@ void wxPLPlot::DrawLegend(wxPLOutputDevice &dc, const wxPLRealRect& geom)
 			m_legendRect.y = geom.y + text_space;
 			m_legendRect.x = geom.x + geom.width - m_legendRect.width;
 			break;
+		default:
+			break;
 		}
 	}
 
