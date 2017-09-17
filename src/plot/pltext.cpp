@@ -1379,7 +1379,7 @@ void wxFreeTypeDemo::GenerateTTFBinaryFontData()
 				}
 
 				fprintf(fp, "};\n");
-				fprintf(fp, "static const int %s_len = %d;\n", (const char*)cname.c_str(), n);
+				fprintf(fp, "static const int %s_len = %ld;\n", (const char*)cname.c_str(), n);
 
 				cnames.Add(cname);
 				names.Add(fn.GetName());
