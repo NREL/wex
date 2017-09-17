@@ -257,7 +257,10 @@ bool wxOnlineRegistration::CheckInWithServer(int *usage_count)
 	if (reader.Parse(raw, &root) == 0)
 	{
 		int code = root.Item("status").AsInt();
-		if (gs_enDebug) wxLogStatus("\tcode: %d", code);
+		if (gs_enDebug)
+		{
+			wxLogStatus("\tcode: %d", code);
+		}
 
 		if (code == 200)
 		{
