@@ -1084,7 +1084,7 @@ void wxFreeTypeDraw(wxImage *img, bool init_img, const wxPoint &pos,
 wxSize wxFreeTypeMeasure(int fnt, double points, unsigned int dpi, const wxString &text)
 {
 	if (!check_freetype_init() || fnt < 0 || ft_faces.size() == 0)
-		return wxSize(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
+		return wxSize(std::numeric_limits<int>::min(), std::numeric_limits<int>::min());
 
 	if (fnt >= (int)ft_faces.size())
 		fnt = 0;
