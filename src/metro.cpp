@@ -242,7 +242,6 @@ void wxMetroButton::OnPaint(wxPaintEvent &)
 	wxBitmap icon(wxNullBitmap);
 	int xoffset_icon = 0;
 	int yoffset_icon = 0;
-	int icon_width = 0;
 	int icon_height = 0;
 
 	if (m_style & wxMB_RIGHTARROW)
@@ -263,7 +262,6 @@ void wxMetroButton::OnPaint(wxPaintEvent &)
 		int space = (tw > 0 ? m_space : 0);
 		tw += icon.GetWidth() + space;
 		xoffset -= icon.GetWidth() + space;
-		icon_width = icon.GetWidth();
 		icon_height = icon.GetHeight();
 	}
 
@@ -1414,8 +1412,6 @@ void wxMetroListBox::Invalidate()
 	vpos *= SCRL_RATE;
 
 	wxSize sz = GetClientSize();
-	int width, height;
-	width = height = 0;
 
 	wxClientDC dc(this);
 	dc.SetFont(GetFont());

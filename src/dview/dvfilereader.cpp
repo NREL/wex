@@ -1070,8 +1070,6 @@ bool wxDVFileReader::ReadSQLFile(wxDVPlotCtrl* plotWin, const wxString& filename
 			sqlite3_finalize(sqlStmtPtr);
 		}
 
-		bool isLeapYear = false;
-
 		for (size_t i = 0; i < dataDictionary.size(); i++) {
 			wxString recordIndexString = wxString::Format(wxT("%d"), (int)dataDictionary[i].recordIndex);
 			wxString envPeriodIndexString = wxString::Format(wxT("%d"), (int)dataDictionary[i].envPeriodIndex);
@@ -1122,23 +1120,11 @@ bool wxDVFileReader::ReadSQLFile(wxDVPlotCtrl* plotWin, const wxString& filename
 				unsigned minute = sqlite3_column_int(sqlStmtPtr, 4);
 				unsigned intervalMinutes = sqlite3_column_int(sqlStmtPtr, 5); // used for run periods
 
-				if (month == 2 && day == 29) {
-					isLeapYear = true;
-				}
-
 				if (counter++ == 0) {
 					dataDictionary[i].intervalMinutes = intervalMinutes;
 				}
 
 				if (dataDictionary[i].reportingFrequency == "HVAC System Timestep") {
-					// If isLeapYear, choose an arbitrary leap year (ex 2016),
-					// otherwise wxDateTime will seg fault in debug due to an
-					// assert, and have undefined behavior in release.
-					unsigned short year = 2017;
-					if (isLeapYear) {
-						year = 2016;
-					}
-
 					wxDateTime dateTime;
 
 					// E+ uses months 1 - 12; wxWidget Month is an enum 0 - 11

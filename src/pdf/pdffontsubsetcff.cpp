@@ -836,10 +836,9 @@ wxPdfFontSubsetCff::SetRosStrings()
 void
 wxPdfFontSubsetCff::SubsetCharstrings()
 {
-  int j, k;
+  int j;
   int numGlyphsUsed = (int) m_usedGlyphs.GetCount();
   int usedGlyph;
-  k = 0;
   for (j = 0; j < numGlyphsUsed; j++)
   {
     usedGlyph = m_usedGlyphs[j];

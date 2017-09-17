@@ -151,13 +151,13 @@ wxPLTextLayout::wxPLTextLayout(wxPLOutputDevice &dc, const wxString &text, TextA
 	for (size_t i = 0; i < m_lines.size(); i++)
 	{
 		double x = 0;
-		bool has_sup = false, has_sub = false;
+		bool has_sup = false;
 		// layout this line's X positions, keep track of whether it has super/subs
 		for (size_t j = 0; j < m_lines[i].size(); j++)
 		{
 			text_piece &tp = m_lines[i][j];
-			if (tp.state == text_piece::SUPERSCRIPT) has_sup = true;
-			else if (tp.state == text_piece::SUBSCRIPT) has_sub = true;
+			if (tp.state == text_piece::SUPERSCRIPT)
+			  has_sup = true;
 
 			// save original relative alignment from x
 			// allows future realignment of text pieces if needed
