@@ -1742,8 +1742,8 @@ END_EVENT_TABLE()
 
 wxLKScriptCtrl::wxLKScriptCtrl(wxWindow *parent, int id,
 const wxPoint &pos, const wxSize &size, unsigned long libs)
-: wxCodeEditCtrl(parent, id, pos, size), m_vm(this),
-m_timer(this, IDT_TIMER)
+: wxCodeEditCtrl(parent, id, pos, size), m_timer(this, IDT_TIMER),
+  m_vm(this)
 {
 	m_syntaxCheckRequestId = m_syntaxCheckThreadId = 0;
 	Bind(wxEVT_THREAD, &wxLKScriptCtrl::OnSyntaxCheckThreadFinished, this);

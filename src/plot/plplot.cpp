@@ -59,13 +59,14 @@ private:
 	double m_yPhysMin, m_yPhysMax;
 	double m_physicalConstraint;
 	wxRealPoint m_ptCenter;
-	bool m_primaryX, m_primaryY;
+	bool m_primaryY, m_primaryX;
 
 public:
 	wxPLAxisDeviceMapping(wxPLAxis *x, double xmin, double xmax, bool primaryx,
 		wxPLAxis *y, double ymin, double ymax, bool primaryy)
-		: m_xAxis(x), m_xPhysMin(xmin), m_xPhysMax(xmax), m_primaryX(primaryx),
-		m_yAxis(y), m_yPhysMin(ymin), m_yPhysMax(ymax), m_primaryY(primaryy)
+	  	: m_xAxis(x), m_xPhysMin(xmin), m_xPhysMax(xmax), m_yAxis(y),
+		  m_yPhysMin(ymin), m_yPhysMax(ymax), m_primaryY(primaryy),
+		  m_primaryX(primaryx)
 	{
 		wxRealPoint pos, size;
 		GetDeviceExtents(&pos, &size);
@@ -1074,9 +1075,9 @@ class wxPLDefaultAnnotationMapper : public wxPLAnnotationMapping
 public:
 	wxPLDefaultAnnotationMapper(wxPLAnnotation::PositionMode posmode, const wxPLRealRect &extent,
 		wxPLAxis *xx, double xmin, double xmax, wxPLAxis *yy, double ymin, double ymax)
-		: m_posMode(posmode), m_dev(extent),
-		m_xax(xx), m_xmin(xmin), m_xmax(xmax),
-		m_yax(yy), m_ymin(ymin), m_ymax(ymax)
+	  	: m_dev(extent), m_posMode(posmode),
+		m_xax(xx), m_yax(yy), m_xmin(xmin), m_xmax(xmax),
+		m_ymin(ymin), m_ymax(ymax)
 	{
 	}
 

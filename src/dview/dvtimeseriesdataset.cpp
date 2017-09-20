@@ -136,7 +136,7 @@ wxDVArrayDataSet::wxDVArrayDataSet(const wxString &var, const std::vector<double
 }
 
 wxDVArrayDataSet::wxDVArrayDataSet(const wxString &var, const std::vector<wxRealPoint> &data)
-	: m_varLabel(var), m_pData(data), m_timestep(1), m_offset(0)
+	: m_varLabel(var), m_timestep(1), m_offset(0), m_pData(data)
 {
 }
 

@@ -47,7 +47,7 @@ wxPLContourPlot::wxPLContourPlot(
 	const wxMatrix<double> &z,
 	bool filled,
 	const wxString &label, int levels, wxPLColourMap *cmap)
-	: wxPLPlottable(label), m_x(x), m_y(y), m_z(z), m_filled(filled), m_cmap(cmap)
+  	: wxPLPlottable(label), m_x(x), m_y(y), m_z(z), m_cmap(cmap), m_filled(filled)
 {
 	m_zMin = m_zMax = std::numeric_limits<double>::quiet_NaN();
 
