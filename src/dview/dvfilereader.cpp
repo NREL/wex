@@ -342,32 +342,32 @@ static bool ReadWeatherFileLine(FILE *fp, int type,
 			"%4d%4d"
 			"%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d%4d%1s%1d"
 			"%2d%1s%1d%2d%1s%1d%4d%1s%1d%4d%1s%1d%3d%1s%1d%4d%1s%1d%3d%1s%1d"
-			"%3d%1s%1d%4d%1s%1d%5ld%1s%1d%1d%1d%1d%1d%1d%1d%1d%1d%1d%1d%3d%1s%1d%3d%1s%1d%3d%1s%1d%2d%1s%1d\n",
+			"%3d%1s%1d%4d%1s%1d%5d%1s%1d%1d%1d%1d%1d%1d%1d%1d%1d%1d%1d%3d%1s%1d%3d%1s%1d%3d%1s%1d%2d%1s%1d\n",
 			&yr, &mn, &dy, &hr,
 			&ethor, // extraterrestrial horizontal radiation
 			&etdn, // extraterrestrial direct normal radiation
-			&d1, &f1, &u1, // GH data value 0-1415 Wh/m2, Source, Uncertainty
-			&d2, &f2, &u2, // DN data value 0-1200 Wh/m2, Source, Uncertainty
-			&d3, &f3, &u3, // DF data value 0-700 Wh/m2, Source, Uncertainty
-			&d4, &f4, &u4, // GH illum data value, Source, Uncertainty
-			&d5, &f5, &u5, // DN illum data value, Source, Uncertainty
-			&d6, &f6, &u6, // DF illum data value, Source, Uncertainty
-			&d7, &f7, &u7, // Zenith illum data value, Source, Uncertainty
-			&d8, &f8, &u8, // Total sky cover
-			&d9, &f9, &u9, // opaque sky cover
-			&d10, &f10, &u10, // dry bulb temp -500 to 500 = -50.0 to 50.0 'C
-			&d11, &f11, &u11, // dew point temp -600 to 300 = -60.0 to 30.0 'C
-			&d12, &f12, &u12, // relative humidity 0-100
-			&d13, &f13, &u13, // pressure millibars
-			&d14, &f14, &u14, // wind direction
-			&d15, &f15, &u15, // wind speed 0 to 400 = 0.0 to 40.0 m/s
-			&d16, &f16, &u16, // visibility
-			&d17, &f17, &u17, // ceiling height
+			&d1, f1, &u1, // GH data value 0-1415 Wh/m2, Source, Uncertainty
+			&d2, f2, &u2, // DN data value 0-1200 Wh/m2, Source, Uncertainty
+			&d3, f3, &u3, // DF data value 0-700 Wh/m2, Source, Uncertainty
+			&d4, f4, &u4, // GH illum data value, Source, Uncertainty
+			&d5, f5, &u5, // DN illum data value, Source, Uncertainty
+			&d6, f6, &u6, // DF illum data value, Source, Uncertainty
+			&d7, f7, &u7, // Zenith illum data value, Source, Uncertainty
+			&d8, f8, &u8, // Total sky cover
+			&d9, f9, &u9, // opaque sky cover
+			&d10, f10, &u10, // dry bulb temp -500 to 500 = -50.0 to 50.0 'C
+			&d11, f11, &u11, // dew point temp -600 to 300 = -60.0 to 30.0 'C
+			&d12, f12, &u12, // relative humidity 0-100
+			&d13, f13, &u13, // pressure millibars
+			&d14, f14, &u14, // wind direction
+			&d15, f15, &u15, // wind speed 0 to 400 = 0.0 to 40.0 m/s
+			&d16, f16, &u16, // visibility
+			&d17, f17, &u17, // ceiling height
 			&w1, &w2, &w3, &w4, &w5, &w6, &w7, &w8, &w9, &w10, // present weather
-			&d18, &f18, &u18, // precipitable water
-			&d19, &f19, &u19, // aerosol optical depth
-			&d20, &f20, &u20, // snow depth 0-150 cm
-			&d21, &f21, &u21); // days since last snowfall 0-88
+			&d18, f18, &u18, // precipitable water
+			&d19, f19, &u19, // aerosol optical depth
+			&d20, f20, &u20, // snow depth 0-150 cm
+			&d21, f21, &u21); // days since last snowfall 0-88
 
 		year = yr + 1900;
 		month = mn;

@@ -230,7 +230,7 @@ void wxDiurnalPeriodCtrl::OnPaint(wxPaintEvent &)
 				break;
 
 			int val = VALUE(r, c);
-			if (val >= 1 && val - 1 < (int)m_colours.size() || sel)
+			if ((val >= 1 && val - 1 < (int)m_colours.size()) || sel)
 			{
 				if (IsThisEnabled())
 					dc.SetBrush(wxBrush(sel ? wxColour(0, 114, 198) : m_colours[val - 1]));

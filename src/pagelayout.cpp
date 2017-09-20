@@ -834,7 +834,7 @@ void wxPageLayoutCtrl::CreatePopupMenu()
 	m_popupMenu = new wxMenu;
 
 	wxArrayString types = wxPageObjectTypes::AllTypes();
-	for (size_t i = 0; i < (int)types.size(); i++)
+	for (size_t i = 0; i < types.size(); i++)
 		m_popupMenu->Append(ID_CREATE + i, "Create " + wxPageObjectTypes::DescriptionOf(types[i]));
 
 	if (types.size() > 1)

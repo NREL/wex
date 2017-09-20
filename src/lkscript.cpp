@@ -2290,7 +2290,7 @@ bool wxLKScriptCtrl::CompileAndLoad()
 	if (!m_workDir.IsEmpty() && wxDirExists(m_workDir))
 		parse.add_search_path(m_workDir);
 
-	std::auto_ptr<lk::node_t> tree(parse.script());
+	std::unique_ptr<lk::node_t> tree(parse.script());
 
 	int i = 0;
 	while (i < parse.error_count())

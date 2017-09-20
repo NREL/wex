@@ -543,7 +543,7 @@ static bool qhull_delaunay(int npoints, const double* x, const double* y,
 		qh_freeqhull(!qh_ALL);
 		qh_memfreeshort(&curlong, &totlong);
 		if (curlong || totlong)
-			fprintf(stderr, "Qhull could not free all allocated memory", 1);
+			fprintf(stderr, "Qhull could not free all allocated memory");
 
 		free(tri_indices);
 		free(points);

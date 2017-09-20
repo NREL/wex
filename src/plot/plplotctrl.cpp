@@ -718,7 +718,7 @@ void wxPLPlotCtrl::OnLeftUp(wxMouseEvent &evt)
 		wxCoord diffx = abs(ClientToScreen(evt.GetPosition()).x - ClientToScreen(m_anchorPoint).x);
 		wxCoord diffy = abs(ClientToScreen(evt.GetPosition()).y - ClientToScreen(m_anchorPoint).y);
 		if ((m_highlighting == HIGHLIGHT_SPAN && diffx > 10)
-			|| m_highlighting == HIGHLIGHT_RECT && diffx > 1 && diffy > 1)
+		    || (m_highlighting == HIGHLIGHT_RECT && diffx > 1 && diffy > 1))
 		{
 			wxCommandEvent e(wxEVT_PLOT_HIGHLIGHT, GetId());
 			e.SetEventObject(this);

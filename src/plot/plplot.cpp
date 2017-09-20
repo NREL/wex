@@ -399,7 +399,7 @@ public:
 			m_bounds.y = ymax;
 
 			// if this is a polar axis, we're done
-			if (wxPLPolarAngularAxis *pa = dynamic_cast<wxPLPolarAngularAxis *>(axis))
+			if (dynamic_cast<wxPLPolarAngularAxis *>(axis) != NULL)
 				return;
 
 			// required pixels of separation between adjacent tick texts
@@ -1277,9 +1277,7 @@ void wxPLPlot::Render(wxPLOutputDevice &dc, wxPLRealRect geom)
 	}
 
 	// create an indicator as to whether or not this is a cartesion plot
-	bool is_cartesian = true;
-	if (wxPLPolarAngularAxis *pa = dynamic_cast<wxPLPolarAngularAxis *>(m_x1.axis))
-		is_cartesian = false;
+	bool is_cartesian = dynamic_cast<wxPLPolarAngularAxis *>(m_x1.axis) == NULL;
 
 	if (m_x1.axis != 0 && m_x1.axis->IsShown())
 	{
@@ -1795,6 +1793,8 @@ void wxPLPlot::DrawLegend(wxPLOutputDevice &dc, const wxPLRealRect& geom)
 		case RIGHT:
 			m_legendRect.y = geom.y + text_space;
 			m_legendRect.x = geom.x + geom.width - m_legendRect.width;
+			break;
+		default:
 			break;
 		}
 	}
