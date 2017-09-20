@@ -162,8 +162,10 @@
 // trace messages by setting the:
 // WXTRACE=traceReader StoreComment
 // environment variable
+#if wxUSE_LOG_TRACE
 static const wxChar* traceMask = _T("traceReader");
 static const wxChar* storeTraceMask = _T("StoreComment");
+#endif
 
 //! Ctor
 /*!
