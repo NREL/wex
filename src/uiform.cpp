@@ -2297,7 +2297,6 @@ void wxUIFormEditor::OnLeftDown(wxMouseEvent &evt)
 		std::vector<wxUIObject*> objs = m_form->GetObjects();
 		for (size_t i = 0; i < objs.size(); i++)
 		{
-			wxRect rct = objs[i]->GetGeometry();
 			if (objs[i]->IsWithin((int)(mx / m_scaleX), (int)(my / m_scaleY)))
 			{
 				objs[i]->Property("TabOrder").Set(m_tabOrderCounter++);
@@ -2330,14 +2329,12 @@ void wxUIFormEditor::OnLeftDown(wxMouseEvent &evt)
 	{
 		// handle a selection procedure
 		wxUIObject *select_obj = 0;
-		wxUIObject *move_obj = 0;
 		std::vector<wxUIObject*> objs = m_form->GetObjects();
 		for (size_t i = 0; i < objs.size(); i++)
 		{
 			if (objs[i]->IsWithin((int)(mx / m_scaleX), (int)(my / m_scaleY)))
 			{
 				select_obj = objs[i];
-				move_obj = objs[i];
 				m_form->Raise(select_obj);
 				break;
 			}
@@ -2367,7 +2364,6 @@ void wxUIFormEditor::OnLeftDown(wxMouseEvent &evt)
 			&& std::find(m_selected.begin(), m_selected.end(), select_obj) != m_selected.end())
 		{
 			m_selected.erase(std::find(m_selected.begin(), m_selected.end(), select_obj));
-			move_obj = 0;
 			redraw = true;
 		}
 		else if (select_obj == 0)
