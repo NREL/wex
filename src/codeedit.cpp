@@ -204,7 +204,7 @@ END_EVENT_TABLE()
 #endif
 #endif
 
-static char* CWordlist1 =
+static std::string CWordlist1(
 "asm auto break case char const "
 "continue default delete do double else enum "
 "extern float for goto if inline int long "
@@ -212,9 +212,9 @@ static char* CWordlist1 =
 "return short signed sizeof static "
 "struct switch typedef "
 "union unsigned void volatile "
-"while";
+"while");
 
-static char* CppWordlist1 =
+static std::string CppWordlist1(
 "asm auto bool break case catch char class const const_cast "
 "continue default delete do double dynamic_cast else enum explicit "
 "export extern false float for friend goto if inline int long "
@@ -222,32 +222,31 @@ static char* CppWordlist1 =
 "reinterpret_cast return short signed sizeof static static_cast "
 "struct switch template this throw true try typedef typeid "
 "typename union unsigned using virtual void volatile wchar_t "
-"while";
+"while");
 
-static char *TrnsysWordlist1 =
+static std::string TrnsysWordlist1(
 "version assign simulation tolerances limits unit type "
 "parameters inputs equations constants end width "
 "accelerate loop repeat dfq nocheck solver derivatives "
-"trace format nolist list map ";
+"trace format nolist list map ");
 
-static char *TrnsysWordlist2 =
+static std::string TrnsysWordlist2(
 "abs acos and asin atan cos eql exp gt int or ln log lt max min mod "
-"not sin tan";
+"not sin tan");
 
-static char *TrnsysWordlist3 =
-"const time ";
+static std::string TrnsysWordlist3("const time ");
 
-static char *PythonWordlist1 =
+static std::string PythonWordlist1(
 "and assert break class continue def "
 "del elif else except exec finally "
 "for from global if import in "
 "is lambda not or pass print "
-"raise return try while yield";
+"raise return try while yield");
 
-static  char *LKWordlist1 =
+static std::string LKWordlist1(
 "if while for return exit break continue "
 "function const enum else elseif define "
-"this typeof global true false null import";
+"this typeof global true false null import");
 
 wxCodeEditCtrl::wxCodeEditCtrl(wxWindow *parent, int id,
 	const wxPoint &pos, const wxSize &size)
