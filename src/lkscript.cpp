@@ -2382,7 +2382,7 @@ bool wxLKScriptCtrl::Debug(int mode)
 	// always update the view.
 	m_debugger->UpdateView();
 
-	if (ip < (int)dbg.size())
+	if (ip < dbg.size())
 	{
 		ShowLineArrow(dbg[ip].stmt - 1);
 

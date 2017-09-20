@@ -422,11 +422,11 @@ char wxDiurnalPeriodCtrl::ScheduleIntToChar(int d)
 
 bool wxDiurnalPeriodCtrl::Schedule(const wxString &sched)
 {
-	if ((int)sched.Len() != m_nrows*m_ncols)
+	if (sched.Len() != m_nrows*m_ncols)
 		return false;
 
-	for (int r = 0; r < m_nrows; r++)
-		for (int c = 0; c < m_ncols; c++)
+	for (size_t r = 0; r < m_nrows; r++)
+		for (size_t c = 0; c < m_ncols; c++)
 			VALUE(r, c) = ScheduleCharToInt(sched[r*m_ncols + c]);
 
 	Refresh();
@@ -437,8 +437,8 @@ bool wxDiurnalPeriodCtrl::Schedule(const wxString &sched)
 wxString wxDiurnalPeriodCtrl::Schedule() const
 {
 	wxString buf;
-	for (int r = 0; r < m_nrows; r++)
-		for (int c = 0; c < m_ncols; c++)
+	for (size_t r = 0; r < m_nrows; r++)
+		for (size_t c = 0; c < m_ncols; c++)
 			buf << ScheduleIntToChar(VALUE(r, c));
 
 	return buf;
@@ -470,9 +470,9 @@ void wxDiurnalPeriodCtrl::Copy()
 		// This data objects are held by the clipboard,
 		// so do not delete them in the app.
 		wxString tsv;
-		for (int r = 0; r < m_nrows; r++)
+		for (size_t r = 0; r < m_nrows; r++)
 		{
-			for (int c = 0; c < m_ncols; c++)
+			for (size_t c = 0; c < m_ncols; c++)
 			{
 				tsv += wxString::Format("%d", VALUE(r, c));
 				if (c < m_ncols - 1)
@@ -497,9 +497,9 @@ void wxDiurnalPeriodCtrl::Paste()
 		if (as.Count() >= (m_nrows * m_ncols))
 		{
 			int as_ndx = 0;
-			for (int r = 0; r < m_nrows; r++)
+			for (size_t r = 0; r < m_nrows; r++)
 			{
-				for (int c = 0; c < m_ncols; c++)
+				for (size_t c = 0; c < m_ncols; c++)
 				{
 					long val = 0;
 					if (as_ndx < (int)as.Count())
@@ -557,17 +557,17 @@ bool wxDiurnalPeriodCtrl::MSWShouldPreProcessMessage(WXMSG* msg)
 
 void wxDiurnalPeriodCtrl::OnChar(wxKeyEvent &evt)
 {
-	int selrs = MIN(m_selStartR, m_selEndR);
-	int selcs = MIN(m_selStartC, m_selEndC);
-	int selre = MAX(m_selStartR, m_selEndR);
-	int selce = MAX(m_selStartC, m_selEndC);
+	size_t selrs = MIN(m_selStartR, m_selEndR);
+	size_t selcs = MIN(m_selStartC, m_selEndC);
+	size_t selre = MAX(m_selStartR, m_selEndR);
+	size_t selce = MAX(m_selStartC, m_selEndC);
 
 	int key = evt.GetKeyCode();
 	if ((ScheduleCharToInt(key) >= m_min) && (ScheduleCharToInt(key) <= m_max) &&
 		selrs >= 0 && selcs >= 0)
 	{
-		for (int r = selrs; r <= selre && r < m_nrows; r++)
-			for (int c = selcs; c <= selce && c < m_ncols; c++)
+		for (size_t r = selrs; r <= selre && r < m_nrows; r++)
+			for (size_t c = selcs; c <= selce && c < m_ncols; c++)
 				VALUE(r, c) = ScheduleCharToInt(key);
 
 		Refresh();
@@ -583,8 +583,8 @@ void wxDiurnalPeriodCtrl::OnMouseDown(wxMouseEvent &evt)
 	m_selStartC = (evt.GetX() - m_rowHeaderSize) / m_cellSize;
 	m_selStartR = (evt.GetY() - m_colHeaderSize) / m_cellSize;
 
-	if (m_selStartC < 0 || m_selStartC >= m_ncols ||
-		m_selStartR < 0 || m_selStartR >= m_nrows ||
+	if (m_selStartC < 0 || m_selStartC >= static_cast<int>(m_ncols) ||
+	    m_selStartR < 0 || m_selStartR >= static_cast<int>(m_nrows) ||
 		evt.GetX() < m_rowHeaderSize || evt.GetY() < m_colHeaderSize)
 	{
 		m_selStartC = m_selStartR = -1;
@@ -611,8 +611,8 @@ void wxDiurnalPeriodCtrl::OnMouseMove(wxMouseEvent &evt)
 	int c = (evt.GetX() - m_rowHeaderSize) / m_cellSize;
 	int r = (evt.GetY() - m_colHeaderSize) / m_cellSize;
 
-	if (r >= 0 && r < m_nrows &&
-		c >= 0 && c < m_ncols)
+	if (r >= 0 && r < static_cast<int>(m_nrows) &&
+	    c >= 0 && c < static_cast<int>(m_ncols))
 	{
 		m_selEndR = r;
 		m_selEndC = c;
