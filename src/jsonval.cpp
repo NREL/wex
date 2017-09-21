@@ -3086,13 +3086,11 @@ wxJSONValue::CreateRefData() const
 wxJSONRefData*
 wxJSONValue::COW()
 {
-	wxJSONRefData* data = GetRefData();
 	wxLogTrace(cowTraceMask, wxT("(%s) COW() START data=%p data->m_count=%d"),
-		__PRETTY_FUNCTION__, data, data->GetRefCount());
+		__PRETTY_FUNCTION__, GetRefData(), GetRefData()->GetRefCount());
 	UnShare();
-	data = GetRefData();
 	wxLogTrace(cowTraceMask, wxT("(%s) COW() END data=%p data->m_count=%d"),
-		__PRETTY_FUNCTION__, data, data->GetRefCount());
+		__PRETTY_FUNCTION__, GetRefData(), GetRefData()->GetRefCount());
 	return GetRefData();
 }
 
