@@ -3008,8 +3008,7 @@ wxJSONValue::DeepCopy(const wxJSONValue& other)
 wxJSONRefData*
 wxJSONValue::GetRefData() const
 {
-	wxJSONRefData* data = m_refData;
-	return data;
+	return m_refData;
 }
 
 //! Make a copy of the referenced data.
