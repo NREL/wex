@@ -10,7 +10,6 @@ before_script:
 
 script:
   - export PATH=$PATH:$HOME/wx-3.1.0/bin
-  - cd $HOME/travis/build/$user
   - make -j2 -C lk/build_linux
   - make -j2 -C wex/build_linux
 
