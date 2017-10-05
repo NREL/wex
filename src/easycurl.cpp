@@ -467,24 +467,6 @@ void wxEasyCurl::SetProxyAddress(const wxString &proxy)
 	gs_curlProxyAddress = proxy;
 }
 
-static std::string wstr2str(const wchar_t *s)
-{//Unicode to Punycode convertor! Someone? (or simply ignore the IDNA decision from 2003 :):
-	std::string ret;
-	for (; 0 != *s; ++s)
-		ret += char(*s);
-	return ret;
-}
-
-/*
-static std::wstring str2wstr( const std::string &s )
-{//Same comment as in wstr2str()
-std::wstring ret;
-for( std::string::const_iterator i = s.begin(); i != s.end(); ++i )
-ret += wchar_t( *i );
-return ret;
-}
-*/
-
 wxString wxEasyCurl::GetProxyForURL(const wxString &url)
 {
 	wxString proxy(gs_curlProxyAddress);
