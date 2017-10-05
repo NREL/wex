@@ -530,7 +530,8 @@ wxString wxEasyCurl::GetProxyForURL(const wxString &url)
 				if (autoCfg.lpszProxy)
 				{
 					gs_curlProxyAutodetectMessages.Add("autoCfg.lpszProxy: " + wxString(autoCfg.lpszProxy));
-					proxy = wstr2str(autoCfg.lpszProxy);
+					std::wstring wstr(autoCfg.lpszProxy);
+					proxy = wxString(std::string(wstr.begin(), wstr.end()));
 				}
 				else
 					gs_curlProxyAutodetectMessages.Add("No autodetected proxy determined");
@@ -547,7 +548,8 @@ wxString wxEasyCurl::GetProxyForURL(const wxString &url)
 			if (cfg.lpszProxy)
 			{
 				gs_curlProxyAutodetectMessages.Add("Using default: " + wxString(cfg.lpszProxy));
-				proxy = wxString(cfg.lpszProxy);
+				std::wstring wstr(autoCfg.lpszProxy);
+				proxy = wxString(std::string(wstr.begin(), wstr.end()));
 			}
 		}
 
