@@ -70,7 +70,8 @@ static bool GetFileRegistration(wxString *email, wxString *key)
 		first_run = false;
 
 		wxString regfile(gs_regData->GetLocalRegistrationFile());
-		std::ifstream f(regfile.c_str());
+		const char * filename = regfile.c_str();
+		std::ifstream f(filename);
 		if (f.is_open())
 		{
 		  	std::string line;
