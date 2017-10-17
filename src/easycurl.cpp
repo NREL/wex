@@ -548,7 +548,7 @@ wxString wxEasyCurl::GetProxyForURL(const wxString &url)
 			if (cfg.lpszProxy)
 			{
 				gs_curlProxyAutodetectMessages.Add("Using default: " + wxString(cfg.lpszProxy));
-				std::wstring wstr(autoCfg.lpszProxy);
+				std::wstring wstr(cfg.lpszProxy);
 				proxy = wxString(std::string(wstr.begin(), wstr.end()));
 			}
 		}
