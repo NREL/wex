@@ -306,8 +306,8 @@ public:
 				// cull data points that get mapped to the same X coordinate on the device
 				// this is a much needed rendering optimization for large datasets
 				size_t i = 0;
-				size_t len = m_data->Length();
-				while (i < len)
+				size_t len_tmp = m_data->Length();
+				while (i < len_tmp)
 				{
 					rpt = m_data->At(i);
 					if (rpt.x < wmin.x || rpt.x > wmax.x) {
@@ -323,17 +323,17 @@ public:
 					// coordinate, and the associated min/max Y values
 					size_t j = i + 1;
 					size_t npscan = 0;
-					wxRealPoint rpt2;
-					while (j < len)
+					wxRealPoint rpt2_tmp;
+					while (j < len_tmp)
 					{
-						rpt2 = m_data->At(j);
-						wxRealPoint cur2(map.ToDevice(rpt2));
+						rpt2_tmp = m_data->At(j);
+						wxRealPoint cur2(map.ToDevice(rpt2_tmp));
 
 						if (wxRound(cur.x) != wxRound(cur2.x))
 							break;
 
-						if (rpt2.y > max) { max = rpt2.y; jmax = j; }
-						if (rpt2.y < min) { min = rpt2.y; jmin = j; }
+						if (rpt2_tmp.y > max) { max = rpt2_tmp.y; jmax = j; }
+						if (rpt2_tmp.y < min) { min = rpt2_tmp.y; jmin = j; }
 
 						npscan++;
 						j++;
@@ -357,10 +357,10 @@ public:
 				//If this is a line plot then add a point at the right edge of the graph if there isn't one there in the data
 				if (m_style == wxDV_NORMAL && m_data->At(m_data->Length() - 1).x > wmax.x)
 				{
-					for (int i = m_data->Length() - 2; i >= 0; i--)
+					for (int k = m_data->Length() - 2; k >= 0; k--)
 					{
-						rpt = m_data->At(i);
-						rpt2 = m_data->At(i + 1);
+						rpt = m_data->At(k);
+						rpt2 = m_data->At(k + 1);
 						if (rpt.x < wmax.x)
 						{
 							tempY = rpt.y + ((rpt2.y - rpt.y) * (wmax.x - rpt.x) / (rpt2.x - rpt.x));

@@ -1562,8 +1562,8 @@ wxVariant wxActiveX::CallMethod(wxString name, wxVariant args[], int nargs)
 
     if (vargs)
     {
-        for (int i = 0; i < nargs; i++)
-            VariantClear(&vargs[i]);
+        for (int j = 0; j < nargs; j++)
+            VariantClear(&vargs[j]);
         delete [] vargs;
     };
 

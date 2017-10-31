@@ -2115,13 +2115,13 @@ wxJSONReader::DoStrto_ll(const wxString& str, wxUint64* ui64, wxChar* sign)
 	// corresponding power of 10
 	int exponent = 0;
 	for (int i = strLen - 1; i >= index; i--)   {
-		wxChar ch = str[i];
-		if (ch < '0' || ch > '9') {
+		wxChar ch_tmp = str[i];
+		if (ch_tmp < '0' || ch_tmp > '9') {
 			return false;
 		}
-		ch = ch - '0';
+		ch_tmp = ch_tmp - '0';
 		// compute the new temporary value
-		temp1 += ch * power10[exponent];
+		temp1 += ch_tmp * power10[exponent];
 		++exponent;
 	}
 	*ui64 = temp1;

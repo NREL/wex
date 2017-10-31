@@ -68,15 +68,15 @@ wxPdfFontDataCore::wxPdfFontDataCore(const wxString& family, const wxString& ali
       if (u1 != u1prev)
       {
         u1prev = u1;
-        wxPdfKernPairMap::iterator kp = (*m_kp).find(u1);
-        if (kp == (*m_kp).end())
+        wxPdfKernPairMap::iterator kp_tmp = (*m_kp).find(u1);
+        if (kp_tmp == (*m_kp).end())
         {
           kwMap = new wxPdfKernWidthMap();
           (*m_kp)[u1] = kwMap;
         }
         else
         {
-          kwMap = kp->second;
+          kwMap = kp_tmp->second;
         }
       }
       (*kwMap)[u2] = kpArray[k].kerning;

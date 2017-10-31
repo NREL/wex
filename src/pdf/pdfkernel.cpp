@@ -970,7 +970,7 @@ wxPdfDocument::PutPages()
         else
         {
           wxPdfLink* link = (*m_links)[pl->GetLinkRef()];
-          wxPdfBoolHashMap::iterator oChange = (*m_orientationChanges).find(link->GetPage());
+         oChange = (*m_orientationChanges).find(link->GetPage());
           double y = link->GetPosition()*m_k; 
           if (m_yAxisOriginTop)
           {
@@ -1743,10 +1743,10 @@ wxPdfDocument::PutTemplates()
           wxPdfImage* currentImage = image->second;
           OutAscii(wxString::Format(wxT("/I%d %d 0 R"), currentImage->GetIndex(), currentImage->GetObjIndex()));
         }
-        wxPdfTemplatesMap::iterator templateIter = currentTemplate->m_templates->begin();
-        for (templateIter = currentTemplate->m_templates->begin(); templateIter != currentTemplate->m_templates->end(); templateIter++)
+        wxPdfTemplatesMap::iterator templateIterTmp = currentTemplate->m_templates->begin();
+        for (templateIterTmp = currentTemplate->m_templates->begin(); templateIterTmp != currentTemplate->m_templates->end(); templateIterTmp++)
         {
-          wxPdfTemplate* tpl = templateIter->second;
+          wxPdfTemplate* tpl = templateIterTmp->second;
           OutAscii(m_templatePrefix + wxString::Format(wxT("%d %d 0 R"), tpl->GetIndex(), tpl->GetObjIndex()));
         }
         Out(">>");

@@ -608,19 +608,19 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 
 		if (firstRowContainsTitles)
 		{
-			wxString units = tkz_units.GetNextToken();
-			if (IsNumeric(units) || IsDate(units))
+			wxString units_tmp = tkz_units.GetNextToken();
+			if (IsNumeric(units_tmp) || IsDate(units_tmp))
 			{
 				secondRowContainsUnits = false;
 				ds->SetUnits(wxT("-no units-"));
-				units.ToDouble(&entry);
+				units_tmp.ToDouble(&entry);
 				ds->Append(wxRealPoint(timeCounters[0], entry));
 				timeCounters[0] += 1.0;
 			}
 			else
 			{
 				isEnergyPlusOutput = false;
-				ds->SetUnits(units);
+				ds->SetUnits(units_tmp);
 				//ds->SetYLabel(title + " (" + units + ")");
 			}
 		}
@@ -630,7 +630,7 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 		while (columns < count_names)
 		{
 			timeCounters.push_back(0.5);
-			wxDVArrayDataSet *ds = new wxDVArrayDataSet();
+			wxDVArrayDataSet *ds_tmp = new wxDVArrayDataSet();
 			wxString titleToken = tkz_names.GetNextToken();
 			if (isEnergyPlusOutput)
 			{
@@ -640,23 +640,23 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 				if (fstart != -1 && fend != -1 && fstart < fend)
 				{
 					// Convert, e.g., "Variable [Units](Hourly)" to "Variable (Hourly)" with units "Units"
-					wxString units = tt.SubString(fstart + 1, fend - 1);
-					tt.Replace("[" + units + "]", "");
-					ds->SetSeriesTitle(tt);
-					ds->SetUnits(units);
+					wxString units_tmp = tt.SubString(fstart + 1, fend - 1);
+					tt.Replace("[" + units_tmp + "]", "");
+					ds_tmp->SetSeriesTitle(tt);
+					ds_tmp->SetUnits(units_tmp);
 				}
 				else
 				{
-					ds->SetSeriesTitle(tt);
+					ds_tmp->SetSeriesTitle(tt);
 				}
 			}
 			else if (firstRowContainsTitles)
-				ds->SetSeriesTitle(titleToken.AfterLast('|'));
+				ds_tmp->SetSeriesTitle(titleToken.AfterLast('|'));
 			else
 			{
 				titleToken.ToDouble(&entry);
-				ds->SetSeriesTitle(wxT("-no name-"));
-				ds->Append(wxRealPoint(timeCounters[columns], entry));
+				ds_tmp->SetSeriesTitle(wxT("-no name-"));
+				ds_tmp->Append(wxRealPoint(timeCounters[columns], entry));
 				timeCounters[columns] += 1.0;
 			}
 
@@ -664,19 +664,19 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 			{
 				wxString next_units = tkz_units.GetNextToken();
 				if (next_units.length() > 0)
-					ds->SetUnits(next_units);
+					ds_tmp->SetUnits(next_units);
 				else
-					ds->SetUnits(wxT("-no units-"));
+					ds_tmp->SetUnits(wxT("-no units-"));
 			}
 			else if (!isEnergyPlusOutput)
 			{
 				tkz_units.GetNextToken().ToDouble(&entry);
-				ds->SetUnits(wxT("-no units-"));
-				ds->Append(wxRealPoint(timeCounters[columns], entry));
+				ds_tmp->SetUnits(wxT("-no units-"));
+				ds_tmp->Append(wxRealPoint(timeCounters[columns], entry));
 				timeCounters[columns] += 1.0;
 			}
-			ds->SetTimeStep(1.0, false);
-			dataSets.push_back(ds);
+			ds_tmp->SetTimeStep(1.0, false);
+			dataSets.push_back(ds_tmp);
 			groupNames.push_back(titleToken.BeforeLast('|'));
 			columns++;
 		}
