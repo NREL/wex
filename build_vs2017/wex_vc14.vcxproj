@@ -304,7 +304,7 @@
     <Text Include="..\src\plot\qhull\COPYING.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>wexvc13wx3</ProjectName>
+    <ProjectName>wex_vc14</ProjectName>
     <ProjectGuid>{993A0CD4-149D-442C-A5B4-073E47FBCF52}</ProjectGuid>
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -357,13 +357,13 @@
     <IntDir>$(ProjectDir)\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>true</GenerateManifest>
-    <TargetName>wexvc13wx3d</TargetName>
+    <TargetName>wexd</TargetName>
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>true</GenerateManifest>
-    <TargetName>wexvc13wx3x64d</TargetName>
+    <TargetName>wexx64d</TargetName>
     <TargetExt>.lib</TargetExt>
     <OutDir>$(SolutionDir)..\</OutDir>
     <IntDir>$(ProjectDir)\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
@@ -373,13 +373,13 @@
     <IntDir>$(ProjectDir)\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>true</GenerateManifest>
-    <TargetName>wexvc13wx3</TargetName>
+    <TargetName>wex</TargetName>
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>true</GenerateManifest>
-    <TargetName>wexvc13wx3x64</TargetName>
+    <TargetName>wexx64</TargetName>
     <TargetExt>.lib</TargetExt>
     <OutDir>$(SolutionDir)..\</OutDir>
     <IntDir>$(ProjectDir)\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
