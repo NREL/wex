@@ -1488,7 +1488,7 @@ void *wxActiveX::GetPropAsPointer(const wxString& name)
 // call methods
 VARIANT wxActiveX::CallMethod(MEMBERID name, VARIANTARG args[], int argc)
 {
-	DISPPARAMS pargs = {args, NULL, argc, 0};
+	DISPPARAMS pargs = {args, NULL, (UINT)argc, 0};
     VARIANT retVal;
     VariantInit(&retVal);
 

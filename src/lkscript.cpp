@@ -2268,14 +2268,14 @@ wxLKScriptCtrl::my_vm::my_vm(wxLKScriptCtrl *lcs)
 	m_counter = 0;
 }
 
-bool wxLKScriptCtrl::my_vm::on_run(const lk::srcpos_t &sp)
+bool wxLKScriptCtrl::my_vm::on_run(const lk::srcpos_t &a_sp)
 {
 	// expression & (constant-1) is equivalent to expression % constant where
 	// constant is a power of two: so use bitwise operator for better performance
 	// see https://en.wikipedia.org/wiki/Modulo_operation#Performance_issues
 	if (0 == (m_counter++ & 1023)) {
 		wxYield();
-		return m_lcs->OnEval(sp.line);
+		return m_lcs->OnEval(a_sp.line);
 	}
 	else return true;
 }

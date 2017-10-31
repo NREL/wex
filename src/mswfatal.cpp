@@ -527,7 +527,7 @@ LONG __stdcall MSW_CrashHandlerExceptionFilter(EXCEPTION_POINTERS *pExPtrs)
 
 		if (!ModBase)          // flags - not required
 		{
-			writemsg("Failed to load module '%s' @ 0x%08x with code %d\n", lpFilename, (DWORD)Modules[i], (int)GetLastError());
+			writemsg("Failed to load module '%s' @ 0x%08x with code %d\n", lpFilename, Modules[i], (int)GetLastError());
 			continue;
 		}
 		else
