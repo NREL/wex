@@ -37,8 +37,8 @@
 #include <wex/metro.h>
 #include <wex/utils.h>
 
-#include "../build_vc2013/dbghelp/dbghelp.h"
-#include "../build_vc2013/exception.cpng"
+#include "../build_vs2013/dbghelp/dbghelp.h"
+#include "../build_vs2013/exception.cpng"
 
 static wxString s_app, s_version, s_email;
 
@@ -527,7 +527,7 @@ LONG __stdcall MSW_CrashHandlerExceptionFilter(EXCEPTION_POINTERS *pExPtrs)
 
 		if (!ModBase)          // flags - not required
 		{
-			writemsg("Failed to load module '%s' @ 0x%08x with code %d\n", lpFilename, (DWORD)Modules[i], (int)GetLastError());
+			writemsg("Failed to load module '%s' @ 0x%08x with code %d\n", lpFilename, Modules[i], (int)GetLastError());
 			continue;
 		}
 		else

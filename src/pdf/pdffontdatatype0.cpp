@@ -257,10 +257,10 @@ wxPdfFontDataType0::GetStringWidth(const wxString& s, const wxPdfEncoding* encod
     wxChar c = *ch;
     if (c >= 0 && c < 128)
     {
-      wxPdfGlyphWidthMap::iterator charIter = (*m_cw).find(c);
-      if (charIter != (*m_cw).end())
+      wxPdfGlyphWidthMap::iterator charIterTmp = (*m_cw).find(c);
+      if (charIterTmp != (*m_cw).end())
       {
-        w += charIter->second;
+        w += charIterTmp->second;
       }
       else
       {

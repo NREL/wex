@@ -2868,7 +2868,7 @@ void wxUIFormEditor::OnPaint(wxPaintEvent &)
 		dc.SetPen(wxPen(g_uiSelectColor));
 		for (size_t i = 0; i < m_selected.size(); i++)
 		{
-			wxRect rct = m_selected[i]->GetGeometry();
+			rct = m_selected[i]->GetGeometry();
 
 			// left side
 			dc.DrawRectangle(ScaleRect(wxRect(rct.x - RSZBOXW, rct.y - RSZBOXW, RSZBOXW, RSZBOXW)));

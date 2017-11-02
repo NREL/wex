@@ -1724,7 +1724,7 @@ wxJSONValue::Cat(const wxString& str)
 
 	bool r = false;
 	if (data->m_type == wxJSONTYPE_STRING)  {
-		wxJSONRefData* data = COW();
+		data = COW();
 		wxJSON_ASSERT(data);
 		data->m_valString.append(str);
 		r = true;
@@ -1747,7 +1747,7 @@ wxJSONValue::Cat(const wxMemoryBuffer& buff)
 
 	bool r = false;
 	if (data->m_type == wxJSONTYPE_MEMORYBUFF)  {
-		wxJSONRefData* data = COW();
+		data = COW();
 		wxJSON_ASSERT(data);
 		data->m_memBuff->AppendData(buff.GetData(), buff.GetDataLen());
 		r = true;
@@ -1764,7 +1764,7 @@ wxJSONValue::Cat(const wxChar* str)
 
 	bool r = false;
 	if (data->m_type == wxJSONTYPE_STRING)  {
-		wxJSONRefData* data = COW();
+		data = COW();
 		wxJSON_ASSERT(data);
 		data->m_valString.append(str);
 		r = true;

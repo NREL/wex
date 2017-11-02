@@ -734,11 +734,11 @@ void wxMetroTabList::OnLeftDown(wxMouseEvent &evt)
 			{
 				SwitchPage(i); // first switch pages if we're going to fire the context menu up
 
-				wxCommandEvent evt(wxEVT_BUTTON, GetId());
-				evt.SetEventObject(this);
-				evt.SetInt(i);
-				evt.SetString(m_items[i].label);
-				ProcessEvent(evt);
+				wxCommandEvent evt_tmp(wxEVT_BUTTON, GetId());
+				evt_tmp.SetEventObject(this);
+				evt_tmp.SetInt(i);
+				evt_tmp.SetString(m_items[i].label);
+				ProcessEvent(evt_tmp);
 				return;
 			}
 

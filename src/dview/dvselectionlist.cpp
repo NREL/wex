@@ -441,9 +441,9 @@ void wxDVSelectionListCtrl::RecalculateBestSize()
 					continue;
 
 				height += m_itemHeight; // reserve height for each item in the group
-				wxSize sz = dc.GetTextExtent(ri->label);
-				if (sz.GetWidth() > width)
-					width = sz.GetWidth();
+				wxSize sz_tmp = dc.GetTextExtent(ri->label);
+				if (sz_tmp.GetWidth() > width)
+					width = sz_tmp.GetWidth();
 			}
 		}
 	}
@@ -647,9 +647,9 @@ void wxDVSelectionListCtrl::OnLeftDown(wxMouseEvent &evt)
 					HandleLineColour(items[i]->row_index);
 					Refresh();
 
-					wxCommandEvent evt(wxEVT_DVSELECTIONLIST, GetId());
-					evt.SetEventObject(this);
-					GetEventHandler()->ProcessEvent(evt);
+					wxCommandEvent evt_tmp(wxEVT_DVSELECTIONLIST, GetId());
+					evt_tmp.SetEventObject(this);
+					GetEventHandler()->ProcessEvent(evt_tmp);
 
 					return;
 				}

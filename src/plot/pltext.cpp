@@ -630,11 +630,11 @@ static bool check_freetype_init()
 			while (builtinfonts[i].data)
 			{
 				FT_Face face;
-				FT_Error err = FT_New_Memory_Face(ft_library,
+				FT_Error err_tmp = FT_New_Memory_Face(ft_library,
 					&(*gs_inflatedFontData[i])[0], gs_inflatedFontData[i]->size(),
 					0, &face);
 
-				if (0 == err)
+				if (0 == err_tmp)
 				{
 					ft_face_info fi;
 					fi.face = face;

@@ -350,7 +350,6 @@ wxPdfDocument::PutOCProperties()
   if (m_rgLayers->size() > 0)
   {
     Out("/RBGroups [", false);
-    size_t j;
     for (j = 1; j <= m_rgLayers->size(); ++j)
     {
       Out("[", false);
@@ -369,7 +368,6 @@ wxPdfDocument::PutOCProperties()
   {
     wxPdfArrayLayer layers = m_lockedLayers->GetGroup();
     Out("/Locked [", false);
-    size_t j;
     for (j = 0; j < layers.GetCount(); ++j)
     {
       OutAscii(wxString::Format(wxT("%d 0 R "), layers[j]->GetObjIndex()), false);
