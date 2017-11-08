@@ -466,7 +466,8 @@ static bool qhull_delaunay(int npoints, const double* x, const double* y,
 	/* Perform Delaunay triangulation. */
 	/* qhull expects a FILE* to write errors to, use stderr */
 	exitcode = qh_new_qhull(ndim, npoints, points, False,
-		"qhull d Qt Qbb Qc Qz", NULL, stderr);
+				const_cast<char *>("qhull d Qt Qbb Qc Qz"),
+				NULL, stderr);
 	if (exitcode != qh_ERRnone) {
 		fprintf(stderr,
 			"Error in qhull Delaunay triangulation calculation: %s (exitcode=%d)",
