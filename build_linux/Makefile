@@ -21,6 +21,7 @@ OBJECTS = \
 	ftgasp.o \
 	ftglyph.o \
 	ftinit.o \
+	ftlcdfil.o \
 	ftstroke.o \
 	ftsynth.o \
 	ftsystem.o \
