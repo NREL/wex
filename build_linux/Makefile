@@ -1,6 +1,5 @@
 VPATH = ../src/freetype/src/base ../src/freetype/src/cff ../src/freetype/src/cid ../src/freetype/src/psaux ../src/freetype/src/pshinter ../src/freetype/src/psnames ../src/freetype/src/raster ../src/freetype/src/sfnt ../src/freetype/src/smooth ../src/freetype/src/truetype ../src/freetype/src/type1 ../src/plot/qhull ../src/dview ../src/plot ../src/pdf ../src/clipper ../src
 
-LKDIR = ../../lk
 LKLIB = lkuxwx3.a
 
 CC = gcc
