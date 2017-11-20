@@ -15,7 +15,8 @@ before_script:
 
 script:
   - export PATH=$PATH:$HOME/wx-3.1.0/bin
-  - make -j2 -C lk/build_linux
+  - pwd
+  - make -j2 -C $LKDIR/build_linux
   - make -j2 -C wex/build_linux
 
 install:
