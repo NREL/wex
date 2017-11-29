@@ -1469,7 +1469,7 @@ void wxDVFileReader::InitUnitConversions()
 	m_unitConversions.emplace_back("J/m3-K", "Btu/ft3-F", 1.49237004739337E-05);
 	m_unitConversions.emplace_back("K", "R", 1.8);
 	m_unitConversions.emplace_back("K/m", "F/ft", 0.54861322767449);
-	m_unitConversions.emplace_back("kg", "lb", 2.2046);
+	m_unitConversions.emplace_back("kg", "lb", 2.20462247603796);
 	m_unitConversions.emplace_back("kg/J", "lb/Btu", 2325.83774250441);
 	m_unitConversions.emplace_back("kg/kg-K", "lb/lb-F", 0.555555555555556);
 	m_unitConversions.emplace_back("kg/m", "lb/ft", 0.67196893069637);
@@ -1480,7 +1480,7 @@ void wxDVFileReader::InitUnitConversions()
 	m_unitConversions.emplace_back("kg/m-s-K2", "lb/ft-s-F2", 0.207397818116164);
 	m_unitConversions.emplace_back("kg/Pa-s-m2", "lb/psi-s-ft2", 1412.00523459398);
 	m_unitConversions.emplace_back("kg/s", "lb/s", 2.20462247603796);
-	m_unitConversions.emplace_back("kg/s2", "lb/s2", 2.2046);
+	m_unitConversions.emplace_back("kg/s2", "lb/s2", 2.20462247603796);
 	m_unitConversions.emplace_back("kg/s-m", "lb/s-ft", 0.67196893069637);
 	m_unitConversions.emplace_back("kJ/kg", "Btu/lb", 0.429925);
 	m_unitConversions.emplace_back("kPa", "psi", 0.145038);
@@ -1556,6 +1556,7 @@ void wxDVFileReader::InitUnitConversions()
 	m_unitConversions.emplace_back("%", "%", 1);
 	m_unitConversions.emplace_back("ach", "ach", 1);
 	m_unitConversions.emplace_back("ACH", "ACH", 1);
+	m_unitConversions.emplace_back("kgWater/kgDryAir", "lbWater/lbDryAir", 2.20462247603796);
 }
 
 bool wxDVFileReader::ConvertUnits(std::string & units, std::vector<double> & values, bool convertSIToIP)
