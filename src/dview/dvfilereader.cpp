@@ -44,10 +44,13 @@
 #include <wx/tokenzr.h>
 #include <wx/txtstrm.h>
 #include <wx/wfstream.h>
+#include <wx/dialog.h>
+
 
 #include "wex/dview/dvfilereader.h"
 #include "wex/dview/dvplotctrl.h"
 #include "wex/dview/dvtimeseriesdataset.h"
+#include "wex/utils.h"
 
 
 vector<tuple<string, string, double> > m_unitConversions;
@@ -713,6 +716,15 @@ bool wxDVFileReader::FastRead(wxDVPlotCtrl *plotWin, const wxString& filename, i
 			if (strlen(dblbuf) > 0)
 			{
 				dataSets[ncol]->Append(wxRealPoint(timeCounters[ncol], atof(dblbuf))); // convert number and add data point.
+				timeCounters[ncol] += dataSets[ncol]->GetTimeStep();
+			}
+			// in event that data is missing, what to do?  For now, set to 0
+			else
+			{
+				wxString message; 
+				message.Printf(wxT("Column '%s' contains missing data!\nReplacing missing data with 0's, please correct your file"), dataSets[ncol]->GetSeriesTitle());
+				wxShowTextMessageDialog(message, wxEmptyString, plotWin, wxSize(400,150));
+				dataSets[ncol]->Append(wxRealPoint(timeCounters[ncol], 0));
 				timeCounters[ncol] += dataSets[ncol]->GetTimeStep();
 			}
 			if (*p) p++; // skip the comma or delimiter
