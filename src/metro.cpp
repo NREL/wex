@@ -431,7 +431,7 @@ void wxMetroTabList::Remove(const wxString &label)
 
 void wxMetroTabList::RemoveAt(size_t n)
 {
-	if (n >= 0 && n < m_items.size())
+	if (n < m_items.size())
 		m_items.erase(m_items.begin() + n);
 }
 
@@ -461,7 +461,7 @@ void wxMetroTabList::ReorderLeft(size_t idx)
 
 void wxMetroTabList::ReorderRight(size_t idx)
 {
-	if (idx >= 0 && idx < m_items.size() - 1)
+	if (idx < m_items.size() - 1)
 	{
 		item x(m_items[idx + 1]);
 		m_items[idx + 1] = m_items[idx];
@@ -1101,7 +1101,7 @@ int wxMetroNotebook::GetPageIndex(wxWindow *win)
 
 wxWindow *wxMetroNotebook::RemovePage(size_t ndx)
 {
-	if (ndx < 0 || ndx >= m_pages.size())
+	if (ndx >= m_pages.size())
 		return 0;
 
 	wxWindow *win = GetPage(ndx);
@@ -1152,7 +1152,7 @@ int wxMetroNotebook::GetSelection() const
 
 void wxMetroNotebook::SetText(size_t id, const wxString &text)
 {
-	if ((id < m_pages.size()) && (id >= 0))
+	if (id < m_pages.size())
 	{
 		m_pages[id].text = text;
 		UpdateTabList();
@@ -1161,7 +1161,7 @@ void wxMetroNotebook::SetText(size_t id, const wxString &text)
 
 wxString wxMetroNotebook::GetText(size_t id) const
 {
-	if (id < m_pages.size() && id >= 0)
+	if (id < m_pages.size())
 		return m_pages[id].text;
 	else
 		return wxEmptyString;
@@ -1353,7 +1353,7 @@ int wxMetroListBox::Find(const wxString &item)
 
 wxString wxMetroListBox::Get(size_t idx)
 {
-	if (idx >= 0 && idx < m_items.size())
+	if (idx < m_items.size())
 		return m_items[idx].name;
 	else
 		return wxEmptyString;
