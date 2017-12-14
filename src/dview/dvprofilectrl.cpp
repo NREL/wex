@@ -547,7 +547,7 @@ void wxDVProfileCtrl::OnMonthSelection(wxCommandEvent& e)
 
 void wxDVProfileCtrl::MonthSelection(unsigned index)
 {
-	if (index >= 0 && index < 13)	ShowMonthPlotAtIndex(index, m_monthCheckBoxes[index]->IsChecked());
+	if (index < 13)	ShowMonthPlotAtIndex(index, m_monthCheckBoxes[index]->IsChecked());
 }
 
 void wxDVProfileCtrl::OnSelAllMonths(wxCommandEvent& e)

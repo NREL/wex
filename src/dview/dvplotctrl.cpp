@@ -449,7 +449,7 @@ void wxDVPlotCtrl::SelectDataIndex(size_t index, bool allTabs)
 {
 	//Only select this data on the slower tabs (which require sorting) if allTabs is true.
 
-	if (index < 0 || index >= m_dataSets.size())
+	if (index >= m_dataSets.size())
 		return;
 
 	m_timeSeries->SelectDataSetAtIndex(index);

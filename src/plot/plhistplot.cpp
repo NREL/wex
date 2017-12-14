@@ -289,7 +289,7 @@ void wxPLHistogramPlot::RecalculateHistogram()
 		if (index >= m_numberOfBins)
 			index--;
 
-		if (index >= 0 && index < m_histData.size())
+		if (index < m_histData.size())
 		{
 			m_histData[index]++;
 			if (m_histDataBinRanges[index].x > m_data[i].y) { m_histDataBinRanges[index].x = m_data[i].y; }

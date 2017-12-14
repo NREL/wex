@@ -69,8 +69,6 @@ void wxDVTimeSeriesDataSet::GetMinAndMaxInRange(double* min, double* max,
 {
 	if (endIndex > Length())
 		endIndex = Length();
-	if (startIndex < 0)
-		startIndex = 0;
 
 	double myMin = At(startIndex).y;
 	double myMax = At(startIndex).y;
@@ -98,8 +96,6 @@ void wxDVTimeSeriesDataSet::GetMinAndMaxInRange(double* min, double* max, double
 	size_t startIndex = size_t((startHour - At(0).x) / GetTimeStep());
 	size_t endIndex = size_t((endHour - At(0).x) / GetTimeStep() + 2);
 
-	if (startIndex < 0)
-		startIndex = 0;
 	if (startIndex > Length())
 		return;
 	if (endIndex > Length())
@@ -159,7 +155,7 @@ wxDVArrayDataSet::wxDVArrayDataSet(const wxString &var, const wxString &units, c
 
 wxRealPoint wxDVArrayDataSet::At(size_t i) const
 {
-	if ((i < m_pData.size()) && (i >= 0))
+  	if (i < m_pData.size())
 		return wxRealPoint(m_pData[i].x, m_pData[i].y);
 	else
 		return wxRealPoint(m_offset + i*m_timestep, 0.0);
@@ -570,7 +566,7 @@ StatisticsPoint wxDVStatisticsDataSet::At(size_t i) const
 {
 	StatisticsPoint p = StatisticsPoint();
 
-	if ((i < m_sData.size()) && (i >= 0))
+	if (i < m_sData.size())
 	{
 		p.name = m_sData[i].name;
 		p.x = m_sData[i].x;
