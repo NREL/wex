@@ -4,13 +4,18 @@ LKLIB = lkuxwx3.a
 
 CC = gcc
 CXX = g++
-WARNINGS = -Wall -Wno-unknown-pragmas -Wno-strict-aliasing
-CFLAGS = -fPIC $(WARNINGS) -O2 `wx-config-3 --cflags` -I../include -I ../src/freetype/include -DFT2_BUILD_LIBRARY -DOPJ_STATIC -DFT_CONFIG_MODULES_H=\"slimftmodules.h\" -DFT_CONFIG_OPTIONS_H=\"slimftoptions.h\" -I $(LKDIR)/include
+WARNINGS = -Wall -Werror -Wno-unknown-pragmas -Wno-strict-aliasing
+CFLAGS = -fPIC $(WARNINGS) $(EXTRA_WARN_FLAGS) -O2 `wx-config-3 --cflags` -I../include -I ../src/freetype/include -DFT2_BUILD_LIBRARY -DOPJ_STATIC -DFT_CONFIG_MODULES_H=\"slimftmodules.h\" -DFT_CONFIG_OPTIONS_H=\"slimftoptions.h\" -I $(LKDIR)/include
 CXXFLAGS = -std=c++0x $(CFLAGS)
 OBJCXXFLAGS = -std=c++0x
 
 LIBNAME = wexuxwx3
 TARGET = ../$(LIBNAME).a
+
+# Warning overrides for 3rd party source files we can't fix easily
+geom.o merge.o poly.o poly2.o qset.o: EXTRA_WARN_FLAGS := -Wno-unused-but-set-variable
+ftbase.o: EXTRA_WARN_FLAGS := -Wno-unused-function
+pdffontmanager.o pdffontparsertruetype.o pdfkernel.o: EXTRA_WARN_FLAGS := -Wno-unused-variable
 
 OBJECTS = \
 	ftbase.o \
