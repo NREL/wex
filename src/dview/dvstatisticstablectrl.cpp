@@ -410,7 +410,7 @@ StatisticsPoint wxDVVariableStatistics::At(size_t i, double m_offset, double m_t
 {
 	StatisticsPoint p = StatisticsPoint();
 
-	if ((i < m_data->Length()) && (i >= 0))
+	if (i < m_data->Length())
 	{
 		p.x = m_data->At(i).x;
 		p.Sum = m_data->At(i).Sum;
