@@ -459,12 +459,6 @@ wxPdfFontParserTrueType::ClearTableDirectory()
   }
 }
 
-static const wxChar* tableNamesDefault[] = {
-  wxT("cvt "), wxT("fpgm"), wxT("glyf"), wxT("head"),
-  wxT("hhea"), wxT("hmtx"), wxT("loca"), wxT("maxp"), wxT("prep"),
-  NULL
-};
-
 void
 wxPdfFontParserTrueType::LockTable(const wxString& tableName)
 {
