@@ -563,8 +563,7 @@ void wxDiurnalPeriodCtrl::OnChar(wxKeyEvent &evt)
 	size_t selce = MAX(m_selStartC, m_selEndC);
 
 	int key = evt.GetKeyCode();
-	if ((ScheduleCharToInt(key) >= m_min) && (ScheduleCharToInt(key) <= m_max) &&
-		selrs >= 0 && selcs >= 0)
+	if ((ScheduleCharToInt(key) >= m_min) && (ScheduleCharToInt(key) <= m_max))
 	{
 		for (size_t r = selrs; r <= selre && r < m_nrows; r++)
 			for (size_t c = selcs; c <= selce && c < m_ncols; c++)
