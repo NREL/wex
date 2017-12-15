@@ -389,7 +389,7 @@ void wxExtGridCtrl::Copy(bool all, bool with_headers)
 		maxrow = GetNumberRows() - 1;
 	}
 
-	if (mincol == mincol && mincol < 0)
+	if (mincol == maxcol && mincol < 0)
 	{
 		mincol = 0;
 		maxcol = GetNumberCols() - 1;
