@@ -77,7 +77,6 @@ private:
 	bool m_evenly;
 	wxArrayString m_captions;
 	std::vector<wxRadioButton*> m_buttons;
-	int m_selection;
 
 	DECLARE_EVENT_TABLE()
 };
