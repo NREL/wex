@@ -15,8 +15,8 @@ before_script:
   - ln -s $HOME/wx-3.1.0/bin/wx-config $HOME/wx-3.1.0/bin/wx-config-3
   - user=$(echo $TRAVIS_REPO_SLUG | sed 's,/.*$,,')
   - cd ../ 
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then (export GTEST=/home/travis/build/$user/googletest/googletest && export LKDIR=/home/travis/build/$user/lk export WEXDIR=/home/travis/build/$user/wex); fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then (export GTEST=/Users/travis/build/$user/googletest/googletest && export LKDIR=/Users/travis/build/$user/lk export WEXDIR=/Users/travis/build/$user/wex); fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then (export GTEST=/home/travis/build/$user/googletest/googletest && export LKDIR=/home/travis/build/$user/lk && export WEXDIR=/home/travis/build/$user/wex); fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then (export GTEST=/Users/travis/build/$user/googletest/googletest && export LKDIR=/Users/travis/build/$user/lk && export WEXDIR=/Users/travis/build/$user/wex); fi
   - git clone https://github.com/$user/lk $LKDIR
 
 script:
