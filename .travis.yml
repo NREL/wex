@@ -28,7 +28,7 @@ script:
   - pwd
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make -j2 -C $LKDIR/build_linux; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make -j2 -C $WEXDIR/build_linux; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then (make -j2 -C $LKDIR/build_osx; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then make -j2 -C $LKDIR/build_osx; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then make -j2 -C $WEXDIR/build_osx; fi
 
 install:
