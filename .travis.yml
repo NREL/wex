@@ -19,7 +19,7 @@ before_script:
   - cd ../
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export GTEST=/home/travis/build/$user/googletest/googletest; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export LKDIR=/home/travis/build/$user/lk; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export export WEXDIR=/home/travis/build/$user/wex; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export WEXDIR=/home/travis/build/$user/wex; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export GTEST=/Users/travis/build/$user/googletest/googletest; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export LKDIR=/Users/travis/build/$user/lk; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export WEXDIR=/Users/travis/build/$user/wex; fi
