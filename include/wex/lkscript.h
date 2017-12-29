@@ -150,7 +150,6 @@ private:
 
 	bool m_scriptRunning;
 	bool m_stopScriptFlag;
-	wxWindow *m_topLevelWindow;
 	wxLKDebugger *m_debugger;
 	bool m_debuggerFirstShow;
 

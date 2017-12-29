@@ -366,7 +366,6 @@ private:
 	int m_tabOrderCounter;
 	int m_snapSpacing;
 
-	bool m_modified;
 	wxUIObjectCopyBuffer *m_copyBuffer;
 	wxUIPropertyEditor *m_propEditor;
 	std::vector<wxUIObject*> m_selected;

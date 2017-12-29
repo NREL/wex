@@ -89,7 +89,6 @@ private:
 	int m_selectedDataSetIndex;
 	std::vector< std::vector<wxRealPoint>* > m_cdfPlotData; //We track cdf plots since they take long to calculate.
 
-	wxTextCtrl *m_minTextBox;
 	wxTextCtrl *m_maxTextBox;
 
 	wxDVSelectionListCtrl *m_selector;

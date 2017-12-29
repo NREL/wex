@@ -170,7 +170,6 @@ private:
 	std::vector<wxDVVariableStatistics*> m_variableStatistics;
 	wxDataViewCtrl *m_ctrl;
 	wxObjectDataPtr<dvStatisticsTreeModel> m_StatisticsModel;
-	wxDataViewColumn* m_col;
 	wxMenu m_contextMenu;
 	wxCheckBox *m_chkShowMonths;
 	bool m_showMonths;
