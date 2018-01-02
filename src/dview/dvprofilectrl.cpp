@@ -641,6 +641,8 @@ void wxDVProfileCtrl::ShowPlotAtIndex(int i)
 	double yaxisMax = 0, yaxisMin = 0;
 	for (int j = 0; j < 13; j++)
 	{
+		auto plot = m_plots[i]->plots[j];
+		if (!plot) continue;
 		m_plots[i]->plots[j]->ExtendMinMax(NULL, NULL, &yaxisMin, &yaxisMax);
 		m_plots[i]->plots[j]->SetColour(m_dataSelector->GetColourForIndex(i));
 		wxString units = m_plots[i]->dataset->GetUnits();
@@ -686,9 +688,14 @@ void wxDVProfileCtrl::ShowPlotAtIndex(int i)
 			m_plotSurfaces[j]->GetYAxis2()->ShowLabel(false);
 	}
 	m_plots[i]->axisPosition = yap;
-	for (int j = 0; j < 13; j++)
-		m_plotSurfaces[j]->GetAxis(yap)->SetWorld(yaxisMin, yaxisMax);
-	m_leftAxisLabel->SetLabelText(m_plotSurfaces[0]->GetYAxis1()->GetLabel(), 90);
+	for (int j = 0; j < 13; j++) {
+		if (m_plotSurfaces[j]->GetAxis(yap)) {
+			m_plotSurfaces[j]->GetAxis(yap)->SetWorld(yaxisMin, yaxisMax);
+		}
+	}
+	if (m_plotSurfaces[0]->GetYAxis1()) {
+		m_leftAxisLabel->SetLabelText(m_plotSurfaces[0]->GetYAxis1()->GetLabel(), 90);
+	}
 	if (m_plotSurfaces[0]->GetYAxis2()
 		&& m_plotSurfaces[0]->GetYAxis2()->GetLabel() != m_plotSurfaces[0]->GetYAxis1()->GetLabel())
 		m_rightAxisLabel->SetLabelText(m_plotSurfaces[0]->GetYAxis2()->GetLabel(), 270);
@@ -858,6 +865,8 @@ void wxDVProfileCtrl::AutoScaleYAxes()
 	{
 		for (size_t j = 0; j < currently_shown.size(); j++)
 		{
+			auto plot = m_plots[i]->plots[j];
+			if (!m_plots[currently_shown[j]]->plots[i]) continue;
 			switch (m_plots[currently_shown[j]]->axisPosition)
 			{
 			case wxPLPlotCtrl::Y_LEFT:
