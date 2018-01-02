@@ -865,7 +865,6 @@ void wxDVProfileCtrl::AutoScaleYAxes()
 	{
 		for (size_t j = 0; j < currently_shown.size(); j++)
 		{
-			auto plot = m_plots[i]->plots[j];
 			if (!m_plots[currently_shown[j]]->plots[i]) continue;
 			switch (m_plots[currently_shown[j]]->axisPosition)
 			{
