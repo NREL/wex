@@ -1,16 +1,34 @@
-Project(wex)
-cmake_minimum_required(VERSION 3.8)
+Project(wex C CXX)
+cmake_minimum_required(VERSION 3.7)
 set(CMAKE_CXX_STANDARD 11)
 
 set(LK_DIR CACHE PATH "LK root directory")
+set(CURL_DIR CACHE PATH "Curl root directory")
 
-find_package(wxWidgets REQUIRED)
+find_package(wxWidgets REQUIRED net gl core base adv html xml)
 include(${wxWidgets_USE_FILE})
 
-include_directories(include src/freetype/include ${LK_DIR}/include)
-add_definitions(-DFT2_BUILD_LIBRARY -DOPJ_STATIC -DFT_CONFIG_MODULES_H=\"slimftmodules.h\" -DFT_CONFIG_OPTIONS_H=\"slimftoptions.h\")
+if( UNIX AND NOT APPLE )
+  find_library(FONTCONFIG_LIBRARY NAMES fontconfig)
+endif()
+
+if( WIN32 )
+  find_package(OpenGL REQUIRED)
+endif()
+
+include_directories(include src/freetype/include ${LK_DIR}/include ${CURL_DIR}/include)
+
+if( WIN32 )
+  add_definitions(-DLK_USE_WXWIDGETS -D_UNICODE -D_MBCS -D_CRT_SECURE_NO_DEPRECATE=1 -D_CRT_NON_CONFORMING_SWPRINTFS=1 -D_SCL_SECURE_NO_WARNINGS=1 -D__WXMSW__  -DNOPCH -DFT2_BUILD_LIBRARY -DOPJ_STATIC -DFT_CONFIG_MODULES_H=\"slimftmodules.h\" -DFT_CONFIG_OPTIONS_H=\"slimftoptions.h\")
+else()
+  add_definitions(-DFT2_BUILD_LIBRARY -DOPJ_STATIC -DFT_CONFIG_MODULES_H=\"slimftmodules.h\" -DFT_CONFIG_OPTIONS_H=\"slimftoptions.h\")
+endif()
 
 set(WEX_SRC
+  src/clipper/clipper.cpp
+  src/codeedit.cpp
+  src/csv.cpp
+  src/dclatex.cpp
   src/dview/dvautocolourassigner.cpp
   src/dview/dvdcctrl.cpp
   src/dview/dvdmapctrl.cpp
@@ -25,11 +43,6 @@ set(WEX_SRC
   src/dview/dvstatisticstablectrl.cpp
   src/dview/dvtimeseriesctrl.cpp
   src/dview/dvtimeseriesdataset.cpp
-  src/clipper/clipper.cpp
-  src/codeedit.cpp
-  src/csv.cpp
-  src/dclatex.cpp
-  src/diurnal.cpp
   src/easycurl.cpp
   src/extgrid.cpp
   src/exttext.cpp
@@ -42,9 +55,19 @@ set(WEX_SRC
   src/lkscript.cpp
   src/metro.cpp
   src/mswfatal.cpp
-  src/numeric.cpp
   src/pagelayout.cpp
   src/pageobjects.cpp
+  src/plot/mplcontour.cpp
+  src/plot/plannotation.cpp
+  src/plot/plcontourplot.cpp
+  src/plot/ploutdev.cpp
+  src/plot/plplot.cpp
+  src/plot/plsectorplot.cpp
+  src/plot/pltext.cpp
+  src/plot/plwindrose.cpp
+  src/radiochoice.cpp
+  src/diurnal.cpp
+  src/numeric.cpp
   src/pdf/pdfannotation.cpp
   src/pdf/pdfbarcode.cpp
   src/pdf/pdfcffdecoder.cpp
@@ -87,128 +110,82 @@ set(WEX_SRC
   src/pdf/pdftemplate.cpp
   src/pdf/pdfutility.cpp
   src/pdf/pdfxml.cpp
-  src/plot/mplcontour.cpp
-  src/plot/plannotation.cpp
   src/plot/plaxis.cpp
-  src/plot/plbarplot.cpp
   src/plot/plcolourmap.cpp
-  src/plot/plcontourplot.cpp
+  src/plot/plbarplot.cpp
   src/plot/plhistplot.cpp
   src/plot/pllineplot.cpp
-  src/plot/ploutdev.cpp
-  src/plot/plplot.cpp
   src/plot/plplotctrl.cpp
   src/plot/plscatterplot.cpp
-  src/plot/plsectorplot.cpp
-  src/plot/pltext.cpp
-  src/plot/plwindrose.cpp
-  src/radiochoice.cpp
   src/registration.cpp
   src/snaplay.cpp
   src/tpdlg.cpp
   src/uiform.cpp
   src/utils.cpp
-	src/freetype/src/base/ftbase.c
-	src/freetype/src/base/ftbbox.c
-	src/freetype/src/base/ftbitmap.c
-	src/freetype/src/base/ftfntfmt.c
-	src/freetype/src/base/ftgasp.c
-	src/freetype/src/base/ftglyph.c
-	src/freetype/src/base/ftinit.c
-	src/freetype/src/base/ftlcdfil.c
-	src/freetype/src/base/ftstroke.c
-	src/freetype/src/base/ftsynth.c
-	src/freetype/src/base/ftsystem.c
-	src/freetype/src/base/fttype1.c
-  src/freetype/src/cff/cf2arrst.c
-  src/freetype/src/cff/cf2blues.c
-  src/freetype/src/cff/cf2error.c
-  src/freetype/src/cff/cf2font.c
-  src/freetype/src/cff/cf2ft.c
-  src/freetype/src/cff/cf2hints.c
-  src/freetype/src/cff/cf2intrp.c
-  src/freetype/src/cff/cf2read.c
-  src/freetype/src/cff/cf2stack.c
+  src/freetype/src/base/ftbase.c
+  src/freetype/src/base/ftbbox.c
+  src/freetype/src/base/ftbitmap.c
+  src/freetype/src/base/ftfntfmt.c
+  src/freetype/src/base/ftgasp.c
+  src/freetype/src/base/ftglyph.c
+  src/freetype/src/base/ftinit.c
+  src/freetype/src/base/ftstroke.c
+  src/freetype/src/base/ftsynth.c
+  src/freetype/src/base/ftsystem.c
+  src/freetype/src/base/fttype1.c
   src/freetype/src/cff/cff.c
-  src/freetype/src/cff/cffcmap.c
-  src/freetype/src/cff/cffdrivr.c
-  src/freetype/src/cff/cffgload.c
-  src/freetype/src/cff/cffload.c
-  src/freetype/src/cff/cffobjs.c
-  src/freetype/src/cff/cffparse.c
-  src/freetype/src/cff/cffpic.c
-  src/freetype/src/raster/ftraster.c
-  src/freetype/src/raster/ftrend1.c
-  src/freetype/src/raster/raster.c
-  src/freetype/src/raster/rastpic.c
-  src/freetype/src/smooth/ftgrays.c
-  src/freetype/src/smooth/ftsmooth.c
-  src/freetype/src/smooth/ftspic.c
-  src/freetype/src/smooth/smooth.c
-  src/freetype/src/psaux/afmparse.c
-  src/freetype/src/psaux/psaux.c
-  src/freetype/src/psaux/psauxmod.c
-  src/freetype/src/psaux/psconv.c
-  src/freetype/src/psaux/psobjs.c
-  src/freetype/src/psaux/t1cmap.c
-  src/freetype/src/psaux/t1decode.c
-  src/freetype/src/pshinter/pshalgo.c
-  src/freetype/src/pshinter/pshglob.c
-  src/freetype/src/pshinter/pshinter.c
-  src/freetype/src/pshinter/pshmod.c
-  src/freetype/src/pshinter/pshpic.c
-  src/freetype/src/pshinter/pshrec.c
-  src/freetype/src/psnames/psmodule.c
-  src/freetype/src/psnames/psnames.c
-  src/freetype/src/psnames/pspic.c
-  src/freetype/src/sfnt/pngshim.c
-  src/freetype/src/sfnt/sfdriver.c
-  src/freetype/src/sfnt/sfnt.c
-  src/freetype/src/sfnt/sfntpic.c
-  src/freetype/src/sfnt/sfobjs.c
-  src/freetype/src/sfnt/ttbdf.c
-  src/freetype/src/sfnt/ttcmap.c
-  src/freetype/src/sfnt/ttkern.c
-  src/freetype/src/sfnt/ttload.c
-  src/freetype/src/sfnt/ttmtx.c
-  src/freetype/src/sfnt/ttpost.c
-  src/freetype/src/sfnt/ttsbit.c
-  src/freetype/src/type1/t1afm.c
-  src/freetype/src/type1/t1driver.c
-  src/freetype/src/type1/t1gload.c
-  src/freetype/src/type1/t1load.c
-  src/freetype/src/type1/t1objs.c
-  src/freetype/src/type1/t1parse.c
-  src/freetype/src/type1/type1.c
-  src/freetype/src/cid/cidgload.c
-  src/freetype/src/cid/cidload.c
-  src/freetype/src/cid/cidobjs.c
-  src/freetype/src/cid/cidparse.c
-  src/freetype/src/cid/cidriver.c
   src/freetype/src/cid/type1cid.c
+  src/freetype/src/psaux/psaux.c
+  src/freetype/src/pshinter/pshinter.c
+  src/freetype/src/psnames/psnames.c
+  src/freetype/src/raster/raster.c
+  src/freetype/src/sfnt/sfnt.c
+  src/freetype/src/smooth/smooth.c
   src/freetype/src/truetype/truetype.c
-  src/freetype/src/truetype/ttdriver.c
-  src/freetype/src/truetype/ttgload.c
-  src/freetype/src/truetype/ttinterp.c
-  src/freetype/src/truetype/ttobjs.c
-  src/freetype/src/truetype/ttpic.c
-  src/freetype/src/truetype/ttpload.c
-  src/freetype/src/truetype/ttsubpix.c
+  src/freetype/src/type1/type1.c
+  src/freetype/src/base/ftlcdfil.c
+  src/plot/qhull/geom.c
+  src/plot/qhull/geom2.c
+  src/plot/qhull/global.c
+  src/plot/qhull/io.c
+  src/plot/qhull/libqhull.c
+  src/plot/qhull/mem.c
+  src/plot/qhull/merge.c
+  src/plot/qhull/poly.c
+  src/plot/qhull/poly2.c
+  src/plot/qhull/qset.c
+  src/plot/qhull/random.c
+  src/plot/qhull/rboxlib.c
+  src/plot/qhull/stat.c
+  src/plot/qhull/user.c
+  src/plot/qhull/usermem.c
+  src/plot/qhull/userprintf.c
+  src/plot/qhull/userprintf_rbox.c
+  ${LK_DIR}/src/sqlite3.c
 )
 
 if( WIN32 )
-  list(APPEND WEX_SRC
-    src/ole/activex.cpp
-    src/ole/excelauto.cpp
-    src/ole/iehtmlwin.cpp
-  )
+ list(APPEND WEX_SRC
+   src/ole/activex.cpp
+   src/ole/excelauto.cpp
+   src/ole/iehtmlwin.cpp
+   ${LK_DIR}/src/absyn.cpp
+   ${LK_DIR}/src/codegen.cpp
+   ${LK_DIR}/src/env.cpp
+   ${LK_DIR}/src/eval.cpp
+   ${LK_DIR}/src/invoke.cpp
+   ${LK_DIR}/src/lex.cpp
+   ${LK_DIR}/src/parse.cpp
+   ${LK_DIR}/src/stdlib.cpp
+   ${LK_DIR}/src/vm.cpp
+ )
 endif()
 
-add_library(wex ${WEX_SRC})
+add_library(wex STATIC ${WEX_SRC})
+target_link_libraries(wex ${wxWidgets_LIBRARIES})
 
 set(DVIEW_SRC
   tools/dview/dview.cpp
-  ../lk/src/sqlite3.c
 )
 
 set(MACOSX_BUNDLE_ICON_FILE DView.icns)
@@ -229,7 +206,14 @@ add_executable(DView
   ${DVIEW_ICON}
 )
 
-target_link_libraries(DView wex ${wxWidgets_LIBRARIES})
+target_link_libraries(DView wex)
+
+if( WIN32 )
+  target_link_libraries(DView Winhttp)
+elseif( UNIX AND NOT APPLE )
+  target_link_libraries(DView ${CMAKE_DL_LIBS} ${FONTCONFIG_LIBRARY})
+endif()
+
 
 install(TARGETS DView DESTINATION . )
 
