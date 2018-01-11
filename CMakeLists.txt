@@ -177,6 +177,7 @@ if( WIN32 )
    ${LK_DIR}/src/lex.cpp
    ${LK_DIR}/src/parse.cpp
    ${LK_DIR}/src/stdlib.cpp
+   ${LK_DIR}/src/stdlib-stack_corruption.cpp
    ${LK_DIR}/src/vm.cpp
  )
 endif()
@@ -195,7 +196,7 @@ if( APPLE )
   set_source_files_properties(${DVIEW_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
   set(APPS "\${CMAKE_INSTALL_PREFIX}/DView.app")
 elseif( WIN32 )
-  set(DVIEW_ICON build_vc2013/dview.rc)
+  set(DVIEW_ICON build_vs2013/dview.rc)
   set(APPS "\${CMAKE_INSTALL_PREFIX}/DView.exe")
 endif()
 
