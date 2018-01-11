@@ -169,16 +169,6 @@ if( WIN32 )
    src/ole/activex.cpp
    src/ole/excelauto.cpp
    src/ole/iehtmlwin.cpp
-   ${LK_DIR}/src/absyn.cpp
-   ${LK_DIR}/src/codegen.cpp
-   ${LK_DIR}/src/env.cpp
-   ${LK_DIR}/src/eval.cpp
-   ${LK_DIR}/src/invoke.cpp
-   ${LK_DIR}/src/lex.cpp
-   ${LK_DIR}/src/parse.cpp
-   ${LK_DIR}/src/stdlib.cpp
-   ${LK_DIR}/src/stdlib-stack_corruption.cpp
-   ${LK_DIR}/src/vm.cpp
  )
 endif()
 
@@ -214,7 +204,6 @@ if( WIN32 )
 elseif( UNIX AND NOT APPLE )
   target_link_libraries(DView ${CMAKE_DL_LIBS} ${FONTCONFIG_LIBRARY})
 endif()
-
 
 install(TARGETS DView DESTINATION . )
 
