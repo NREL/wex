@@ -175,7 +175,11 @@ bool wxExcelAutomation::OpenFile(const wxString &fn)
 
 	ClearArgs();
 	m_argList[0].SetName("Filename");
-	m_argList[0] = fn;
+	// automation error with "c:/", replace with "c:\\"
+	wxString str = fn;
+	str.Replace("c:/", "c:\\");
+	str.Replace("C:/", "C:\\");
+	m_argList[0] = str;
 
 	if (!books.Invoke("Open", DISPATCH_PROPERTYGET, m_retVal, 1, m_argList))
 	{
