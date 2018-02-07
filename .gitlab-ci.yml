@@ -1,0 +1,44 @@
+stages:
+- build
+
+build:windows:
+  variables:
+    CI_DEBUG_TRACE: "true"
+  stage: build
+  only:
+  - develop
+  tags:
+  - windows
+  script:
+  - if not exist "build" mkdir build
+  - cd build
+  - cmake -G "Visual Studio 12 2013 Win64" -DCMAKE_BUILD_TYPE=Release ../
+  - cmake --build . --config Release --target wex
+
+build:mac:
+  variables:
+    CI_DEBUG_TRACE: "true"
+  stage: build
+  only:
+  - develop
+  tags:
+  - mac
+  script:
+  - if not exist "build" mkdir build
+  - cd build
+  - cmake -DCMAKE_BUILD_TYPE=Release ../
+  - make
+
+build:ubuntu:
+  variables:
+    CI_DEBUG_TRACE: "true"
+  stage: build
+  only:
+  - develop
+  tags:
+  - ubuntu
+  script:
+  - if not exist "build" mkdir build
+  - cd build
+  - cmake -DCMAKE_BUILD_TYPE=Release ../
+  - make
