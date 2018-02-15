@@ -41,3 +41,4 @@ branches:
   only:
   - master
   - develop
+  - 2017.9.5.r3
