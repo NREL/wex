@@ -1,44 +1,105 @@
 stages:
 - build
+- deploy
 
 build:windows:
-  variables:
-    CI_DEBUG_TRACE: "true"
   stage: build
   only:
   - develop
+  - master
   tags:
   - windows
+  before_script:
+  - set PATH=%PATH%;C:\GitLab-Runner\builds\f56554cd\0\NREL\wex\build_vs2013\libcurl_ssl_win32\include\
   script:
-  - if not exist "build" mkdir build
+  - git clone https://github.com/NREL/lk.git
+  # may want to pull a specific SHA here
+  - mkdir build
   - cd build
-  - cmake -G "Visual Studio 12 2013 Win64" -DCMAKE_BUILD_TYPE=Release ../
-  - cmake --build . --config Release --target wex
+  - cmake -G "Visual Studio 12 2013 Win64" -DLK_DIR="../lk/" -DCURL_DIR="../build_vs2013/libcurl_ssl_win32/include/" -DCMAKE_BUILD_TYPE=Release ../
+  - cmake --build . --config Release --target ALL_BUILD
+  artifacts:
+    expire_in: 1 hrs
+    paths:
+    - build/Release/DView.exe
 
 build:mac:
-  variables:
-    CI_DEBUG_TRACE: "true"
   stage: build
   only:
   - develop
+  - master
   tags:
   - mac
   script:
-  - if not exist "build" mkdir build
+  - git clone https://github.com/NREL/lk.git
+  # may want to pull a specific SHA here
+  - mkdir build
   - cd build
-  - cmake -DCMAKE_BUILD_TYPE=Release ../
+  - cmake -DLK_DIR="../lk/" -DCMAKE_BUILD_TYPE=Release ../
   - make
+  artifacts:
+    expire_in: 1 hrs
+    paths:
+    - build/DView.app/Contents/MacOS/DView
 
 build:ubuntu:
-  variables:
-    CI_DEBUG_TRACE: "true"
   stage: build
   only:
   - develop
+  - master
   tags:
   - ubuntu
   script:
-  - if not exist "build" mkdir build
+  - git clone https://github.com/NREL/lk.git
+  # may want to pull a specific SHA here
+  - mkdir build
   - cd build
-  - cmake -DCMAKE_BUILD_TYPE=Release ../
+  - cmake -DLK_DIR="../lk/" -DCMAKE_BUILD_TYPE=Release ../
   - make
+  artifacts:
+    expire_in: 1 hrs
+    paths:
+    - build/DView
+
+deploy:windows:
+  stage: deploy
+  only:
+  - develop
+  - master
+  tags:
+  - windows
+  dependencies:
+  - build:windows
+  script:
+  - cd build/Release
+  - dir
+  - aws s3 cp ./ s3://openstudio-builds/CI/DView/Windows --recursive --exclude "*" --include "DView.exe"
+
+deploy:mac:
+  stage: deploy
+  only:
+  - develop
+  - master
+  tags:
+  - mac
+  dependencies:
+  - build:mac
+  script:
+  - cd build/DView.app/Contents/MacOS
+  - ls
+  - aws s3 cp ./ s3://openstudio-builds/CI/DView/Mac --recursive --exclude --debug  "*" --include "DView"
+
+deploy:ubuntu:
+  stage: deploy
+  only:
+  - develop
+  - master
+  tags:
+  - ubuntu
+  dependencies:
+  - build:ubuntu
+  script:
+  - cd build
+  - ls
+  - aws s3 cp ./ s3://openstudio-builds/CI/DView/Ubuntu --recursive --exclude --debug "*" --include "DView.*"  
+
