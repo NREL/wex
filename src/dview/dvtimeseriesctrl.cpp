@@ -1904,6 +1904,8 @@ void wxDVTimeSeriesCtrl::MakeXBoundsNice(double* xMin, double* xMax)
 
 void wxDVTimeSeriesCtrl::KeepNewBoundsWithinLimits(double* newMin, double* newMax)
 {
+	if (m_plots.size() == 0) return;
+
 	//Make sure we don't zoom out past the data range.
 	//This can only happen zooming out.
 	int visDataMin = m_plots[0]->GetDataSet()->GetMinHours();
