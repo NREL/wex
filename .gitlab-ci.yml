@@ -40,7 +40,7 @@ build:mac:
   artifacts:
     expire_in: 1 hrs
     paths:
-    - build/DView.app/Contents/MacOS/DView
+    - build/DView.app
 
 build:ubuntu:
   stage: build
@@ -72,8 +72,9 @@ deploy:windows:
   - build:windows
   script:
   - cd build/Release
+  - 7z a -tzip DView-windows.zip DView.exe
   - dir
-  - aws s3 cp ./ s3://openstudio-builds/CI/DView/Windows --recursive --exclude "*" --include "DView.exe"
+  - aws s3 cp ./ s3://openstudio-builds/CI/DView --exclude "*" --include "DView-windows.zip"
 
 deploy:mac:
   stage: deploy
@@ -85,9 +86,10 @@ deploy:mac:
   dependencies:
   - build:mac
   script:
-  - cd build/DView.app/Contents/MacOS
+  - cd build
+  - tar -zcvf DView-osx.tar.gz DView.app
   - ls
-  - aws s3 cp ./ s3://openstudio-builds/CI/DView/Mac --recursive --exclude --debug  "*" --include "DView"
+  - aws s3 cp ./ s3://openstudio-builds/CI/DView --exclude "*" --include "DView-osx.tar.gz"
 
 deploy:ubuntu:
   stage: deploy
@@ -100,6 +102,7 @@ deploy:ubuntu:
   - build:ubuntu
   script:
   - cd build
+  - tar -zcvf DView-linux.tar.gz DView
   - ls
-  - aws s3 cp ./ s3://openstudio-builds/CI/DView/Ubuntu --recursive --exclude --debug "*" --include "DView.*"  
+  - aws s3 cp ./ s3://openstudio-builds/CI/DView --exclude "*" --include "DView-linux.tar.gz"  
 
