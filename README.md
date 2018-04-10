@@ -17,9 +17,9 @@ The WEX libraries require [LK](https://github.com/NREL/lk) for scripting funtion
 
 # Windows
 
-The [build_vc2013](build_vc2013) folder contains project files for Microsoft Visual Studio 2013 (VS 2013).
+The [build_vs2017](build_vs2017) folder contains project files for Microsoft Visual Studio 2017 (VS 2017).
 
-To build the WEX libraries, open /build_vc2013/wexvc13wx3.sln in VS 2013 and build debug and release configuration for both win32 and x64. If the builds are successful, you should see the following files:
+To build the WEX libraries, open /build_vs2017/wex_vc14.sln in VS 2017 and build debug and release configuration for both win32 and x64. If the builds are successful, you should see the following files:
 
 ```
 wexvc13wx3.lib
@@ -35,7 +35,7 @@ lkscript
 sandbox
 ```
 
-WEX requires libcurl and SSL libraries for HTTP and HTTPS. Those libraires are precompiled for Windows and included in [build_vc2013/libcurl_ssl_win32] and [build_vc2013/libcurl_ssl_x64]. If you want to rebuild those libraries to incorporate security patches, see [Building libcurl+ssl using VS Express 2013 For Windows Desktop](build_libcurl_ssl_for_windows.md).
+WEX requires libcurl and SSL libraries for HTTP and HTTPS. Those libraires are precompiled for Windows and included in [build_vs2017/libcurl_ssl_win32] and [build_vs2017/libcurl_ssl_x64]. If you want to rebuild those libraries to incorporate security patches, see [Building libcurl+ssl using VS 2017 For Windows](build_libcurl_ssl_for_windows.md).
 
 # Mac
 
