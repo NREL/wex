@@ -1062,20 +1062,28 @@ bool wxDVFileReader::ReadSQLFile(wxDVPlotCtrl* plotWin, const wxString& filename
 				rf = ColumnText(sqlite3_column_text(sqlStmtPtr, 3));
 				units = ColumnText(sqlite3_column_text(sqlStmtPtr, 4));
 
-				for (envPeriodsItr = envPeriods.begin();
-					envPeriodsItr != envPeriods.end();
-					++envPeriodsItr)
-				{
-					wxString queryEnvPeriod = envPeriodsItr->second;
-					queryEnvPeriod = queryEnvPeriod.Upper();
-					std::string str = keyValue;
-					if (queryEnvPeriod.Contains("RUN PERIOD")) {
-						str += " Run Period " + rf;
+				// DView can't handle reporting frequency of "Annual" or "Unknown!!!
+				if (rf != "Annual" && rf != "Unknown!!!") {
+					for (envPeriodsItr = envPeriods.begin();
+						envPeriodsItr != envPeriods.end();
+						++envPeriodsItr)
+					{
+						wxString queryEnvPeriod = envPeriodsItr->second;
+						queryEnvPeriod = queryEnvPeriod.Upper();
+						std::string str = keyValue;
+						if (queryEnvPeriod.Contains("RUN PERIOD")) {
+							str += " Run Period " + rf;
+						} else if (queryEnvPeriod.Contains("Annual")) {
+							// DView can't handle this, try the next item
+							continue;
+						} else if (queryEnvPeriod.Contains("Unknown!!!")) {
+							// DView can't handle this, try the next item
+							continue;
+						}	else {
+							str += " Design Day " + rf;
+						}
+						dataDictionary.push_back(DataDictionaryItem(dictionaryIndex, envPeriodsItr->first, name, str, queryEnvPeriod.ToStdString(), rf, units, table));
 					}
-					else {
-						str += " Design Day " + rf;
-					}
-					dataDictionary.push_back(DataDictionaryItem(dictionaryIndex, envPeriodsItr->first, name, str, queryEnvPeriod.ToStdString(), rf, units, table));
 				}
 
 				// step to next row
@@ -1242,6 +1250,11 @@ bool wxDVFileReader::ReadSQLFile(wxDVPlotCtrl* plotWin, const wxString& filename
 				//timeStep = 30.41667 * 24; // Average days per month, annually
 				timeStep = 1.0;
 			}
+			else if (dataDictionary[i].reportingFrequency == "Annual") {
+				// Not currently handled
+				// Shouldn't be here
+				assert(false);
+			}
 			else if (dataDictionary[i].reportingFrequency == "HVAC System Timestep") {
 				// Note: variable frequency, use 1 minute timestep (E+ minimum) and add "missing" data via interpolation;
 				NonuniformTimestepInterpolation(dataDictionary[i].dateTimes, dataDictionary[i].stdValues);
@@ -1252,6 +1265,9 @@ bool wxDVFileReader::ReadSQLFile(wxDVPlotCtrl* plotWin, const wxString& filename
 				timeStep = dataDictionary[i].intervalMinutes / 60.0;
 				wxString stringIntervalMinutes = wxString::Format(wxT("%d"), (unsigned)dataDictionary[i].intervalMinutes);
 				dataDictionary[i].keyValue += " " + stringIntervalMinutes + " minutes";
+			}
+			else if (dataDictionary[i].reportingFrequency == "Run Period") {
+				// Nothing specifically done here yet
 			}
 			else {
 				// Oops, not handled

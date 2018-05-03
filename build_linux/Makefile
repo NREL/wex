@@ -4,7 +4,7 @@ LKLIB = lkuxwx3.a
 LKDIR = ../../lk
 CC = gcc
 CXX = g++
-WARNINGS = -Wall -Werror -Wno-unknown-pragmas -Wno-strict-aliasing
+WARNINGS = -Wall -Wno-unknown-pragmas -Wno-strict-aliasing
 CFLAGS = -fPIC $(WARNINGS) $(EXTRA_WARN_FLAGS) -O2 `wx-config-3 --cflags` -I../include -I ../src/freetype/include -DFT2_BUILD_LIBRARY -DOPJ_STATIC -DFT_CONFIG_MODULES_H=\"slimftmodules.h\" -DFT_CONFIG_OPTIONS_H=\"slimftoptions.h\" -I $(LKDIR)/include
 CXXFLAGS = -std=c++0x $(CFLAGS)
 OBJCXXFLAGS = -std=c++0x
