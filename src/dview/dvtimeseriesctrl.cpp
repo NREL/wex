@@ -84,6 +84,7 @@ public:
 	{
 		assert(ds != 0);
 
+		// Note: defaulting to false really happens in wxDVTimeSeriesCtrl::ReadState
 		m_stacked = false;
 		m_colour = *wxRED;
 		m_seriesType = seriesType;
@@ -934,7 +935,8 @@ void wxDVTimeSeriesCtrl::ReadState(std::string filename)
 	key = prefix + "Stack";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
-	m_stackingOnYLeft = (s == "false") ? false : true;
+	// If present and true, use true, otherwise false (means default behavior = false = unstacked)
+	m_stackingOnYLeft = (s == "true") ? true: false;
 
 	key = prefix + "TopAutoscaleCheck";
 	success = cfg.Read(key, &s);
