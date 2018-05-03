@@ -72,9 +72,11 @@ deploy:windows:
   - build:windows
   script:
   - cd build/Release
-  - 7z a -tzip DView-windows.zip DView.exe
+  - mkdir DView-install
+  - mv DView.exe DView-install
+  - 7z a -tzip DView-windows.zip DView-install
   - dir
-  - aws s3 cp ./ s3://openstudio-builds/CI/DView --exclude "*" --include "DView-windows.zip"
+  - aws s3 cp ./ s3://openstudio-builds/_CI/DView --recursive --exclude "*" --include "DView-windows.zip"
 
 deploy:mac:
   stage: deploy
@@ -87,9 +89,11 @@ deploy:mac:
   - build:mac
   script:
   - cd build
-  - tar -zcvf DView-osx.tar.gz DView.app
+  - mkdir DView-install
+  - mv DView.app DView-install
+  - tar -zcvf DView-osx.tar.gz DView-install
   - ls
-  - aws s3 cp ./ s3://openstudio-builds/CI/DView --exclude "*" --include "DView-osx.tar.gz"
+  - aws s3 cp ./ s3://openstudio-builds/_CI/DView --recursive --exclude "*" --include "DView-osx.tar.gz"
 
 deploy:ubuntu:
   stage: deploy
@@ -102,7 +106,9 @@ deploy:ubuntu:
   - build:ubuntu
   script:
   - cd build
-  - tar -zcvf DView-linux.tar.gz DView
+  - mkdir DView-install
+  - mv DView DView-install
+  - tar -zcvf DView-linux.tar.gz DView-install
   - ls
-  - aws s3 cp ./ s3://openstudio-builds/CI/DView --exclude "*" --include "DView-linux.tar.gz"  
+  - aws s3 cp ./ s3://openstudio-builds/_CI/DView --recursive --exclude "*" --include "DView-linux.tar.gz"  
 
