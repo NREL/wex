@@ -723,6 +723,29 @@ bool wxExcelAutomation::GetRangeValue(const wxString &range, wxString &val)
 	return true;
 }
 
+
+void wxExcelAutomation::getUsedCellRange(int& row, int& col)
+{
+	if (!m_pdispWorksheet)
+	{
+		m_errStr = "No active worksheet, cannot set cell";
+		return false;
+	}
+
+	ClearArgs();
+	wxAutomationObject dataRange;
+	if (m_pdispWorksheet->GetObject(dataRange, "UsedRange")) {
+		col = (int)dataRange.GetProperty("Columns.Count").GetLong();
+		row = (int)dataRange.GetProperty("Rows.Count").GetLong();
+	}
+	else {
+		m_errStr = "Could not find used cells in spreadsheet";
+		return false;
+	}
+
+	return true;
+}
+
 bool wxExcelAutomation::PasteClipboard()
 {
 	if (!m_pdispWorkbook)
