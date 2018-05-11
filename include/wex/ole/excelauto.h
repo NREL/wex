@@ -36,7 +36,7 @@ public:
 	bool PasteNewWorksheet(const wxString &name, const wxString &paste_text, 
 		bool std_formatting=false, bool in_current_worksheet=false);
 	
-	void getUsedCellRange(int& row, int& col);
+	bool getUsedCellRange(int& row, int& col, wxArrayString& val);
 
 	bool SetCellValue(int row, int col, const wxString &val);
 	bool GetCellValue(int row, int col, wxString &val);
