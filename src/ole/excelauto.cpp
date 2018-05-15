@@ -753,11 +753,9 @@ bool wxExcelAutomation::getUsedCellRange(int& row, int& col, wxArrayString& val)
 		m_errStr.Format("Could not get Value from UsedRange object");
 		return false;
 	}
+
 	SAFEARRAY* returnedData = dynamic_cast<wxVariantDataSafeArray*>(m_retVal.GetData())->GetValue();
-
-
 	VARIANT* data = static_cast<VARIANT*>(returnedData->pvData);
-
 
 	size_t maxRows = 0;
 	size_t maxCols = 0;
@@ -770,6 +768,7 @@ bool wxExcelAutomation::getUsedCellRange(int& row, int& col, wxArrayString& val)
 		maxRows = (maxRows >= nRows) ? maxRows : nRows;
 	}
 
+	// vals is column-major order
 	size_t dimRows = returnedData->rgsabound[1].cElements;
 	for (size_t c= 0; c < maxCols; c++) {
 		for (size_t r = 0; r < maxRows; r++) {
@@ -787,10 +786,10 @@ bool wxExcelAutomation::getUsedCellRange(int& row, int& col, wxArrayString& val)
 				double numVal = data[rc].dblVal;
 				val.push_back(wxString::Format(wxT("%f"), numVal));
 			}
-			else {
-				// other types
+			else if (type == VT_EMPTY) {
+				int numVal = 0;
+				val.push_back(wxString::Format(wxT("%d"), numVal));
 			}
-
 		}
 	}
 	row = maxRows;
