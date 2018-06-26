@@ -787,8 +787,7 @@ bool wxExcelAutomation::getUsedCellRange(int& row, int& col, wxArrayString& val)
 				val.push_back(wxString::Format(wxT("%f"), numVal));
 			}
 			else if (type == VT_EMPTY) {
-				int numVal = 0;
-				val.push_back(wxString::Format(wxT("%d"), numVal));
+				val.push_back(wxEmptyString);
 			}
 		}
 	}
