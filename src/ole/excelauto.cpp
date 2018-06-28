@@ -141,6 +141,17 @@ bool wxExcelAutomation::Show(bool b)
 	}
 }
 
+bool wxExcelAutomation::SaveClose(const wxString& file) {
+	if (!m_pdispExcelApp)
+	{
+		m_errStr = "Excel OLE not initialized.";
+		return false;
+	}
+	m_pdispExcelApp->CallMethod("ActiveWorkbook.SaveAs", file);
+	CloseWorkbookNoSave();
+	return true;
+}
+
 bool wxExcelAutomation::CloseAllNoSave()
 {
 	int count = 0;

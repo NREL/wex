@@ -18,6 +18,7 @@ public:
 	bool StartExcel();
 	bool AttachExcel(bool start_if_fail=false);
 	bool QuitExcel();
+	bool SaveClose(const wxString& file);
 	bool CloseAllNoSave();
 
 	bool Show(bool b);
