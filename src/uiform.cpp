@@ -1119,6 +1119,7 @@ void wxUIProperty::Write_text(wxOutputStream &_o, wxString &ui_path)
 {
 	wxTextOutputStream out(_o, wxEOL_UNIX);
 	wxString s = wxEmptyString;
+	size_t n = 0;
 	int type = GetType();
 	out.Write16((wxUint16)type);
 	out.PutChar(g_text_delimeter);
@@ -1145,10 +1146,17 @@ void wxUIProperty::Write_text(wxOutputStream &_o, wxString &ui_path)
 	case STRING:
 	{
 		s = GetString();
-		if (s.Len() > 0)
-			out.WriteString(s);
-		else
-			out.WriteString(" ");
+		s.Replace("\r", "");
+		n = s.Len();
+		out.Write32((wxUint32)n);
+		if (n > 0)
+		{
+			out.PutChar(g_text_delimeter);
+			for (size_t i = 0; i < n; i++)
+			{
+				out.PutChar(s[i]);
+			}
+		}
 		out.PutChar(g_text_delimeter);
 	}
 	break;
@@ -1192,6 +1200,8 @@ bool wxUIProperty::Read_text(wxInputStream &_i)
 {
 	wxTextInputStream in(_i, "\n", wxConvAuto(wxFONTENCODING_UTF8));
 	wxUint16 type = in.Read16();
+	wxString s = wxEmptyString;
+	size_t n = 0;
 
 	bool ok = true;
 	if (m_pReference)
@@ -1205,7 +1215,16 @@ bool wxUIProperty::Read_text(wxInputStream &_i)
 	case DOUBLE: Set(in.ReadDouble()); break;
 	case BOOLEAN: Set(in.Read8() != 0 ? true : false); break;
 	case INTEGER: Set((int)in.Read32()); break;
-	case STRING: Set(in.ReadWord()); break;
+	case STRING: 
+		n = in.Read32();
+		s.Clear();
+		if (n > 0)
+		{
+			for (size_t i = 0; i < n; i++)
+				s.Append(in.GetChar());
+		}
+		Set(s);
+		break;
 	case COLOUR:
 		r = in.Read8();
 		g = in.Read8();
