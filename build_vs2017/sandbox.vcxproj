@@ -27,7 +27,7 @@
   <PropertyGroup Label="Globals">
     <ProjectName>sandbox</ProjectName>
     <ProjectGuid>{8F5361C7-BBCB-4870-A801-1D0A8E25EB31}</ProjectGuid>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
