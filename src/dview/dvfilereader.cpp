@@ -882,7 +882,7 @@ bool wxDVFileReader::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& file
 	dataSets.push_back(ds);
 
 	ds = new wxDVArrayDataSet();
-	ds->SetSeriesTitle("Dew Temp");
+	ds->SetSeriesTitle("Dew Point");
 	ds->SetUnits("'C");
 	dataSets.push_back(ds);
 
