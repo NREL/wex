@@ -320,7 +320,7 @@ double &dn, double &df, double &ambt, double &wind)*/
 static bool ReadWeatherFileLine(FILE *fp, int type,
 	int &year, int &month, int &day, int &hour,
 	double &gh, double &dn, double &df,  // Wh/m2, Wh/m2, Wh/m2
-	double &wind, double &drytemp, double &wettemp, // m/s, 'C, 'C
+	double &wind, double &drytemp, double &dewtemp, // m/s, 'C, 'C
 	double &relhum, double &pressure, // %, mbar
 	double &winddir, double &snowdepth) // deg, cm
 {
@@ -381,7 +381,7 @@ static bool ReadWeatherFileLine(FILE *fp, int type,
 		dn = d2*1.0;           /* Direct radiation */
 		df = d3*1.0;           /* Diffuse radiation */
 		drytemp = d10 / 10.0;       /* Ambient dry bulb temperature(C) */
-		wettemp = (double)d11 / 10.0;
+		dewtemp = (double)d11 / 10.0;
 		wind = d15 / 10.0;       /* Wind speed(m/s) */
 		relhum = (double)d12;
 		pressure = (double)d13;
@@ -419,7 +419,7 @@ static bool ReadWeatherFileLine(FILE *fp, int type,
 		df = (double)atof(cols[10]);
 
 		drytemp = (double)atof(cols[31]);
-		wettemp = (double)atof(cols[34]);
+		dewtemp = (double)atof(cols[34]);
 
 		wind = (double)atof(cols[46]);
 
@@ -451,7 +451,7 @@ static bool ReadWeatherFileLine(FILE *fp, int type,
 		wind = (double)atof(cols[21]);
 
 		gh = (double)atof(cols[13]);
-		wettemp = (double)atof(cols[7]);
+		dewtemp = (double)atof(cols[7]);
 		relhum = (double)atof(cols[8]);
 		pressure = (double)atof(cols[9]) * 0.01; // convert Pa in to mbar
 
@@ -882,7 +882,7 @@ bool wxDVFileReader::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& file
 	dataSets.push_back(ds);
 
 	ds = new wxDVArrayDataSet();
-	ds->SetSeriesTitle("Wet Temp");
+	ds->SetSeriesTitle("Dew Point");
 	ds->SetUnits("'C");
 	dataSets.push_back(ds);
 
@@ -910,7 +910,7 @@ bool wxDVFileReader::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& file
 		dataSets.at(i)->SetTimeStep(1.0); //All have 1 hr tstep.
 
 	//int year, month, day, hour;
-	//double gh, dn, df, wind, drytemp, wettemp, relhum, pressure, winddir, snowdepth;
+	//double gh, dn, df, wind, drytemp, dewtemp, relhum, pressure, winddir, snowdepth;
 
 	// Loop over lines in file, reading into data sets array.
 	WFHeader head_info;
@@ -955,11 +955,11 @@ bool wxDVFileReader::ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& file
 bool wxDVFileReader::Read8760WFLines(std::vector<wxDVArrayDataSet*> &dataSets, FILE* infile, int wfType)
 {
 	int year, month, day, hour;
-	double gh, dn, df, wind, drytemp, wettemp, relhum, pressure, winddir, snowdepth;
+	double gh, dn, df, wind, drytemp, dewtemp, relhum, pressure, winddir, snowdepth;
 
 	for (size_t i = 0; i < 8760; i++)
 	{
-		if (!ReadWeatherFileLine(infile, wfType, year, month, day, hour, gh, dn, df, wind, drytemp, wettemp,
+		if (!ReadWeatherFileLine(infile, wfType, year, month, day, hour, gh, dn, df, wind, drytemp, dewtemp,
 			relhum, pressure, winddir, snowdepth))
 		{
 			return false;
@@ -972,7 +972,7 @@ bool wxDVFileReader::Read8760WFLines(std::vector<wxDVArrayDataSet*> &dataSets, F
 		dataSets[2]->Append(wxRealPoint(hr, df));
 		dataSets[3]->Append(wxRealPoint(hr, wind));
 		dataSets[4]->Append(wxRealPoint(hr, drytemp));
-		dataSets[5]->Append(wxRealPoint(hr, wettemp));
+		dataSets[5]->Append(wxRealPoint(hr, dewtemp));
 		dataSets[6]->Append(wxRealPoint(hr, relhum));
 		dataSets[7]->Append(wxRealPoint(hr, pressure));
 		dataSets[8]->Append(wxRealPoint(hr, winddir));
