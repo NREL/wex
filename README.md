@@ -1,5 +1,6 @@
 # WEX: Extensions Library for wxWidgets
 [![TravisCI](https://travis-ci.org/NREL/wex.svg?branch=develop)](https://travis-ci.org/NREL/wex)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FNREL%2Fwex.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FNREL%2Fwex?ref=badge_shield)
 
 WEX is a library of extensions to the [wxWidgets](https://www.wxwidgets.org/) cross-platform user interface (UI) library. These extensions are for custom UI widgets developed for the National Renewable Energy Laboratory's [System Advisor Model (SAM)](https://sam.nrel.gov) and [DView](https://github.com/NREL/wex/wiki/DView) data visualization software.
 
@@ -57,3 +58,6 @@ If you would like to submit code to fix an issue or add a feature, you can use G
 # License
 
 WEX is licensed under an MIT [license](LICENSE.md).
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FNREL%2Fwex.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FNREL%2Fwex?ref=badge_large)
