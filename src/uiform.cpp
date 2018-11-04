@@ -32,7 +32,7 @@
 #include <wx/tokenzr.h>
 #include <wx/renderer.h>
 #include <wx/hyperlink.h>
-#include <wx/txtstrm.h>
+//#include <wx/txtstrm.h>
 #include <wx/mstream.h>
 #include <wx/sstream.h>
 #include <wx/filename.h>
@@ -45,6 +45,7 @@
 #include <wex/utils.h>
 #include <wex/uiform.h>
 #include <wex/diurnal.h>
+#include <wex/exttextstream.h>
 
 static wxColour g_uiSelectColor(135, 135, 135);
 static wxChar g_text_delimeter('\n');
@@ -1118,7 +1119,7 @@ bool wxUIProperty::Read(wxInputStream &_i)
 
 void wxUIProperty::Write_text(wxOutputStream &_o, wxString &ui_path)
 {
-	wxTextOutputStream out(_o, wxEOL_UNIX);
+	wxExtTextOutputStream out(_o, wxEOL_UNIX);
 	wxString s = wxEmptyString;
 	size_t n = 0;
 	int type = GetType();
@@ -1200,7 +1201,7 @@ void wxUIProperty::Write_text(wxOutputStream &_o, wxString &ui_path)
 
 bool wxUIProperty::Read_text(wxInputStream &_i, wxString &ui_path)
 {
-	wxTextInputStream in(_i, "\n", wxConvAuto(wxFONTENCODING_UTF8));
+	wxExtTextInputStream in(_i, "\n", wxConvAuto(wxFONTENCODING_UTF8));
 	wxUint16 type = in.Read16();
 	wxString s = wxEmptyString;
 	size_t n = 0;
@@ -1509,7 +1510,7 @@ bool wxUIObject::Read(wxInputStream &_i)
 
 void wxUIObject::Write_text(wxOutputStream &_o, wxString &ui_path)
 {
-	wxTextOutputStream out(_o, wxEOL_UNIX);
+	wxExtTextOutputStream out(_o, wxEOL_UNIX);
 	out.PutChar(g_text_delimeter);
 	out.Write8(m_visible ? 1 : 0);
 	out.PutChar(g_text_delimeter);
@@ -1528,7 +1529,7 @@ void wxUIObject::Write_text(wxOutputStream &_o, wxString &ui_path)
 
 bool wxUIObject::Read_text(wxInputStream &_i, wxString &ui_path)
 {
-	wxTextInputStream in(_i, "\n");
+	wxExtTextInputStream in(_i, "\n");
 
 	m_visible = in.Read8() != 0;
 
@@ -2077,7 +2078,7 @@ bool wxUIFormData::Read(wxInputStream &_I)
 
 void wxUIFormData::Write_text(wxOutputStream &_O, wxString &ui_path)
 {
-	wxTextOutputStream out(_O, wxEOL_UNIX);
+	wxExtTextOutputStream out(_O, wxEOL_UNIX);
 
 	out.WriteString(m_name);
 	out.PutChar(g_text_delimeter);
@@ -2117,7 +2118,7 @@ bool wxUIFormData::Read_text(wxInputStream &_I, wxString &ui_path)
 {
 	DeleteAll();
 
-	wxTextInputStream in(_I, "\n");
+	wxExtTextInputStream in(_I, "\n");
 
 	m_name = in.ReadWord();
 	m_width = in.Read32();
