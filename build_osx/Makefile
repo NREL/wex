@@ -47,6 +47,7 @@ OBJECTS = \
 	tpdlg.o \
 	label.o \
 	exttext.o \
+	exttextstream.o \
 	radiochoice.o \
 	metro.o \
 	uiform.o \
