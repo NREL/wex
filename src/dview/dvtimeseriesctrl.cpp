@@ -84,6 +84,7 @@ public:
 	{
 		assert(ds != 0);
 
+		// Note: defaulting to false really happens in wxDVTimeSeriesCtrl::ReadState
 		m_stacked = false;
 		m_colour = *wxRED;
 		m_seriesType = seriesType;
@@ -934,7 +935,8 @@ void wxDVTimeSeriesCtrl::ReadState(std::string filename)
 	key = prefix + "Stack";
 	success = cfg.Read(key, &s);
 	if (debugging) assert(success);
-	m_stackingOnYLeft = (s == "false") ? false : true;
+	// If present and true, use true, otherwise false (means default behavior = false = unstacked)
+	m_stackingOnYLeft = (s == "true") ? true: false;
 
 	key = prefix + "TopAutoscaleCheck";
 	success = cfg.Read(key, &s);
@@ -1904,6 +1906,8 @@ void wxDVTimeSeriesCtrl::MakeXBoundsNice(double* xMin, double* xMax)
 
 void wxDVTimeSeriesCtrl::KeepNewBoundsWithinLimits(double* newMin, double* newMax)
 {
+	if (m_plots.size() == 0) return;
+
 	//Make sure we don't zoom out past the data range.
 	//This can only happen zooming out.
 	int visDataMin = m_plots[0]->GetDataSet()->GetMinHours();

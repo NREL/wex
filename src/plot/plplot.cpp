@@ -678,7 +678,9 @@ wxPLPlot::~wxPLPlot()
 	for (std::vector<plot_data>::iterator it = m_plots.begin();
 		it != m_plots.end();
 		++it)
-		delete it->plot;
+		if (it->plot) {
+			delete it->plot;
+		}
 
 	for (size_t i = 0; i < m_legendItems.size(); i++)
 		delete m_legendItems[i];

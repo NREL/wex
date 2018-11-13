@@ -87,6 +87,9 @@ public:
 	void Write(wxOutputStream &);
 	bool Read(wxInputStream &);
 
+	void Write_text(wxOutputStream &, wxString &);
+	bool Read_text(wxInputStream &, wxString &);
+
 	void AddUpdateInterface(const wxString &name, wxUIPropertyUpdateInterface *pui);
 	void RemoveUpdateInterface(wxUIPropertyUpdateInterface *pui);
 	void ClearUpdateInterfaces();
@@ -150,6 +153,9 @@ public:
 
 	virtual void Write(wxOutputStream &);
 	virtual bool Read(wxInputStream &);
+
+	virtual void Write_text(wxOutputStream &, wxString &);
+	virtual bool Read_text(wxInputStream &, wxString &);
 
 protected:
 	void AddProperty(const wxString &name, wxUIProperty *prop);
@@ -229,6 +235,9 @@ public:
 	virtual void Write(wxOutputStream &);
 	virtual bool Read(wxInputStream &);
 
+	virtual void Write_text(wxOutputStream &, wxString &);
+	virtual bool Read_text(wxInputStream &, wxString &);
+
 	// methods to create/edit UI objects
 	wxUIObject *Create(const wxString &type, const wxRect &geom, const wxString &name = wxEmptyString);
 	wxUIObject *Create(const wxString &type);
@@ -239,6 +248,9 @@ public:
 	std::vector<wxUIObject*> GetObjects();
 	wxUIObject **GetObjects(size_t *n);
 	void Raise(wxUIObject *);
+
+	// to keep order when writing out forms 
+	wxArrayString ListAll();
 
 	// form properties
 	void SetName(const wxString &name);

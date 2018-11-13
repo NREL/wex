@@ -40,6 +40,7 @@
     <ClInclude Include="..\include\wex\easycurl.h" />
     <ClInclude Include="..\include\wex\extgrid.h" />
     <ClInclude Include="..\include\wex\exttext.h" />
+    <ClInclude Include="..\include\wex\exttextstream.h" />
     <ClInclude Include="..\include\wex\exttree.h" />
     <ClInclude Include="..\include\wex\gleasy.h" />
     <ClInclude Include="..\include\wex\jsonreader.h" />
@@ -172,6 +173,7 @@
     <ClCompile Include="..\src\easycurl.cpp" />
     <ClCompile Include="..\src\extgrid.cpp" />
     <ClCompile Include="..\src\exttext.cpp" />
+    <ClCompile Include="..\src\exttextstream.cpp" />
     <ClCompile Include="..\src\exttree.cpp" />
     <ClCompile Include="..\src\freetype\src\base\ftlcdfil.c" />
     <ClCompile Include="..\src\gleasy.cpp" />
@@ -306,7 +308,7 @@
   <PropertyGroup Label="Globals">
     <ProjectName>wex_vc14</ProjectName>
     <ProjectGuid>{993A0CD4-149D-442C-A5B4-073E47FBCF52}</ProjectGuid>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">

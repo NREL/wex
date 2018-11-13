@@ -16,11 +16,11 @@ if( WIN32 )
   find_package(OpenGL REQUIRED)
 endif()
 
-include_directories(include src/freetype/include ${LK_DIR}/include ${CURL_DIR}/include)
-
 if( WIN32 )
+  include_directories(include src/freetype/include ${LK_DIR}/include ${CURL_DIR}/include)
   add_definitions(-DLK_USE_WXWIDGETS -D_UNICODE -D_MBCS -D_CRT_SECURE_NO_DEPRECATE=1 -D_CRT_NON_CONFORMING_SWPRINTFS=1 -D_SCL_SECURE_NO_WARNINGS=1 -D__WXMSW__  -DNOPCH -DFT2_BUILD_LIBRARY -DOPJ_STATIC -DFT_CONFIG_MODULES_H=\"slimftmodules.h\" -DFT_CONFIG_OPTIONS_H=\"slimftoptions.h\")
 else()
+  include_directories(include src/freetype/include ${LK_DIR}/include ${CURL_DIR}/include)
   add_definitions(-DFT2_BUILD_LIBRARY -DOPJ_STATIC -DFT_CONFIG_MODULES_H=\"slimftmodules.h\" -DFT_CONFIG_OPTIONS_H=\"slimftoptions.h\")
 endif()
 

@@ -22,16 +22,16 @@
     <ResourceCompile Include="dview.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\LK\src\sqlite3.c" />
+    <ClCompile Include="$(LKDIR)\src\sqlite3.c" />
     <ClCompile Include="..\tools\dview\dview.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\LK\src\sqlite3.h" />
+    <ClInclude Include="$(LKDIR)\src\sqlite3.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectName>dview</ProjectName>
     <ProjectGuid>{9A4A1805-5F86-4BD6-9A7A-61D8BB682863}</ProjectGuid>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
