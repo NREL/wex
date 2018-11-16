@@ -166,7 +166,7 @@ wxString wxOnlineRegistration::GetKey()
 bool wxOnlineRegistration::CanStart()
 {
 	if (!gs_regData) return false;
-	return gs_regData->IsAnOverrideKey(GetKey().c_str()) || CountSinceLastVerify() < MAX_ATTEMPTS;
+	return gs_regData->IsAnOverrideKey(GetKey().Upper().c_str()) || CountSinceLastVerify() < MAX_ATTEMPTS;
 }
 
 int wxOnlineRegistration::AllowedStartsRemaining()
@@ -204,7 +204,7 @@ bool wxOnlineRegistration::IncrementUsage()
 	int count = CountSinceLastVerify();
 	// don't increment local count if SAM won't start
 	// but do increment if using an override key
-	if (count < MAX_ATTEMPTS || gs_regData->IsAnOverrideKey(GetKey().c_str()))
+	if (count < MAX_ATTEMPTS || gs_regData->IsAnOverrideKey(GetKey().Upper().c_str()))
 		gs_regData->WriteSetting("count-since-last-verify-" + GetVersionAndPlatform(), wxString::Format("%d", count + 1));
 
 	return CheckInWithServer();
@@ -226,7 +226,7 @@ bool wxOnlineRegistration::CheckInWithServer(int *usage_count)
 	wxString email = GetEmail();
 	wxString key = GetKey();
 
-	if (gs_regData->IsAnOverrideKey(GetKey().c_str()))
+	if (gs_regData->IsAnOverrideKey(GetKey().Upper().c_str()))
 		return true;
 
 	if (email.IsEmpty() || key.IsEmpty())
