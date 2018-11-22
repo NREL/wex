@@ -785,6 +785,7 @@ bool wxExcelAutomation::getUsedCellRange(int& row, int& col, wxArrayString& val)
 		for (size_t r = 0; r < maxRows; r++) {
 			size_t rc = c*dimRows + r;
 			int type = data[rc].vt;
+			// string
 			if (type == VT_BSTR) {
 				int len = wcslen(data[rc].bstrVal);
 				char* str = new char[len + 1];
@@ -793,6 +794,12 @@ bool wxExcelAutomation::getUsedCellRange(int& row, int& col, wxArrayString& val)
 				delete[] str;
 				val.push_back(strVal);
 			}
+			// currency
+			else if (type == VT_CY) {
+				long long numVal = data[rc].cyVal.int64;
+				val.push_back(wxString::Format(wxT("%f"), (float)numVal / 10000.));
+			}
+			// 8 byte real
 			else if (type == VT_R8) {
 				double numVal = data[rc].dblVal;
 				val.push_back(wxString::Format(wxT("%f"), numVal));
