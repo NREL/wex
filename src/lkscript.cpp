@@ -505,7 +505,7 @@ void fcall_annotate(lk::invoke_t &cxt)
 void fcall_plotopt(lk::invoke_t &cxt)
 {
 	LK_DOC("plotopt",
-		"Modifies the current plot properties like title, coarse, fine, legend, legendpos, legendborder, scale, font, window, border, space, showaxes, pdffontface, pdffontsize, pdffontdir",
+		"Modifies the current plot properties. Options are title=string, coarse=coarse grid (true/false), fine=fine grid (true/false), legend=true/false, legendpos=bottom/right/north/south/east/west/northwest/northeast/southwest/southeast or number percentage from left/top, legendborder=true/false, scale=font size multiplier between 0.2 and 5, font=font name, window=window position and/or size [xpos,ypos] or [xpos,ypos,width,height], border=border width (default is 1), space=space outside of border [left,right,top,bottom], showaxes=true/false, pdffontface, pdffontsize, pdffontdir",
 		"(table:options):boolean");
 
 	cxt.result().assign(1.0);
