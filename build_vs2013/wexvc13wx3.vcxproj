@@ -40,6 +40,7 @@
     <ClInclude Include="..\include\wex\easycurl.h" />
     <ClInclude Include="..\include\wex\extgrid.h" />
     <ClInclude Include="..\include\wex\exttext.h" />
+    <ClInclude Include="..\include\wex\exttextstream.h" />
     <ClInclude Include="..\include\wex\exttree.h" />
     <ClInclude Include="..\include\wex\gleasy.h" />
     <ClInclude Include="..\include\wex\jsonreader.h" />
@@ -172,6 +173,7 @@
     <ClCompile Include="..\src\easycurl.cpp" />
     <ClCompile Include="..\src\extgrid.cpp" />
     <ClCompile Include="..\src\exttext.cpp" />
+    <ClCompile Include="..\src\exttextstream.cpp" />
     <ClCompile Include="..\src\exttree.cpp" />
     <ClCompile Include="..\src\freetype\src\base\ftlcdfil.c" />
     <ClCompile Include="..\src\gleasy.cpp" />

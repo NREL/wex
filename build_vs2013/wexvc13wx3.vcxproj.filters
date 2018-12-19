@@ -453,6 +453,9 @@
     <ClInclude Include="..\include\wex\registration.h">
       <Filter>wex\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\wex\exttextstream.h">
+      <Filter>wex\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dview\dvautocolourassigner.cpp">
@@ -870,6 +873,9 @@
       <Filter>plot\Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\src\registration.cpp">
+      <Filter>wex\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\exttextstream.cpp">
       <Filter>wex\Sources</Filter>
     </ClCompile>
   </ItemGroup>
