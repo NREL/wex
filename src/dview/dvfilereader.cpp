@@ -1584,12 +1584,15 @@ void wxDVFileReader::InitUnitConversions()
 	m_unitConversions.emplace_back("%", "%", 1);
 	m_unitConversions.emplace_back("ach", "ach", 1);
 	m_unitConversions.emplace_back("ACH", "ACH", 1);
+	m_unitConversions.emplace_back("hr", "hr", 1);
 	m_unitConversions.emplace_back("kgWater/kgDryAir", "lbWater/lbDryAir", 2.20462247603796);
 }
 
 bool wxDVFileReader::ConvertUnits(std::string & units, std::vector<double> & values, bool convertSIToIP)
 {
-	if (m_unitConversions.size() == 0) InitUnitConversions();
+	if (m_unitConversions.size() == 0) {
+		InitUnitConversions();
+	}
 
 	bool success = false;
 	double multiplier = 0;
