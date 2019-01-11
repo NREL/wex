@@ -249,7 +249,7 @@ static wxColour lk_to_colour(lk::vardata_t *arg)
 
 void fcall_plot(lk::invoke_t &cxt)
 {
-	LK_DOC("plot", "Creates an XY line, bar, horizontal bar, or scatter plot. Options include thick/size, type, color, xap, yap, xlabel, ylabel, series, baseline, stackon, style.", "(array:x, array:y, table:options):void");
+	LK_DOC("plot", "Creates an XY line, bar, horizontal bar, or scatter plot. Options include thick/size, type, color, xap, yap, xlabel, ylabel, series, baseline, stackon, style.  By default, the y-axis min/max are set as the data limits.", "(array:x, array:y, table:options):void");
 
 	wxPLPlotCtrl *plot = GetPlotSurface(
 		(s_curToplevelParent != 0)
