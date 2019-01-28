@@ -1,12 +1,28 @@
-Project(wex C CXX)
 cmake_minimum_required(VERSION 3.7)
+
+set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
+set(CMAKE_C_COMPILER gcc)
+set(CMAKE_CXX_COMPILER g++)
+
+if(MSVC)
+  set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Debug and Release Builds Configured" FORCE)
+endif()
+
+Project(wex C CXX)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-set(LK_DIR CACHE PATH "LK root directory")
-set(CURL_DIR CACHE PATH "Curl root directory")
+set(LK_DIR $ENV{LKDIR})
+if ( WIN32 )
+  set(CURL_DIR build_vs2017/libcurl_ssl_x64)
+endif()
 
-find_package(wxWidgets REQUIRED net gl core base adv html xml)
+set(wxWidgets_CONFIG_EXECUTABLE /usr/local/bin/wx-config-3)
+find_package(wxWidgets REQUIRED net gl core base adv html xml stc)
 include(${wxWidgets_USE_FILE})
+
 
 if( UNIX AND NOT APPLE )
   find_library(FONTCONFIG_LIBRARY NAMES fontconfig)
@@ -18,10 +34,14 @@ endif()
 
 if( WIN32 )
   include_directories(include src/freetype/include ${LK_DIR}/include ${CURL_DIR}/include)
-  add_definitions(-DLK_USE_WXWIDGETS -D_UNICODE -D_MBCS -D_CRT_SECURE_NO_DEPRECATE=1 -D_CRT_NON_CONFORMING_SWPRINTFS=1 -D_SCL_SECURE_NO_WARNINGS=1 -D__WXMSW__  -DNOPCH -DFT2_BUILD_LIBRARY -DOPJ_STATIC -DFT_CONFIG_MODULES_H=\"slimftmodules.h\" -DFT_CONFIG_OPTIONS_H=\"slimftoptions.h\")
+  if (MSVC)
+    add_compile_options(/W4 /WX)
+  endif()
+  add_compile_definitions(LK_USE_WXWIDGETS _UNICODE _MBCS _CRT_SECURE_NO_DEPRECATE=1 _CRT_NON_CONFORMING_SWPRINTFS=1 _SCL_SECURE_NO_WARNINGS=1 __WXMSW__  NOPCH FT2_BUILD_LIBRARY OPJ_STATIC FT_CONFIG_MODULES_H=\"slimftmodules.h\" FT_CONFIG_OPTIONS_H=\"slimftoptions.h\")
 else()
-  include_directories(include src/freetype/include ${LK_DIR}/include ${CURL_DIR}/include)
-  add_definitions(-DFT2_BUILD_LIBRARY -DOPJ_STATIC -DFT_CONFIG_MODULES_H=\"slimftmodules.h\" -DFT_CONFIG_OPTIONS_H=\"slimftoptions.h\")
+  include_directories(include src/freetype/include ${LK_DIR}/include )
+  add_compile_options(-Wall -O2 -arch x86_64 -fno-common)
+  add_compile_definitions(LK_USE_WXWIDGETS _CRT_SECURE_NO_WARNINGS _MBCS FT2_BUILD_LIBRARY OPJ_STATIC FT_CONFIG_MODULES_H=\"slimftmodules.h\" FT_CONFIG_OPTIONS_H=\"slimftoptions.h\")
 endif()
 
 set(WEX_SRC
@@ -172,9 +192,6 @@ if( WIN32 )
  )
 endif()
 
-add_library(wex STATIC ${WEX_SRC})
-target_link_libraries(wex ${wxWidgets_LIBRARIES})
-
 set(DVIEW_SRC
   tools/dview/dview.cpp
 )
@@ -190,14 +207,31 @@ elseif( WIN32 )
   set(APPS "\${CMAKE_INSTALL_PREFIX}/DView.exe")
 endif()
 
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  add_library(wexuxwx3d STATIC ${WEX_SRC})
+  target_link_libraries(wexuxwx3d ${wxWidgets_LIBRARIES})
+  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+else()
+  add_library(wexuxwx3 STATIC ${WEX_SRC})
+  target_link_libraries(wexuxwx3 ${wxWidgets_LIBRARIES})
+endif()
+
+set_property(TARGET PROPERTY PREFIX "")
+
+
 add_executable(DView
   WIN32
   MACOSX_BUNDLE
   ${DVIEW_SRC}
-  ${DVIEW_ICON}
-)
+  ${DVIEW_ICON})
 
-target_link_libraries(DView wex)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  target_link_libraries(DView wexuxwx3d)
+else()
+  target_link_libraries(DView wexuxwx3)
+endif()
 
 if( WIN32 )
   target_link_libraries(DView Winhttp)
