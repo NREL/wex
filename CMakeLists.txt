@@ -41,7 +41,10 @@ if( WIN32 )
 else()
   include_directories(include src/freetype/include ${LK_DIR}/include )
   add_compile_options(-Wall -O2 -arch x86_64 -fno-common)
-  add_compile_definitions(LK_USE_WXWIDGETS _CRT_SECURE_NO_WARNINGS _MBCS FT2_BUILD_LIBRARY OPJ_STATIC FT_CONFIG_MODULES_H=\"slimftmodules.h\" FT_CONFIG_OPTIONS_H=\"slimftoptions.h\")
+  add_compile_definitions(LK_USE_WXWIDGETS _CRT_SECURE_NO_WARNINGS _MBCS FT2_BUILD_LIBRARY OPJ_STATIC FT_CONFIG_MODULES_H=\"slimftmodules.h\" FT_CONFIG_OPTIONS_H=\"slimftoptions.h\") 
+  if (APPLE)
+    add_compile_definitions(__WXOSX__)
+  endif()
 endif()
 
 set(WEX_SRC
@@ -209,16 +212,19 @@ endif()
 
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  add_library(wexuxwx3d STATIC ${WEX_SRC})
-  target_link_libraries(wexuxwx3d ${wxWidgets_LIBRARIES})
+  add_library(wexosxwx3d STATIC ${WEX_SRC})
+  set_property(TARGET wexosxwx3d PROPERTY PREFIX "")
+  target_link_libraries(wexosxwx3d ${wxWidgets_LIBRARIES})
+
+
   set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 else()
-  add_library(wexuxwx3 STATIC ${WEX_SRC})
-  target_link_libraries(wexuxwx3 ${wxWidgets_LIBRARIES})
+  add_library(wexosxwx3 STATIC ${WEX_SRC})
+  set_property(TARGET wexosxwx3 PROPERTY PREFIX "")
+  target_link_libraries(wexosxwx3 ${wxWidgets_LIBRARIES})
 endif()
 
-set_property(TARGET PROPERTY PREFIX "")
 
 
 add_executable(DView
@@ -228,9 +234,9 @@ add_executable(DView
   ${DVIEW_ICON})
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  target_link_libraries(DView wexuxwx3d)
+  target_link_libraries(DView wexosxwx3d)
 else()
-  target_link_libraries(DView wexuxwx3)
+  target_link_libraries(DView wexosxwx3)
 endif()
 
 if( WIN32 )
