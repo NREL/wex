@@ -15,12 +15,12 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set(LK_DIR $ENV{LKDIR})
-if ( WIN32 )
+if ( NOT APPLE)
   set(CURL_DIR build_vs2017/libcurl_ssl_x64)
 endif()
 
 set(wxWidgets_CONFIG_EXECUTABLE /usr/local/bin/wx-config-3)
-find_package(wxWidgets REQUIRED net gl core base adv html xml stc)
+find_package(wxWidgets REQUIRED xrc stc richtext ribbon propgrid aui gl html qa adv core xml net base)
 include(${wxWidgets_USE_FILE})
 
 
@@ -32,19 +32,19 @@ if( WIN32 )
   find_package(OpenGL REQUIRED)
 endif()
 
+include_directories(include src/freetype/include ${LK_DIR}/include ${CURL_DIR}/include)
 if( WIN32 )
-  include_directories(include src/freetype/include ${LK_DIR}/include ${CURL_DIR}/include)
   if (MSVC)
     add_compile_options(/W4 /WX)
   endif()
   add_compile_definitions(LK_USE_WXWIDGETS _UNICODE _MBCS _CRT_SECURE_NO_DEPRECATE=1 _CRT_NON_CONFORMING_SWPRINTFS=1 _SCL_SECURE_NO_WARNINGS=1 __WXMSW__  NOPCH FT2_BUILD_LIBRARY OPJ_STATIC FT_CONFIG_MODULES_H=\"slimftmodules.h\" FT_CONFIG_OPTIONS_H=\"slimftoptions.h\")
 else()
-  include_directories(include src/freetype/include ${LK_DIR}/include )
-  add_compile_options(-Wall -O2 -arch x86_64 -fno-common)
-  add_compile_definitions(LK_USE_WXWIDGETS _CRT_SECURE_NO_WARNINGS _MBCS FT2_BUILD_LIBRARY OPJ_STATIC FT_CONFIG_MODULES_H=\"slimftmodules.h\" FT_CONFIG_OPTIONS_H=\"slimftoptions.h\") 
   if (APPLE)
-    add_compile_definitions(__WXOSX__)
+    add_compile_options(-arch x86_64)
   endif()
+  add_compile_options(-Wall -Wno-unknown-pragmas -Wno-strict-aliasing)
+  add_compile_options(-O2 -fno-common ${wxWidgets_CXX_FLAGS})
+  add_compile_definitions(LK_USE_WXWIDGETS _CRT_SECURE_NO_WARNINGS _MBCS FT2_BUILD_LIBRARY OPJ_STATIC FT_CONFIG_MODULES_H=\"slimftmodules.h\" FT_CONFIG_OPTIONS_H=\"slimftoptions.h\") 
 endif()
 
 set(WEX_SRC
@@ -69,6 +69,7 @@ set(WEX_SRC
   src/easycurl.cpp
   src/extgrid.cpp
   src/exttext.cpp
+  src/exttextstream.cpp
   src/exttree.cpp
   src/gleasy.cpp
   src/jsonreader.cpp
@@ -184,7 +185,6 @@ set(WEX_SRC
   src/plot/qhull/usermem.c
   src/plot/qhull/userprintf.c
   src/plot/qhull/userprintf_rbox.c
-  ${LK_DIR}/src/sqlite3.c
 )
 
 if( WIN32 )
@@ -197,6 +197,7 @@ endif()
 
 set(DVIEW_SRC
   tools/dview/dview.cpp
+  ${LK_DIR}/src/sqlite3.c
 )
 
 set(MACOSX_BUNDLE_ICON_FILE DView.icns)
