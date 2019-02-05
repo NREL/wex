@@ -32,6 +32,8 @@
 #include <wx/uri.h>
 #include <wx/log.h>
 #include <wx/progdlg.h>
+#include <wx/gauge.h>
+#include <wx/thread.h>
 
 #include <curl/curl.h>
 
@@ -587,7 +589,7 @@ void wxEasyCurl::SetApiKeys(const wxString &google, const wxString &bing)
 	if (!bing.IsEmpty()) BING_API_KEY = bing;
 }
 
-bool wxEasyCurl::GeoCode(const wxString &address, double *lat, double *lon, double *tz)
+bool wxEasyCurl::GeoCode(const wxString &address, double *lat, double *lon, double *tz, bool showprogress)
 {
 	wxBusyCursor _curs;
 
@@ -600,8 +602,17 @@ bool wxEasyCurl::GeoCode(const wxString &address, double *lat, double *lon, doub
 
 	wxEasyCurl curl;
 	wxBusyCursor curs;
-	if (!curl.Get(url, "Geocoding address '" + address + "'..."))
-		return false;
+	if (showprogress)
+	{
+		if (!curl.Get(url, "Geocoding address '" + address + "'..."))
+			return false;
+	}
+	else
+	{
+		if (!curl.Get(url))
+			return false;
+	}
+
 
 	wxJSONReader reader;
 	wxJSONValue root;
@@ -623,7 +634,12 @@ bool wxEasyCurl::GeoCode(const wxString &address, double *lat, double *lon, doub
 		// get timezone from another service
 		url = wxString::Format("https://maps.googleapis.com/maps/api/timezone/json?location=%.14lf,%.14lf&timestamp=1&sensor=false&key=",
 			*lat, *lon) + GOOGLE_API_KEY;
-		bool ok = curl.Get(url, "Geocoding address...");
+		bool ok;
+		if (showprogress)
+			ok = curl.Get(url, "Geocoding address...");
+		else
+			ok = curl.Get(url);
+
 		if (ok && reader.Parse(curl.GetDataAsString(), &root) == 0)
 		{
 			wxJSONValue val = root.Item("rawOffset");
@@ -662,3 +678,196 @@ wxBitmap wxEasyCurl::StaticMap(double lat, double lon, int zoom, MapProvider ser
 	bool ok = curl.Get(url, "Obtaining aerial imagery...");
 	return ok ? wxBitmap(curl.GetDataAsImage(wxBITMAP_TYPE_JPEG)) : wxNullBitmap;
 }
+
+
+wxEasyCurlDialog::wxEasyCurlDialog(const wxString &message, int nthread, wxWindow *parent)
+{
+	if (nthread < 1)
+		nthread = wxThread::GetCPUCount();
+
+
+	if (!parent)
+	{
+		wxWindowList &wl = ::wxTopLevelWindows;
+		for (wxWindowList::iterator it = wl.begin(); it != wl.end(); ++it)
+			if (wxTopLevelWindow *tlw = dynamic_cast<wxTopLevelWindow*>(*it))
+				if (tlw->IsActive())
+					parent = tlw;
+	}
+
+
+
+	m_transp = wxCreateTransparentOverlay(parent);
+	m_tpd = new wxThreadProgressDialog(m_transp, nthread);
+	m_tpd->Show();
+
+	if (message.IsEmpty())
+		m_tpd->Status("Downloading...");
+	else
+		m_tpd->Status(message);
+	m_tpd->ShowBars(1);
+	wxYield();
+}
+
+wxEasyCurlDialog::~wxEasyCurlDialog()
+{
+	m_tpd->Destroy();
+	m_transp->Destroy();
+}
+
+void wxEasyCurlDialog::Finalize(const wxString &)
+{
+	wxYield(); // allow status bars to show full update
+	m_tpd->Finalize();
+}
+
+void wxEasyCurlDialog::Update(int ThreadNum, float percent, const wxString &label)
+{
+	m_tpd->Update(ThreadNum, percent, label);
+	wxYield();
+}
+
+void wxEasyCurlDialog::NewStage(const wxString &title, int nbars_to_show)
+{
+	m_tpd->Reset();
+	m_tpd->Status(title);
+	m_tpd->ShowBars(nbars_to_show);
+	wxYield();
+}
+
+wxEasyCurlThread::wxEasyCurlThread(int id)
+		: wxThread(wxTHREAD_JOINABLE) 
+{
+		m_canceled = false;
+		m_threadId = id;
+		m_nok = 0;
+		m_percent = 0;
+		m_current = 0;
+}
+
+void wxEasyCurlThread::Add(wxEasyCurl *curl, wxString &url, wxString &name) 
+{
+		m_curls.push_back(curl);
+		m_urls.push_back(url);
+		m_names.push_back(name);
+}
+
+size_t wxEasyCurlThread::Size() 
+{
+	return m_curls.size(); 
+}
+
+size_t wxEasyCurlThread::Current() 
+{
+	wxMutexLocker _lock(m_currentLock);
+	return m_current;
+}
+
+float wxEasyCurlThread::GetPercent(wxString *update) 
+{
+	size_t ns = Size();
+	size_t cur = Current();
+	wxMutexLocker _lock(m_percentLock);
+	float curper = m_percent;
+
+	if (update != 0)
+		*update = m_update;
+
+	if (ns == 0) return 0.0f;
+
+	if (cur < ns)
+	{
+		float each = 100 / ns;
+		float overall = cur * each + 0.01*curper*each;
+		return overall;
+	}
+	else
+		return 100.0f;
+}
+
+void wxEasyCurlThread::Cancel()
+{
+	wxMutexLocker _lock(m_cancelLock);
+	m_canceled = true;
+}
+
+size_t wxEasyCurlThread::NOk() 
+{
+	wxMutexLocker _lock(m_nokLock);
+	return m_nok;
+}
+
+void wxEasyCurlThread::Message(const wxString &text)
+{
+	wxMutexLocker _lock(m_logLock);
+	wxString L(m_curName);
+	if (!L.IsEmpty()) L += ": ";
+	m_messages.Add(L + text);
+}
+
+void wxEasyCurlThread::Warn(const wxString &text)
+{
+	Message(text);
+}
+
+void wxEasyCurlThread::Error(const wxString &text)
+{
+	Message(text);
+}
+
+void wxEasyCurlThread::Update(float percent, const wxString &text)
+{
+	wxMutexLocker _lock(m_percentLock);
+	m_percent = percent;
+	m_update = text;
+}
+
+
+bool wxEasyCurlThread::IsCancelled() {
+	wxMutexLocker _lock(m_cancelLock);
+	return m_canceled;
+}
+
+wxString wxEasyCurlThread::GetDataAsString()
+{
+	wxString data = m_curName;
+//	for (size_t i = 0; i < m_curls.size(); i++)
+//		data += m_curls[i]->GetDataAsString();
+	return data;
+}
+
+wxArrayString wxEasyCurlThread::GetNewMessages()
+{
+	wxMutexLocker _lock(m_logLock);
+	wxArrayString list = m_messages;
+	m_messages.Clear();
+	return list;
+}
+
+void *wxEasyCurlThread::Entry()
+{
+	m_canceled = false;
+	for (size_t i = 0; i < m_curls.size(); i++)
+	{
+		m_curName = m_names[i];
+
+		// clear any saved messages from the previous wxEasyCurl
+		if (m_curls[i]->Get(m_urls[i]))
+		{
+			wxMutexLocker _lock(m_nokLock);
+			m_nok++;
+		}
+
+		m_currentLock.Lock();
+		m_current++;
+		m_currentLock.Unlock();
+
+		wxMutexLocker _lock(m_cancelLock);
+		if (m_canceled) break;
+	}
+
+	return 0;
+}
+
+
+
