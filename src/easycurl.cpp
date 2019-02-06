@@ -831,8 +831,6 @@ bool wxEasyCurlThread::IsCancelled() {
 wxString wxEasyCurlThread::GetDataAsString()
 {
 	wxString data = m_curName;
-//	for (size_t i = 0; i < m_curls.size(); i++)
-//		data += m_curls[i]->GetDataAsString();
 	return data;
 }
 
