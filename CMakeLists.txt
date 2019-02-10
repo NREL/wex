@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.7)
 
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
-set(CMAKE_C_COMPILER gcc)
-set(CMAKE_CXX_COMPILER g++)
+if (UNIX AND NOT CMAKE_C_COMPILER)
+	set(CMAKE_C_COMPILER gcc)
+	set(CMAKE_CXX_COMPILER g++)
+endif()
 
 if(MSVC)
 	set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Debug and Release Builds Configured" FORCE)
@@ -192,11 +194,11 @@ set(DVIEW_SRC
 set(MACOSX_BUNDLE_ICON_FILE DView.icns)
 
 if( APPLE )
-	set(DVIEW_ICON build_osx/DView.icns)
+	set(DVIEW_ICON ${CMAKE_CURRENT_SOURCE_DIR}/build_osx/DView.icns)
 	set_source_files_properties(${DVIEW_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
 	set(APPS "\${CMAKE_INSTALL_PREFIX}/DView.app")
 elseif( WIN32 )
-	set(DVIEW_ICON build_vs2013/dview.rc)
+	set(DVIEW_ICON ${CMAKE_CURRENT_SOURCE_DIR}/build_vs2013/dview.rc)
 	set(APPS "\${CMAKE_INSTALL_PREFIX}/DView.exe")
 endif()
 
@@ -217,18 +219,19 @@ endif()
 
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	add_library(wexosxwx3d STATIC ${WEX_SRC})
-	set_property(TARGET wexosxwx3d PROPERTY PREFIX "")
-	target_link_libraries(wexosxwx3d ${wxWidgets_LIBRARIES})
+	add_library(wexd STATIC ${WEX_SRC})
+	set(WEX_LIB wexd)
 
 	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 else()
-	add_library(wexosxwx3 STATIC ${WEX_SRC})
-	set_property(TARGET wexosxwx3 PROPERTY PREFIX "")
-	target_link_libraries(wexosxwx3 ${wxWidgets_LIBRARIES})
+	add_library(wex STATIC ${WEX_SRC})
+	set(WEX_LIB wex)
+
 endif()
 
+set_property(TARGET ${WEX_LIB} PROPERTY PREFIX "")
+target_link_libraries(${WEX_LIB} ${wxWidgets_LIBRARIES})
 
 
 add_executable(DView
@@ -237,11 +240,9 @@ add_executable(DView
 	${DVIEW_SRC}
 	${DVIEW_ICON})
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	target_link_libraries(DView wexosxwx3d)
-else()
-	target_link_libraries(DView wexosxwx3)
-endif()
+
+target_link_libraries(DView ${WEX_LIB})
+
 
 if( WIN32 )
 	target_link_libraries(DView Winhttp)
