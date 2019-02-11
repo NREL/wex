@@ -1397,13 +1397,14 @@ static void fcall_apikeys(lk::invoke_t &cxt)
 
 static void fcall_geocode(lk::invoke_t &cxt)
 {
-	LK_DOC("geocode", "Returns the latitude and longitude of an address using Google's geocoding web API.  Returned table fields are 'lat', 'lon', 'ok'.", "(string:address):table");
+	LK_DOC("geocode", "Given a street address, location name, or latitude-longitude pair ('lat,lon') string, returns the latitude, longitude, and time zone of an address using Google API. Returned table fields are 'lat', 'lon', 'tz', 'ok'.", "(string:address):table");
 
-	double lat = 0, lon = 0;
-	bool ok = wxEasyCurl::GeoCode(cxt.arg(0).as_string(), &lat, &lon);
+	double lat = 0, lon = 0, tz=0;
+	bool ok = wxEasyCurl::GeoCode(cxt.arg(0).as_string(), &lat, &lon, &tz);
 	cxt.result().empty_hash();
 	cxt.result().hash_item("lat").assign(lat);
 	cxt.result().hash_item("lon").assign(lon);
+	cxt.result().hash_item("tz").assign(tz);
 	cxt.result().hash_item("ok").assign(ok ? 1.0 : 0.0);
 }
 
