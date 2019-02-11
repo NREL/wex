@@ -28,6 +28,8 @@
 #include <wx/event.h>
 #include <wx/datetime.h>
 #include <wx/sstream.h>
+#include "tpdlg.h"
+
 
 BEGIN_DECLARE_EVENT_TYPES()
 DECLARE_EVENT_TYPE(wxEASYCURL_EVENT, 7578)
@@ -92,7 +94,7 @@ public:
 	// call is synchronous.  Optionally determine time
 	// zone from lat/lon using second service call
 	static bool GeoCode(const wxString &address,
-		double *lat, double *lon, double *tz = 0);
+		double *lat, double *lon, double *tz = 0, bool showprogress = true);
 	enum MapProvider { GOOGLE_MAPS, BING_MAPS };
 	static wxBitmap StaticMap(double lat, double lon, int zoom, MapProvider service = BING_MAPS);
 
@@ -136,5 +138,71 @@ protected:
 	wxString m_postData;
 	wxArrayString m_httpHeaders;
 };
+
+class wxEasyCurlDialog
+{
+public:
+	wxEasyCurlDialog(const wxString &message = wxEmptyString, int nthreads = 0, wxWindow *parent = NULL);
+	~wxEasyCurlDialog();
+
+	// update the Status title and visiblity of bars.  Calls yield.
+	void NewStage(const wxString &title, int nbars_to_show = -1);
+
+	// if messages appeared during EasyCurl,
+	// show the dialog as modal
+	void Finalize(const wxString &custom_title = wxEmptyString);
+
+	// update progress, calls yield
+	void Update(int ThreadNum, float percent, const wxString &label = wxEmptyString);
+
+	// these don't call yield
+	void Log(const wxArrayString &list) { m_tpd->Log(list); }
+	void Log(const wxString &s) { m_tpd->Log(s); }
+
+	bool Canceled() { return m_tpd->IsCanceled(); }
+
+	wxThreadProgressDialog &Dialog() { return *m_tpd; }
+
+private:
+	wxThreadProgressDialog *m_tpd;
+	wxFrame *m_transp;
+};
+
+
+class wxEasyCurlThread : public wxThread
+{
+	std::vector<wxEasyCurl*> m_curls;
+	wxArrayString m_urls;
+	wxArrayString m_names;
+	wxMutex m_currentLock, m_cancelLock, m_nokLock, m_logLock, m_percentLock;
+	size_t m_current;
+	bool m_canceled;
+	size_t m_nok;
+	wxArrayString m_messages;
+	wxString m_update;
+	wxString m_curName;
+	float m_percent;
+	int m_threadId;
+public:
+	wxEasyCurlThread(int id);
+	void Add(wxEasyCurl *curl, wxString &url, wxString &name);
+	size_t Size();
+	size_t Current();
+	float GetPercent(wxString *update = 0);
+	void Cancel();
+	size_t NOk();
+	void Message(const wxString &text);
+	virtual void Warn(const wxString &text);
+	virtual void Error(const wxString &text);
+	virtual void Update(float percent, const wxString &text);
+	virtual bool IsCancelled();
+	wxString GetDataAsString();
+	wxArrayString GetNewMessages();
+	virtual void *Entry();
+};
+
+
+
+
 
 #endif
