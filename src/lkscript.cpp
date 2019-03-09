@@ -1383,24 +1383,27 @@ void fcall_rand(lk::invoke_t &cxt)
 
 static void fcall_apikeys(lk::invoke_t &cxt)
 {
-	LK_DOC("apikeys", "Set API keys for Google and Bing web services. Table can have 'google' and 'bing' keys.", "(table:keys):none");
+	LK_DOC("apikeys", "Set API keys for Google and Bing and Developer web services. Table can have 'google' and 'bing' and 'developer' keys.", "(table:keys):none");
 
-	wxString google, bing;
+	wxString google, bing, developer;
 	if (lk::vardata_t *x = cxt.arg(0).lookup("google"))
 		google = x->as_string();
 
 	if (lk::vardata_t *x = cxt.arg(0).lookup("bing"))
 		bing = x->as_string();
 
-	wxEasyCurl::SetApiKeys(google, bing);
+	if (lk::vardata_t *x = cxt.arg(0).lookup("developer"))
+		developer = x->as_string();
+
+	wxEasyCurl::SetApiKeys(google, bing, developer);
 }
 
 static void fcall_geocode(lk::invoke_t &cxt)
 {
-	LK_DOC("geocode", "Given a street address, location name, or latitude-longitude pair ('lat,lon') string, returns the latitude, longitude, and time zone of an address using Google API. Returned table fields are 'lat', 'lon', 'tz', 'ok'.", "(string:address):table");
+	LK_DOC("geocode", "Given a street address, location name, or latitude-longitude pair ('lat,lon') string, returns the latitude, longitude, and time zone of an address using Developer API. Returned table fields are 'lat', 'lon', 'tz', 'ok'.", "(string:address):table");
 
 	double lat = 0, lon = 0, tz=0;
-	bool ok = wxEasyCurl::GeoCode(cxt.arg(0).as_string(), &lat, &lon, &tz);
+	bool ok = wxEasyCurl::GeoCodeDeveloper(cxt.arg(0).as_string(), &lat, &lon, &tz);
 	cxt.result().empty_hash();
 	cxt.result().hash_item("lat").assign(lat);
 	cxt.result().hash_item("lon").assign(lon);
