@@ -44,7 +44,7 @@
 #include <wex/label.h>
 #include <wex/jsonreader.h>
 #include <wex/utils.h>
-
+#include <wex/csv.h>
 #include <wex/easycurl.h>
 
 #include <unordered_map>
@@ -581,15 +581,16 @@ void wxEasyCurl::SetUrlEscape(const wxString &key, const wxString &value)
 	gs_urlEscapes[key] = value;
 }
 
-static wxString GOOGLE_API_KEY, BING_API_KEY;
+static wxString GOOGLE_API_KEY, BING_API_KEY, DEVELOPER_API_KEY;
 
-void wxEasyCurl::SetApiKeys(const wxString &google, const wxString &bing)
+void wxEasyCurl::SetApiKeys(const wxString &google, const wxString &bing, const wxString &developer)
 {
 	if (!google.IsEmpty()) GOOGLE_API_KEY = google;
 	if (!bing.IsEmpty()) BING_API_KEY = bing;
+	if (!developer.IsEmpty()) DEVELOPER_API_KEY = developer;
 }
 
-bool wxEasyCurl::GeoCode(const wxString &address, double *lat, double *lon, double *tz, bool showprogress)
+bool wxEasyCurl::GeoCodeGoogle(const wxString &address, double *lat, double *lon, double *tz, bool showprogress)
 {
 	wxBusyCursor _curs;
 
@@ -652,6 +653,67 @@ bool wxEasyCurl::GeoCode(const wxString &address, double *lat, double *lon, doub
 			return false;
 	} // if no tz argument given then return true
 	else return true;
+}
+
+bool wxEasyCurl::GeoCodeDeveloper(const wxString &address, double *lat, double *lon, double *tz, bool showprogress)
+{
+	wxBusyCursor _curs;
+
+	wxString plusaddr = address;
+	plusaddr.Replace("   ", " ");
+	plusaddr.Replace("  ", " ");
+	plusaddr.Replace(" ", "+");
+
+
+	wxString url("https://developer.nrel.gov/api/mapquest/geocoding/v1/address?location=" + plusaddr + "&_app_id=sam&outFormat=csv&api_key=" + DEVELOPER_API_KEY);
+
+	wxEasyCurl curl;
+	wxBusyCursor curs;
+	if (showprogress)
+	{
+		if (!curl.Get(url, "Geocoding address '" + address + "'..."))
+			return false;
+	}
+	else
+	{
+		if (!curl.Get(url))
+			return false;
+	}
+
+	wxCSVData csv;
+	if (csv.ReadString(curl.GetDataAsString()))
+	{
+		wxString slat = csv.Get(1, 14);
+		wxString slng = csv.Get(1, 15);
+		if (!slat.ToDouble(lat))
+			return false;
+		if (!slng.ToDouble(lon))
+			return false;
+	}
+	else
+		return false;
+
+	/* JSON reader fails with UTF-8 issues
+		wxJSONReader reader;
+		wxJSONValue root;
+		if (reader.Parse(curl.GetDataAsString(), &root) == 0)
+		{
+			wxJSONValue loc = root.Item("results").Item(0).Item("locations").Item(0).Item("displayLatLng");
+			if (!loc.IsValid()) return false;
+			*lat = loc.Item("lat").AsDouble();
+			*lon = loc.Item("lng").AsDouble();
+
+			if (root.Item("status").AsString() != "OK")
+				return false;
+		}
+		else
+			return false;
+	*/
+	if (tz != 0)
+	{
+		*tz = 0; // no current TZ API
+	}
+	return true;
 }
 
 wxBitmap wxEasyCurl::StaticMap(double lat, double lon, int zoom, MapProvider service)
