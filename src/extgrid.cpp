@@ -168,7 +168,7 @@ wxGridCellAttr *wxExtGridCellAttrProvider::GetAttr(int row, int col,
 
 		return attr;
 	}
-
+/*
 	if (row % 2)
 	{
 		if (!attr)
@@ -187,7 +187,7 @@ wxGridCellAttr *wxExtGridCellAttrProvider::GetAttr(int row, int col,
 			}
 		}
 	}
-
+*/
 	return attr;
 }
 
