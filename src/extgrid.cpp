@@ -30,10 +30,14 @@
 #include "wex/csv.h"
 #include "wex/extgrid.h"
 
-wxExtGridCellAttrProvider::wxExtGridCellAttrProvider(bool highlight_r0, bool hide_00, bool highlight_c0)
+wxExtGridCellAttrProvider::wxExtGridCellAttrProvider(bool highlight_r0, bool hide_00, bool highlight_c0, bool shadeAlternateRows)
 {
-	m_attrForOddRows = new wxGridCellAttr;
-	m_attrForOddRows->SetBackgroundColour(wxColour(240, 240, 240));
+	m_attrForOddRows = NULL;
+	if (shadeAlternateRows)
+	{
+		m_attrForOddRows = new wxGridCellAttr;
+		m_attrForOddRows->SetBackgroundColour(wxColour(240, 240, 240));
+	}
 	m_attrRow0 = NULL;
 	if (highlight_r0)
 	{
@@ -75,7 +79,8 @@ wxExtGridCellAttrProvider::wxExtGridCellAttrProvider(bool highlight_r0, bool hid
 
 wxExtGridCellAttrProvider::~wxExtGridCellAttrProvider()
 {
-	m_attrForOddRows->DecRef();
+	if (m_attrForOddRows)
+		m_attrForOddRows->DecRef();
 	if (m_attrRow0)
 		m_attrRow0->DecRef();
 	if (m_attrCell00)
@@ -168,8 +173,8 @@ wxGridCellAttr *wxExtGridCellAttrProvider::GetAttr(int row, int col,
 
 		return attr;
 	}
-/*
-	if (row % 2)
+
+	if (m_attrForOddRows && row % 2)
 	{
 		if (!attr)
 		{
@@ -187,7 +192,7 @@ wxGridCellAttr *wxExtGridCellAttrProvider::GetAttr(int row, int col,
 			}
 		}
 	}
-*/
+
 	return attr;
 }
 
