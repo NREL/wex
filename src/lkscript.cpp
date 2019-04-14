@@ -1002,6 +1002,8 @@ void fcall_contour(lk::invoke_t &cxt)
 		? s_curToplevelParent
 		: GetCurrentTopLevelWindow());
 
+	plot->SetBackgroundColour(*wxBLACK);
+
 	wxString cmap_name;
 	bool filled = false;
 	int decimals = -1;
