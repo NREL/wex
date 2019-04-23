@@ -30,7 +30,7 @@
 class wxExtGridCellAttrProvider : public wxGridCellAttrProvider
 {
 public:
-	wxExtGridCellAttrProvider(bool highlight_r0 = false, bool hide_00 = false, bool highlight_c0 = false);
+	wxExtGridCellAttrProvider(bool highlight_r0 = false, bool hide_00 = false, bool highlight_c0 = false, bool shadeAlternateRows = true);
 	virtual ~wxExtGridCellAttrProvider();
 
 	virtual wxGridCellAttr *GetAttr(int row, int col,

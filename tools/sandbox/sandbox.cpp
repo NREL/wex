@@ -389,7 +389,7 @@ void TestContourPlot()
 			if (ZZ(i, j) > zmax) zmax = ZZ(i, j);
 		}
 	}
-
+/*
 	// Example 2
 	wxPLContourPlot::Peaks(100, XX, YY, ZZ, &zmin, &zmax);
 
@@ -431,7 +431,7 @@ void TestContourPlot()
 	}
 	else
 		wxMessageBox("Could not load spray.csv");
-
+*/
 	//wxPLAxis::ExtendBoundsToNiceNumber( &zmax, &zmin );
 	wxPLColourMap *jet = new wxPLJetColourMap(zmin, zmax);
 	plot->SetSideWidget(jet);
@@ -443,6 +443,7 @@ void TestContourPlot()
 	//plot->SetYAxis1( new wxPLLinearAxis( 0, np ) );
 
 	frame->Show();
+
 }
 
 void TestPlotAnnotations(wxWindow *parent)
@@ -876,14 +877,16 @@ public:
 		//	int nf = wxFreeTypeLoadAllFonts();
 		//	wxMessageBox( wxString::Format("Loaded %d fonts in %d ms.", nf, (int)sw.Time()) );
 
-		TestPLPlot(0);
-		//TestPLPolarPlot(0);
-		TestPLBarPlot(0);
-		//TestContourPlot();
-		TestSectorPlot(0);
-		TestTextLayout();
+		TestContourPlot();
+
+//		TestPLPlot(0);
+//		TestPLPolarPlot(0);
+//		TestPLBarPlot(0);
+//		TestSectorPlot(0);
+//		TestTextLayout();
 		//TestFreeTypeText();
-		TestPlotAnnotations(0);
+//		TestPlotAnnotations(0);
+
 
 		//wxFrame *frmgl = new wxFrame( NULL, wxID_ANY, "GL Easy Test", wxDefaultPosition, wxSize(700,700) );
 		//new wxGLEasyCanvasTest( frmgl );

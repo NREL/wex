@@ -626,16 +626,16 @@ void wxDiurnalPeriodCtrl::OnLostFocus(wxFocusEvent &)
 	Refresh();
 }
 
-void wxDiurnalPeriodCtrl::SetData(float *data, size_t nr, size_t nc)
+void wxDiurnalPeriodCtrl::SetData(double *data, size_t nr, size_t nc)
 {
 	if (nr == m_nrows && nc == m_ncols)
 	{
-		memcpy(m_data, data, sizeof(float)*nr*nc);
+		memcpy(m_data, data, sizeof(double)*nr*nc);
 		Refresh();
 	}
 }
 
-float *wxDiurnalPeriodCtrl::GetData(size_t *nr, size_t *nc)
+double *wxDiurnalPeriodCtrl::GetData(size_t *nr, size_t *nc)
 {
 	*nr = m_nrows;
 	*nc = m_ncols;

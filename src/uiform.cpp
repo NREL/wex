@@ -1683,12 +1683,15 @@ EVT_BUTTON(wxID_ANY, wxUIPropertyEditor::OnButton)
 END_EVENT_TABLE();
 
 wxUIPropertyEditor::wxUIPropertyEditor(wxWindow *parent, int id, const wxPoint &pos, const wxSize &size)
-	: wxPanel(parent, id, pos, size, wxTAB_TRAVERSAL)
+	: wxScrolledWindow(parent, id, pos, size, wxTAB_TRAVERSAL)
 {
 	m_curObject = 0;
 	wxFlexGridSizer *sizer = new wxFlexGridSizer(2, 0, 0);
 	sizer->AddGrowableCol(1);
 	SetSizer(sizer);
+	// this part makes the scrollbars show up
+	FitInside(); // ask the sizer about the needed size
+	SetScrollRate(5, 5);
 }
 
 wxUIPropertyEditor::~wxUIPropertyEditor()
