@@ -173,7 +173,7 @@ private:
 	wxWindow *m_nativeObject;
 };
 
-class wxUIPropertyEditor : public wxPanel
+class wxUIPropertyEditor : public wxScrolledWindow
 {
 public:
 	wxUIPropertyEditor(wxWindow *parent, int id, const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize);

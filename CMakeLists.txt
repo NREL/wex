@@ -1,3 +1,9 @@
+#####################################################################################################################
+#
+# CMake and System Settings
+#
+#####################################################################################################################
+
 cmake_minimum_required(VERSION 3.12)
 
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
@@ -10,31 +16,24 @@ if(MSVC)
 	set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Debug and Release Builds Configured" FORCE)
 endif()
 
+
+#####################################################################################################################
+#
+# Project Settings 
+#
+#####################################################################################################################
+
 Project(wex C CXX)
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set(LK_DIR $ENV{LKDIR})
+
 if ( NOT APPLE)
 	set(CURL_DIR build_vs2017/libcurl_ssl_x64)
 endif()
-
-set(wxWidgets_CONFIG_EXECUTABLE /usr/local/bin/wx-config-3)
-find_package(wxWidgets REQUIRED xrc stc richtext ribbon propgrid aui gl html qa adv core xml net base)
-include(${wxWidgets_USE_FILE})
-
-
-if( UNIX AND NOT APPLE )
-	find_library(FONTCONFIG_LIBRARY NAMES fontconfig)
-endif()
-
-if( WIN32 )
-	find_package(OpenGL REQUIRED)
-endif()
-
-
-
 
 include_directories(include src/freetype/include ${LK_DIR}/include ${CURL_DIR}/include)
 
@@ -191,16 +190,12 @@ set(DVIEW_SRC
 	${LK_DIR}/src/sqlite3.c
 )
 
-set(MACOSX_BUNDLE_ICON_FILE DView.icns)
 
-if( APPLE )
-	set(DVIEW_ICON ${CMAKE_CURRENT_SOURCE_DIR}/build_osx/DView.icns)
-	set_source_files_properties(${DVIEW_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
-	set(APPS "\${CMAKE_INSTALL_PREFIX}/DView.app")
-elseif( WIN32 )
-	set(DVIEW_ICON ${CMAKE_CURRENT_SOURCE_DIR}/build_vs2013/dview.rc)
-	set(APPS "\${CMAKE_INSTALL_PREFIX}/DView.exe")
-endif()
+#####################################################################################################################
+#
+# Compile Options per Platform
+#
+#####################################################################################################################
 
 if( WIN32 )
 	if (MSVC)
@@ -218,6 +213,41 @@ else()
 endif()
 
 
+#####################################################################################################################
+#
+# Packages
+#
+#####################################################################################################################
+
+# setup wxWidgets
+if (UNIX)
+	set(wxWidgets_CONFIG_EXECUTABLE /usr/local/bin/wx-config-3)
+	find_package(wxWidgets REQUIRED xrc stc richtext ribbon propgrid aui gl html qa adv core xml net base)
+else()
+	set(wxWidgets_CONFIGURATION mswu)
+	set(wxWidgets_ROOT_DIR $ENV{WXMSW3})
+	find_package(wxWidgets REQUIRED xrc stc richtext ribbon propgrid aui gl html qa adv core xml net base scintilla)
+endif()
+
+include(${wxWidgets_USE_FILE})
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${wxWidgets_CXX_FLAGS}")
+
+if( UNIX AND NOT APPLE )
+	find_library(FONTCONFIG_LIBRARY NAMES fontconfig)
+endif()
+
+if( WIN32 )
+	find_package(OpenGL REQUIRED)
+endif()
+
+
+#####################################################################################################################
+# 
+# CMake Targets
+#
+#####################################################################################################################
+
+# wex
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	add_library(wexd STATIC ${WEX_SRC})
 	set(WEX_LIB wexd)
@@ -227,12 +257,19 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 else()
 	add_library(wex STATIC ${WEX_SRC})
 	set(WEX_LIB wex)
-
 endif()
 
 set_property(TARGET ${WEX_LIB} PROPERTY PREFIX "")
-target_link_libraries(${WEX_LIB} ${wxWidgets_LIBRARIES})
 
+if( APPLE )
+# dview bundle
+	set(DVIEW_ICON ${CMAKE_CURRENT_SOURCE_DIR}/build_osx/DView.icns)
+	set_source_files_properties(${DVIEW_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+	set(APPS "\${CMAKE_INSTALL_PREFIX}/DView.app")
+elseif( WIN32 )
+	set(DVIEW_ICON ${CMAKE_CURRENT_SOURCE_DIR}/build_vs2013/dview.rc)
+	set(APPS "\${CMAKE_INSTALL_PREFIX}/DView.exe")
+endif()
 
 add_executable(DView
 	WIN32
@@ -241,14 +278,28 @@ add_executable(DView
 	${DVIEW_ICON})
 
 
-target_link_libraries(DView ${WEX_LIB})
+#####################################################################################################################
+#
+# Link Libraries and Options
+#
+#####################################################################################################################
 
+target_link_libraries(${WEX_LIB} ${wxWidgets_LIBRARIES})
+
+target_link_libraries(DView ${WEX_LIB})
 
 if( WIN32 )
 	target_link_libraries(DView Winhttp)
 elseif( UNIX AND NOT APPLE )
 	target_link_libraries(DView ${CMAKE_DL_LIBS} ${FONTCONFIG_LIBRARY})
 endif()
+
+
+#####################################################################################################################
+#
+# Target Installation
+#
+#####################################################################################################################
 
 install(TARGETS DView DESTINATION . )
 
