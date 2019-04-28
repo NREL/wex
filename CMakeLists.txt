@@ -29,7 +29,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-set(LK_DIR $ENV{LKDIR})
+file(TO_CMAKE_PATH $ENV{LKDIR} LK_DIR)
 
 if ( NOT APPLE)
 	set(CURL_DIR build_vs2017/libcurl_ssl_x64)
@@ -178,10 +178,10 @@ set(WEX_SRC
 )
 
 if( WIN32 )
- list(APPEND WEX_SRC
-	src/ole/activex.cpp
-	src/ole/excelauto.cpp
-	src/ole/iehtmlwin.cpp
+	list(APPEND WEX_SRC
+		src/ole/activex.cpp
+		src/ole/excelauto.cpp
+		src/ole/iehtmlwin.cpp
  )
 endif()
 
@@ -199,7 +199,7 @@ set(DVIEW_SRC
 
 if( WIN32 )
 	if (MSVC)
-		add_compile_options(/W4 /WX)
+		add_compile_options(/W3)
 	endif()
 	add_compile_definitions(LK_USE_WXWIDGETS _UNICODE _MBCS _CRT_SECURE_NO_DEPRECATE=1 _CRT_NON_CONFORMING_SWPRINTFS=1 _SCL_SECURE_NO_WARNINGS=1 __WXMSW__  NOPCH FT2_BUILD_LIBRARY OPJ_STATIC FT_CONFIG_MODULES_H=\"slimftmodules.h\" FT_CONFIG_OPTIONS_H=\"slimftoptions.h\")
 else()
@@ -224,8 +224,12 @@ if (UNIX)
 	set(wxWidgets_CONFIG_EXECUTABLE /usr/local/bin/wx-config-3)
 	find_package(wxWidgets REQUIRED xrc stc richtext ribbon propgrid aui gl html qa adv core xml net base)
 else()
-	set(wxWidgets_CONFIGURATION mswu)
 	set(wxWidgets_ROOT_DIR $ENV{WXMSW3})
+	if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+		set(wxWidgets_CONFIGURATION mswud)
+	else()
+		set(wxWidgets_CONFIGURATION mswu)
+	endif()
 	find_package(wxWidgets REQUIRED xrc stc richtext ribbon propgrid aui gl html qa adv core xml net base scintilla)
 endif()
 
@@ -267,7 +271,7 @@ if( APPLE )
 	set_source_files_properties(${DVIEW_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
 	set(APPS "\${CMAKE_INSTALL_PREFIX}/DView.app")
 elseif( WIN32 )
-	set(DVIEW_ICON ${CMAKE_CURRENT_SOURCE_DIR}/build_vs2013/dview.rc)
+	set(DVIEW_ICON ${CMAKE_CURRENT_SOURCE_DIR}/build_vs2017/dview.rc)
 	set(APPS "\${CMAKE_INSTALL_PREFIX}/DView.exe")
 endif()
 
