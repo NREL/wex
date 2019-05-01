@@ -27,7 +27,7 @@ script:
   - export PATH=$PATH:$HOME/wx-3.1.1/bin
   - pwd
   - cd ${LKDIR} && cmake . -DCMAKE_BUILD_TYPE=Release && cmake --build . -j 2 --target lk
-  - cd ${HOME}/NREL/wex && cmake . -DCMAKE_BUILD_TYPE=Release && make -j2
+  - cd ${HOME}/build/NREL/wex && cmake . -DCMAKE_BUILD_TYPE=Release && make -j2
 
 install:
   # - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y libgtk-3-dev; fi
