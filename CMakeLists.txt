@@ -209,7 +209,7 @@ else()
 	endif()
 	add_compile_options(-Wall -Wno-unknown-pragmas -Wno-strict-aliasing)
 	add_compile_options(-O2 -fno-common ${wxWidgets_CXX_FLAGS})
-	add_compile_definitions(LK_USE_WXWIDGETS _CRT_SECURE_NO_WARNINGS _MBCS FT2_BUILD_LIBRARY OPJ_STATIC FT_CONFIG_MODULES_H=\"slimftmodules.h\" FT_CONFIG_OPTIONS_H=\"slimftoptions.h\") 
+	add_definitions(-DLK_USE_WXWIDGETS -D_CRT_SECURE_NO_WARNINGS -D_MBCS -DFT2_BUILD_LIBRARY -DOPJ_STATIC -DFT_CONFIG_MODULES_H=\"slimftmodules.h\" -DFT_CONFIG_OPTIONS_H=\"slimftoptions.h\") 
 endif()
 
 
