@@ -14,9 +14,8 @@ before_script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update && sudo apt-get install libglu1-mesa-dev freeglut3-dev mesa-common-dev libgtk2.0-dev; fi
   - wget -q https://github.com/wxWidgets/wxWidgets/releases/download/v3.1.1/wxWidgets-3.1.1.tar.bz2
   - tar jxf wxWidgets-3.1.1.tar.bz2
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then (cd wxWidgets-3.1.1 && ./configure --prefix=$HOME/wx-3.1.1 --enable-shared=no --enable-stl=yes --enable-debug=no --with-gtk=2 --with-libjpeg=builtin --with-libpng=builtin --with-regex=builtin --with-libtiff=builtin --with-zlib=builtin --with-expat=builtin --without-libjbig --without-liblzma --without-gtkprint --with-libnotify=no --with-libmspack=no --with-gnomevfs=no --with-opengl=yes --with-sdl=no --with-cxx=11); fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then (./configure --prefix=$HOME/wx-3.1.1 --enable-stl=yes --enable-debug=no --enable-shared=no --with-cocoa --enable-macosx_arch=x86_64 --enable-unicode --enable-webview --with-cxx=11 --with-macosx-version-min=10.9  --with-libjpeg=builtin --with-libpng=builtin --with-regex=builtin --with-libtiff=builtin --with-zlib=builtin --with-expat=builtin --disable-mediactrl); fi
-  - make -j2 all install
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then (cd wxWidgets-3.1.1 && ./configure --prefix=$HOME/wx-3.1.1 --enable-shared=no --enable-stl=yes --enable-debug=no --with-gtk=2 --with-libjpeg=builtin --with-libpng=builtin --with-regex=builtin --with-libtiff=builtin --with-zlib=builtin --with-expat=builtin --without-libjbig --without-liblzma --without-gtkprint --with-libnotify=no --with-libmspack=no --with-gnomevfs=no --with-opengl=yes --with-sdl=no --with-cxx=11 && make -j2 all install); fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then (cd wxWidgets-3.1.1 && ./configure --prefix=$HOME/wx-3.1.1 --enable-stl=yes --enable-debug=no --enable-shared=no --with-cocoa --enable-macosx_arch=x86_64 --enable-unicode --enable-webview --with-cxx=11 --with-macosx-version-min=10.9  --with-libjpeg=builtin --with-libpng=builtin --with-regex=builtin --with-libtiff=builtin --with-zlib=builtin --with-expat=builtin --disable-mediactrl   && make -j2 all install); fi
   - sudo ln -s $HOME/wx-3.1.1/bin/wx-config /usr/local/bin/wx-config-3
   - user=$(echo $TRAVIS_REPO_SLUG | sed 's,/.*$,,')
   - cd ../
