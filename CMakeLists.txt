@@ -201,7 +201,7 @@ set(DVIEW_SRC
 
 if( WIN32 )
 	if (MSVC)
-		add_compile_options(/W3)
+		add_compile_options(/W3 /MP)
 	endif()
 	add_compile_definitions(LK_USE_WXWIDGETS _UNICODE _MBCS _CRT_SECURE_NO_DEPRECATE=1 _CRT_NON_CONFORMING_SWPRINTFS=1 _SCL_SECURE_NO_WARNINGS=1 __WXMSW__  NOPCH FT2_BUILD_LIBRARY OPJ_STATIC FT_CONFIG_MODULES_H=\"slimftmodules.h\" FT_CONFIG_OPTIONS_H=\"slimftoptions.h\")
 else()
