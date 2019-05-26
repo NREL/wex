@@ -58,8 +58,8 @@ public:
 	void ClearLabels();
 	void ClearRowLabels();
 	void ClearColLabels();
-	void SetData(float *data, size_t nr, size_t nc);
-	float *GetData(size_t *nr, size_t *nc);
+	void SetData(double *data, size_t nr, size_t nc);
+	double *GetData(size_t *nr, size_t *nc);
 
 	bool Schedule(const wxString &sched);
 	wxString Schedule() const;
@@ -97,7 +97,7 @@ private:
 	static const size_t m_nrows = 12;
 	static const size_t m_ncols = 24;
 
-	float m_data[m_nrows*m_ncols];
+	double m_data[m_nrows*m_ncols];
 	int m_cols;
 
 	bool m_hasFocus, m_mouseDown;
