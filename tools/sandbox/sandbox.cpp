@@ -518,6 +518,56 @@ void TestSectorPlot(wxWindow *parent)
 	frame->Show();
 }
 
+void TestStackedBarPlot(wxWindow *parent)
+{
+	wxFrame *frame = new wxFrame(parent, wxID_ANY, wxT("wxPLPolarPlotCtrl in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(500, 400));
+	wxPLPlotCtrl *plot = new wxPLPlotCtrl(frame, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+	//plot->SetBackgroundColour( *wxWHITE );
+	plot->SetTitle(wxT("Demo Plot: using stuff"));
+
+	wxMTRand rng;
+	std::vector<wxRealPoint> bars1, bars2, bars3;
+	for (size_t i = 0; i < 16; i++)
+	{
+		bars1.push_back(wxRealPoint(i, rng()));
+		bars2.push_back(wxRealPoint(i, rng()));
+		bars3.push_back(wxRealPoint(i, rng()));
+	}
+
+	wxPLBarPlot *bar1 = new wxPLBarPlot(bars1, 0.0, "Bar1", *wxRED);
+	wxPLBarPlot *bar2 = new wxPLBarPlot(bars2, 0.0, "Bar2", *wxGREEN);
+	wxPLBarPlot *bar3 = new wxPLBarPlot(bars3, 0.0, "Bar3", *wxBLUE);
+
+//	std::vector<wxPLBarPlot*> group;
+//	group.push_back(bar1);
+//	group.push_back(bar2);
+//	group.push_back(bar3);
+
+//	bar1->SetGroup(group);
+//	bar2->SetGroup(group);
+//	bar3->SetGroup(group);
+
+	bar2->SetStackedOn(bar1);
+	bar3->SetStackedOn(bar2);
+
+
+	plot->AddPlot(bar1,wxPLPlotCtrl::X_BOTTOM, wxPLPlotCtrl::Y_LEFT, wxPLPlotCtrl::PLOT_TOP, true);
+	plot->AddPlot(bar2, wxPLPlotCtrl::X_BOTTOM, wxPLPlotCtrl::Y_LEFT, wxPLPlotCtrl::PLOT_TOP, true);
+	plot->AddPlot(bar3,wxPLPlotCtrl::X_BOTTOM, wxPLPlotCtrl::Y_LEFT, wxPLPlotCtrl::PLOT_TOP, true);
+
+	plot->X1().SetWorld(-1, 16);
+
+	std::vector<wxRealPoint> hb;
+	for (size_t i = 0; i < 48; i++)
+		hb.push_back(wxRealPoint(i, rng()));
+
+	plot->AddPlot(new wxPLBarPlot(hb, 0.0, "Test", *wxLIGHT_GREY), wxPLPlot::X_BOTTOM, wxPLPlot::Y_RIGHT, wxPLPlot::PLOT_BOTTOM);
+
+	frame->Show();
+}
+
+
+
 void TestPLBarPlot(wxWindow *parent)
 {
 	wxFrame *frame = new wxFrame(parent, wxID_ANY, wxT("wxPLPolarPlotCtrl in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(500, 400));
@@ -877,11 +927,12 @@ public:
 		//	int nf = wxFreeTypeLoadAllFonts();
 		//	wxMessageBox( wxString::Format("Loaded %d fonts in %d ms.", nf, (int)sw.Time()) );
 
-		TestContourPlot();
+//		TestContourPlot();
 
 //		TestPLPlot(0);
 //		TestPLPolarPlot(0);
 //		TestPLBarPlot(0);
+		TestStackedBarPlot(0);
 //		TestSectorPlot(0);
 //		TestTextLayout();
 		//TestFreeTypeText();
