@@ -518,6 +518,190 @@ void TestSectorPlot(wxWindow *parent)
 	frame->Show();
 }
 
+void TestStackedBarPlot(wxWindow *parent)
+{
+	wxFrame *frame = new wxFrame(parent, wxID_ANY, wxT("wxPLPolarPlotCtrl in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(500, 400));
+	wxPLPlotCtrl *plot = new wxPLPlotCtrl(frame, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+	//plot->SetBackgroundColour( *wxWHITE );
+	plot->SetTitle(wxT("Demo Plot: using stuff"));
+
+	wxMTRand rng;
+	std::vector<wxRealPoint> bars1, bars2, bars3;
+	for (size_t i = 0; i < 1; i++)
+	{
+		bars1.push_back(wxRealPoint(i, rng()));
+		bars2.push_back(wxRealPoint(i, rng()));
+		bars3.push_back(wxRealPoint(i, rng()));
+	}
+
+	wxPLBarPlot *bar1 = new wxPLBarPlot(bars1, 0.0, "Bar1", *wxRED);
+
+	wxPLBarPlot *bar2 = new wxPLBarPlot(bars2, 0.0, "Bar2", *wxGREEN);
+	bar2->SetStackedOn(bar1);
+	wxPLBarPlot *bar3 = new wxPLBarPlot(bars3, 0.0, "Bar3", *wxBLUE);
+	bar3->SetStackedOn(bar2);
+
+//	std::vector<wxPLBarPlot*> group;
+//	group.push_back(bar1);
+//	group.push_back(bar2);
+//	group.push_back(bar3);
+
+//	bar1->SetGroup(group);
+//	bar2->SetGroup(group);
+//	bar3->SetGroup(group);
+
+
+	plot->AddPlot(bar1,wxPLPlotCtrl::X_BOTTOM, wxPLPlotCtrl::Y_LEFT, wxPLPlotCtrl::PLOT_TOP, true);
+	plot->AddPlot(bar2, wxPLPlotCtrl::X_BOTTOM, wxPLPlotCtrl::Y_LEFT, wxPLPlotCtrl::PLOT_TOP, true);
+	plot->AddPlot(bar3,wxPLPlotCtrl::X_BOTTOM, wxPLPlotCtrl::Y_LEFT, wxPLPlotCtrl::PLOT_TOP, true);
+
+	plot->X1().SetWorld(-1, 1);
+/*
+	std::vector<wxRealPoint> hb;
+	for (size_t i = 0; i < 48; i++)
+		hb.push_back(wxRealPoint(i, rng()));
+
+	plot->AddPlot(new wxPLBarPlot(hb, 0.0, "Test", *wxLIGHT_GREY), wxPLPlot::X_BOTTOM, wxPLPlot::Y_RIGHT, wxPLPlot::PLOT_BOTTOM);
+*/
+	frame->Show();
+}
+
+void TestSAMStackedBarPlot(wxWindow *parent)
+{
+	wxFrame *frame = new wxFrame(parent, wxID_ANY, wxT("wxPLPolarPlotCtrl in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(500, 400));
+	wxPLPlotCtrl *plotctrl = new wxPLPlotCtrl(frame, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+	//plot->SetBackgroundColour( *wxWHITE );
+	wxArrayString yvars;
+	yvars.push_back("NPV1");
+	yvars.push_back("NPV2");
+	yvars.push_back("NPV3");
+	yvars.push_back("NPV4");
+	yvars.push_back("NPV5");
+	plotctrl->SetTitle(wxT("SAM Demo Plot: using stuff"));
+
+	std::vector<std::vector<wxRealPoint>> plotdata(yvars.size());
+
+	int cidx = 0; // colour index
+//	wxPLBarPlot *last_bar = 0;
+//	std::vector<wxPLBarPlot*> bar_group;
+	std::vector<wxColour> s_colours;
+	s_colours.push_back(wxColour(111, 164, 196));
+	s_colours.push_back(wxColour("GREY"));
+	s_colours.push_back(wxColour(181, 211, 227));
+	s_colours.push_back(*wxLIGHT_GREY);
+	s_colours.push_back(wxColour("PALE GREEN"));
+	s_colours.push_back(wxColour("GOLDENROD"));
+	s_colours.push_back(wxColour("MEDIUM VIOLET RED"));
+	s_colours.push_back(wxColour("MEDIUM SEA GREEN"));
+	s_colours.push_back(wxColour("DARK SLATE GREY"));
+	s_colours.push_back(wxColour("WHEAT"));
+	s_colours.push_back(wxColour("FIREBRICK"));
+	s_colours.push_back(wxColour("dark orchid"));
+	s_colours.push_back(wxColour("dim grey"));
+	s_colours.push_back(wxColour("brown"));
+
+
+	std::vector< wxPLBarPlot* > barplots(yvars.size());
+	wxMTRand rng;
+	
+	for (size_t i = 0; i < yvars.size(); i++)
+	{
+		plotdata[i].push_back(wxRealPoint(0, rng()));
+	}
+	std::vector<wxRealPoint> rp;
+	for (size_t i = 0; i < yvars.size(); i++)
+	{
+//		rp.clear();
+		// fails
+//		rp = plotdata[i];
+//		barplots[i] = new wxPLBarPlot(rp, 0.0, yvars[i], s_colours[cidx]);
+		/* works
+		for (size_t j = 0; j < yvars.size(); j++)
+		{
+			rp.push_back(wxRealPoint(j, rng()));
+		}
+		barplots[i] = new wxPLBarPlot(rp, 0.0, yvars[i], s_colours[cidx]);
+		for (size_t j = 0; j < plotdata[i].size(); j++)
+		{
+			wxRealPoint x = plotdata.at(i)[j];
+			rp.push_back(x);
+		}
+		*/
+
+//		rp=plotdata[i];
+		barplots[i] = new wxPLBarPlot(plotdata[i], 0.0, yvars[i], s_colours[cidx]);
+		if (i > 0)	barplots[i]->SetStackedOn(barplots[i - 1]);
+		if (++cidx >= (int)s_colours.size()) cidx = 0; // incr and wrap around colour index
+		plotctrl->AddPlot(barplots[i], wxPLPlotCtrl::X_BOTTOM, wxPLPlotCtrl::Y_LEFT, wxPLPlotCtrl::PLOT_TOP, true);
+	}
+	
+	/*
+
+	std::vector<wxRealPoint> rp1, rp2, rp3, rp4, rp5;
+	rp1.push_back(wxRealPoint(0, rng()));
+	rp2.push_back(wxRealPoint(0, rng()));
+	rp3.push_back(wxRealPoint(0, rng()));
+	rp4.push_back(wxRealPoint(0, rng()));
+	rp5.push_back(wxRealPoint(0, rng()));
+	for (size_t i = 0; i < barplots.size(); i++)
+	{
+		if (barplots[i] != 0)
+			plotctrl->AddPlot(barplots[i], wxPLPlotCtrl::X_BOTTOM, wxPLPlotCtrl::Y_LEFT, wxPLPlotCtrl::PLOT_TOP, true);
+	}
+	*/
+
+
+/* this works
+	wxPLBarPlot* bp1 = new wxPLBarPlot(rp1, 0.0, yvars[0], s_colours[0]);
+	wxPLBarPlot* bp2 = new wxPLBarPlot(rp2, 0.0, yvars[1], s_colours[1]);
+	wxPLBarPlot* bp3 = new wxPLBarPlot(rp3, 0.0, yvars[2], s_colours[2]);
+	wxPLBarPlot* bp4 = new wxPLBarPlot(rp4, 0.0, yvars[3], s_colours[3]);
+	wxPLBarPlot* bp5 = new wxPLBarPlot(rp5, 0.0, yvars[4], s_colours[4]);
+
+	bp2->SetStackedOn(bp1);
+	bp3->SetStackedOn(bp2);
+	bp4->SetStackedOn(bp3);
+	bp5->SetStackedOn(bp4);
+
+	plotctrl->AddPlot(bp1);
+	plotctrl->AddPlot(bp2);
+	plotctrl->AddPlot(bp3);
+	plotctrl->AddPlot(bp4);
+	plotctrl->AddPlot(bp5);
+*/
+/* this works 
+	barplots[0] = new wxPLBarPlot(rp1, 0.0, yvars[0], s_colours[0]);
+	barplots[1] = new wxPLBarPlot(rp2, 0.0, yvars[1], s_colours[1]);
+	barplots[2] = new wxPLBarPlot(rp3, 0.0, yvars[2], s_colours[2]);
+	barplots[3] = new wxPLBarPlot(rp4, 0.0, yvars[3], s_colours[3]);
+	barplots[4] = new wxPLBarPlot(rp5, 0.0, yvars[4], s_colours[4]);
+
+	for (size_t i = 0; i < barplots.size(); i++)
+	{
+		if (i>0) barplots[i]->SetStackedOn(barplots[i - 1]);
+		plotctrl->AddPlot(barplots[i], wxPLPlotCtrl::X_BOTTOM, wxPLPlotCtrl::Y_LEFT, wxPLPlotCtrl::PLOT_TOP, true);
+	}
+	*/
+/* this works 
+	std::vector<wxRealPoint> rp(1);
+	for (size_t i = 0; i < barplots.size(); i++)
+	{
+		rp.clear();
+		rp.push_back(wxRealPoint(0, rng()));
+		barplots[i] = new wxPLBarPlot(rp, 0.0, yvars[i], s_colours[i]);
+		if (i>0) barplots[i]->SetStackedOn(barplots[i - 1]);
+		plotctrl->AddPlot(barplots[i], wxPLPlotCtrl::X_BOTTOM, wxPLPlotCtrl::Y_LEFT, wxPLPlotCtrl::PLOT_TOP, true);
+	}
+*/
+	plotctrl->X1().SetWorld(-1, 1);
+
+
+	frame->Show();
+}
+
+
+
+
 void TestPLBarPlot(wxWindow *parent)
 {
 	wxFrame *frame = new wxFrame(parent, wxID_ANY, wxT("wxPLPolarPlotCtrl in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"), wxDefaultPosition, wxSize(500, 400));
@@ -877,11 +1061,13 @@ public:
 		//	int nf = wxFreeTypeLoadAllFonts();
 		//	wxMessageBox( wxString::Format("Loaded %d fonts in %d ms.", nf, (int)sw.Time()) );
 
-		TestContourPlot();
+//		TestContourPlot();
 
 //		TestPLPlot(0);
 //		TestPLPolarPlot(0);
 //		TestPLBarPlot(0);
+		TestStackedBarPlot(0);
+		TestSAMStackedBarPlot(0);
 //		TestSectorPlot(0);
 //		TestTextLayout();
 		//TestFreeTypeText();

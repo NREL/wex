@@ -119,7 +119,9 @@ double wxPLBarPlot::CalcYPos(double x) const
 	double y_start = m_baseline;
 
 	if (m_stackedOn && m_stackedOn != this)
+	{
 		y_start += m_stackedOn->CalcYPos(x);
+	}
 
 	for (size_t i = 0; i < Len(); i++)
 	{

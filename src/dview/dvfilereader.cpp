@@ -22,8 +22,6 @@
 *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-#include "../src/sqlite3.h"
-
 #include <algorithm>
 #include <iostream>
 #include <map>
@@ -46,6 +44,7 @@
 #include <wx/wfstream.h>
 #include <wx/dialog.h>
 
+#include <lk/../../src/sqlite3.h>
 
 #include "wex/dview/dvfilereader.h"
 #include "wex/dview/dvplotctrl.h"
