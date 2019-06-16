@@ -44,7 +44,7 @@
 #include <wx/wfstream.h>
 #include <wx/dialog.h>
 
-#include <lk/../../src/sqlite3.h>
+#include <lk/sqlite3.h>
 
 #include "wex/dview/dvfilereader.h"
 #include "wex/dview/dvplotctrl.h"
