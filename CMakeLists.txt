@@ -4,17 +4,19 @@
 #
 #####################################################################################################################
 
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.11)
 
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
-if (UNIX AND NOT CMAKE_C_COMPILER)
+if(APPLE)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
+elseif(MSVC)
+	set(CMAKE_SYSTEM_VERSION 8.1 CACHE TYPE INTERNAL FORCE)
+endif()
+
+if(UNIX AND NOT CMAKE_C_COMPILER)
 	set(CMAKE_C_COMPILER gcc)
 	set(CMAKE_CXX_COMPILER g++)
 endif()
 
-if(MSVC)
-	set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Debug and Release Builds Configured" FORCE)
-endif()
 
 
 #####################################################################################################################
@@ -199,7 +201,14 @@ set(DVIEW_SRC
 
 if( WIN32 )
 	if (MSVC)
-		add_compile_options(/W3)
+		add_compile_options(/W3 /MP)
+	endif()
+	if (CMAKE_BUILD_TYPE STREQUAL Debug)
+		add_compile_options(/MDd)
+		add_compile_definitions(_DEBUG)
+	else()
+		add_compile_options(/MD /O2)
+		add_compile_definitions(NDEBUG )
 	endif()
 	add_compile_definitions(LK_USE_WXWIDGETS _UNICODE _MBCS _CRT_SECURE_NO_DEPRECATE=1 _CRT_NON_CONFORMING_SWPRINTFS=1 _SCL_SECURE_NO_WARNINGS=1 __WXMSW__  NOPCH FT2_BUILD_LIBRARY OPJ_STATIC FT_CONFIG_MODULES_H=\"slimftmodules.h\" FT_CONFIG_OPTIONS_H=\"slimftoptions.h\")
 else()
@@ -208,8 +217,15 @@ else()
 		add_compile_options(-arch x86_64)
 	endif()
 	add_compile_options(-Wall -Wno-unknown-pragmas -Wno-strict-aliasing)
-	add_compile_options(-O2 -fno-common ${wxWidgets_CXX_FLAGS})
-	add_compile_definitions(LK_USE_WXWIDGETS _CRT_SECURE_NO_WARNINGS _MBCS FT2_BUILD_LIBRARY OPJ_STATIC FT_CONFIG_MODULES_H=\"slimftmodules.h\" FT_CONFIG_OPTIONS_H=\"slimftoptions.h\") 
+	add_compile_options( -fno-common ${wxWidgets_CXX_FLAGS})
+	add_definitions(-DLK_USE_WXWIDGETS -D_CRT_SECURE_NO_WARNINGS -D_MBCS -DFT2_BUILD_LIBRARY -DOPJ_STATIC -DFT_CONFIG_MODULES_H=\"slimftmodules.h\" -DFT_CONFIG_OPTIONS_H=\"slimftoptions.h\")
+	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+		set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
+		set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+		add_compile_definitions(_DEBUG)
+	else()
+		add_compile_options(-O3)
+	endif()
 endif()
 
 
