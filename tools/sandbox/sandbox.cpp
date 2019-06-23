@@ -879,13 +879,13 @@ public:
 
 		TestContourPlot();
 
-//		TestPLPlot(0);
+		TestPLPlot(0);
 //		TestPLPolarPlot(0);
 //		TestPLBarPlot(0);
 //		TestSectorPlot(0);
-//		TestTextLayout();
+		TestTextLayout();
 		//TestFreeTypeText();
-//		TestPlotAnnotations(0);
+		TestPlotAnnotations(0);
 
 
 		//wxFrame *frmgl = new wxFrame( NULL, wxID_ANY, "GL Easy Test", wxDefaultPosition, wxSize(700,700) );
