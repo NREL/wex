@@ -450,8 +450,6 @@ void TestWindPrufFigure2(wxWindow *parent)
 {
 	wxFrame *frame = new wxFrame(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(800, 400));
 	wxPLPlotCtrl *plot = new wxPLPlotCtrl(frame, wxID_ANY, wxDefaultPosition, wxDefaultSize);
-	//plot->SetBackgroundColour( *wxWHITE );
-//	plot->SetTitle(wxT("Example annotations plot for wind technologies in SAM"));
 	plot->ShowGrid(false, false);
 	std::vector<wxRealPoint> data1, data2;
 
@@ -462,8 +460,6 @@ void TestWindPrufFigure2(wxWindow *parent)
 	double sigma2 = mu2 / 40;
 
 	int interval = 1000;
-	//x1 = alloc(interval);
-	//y1 = alloc(interval);
 	double area1 = 0, area2 = 0, ymax=0;
 	for (int i = 0; i < interval; i++)
 	{
@@ -510,42 +506,14 @@ void TestWindPrufFigure2(wxWindow *parent)
 
 
 	plot->AddAnnotation(new wxPLTextAnnotation("Predicted Losses", wxRealPoint(mu2+ 0.4*(mu1-mu2), 0.95*ymax), 2.0, 0, *wxBLACK), wxPLAnnotation::AXIS);
-//	plot->AddAnnotation(new wxPLTextAnnotation("Origin_{0,0}", wxRealPoint(0, 0), -1, 0, *wxBLUE), wxPLAnnotation::FRACTIONAL);
 	plot->AddAnnotation(new wxPLTextAnnotation("Gross Energy P50", wxRealPoint(mu1, 0.5*ymax), 2.0, 90, *wxBLACK), wxPLAnnotation::AXIS);
 	plot->AddAnnotation(new wxPLTextAnnotation("Net Energy P50", wxRealPoint(mu2, 0.5*ymax), 2.0, 90, *wxBLUE), wxPLAnnotation::AXIS);
 	plot->AddAnnotation(new wxPLTextAnnotation("P90", wxRealPoint(p90, 0.1*ymax), 2.0, 0, *wxBLUE), wxPLAnnotation::AXIS);
-	//	plot->AddAnnotation(new wxPLTextAnnotation("Annotation \\phi\\Phi \nhere^2", wxRealPoint(10, 0), 2, 0, *wxRED, wxPLTextLayout::RIGHT), wxPLAnnotation::AXIS);
 	plot->GetYAxis1()->Show(false);
 	plot->GetXAxis1()->SetLabel("Annual Energy Delivered (kWh)");
 	plot->ShowLegend(false);
 	plot->SetBorderWidth(0);
 
-	/*
-
-	plot->AddAnnotation(new wxPLTextAnnotation("Annotation \\phi\\Phi \nhere^2", wxRealPoint(10, 0), 2, 0, *wxRED, wxPLTextLayout::RIGHT), wxPLAnnotation::AXIS);
-	plot->AddAnnotation(new wxPLTextAnnotation("Origin_{0,0}", wxRealPoint(0, 0), -1, 0, *wxBLUE), wxPLAnnotation::FRACTIONAL);
-	plot->AddAnnotation(new wxPLTextAnnotation("((175pt 175pt))", wxRealPoint(175, 175), 0, 90, *wxBLACK), wxPLAnnotation::POINTS);
-
-	std::vector<wxRealPoint> line1;
-	line1.push_back(wxRealPoint(5, 10));
-	line1.push_back(wxRealPoint(10, 0));
-	line1.push_back(wxRealPoint(15, -11));
-	plot->AddAnnotation(new wxPLLineAnnotation(line1, 3, *wxBLACK), wxPLAnnotation::AXIS);
-	line1.clear();
-	line1.push_back(wxRealPoint(10, 10));
-	line1.push_back(wxRealPoint(13, 11));
-	line1.push_back(wxRealPoint(17, 3));
-	line1.push_back(wxRealPoint(1, -3));
-	plot->AddAnnotation(new wxPLLineAnnotation(line1, 5, *wxRED, wxPLOutputDevice::DOT), wxPLAnnotation::AXIS);
-
-	line1.clear();
-	line1.push_back(wxRealPoint(17, 3));
-	line1.push_back(wxRealPoint(8, 9));
-	plot->AddAnnotation(new wxPLLineAnnotation(line1, 0.5, *wxBLUE, wxPLOutputDevice::DOT), wxPLAnnotation::AXIS);
-
-	plot->AddAnnotation(new wxPLBraceAnnotation(wxRealPoint(1, 9), wxRealPoint(3, 1), 1.0));
-	plot->AddAnnotation(new wxPLBraceAnnotation(wxRealPoint(1, 9), wxRealPoint(7, 1), 1.0));
-	*/
 	frame->Show();
 }
 

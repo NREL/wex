@@ -199,10 +199,8 @@ set(DVIEW_SRC
 #
 #####################################################################################################################
 
-if( WIN32 )
-	if (MSVC)
-		add_compile_options(/W3 /MP)
-	endif()
+if (MSVC)
+	add_compile_options(/W3 /MP)
 	if (CMAKE_BUILD_TYPE STREQUAL Debug)
 		add_compile_options(/MDd)
 		add_compile_definitions(_DEBUG)
@@ -256,9 +254,9 @@ if( UNIX AND NOT APPLE )
 	find_library(FONTCONFIG_LIBRARY NAMES fontconfig)
 endif()
 
-if( WIN32 )
-	find_package(OpenGL REQUIRED)
-endif()
+#if( MSVC )
+#	find_package(OpenGL REQUIRED)
+#endif()
 
 
 #####################################################################################################################
@@ -274,9 +272,13 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+	add_executable(sandboxd ${WEX_SRC} tools/sandbox/sandbox.cpp)
+	set(SANDBOX_EXE sandboxd)
 else()
 	add_library(wex STATIC ${WEX_SRC})
 	set(WEX_LIB wex)
+	add_executable(sandbox ${WEX_SRC} tools/sandbox/sandbox.cpp)
+	set(SANDBOX_EXE sandbox)
 endif()
 
 set_property(TARGET ${WEX_LIB} PROPERTY PREFIX "")
@@ -298,6 +300,10 @@ add_executable(DView
 	${DVIEW_ICON})
 
 
+if (MSVC)
+	set_target_properties(${SANDBOX_EXE} PROPERTIES LINK_FLAGS /SUBSYSTEM:WINDOWS)
+endif()
+
 #####################################################################################################################
 #
 # Link Libraries and Options
@@ -308,12 +314,25 @@ target_link_libraries(${WEX_LIB} ${wxWidgets_LIBRARIES})
 
 target_link_libraries(DView ${WEX_LIB})
 
-if( WIN32 )
+if( MSVC )
 	target_link_libraries(DView Winhttp)
 elseif( UNIX AND NOT APPLE )
 	target_link_libraries(DView ${CMAKE_DL_LIBS} ${FONTCONFIG_LIBRARY})
 endif()
 
+target_link_libraries(${SANDBOX_EXE} ${LK_LIB} ${WEX_LIB} ${wxWidgets_LIBRARIES})
+if (MSVC)
+	target_compile_definitions(${WEX_LIB}  ${LK_LIB} PUBLIC _LIB LK_USE_WXWIDGETS)
+	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${SANDBOX_EXE})
+endif()
+
+if (${CMAKE_PROJECT_NAME} STREQUAL export_config)
+	target_compile_definitions(${WEX_LIB}  ${LK_LIB} PUBLIC _export_config_ )
+endif()
+
+if (UNIX)
+	target_link_libraries(${SANDBOX_EXE} -ldl)
+endif()
 
 #####################################################################################################################
 #
