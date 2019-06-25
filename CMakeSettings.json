@@ -16,7 +16,7 @@
     {
       "name": "x64-Release",
       "generator": "Visual Studio 15 2017 Win64",
-      "configurationType": "RelWithDebInfo",
+      "configurationType": "Release",
       "inheritEnvironments": [
         "msvc_x64_x64"
       ],
