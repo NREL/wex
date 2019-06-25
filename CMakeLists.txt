@@ -265,20 +265,22 @@ endif()
 #
 #####################################################################################################################
 
-# wex
+# wex and wex_sandbox
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	add_library(wexd STATIC ${WEX_SRC})
 	set(WEX_LIB wexd)
 
+	add_executable(wexsandboxd ${WEX_SRC} tools/sandbox/sandbox.cpp)
+	set(WEXSANDBOX_EXE wexsandboxd)
+
 	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-	add_executable(sandboxd ${WEX_SRC} tools/sandbox/sandbox.cpp)
-	set(SANDBOX_EXE sandboxd)
 else()
 	add_library(wex STATIC ${WEX_SRC})
 	set(WEX_LIB wex)
-	add_executable(sandbox ${WEX_SRC} tools/sandbox/sandbox.cpp)
-	set(SANDBOX_EXE sandbox)
+
+	add_executable(wexsandbox ${WEX_SRC} tools/sandbox/sandbox.cpp)
+	set(WEXSANDBOX_EXE wexsandbox)
 endif()
 
 set_property(TARGET ${WEX_LIB} PROPERTY PREFIX "")
@@ -299,10 +301,10 @@ add_executable(DView
 	${DVIEW_SRC}
 	${DVIEW_ICON})
 
-
 if (MSVC)
-	set_target_properties(${SANDBOX_EXE} PROPERTIES LINK_FLAGS /SUBSYSTEM:WINDOWS)
+	set_target_properties(${WEXSANDBOX_EXE} PROPERTIES LINK_FLAGS /SUBSYSTEM:WINDOWS)
 endif()
+
 
 #####################################################################################################################
 #
@@ -310,29 +312,49 @@ endif()
 #
 #####################################################################################################################
 
+# wex
 target_link_libraries(${WEX_LIB} ${wxWidgets_LIBRARIES})
+if (MSVC)
+	target_compile_definitions(${WEX_LIB} PUBLIC _LIB LK_USE_WXWIDGETS)
+endif()
+if (${CMAKE_PROJECT_NAME} STREQUAL export_config)
+	target_compile_definitions(${WEX_LIB} PUBLIC _export_config_ )
+endif()
 
+# DView
 target_link_libraries(DView ${WEX_LIB})
-
 if( MSVC )
 	target_link_libraries(DView Winhttp)
 elseif( UNIX AND NOT APPLE )
 	target_link_libraries(DView ${CMAKE_DL_LIBS} ${FONTCONFIG_LIBRARY})
 endif()
 
-target_link_libraries(${SANDBOX_EXE} ${LK_LIB} ${WEX_LIB} ${wxWidgets_LIBRARIES})
-if (MSVC)
-	target_compile_definitions(${WEX_LIB}  ${LK_LIB} PUBLIC _LIB LK_USE_WXWIDGETS)
-	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${SANDBOX_EXE})
-endif()
-
-if (${CMAKE_PROJECT_NAME} STREQUAL export_config)
-	target_compile_definitions(${WEX_LIB}  ${LK_LIB} PUBLIC _export_config_ )
+# wex sandbox
+target_link_libraries(${WEXSANDBOX_EXE} ${WEX_LIB} ${wxWidgets_LIBRARIES})
+if (${CMAKE_PROJECT_NAME} STREQUAL system_advisor_model)
+	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+		target_link_libraries(${WEXSANDBOX_EXE} lkd)
+	else()
+		target_link_libraries(${WEXSANDBOX_EXE} lk)
+	endif()
+else()
+	unset(LK_LIB CACHE)
+	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+		find_library( LK_LIB
+				NAMES lkd.a lkd.lib
+				PATHS $ENV{LKDIR})
+	else()
+		find_library( LK_LIB
+				NAMES lk.a lk.lib
+				PATHS $ENV{LKDIR})
+	endif()
+	target_link_libraries(${WEXSANDBOX_EXE} ${LK_LIB})
 endif()
 
 if (UNIX)
-	target_link_libraries(${SANDBOX_EXE} -ldl)
+	target_link_libraries(${WEXSANDBOX_EXE} -ldl -lcurl)
 endif()
+
 
 #####################################################################################################################
 #
