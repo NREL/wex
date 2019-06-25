@@ -27,8 +27,8 @@ endif()
 
 Project(wex C CXX)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_CURRENT_SOURCE_DIR}>)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY $<1:${CMAKE_CURRENT_SOURCE_DIR}>)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 file(TO_CMAKE_PATH $ENV{LKDIR} LK_DIR)
@@ -353,6 +353,12 @@ endif()
 
 if (UNIX)
 	target_link_libraries(${WEXSANDBOX_EXE} -ldl -lcurl)
+elseif (MSVC)
+	find_library( CURL_LIB
+				NAMES libcurl.lib
+				PATHS $ENV{WEXDIR}/build_vs2017/libcurl_ssl_x64/lib)
+	target_link_libraries(${WEXSANDBOX_EXE} ${CURL_LIB})
+	target_link_libraries(${WEXSANDBOX_EXE} Winhttp)
 endif()
 
 
@@ -372,3 +378,21 @@ if(WIN32 OR APPLE)
 	")
 endif()
 
+set( LIBCURL_FILES
+   dbghelp.dll
+   libcurl.dll
+   libeay32.dll
+   libssh2.dll
+   msvcp140.dll
+   openssl.exe
+   ssleay32.dll
+   vcruntime140.dll
+)
+foreach( file_i ${LIBCURL_FILES})
+    add_custom_command(
+    TARGET ${WEXSANDBOX_EXE}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND}
+    ARGS -E copy $ENV{WEXDIR}/build_vs2017/libcurl_ssl_x64/bin/${file_i} ${CMAKE_CURRENT_SOURCE_DIR}
+)
+endforeach( file_i )
