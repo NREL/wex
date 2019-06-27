@@ -541,14 +541,23 @@ void TestWindPrufFigure5(wxWindow *parent)
 	{
 		double ws = i * interval;
 		double freq = rng.rand();
+		double power = 0;
+		if (ws > cut_in && ws < cut_out)
+		{
+			power = rated_power;
+		}
 		data1.push_back(wxRealPoint(ws, freq));
+		data2.push_back(wxRealPoint(ws, power));
 	}
 
 
 
 	plot->AddPlot(new wxPLBarPlot(data1, 0.0, "Wind speed frequency", wxColour("Blue")));
-	plot->AddPlot(new wxPLLinePlot(data2, "Turbine power", wxColour("Blue")));
+	plot->SetYAxis1(new wxPLLinearAxis(0, 1.0, "Wind speed frequecy"));
 
+	plot->AddPlot(new wxPLLinePlot(data2, "Turbine power", wxColour("Gray")),wxPLPlot::X_BOTTOM,wxPLPlot::Y_RIGHT);
+	plot->SetYAxis2(new wxPLLinearAxis(0, 1.05*rated_power, "Turbine power"));
+	/*
 	std::vector<wxRealPoint> p50LineGross;
 	p50LineGross.push_back(wxRealPoint(mu1, 1.1*ymax));
 	p50LineGross.push_back(wxRealPoint(mu1, 0));
@@ -580,7 +589,7 @@ void TestWindPrufFigure5(wxWindow *parent)
 	plot->GetXAxis1()->SetLabel("Annual Energy Delivered (kWh)");
 	plot->ShowLegend(false);
 	plot->SetBorderWidth(0);
-
+*/
 	frame->Show();
 }
 
@@ -1026,7 +1035,8 @@ public:
 //		TestTextLayout();
 		//TestFreeTypeText();
 //		TestPlotAnnotations(0);
-		TestWindPrufFigure2(0);
+		TestWindPrufFigure2(0);		
+		TestWindPrufFigure5(0);
 
 		//wxFrame *frmgl = new wxFrame( NULL, wxID_ANY, "GL Easy Test", wxDefaultPosition, wxSize(700,700) );
 		//new wxGLEasyCanvasTest( frmgl );
