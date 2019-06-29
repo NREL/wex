@@ -557,6 +557,16 @@ void TestWindPrufFigure5(wxWindow *parent)
 
 	plot->AddPlot(new wxPLLinePlot(data2, "Turbine power", wxColour("Gray")),wxPLPlot::X_BOTTOM,wxPLPlot::Y_RIGHT);
 	plot->SetYAxis2(new wxPLLinearAxis(0, 1.05*rated_power, "Turbine power"));
+
+
+	std::vector<wxRealPoint> PowerLine;
+	PowerLine.push_back(wxRealPoint(max_speed, rated_power));
+	PowerLine.push_back(wxRealPoint(0.5*max_speed, rated_power));
+	plot->AddAnnotation(new wxPLLineAnnotation(PowerLine, 2, *wxBLUE, wxPLOutputDevice::DASH), wxPLAnnotation::AXIS, wxPLPlot::X_BOTTOM, wxPLPlot::Y_RIGHT);
+
+	plot->ShowLegend(false);
+
+
 	/*
 	std::vector<wxRealPoint> p50LineGross;
 	p50LineGross.push_back(wxRealPoint(mu1, 1.1*ymax));
