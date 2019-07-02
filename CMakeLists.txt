@@ -8,8 +8,6 @@ cmake_minimum_required(VERSION 3.11)
 
 if(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
-elseif(MSVC)
-	set(CMAKE_SYSTEM_VERSION 8.1 CACHE TYPE INTERNAL FORCE)
 endif()
 
 if(UNIX AND NOT CMAKE_C_COMPILER)
@@ -27,8 +25,6 @@ endif()
 
 Project(wex C CXX)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_CURRENT_SOURCE_DIR}>)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY $<1:${CMAKE_CURRENT_SOURCE_DIR}>)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 file(TO_CMAKE_PATH $ENV{LKDIR} LK_DIR)
@@ -201,14 +197,10 @@ set(DVIEW_SRC
 
 if (MSVC)
 	add_compile_options(/W3 /MP)
-	if (CMAKE_BUILD_TYPE STREQUAL Debug)
-		add_compile_options(/MDd)
-		add_compile_definitions(_DEBUG)
-	else()
-		add_compile_options(/MD /O2)
-		add_compile_definitions(NDEBUG )
-	endif()
 	add_compile_definitions(LK_USE_WXWIDGETS _UNICODE _MBCS _CRT_SECURE_NO_DEPRECATE=1 _CRT_NON_CONFORMING_SWPRINTFS=1 _SCL_SECURE_NO_WARNINGS=1 __WXMSW__  NOPCH FT2_BUILD_LIBRARY OPJ_STATIC FT_CONFIG_MODULES_H=\"slimftmodules.h\" FT_CONFIG_OPTIONS_H=\"slimftoptions.h\")
+	foreach (flag_var CMAKE_C_FLAGS_DEBUG CMAKE_CXX_FLAGS_DEBUG)
+		set(${flag_var} "${${flag_var}} /D_DEBUG" CACHE STRING "compile flags" FORCE)
+	endforeach()
 else()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 	if (APPLE)
@@ -218,8 +210,6 @@ else()
 	add_compile_options( -fno-common ${wxWidgets_CXX_FLAGS})
 	add_definitions(-DLK_USE_WXWIDGETS -D_CRT_SECURE_NO_WARNINGS -D_MBCS -DFT2_BUILD_LIBRARY -DOPJ_STATIC -DFT_CONFIG_MODULES_H=\"slimftmodules.h\" -DFT_CONFIG_OPTIONS_H=\"slimftoptions.h\")
 	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-		set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
-		set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 		add_compile_definitions(_DEBUG)
 	else()
 		add_compile_options(-O3)
@@ -239,7 +229,7 @@ if (UNIX)
 	find_package(wxWidgets REQUIRED xrc stc richtext ribbon propgrid aui gl html qa adv core xml net base)
 else()
 	set(wxWidgets_ROOT_DIR $ENV{WXMSW3})
-	if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+	if (DEBUG_WXWIDGETS)
 		set(wxWidgets_CONFIGURATION mswud)
 	else()
 		set(wxWidgets_CONFIGURATION mswu)
@@ -254,9 +244,9 @@ if( UNIX AND NOT APPLE )
 	find_library(FONTCONFIG_LIBRARY NAMES fontconfig)
 endif()
 
-#if( MSVC )
-#	find_package(OpenGL REQUIRED)
-#endif()
+if( MSVC )
+	find_package(OpenGL REQUIRED)
+endif()
 
 
 #####################################################################################################################
@@ -265,25 +255,31 @@ endif()
 #
 #####################################################################################################################
 
-# wex and wex_sandbox
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	add_library(wexd STATIC ${WEX_SRC})
-	set(WEX_LIB wexd)
-
-	add_executable(wexsandboxd ${WEX_SRC} tools/sandbox/sandbox.cpp)
-	set(WEXSANDBOX_EXE wexsandboxd)
-
-	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-else()
-	add_library(wex STATIC ${WEX_SRC})
-	set(WEX_LIB wex)
-
-	add_executable(wexsandbox ${WEX_SRC} tools/sandbox/sandbox.cpp)
-	set(WEXSANDBOX_EXE wexsandbox)
+# wex 
+add_library(wex STATIC ${WEX_SRC})
+set_target_properties(wex
+    PROPERTIES
+    DEBUG_POSTFIX "d"
+	PREFIX ""
+	ARCHIVE_OUTPUT_DIRECTORY $<1:${CMAKE_CURRENT_SOURCE_DIR}>)
+if (MSVC)
+	set_target_properties(wex
+		PROPERTIES
+		LINK_FLAGS /SUBSYSTEM:CONSOLE)
 endif()
 
-set_property(TARGET ${WEX_LIB} PROPERTY PREFIX "")
+# wexsandbox
+add_executable(wexsandbox ${WEX_SRC} tools/sandbox/sandbox.cpp)
+set_target_properties(wexsandbox
+    PROPERTIES
+    DEBUG_POSTFIX "d"
+	RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_CURRENT_SOURCE_DIR}>)
+if (MSVC)
+	set_target_properties(wexsandbox
+		PROPERTIES
+		LINK_FLAGS /SUBSYSTEM:WINDOWS)
+endif()
+
 
 if( APPLE )
 # dview bundle
@@ -301,10 +297,6 @@ add_executable(DView
 	${DVIEW_SRC}
 	${DVIEW_ICON})
 
-if (MSVC)
-	set_target_properties(${WEXSANDBOX_EXE} PROPERTIES LINK_FLAGS /SUBSYSTEM:WINDOWS)
-endif()
-
 
 #####################################################################################################################
 #
@@ -313,16 +305,16 @@ endif()
 #####################################################################################################################
 
 # wex
-target_link_libraries(${WEX_LIB} ${wxWidgets_LIBRARIES})
+target_link_libraries(wex ${wxWidgets_LIBRARIES})
 if (MSVC)
-	target_compile_definitions(${WEX_LIB} PUBLIC _LIB LK_USE_WXWIDGETS)
+	target_compile_definitions(wex PUBLIC _LIB LK_USE_WXWIDGETS)
 endif()
 if (${CMAKE_PROJECT_NAME} STREQUAL export_config)
-	target_compile_definitions(${WEX_LIB} PUBLIC _export_config_ )
+	target_compile_definitions(wex PUBLIC _export_config_ )
 endif()
 
 # DView
-target_link_libraries(DView ${WEX_LIB})
+target_link_libraries(DView wex)
 if( MSVC )
 	target_link_libraries(DView Winhttp)
 elseif( UNIX AND NOT APPLE )
@@ -330,35 +322,29 @@ elseif( UNIX AND NOT APPLE )
 endif()
 
 # wex sandbox
-target_link_libraries(${WEXSANDBOX_EXE} ${WEX_LIB} ${wxWidgets_LIBRARIES})
+target_link_libraries(wexsandbox wex ${wxWidgets_LIBRARIES})
 if (${CMAKE_PROJECT_NAME} STREQUAL system_advisor_model)
-	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-		target_link_libraries(${WEXSANDBOX_EXE} lkd)
-	else()
-		target_link_libraries(${WEXSANDBOX_EXE} lk)
-	endif()
+	target_link_libraries(wexsandbox lk)
 else()
 	unset(LK_LIB CACHE)
-	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-		find_library( LK_LIB
-				NAMES lkd.a lkd.lib
-				PATHS $ENV{LKDIR})
-	else()
-		find_library( LK_LIB
-				NAMES lk.a lk.lib
-				PATHS $ENV{LKDIR})
-	endif()
-	target_link_libraries(${WEXSANDBOX_EXE} ${LK_LIB})
+	unset(LKD_LIB CACHE)
+	find_library( LKD_LIB
+		NAMES lkd.a lkd.lib
+		PATHS $ENV{LKDIR})
+	find_library( LK_LIB
+		NAMES lk.a lk.lib
+		PATHS $ENV{LKDIR})
+	target_link_libraries(wexsandbox debug ${LKD_LIB})
+	target_link_libraries(wexsandbox optimized ${LK_LIB})
 endif()
 
 if (UNIX)
-	target_link_libraries(${WEXSANDBOX_EXE} -ldl -lcurl)
+	target_link_libraries(wexsandbox -ldl -lcurl)
 elseif (MSVC)
 	find_library( CURL_LIB
 				NAMES libcurl.lib
 				PATHS $ENV{WEXDIR}/build_vs2017/libcurl_ssl_x64/lib)
-	target_link_libraries(${WEXSANDBOX_EXE} ${CURL_LIB})
-	target_link_libraries(${WEXSANDBOX_EXE} Winhttp)
+	target_link_libraries(wexsandbox ${CURL_LIB} Winhttp)
 endif()
 
 
@@ -390,7 +376,7 @@ set( LIBCURL_FILES
 )
 foreach( file_i ${LIBCURL_FILES})
     add_custom_command(
-    TARGET ${WEXSANDBOX_EXE}
+    TARGET wexsandbox
     POST_BUILD
     COMMAND ${CMAKE_COMMAND}
     ARGS -E copy $ENV{WEXDIR}/build_vs2017/libcurl_ssl_x64/bin/${file_i} ${CMAKE_CURRENT_SOURCE_DIR}
