@@ -518,6 +518,92 @@ void TestWindPrufFigure2(wxWindow *parent)
 }
 
 
+void TestWindPrufFigure5(wxWindow *parent)
+{
+	wxFrame *frame = new wxFrame(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(800, 400));
+	wxPLPlotCtrl *plot = new wxPLPlotCtrl(frame, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+	plot->ShowGrid(false, false);
+	std::vector<wxRealPoint> data1, data2;
+
+	// wind speed bins
+	// turbine curve
+
+	double rated_power = 5000; // kWh mean gross annual energy output
+	double rated_wind_speed = 20;
+	double max_speed = 40;
+	double cut_out = 30;
+	double cut_in = 7.5;
+
+	wxMTRand rng;
+
+	int interval = 2.5; // m/s bin
+	for (int i = 0; i < (int)(max_speed/interval); i++)
+	{
+		double ws = i * interval;
+		double freq = rng.rand();
+		double power = 0;
+		if (ws > cut_in && ws < cut_out)
+		{
+			power = rated_power;
+		}
+		data1.push_back(wxRealPoint(ws, freq));
+		data2.push_back(wxRealPoint(ws, power));
+	}
+
+
+
+	plot->AddPlot(new wxPLBarPlot(data1, 0.0, "Wind speed frequency", wxColour("Blue")));
+	plot->SetYAxis1(new wxPLLinearAxis(0, 1.0, "Wind speed frequecy"));
+
+	plot->AddPlot(new wxPLLinePlot(data2, "Turbine power", wxColour("Gray")),wxPLPlot::X_BOTTOM,wxPLPlot::Y_RIGHT);
+	plot->SetYAxis2(new wxPLLinearAxis(0, 1.05*rated_power, "Turbine power"));
+
+
+	std::vector<wxRealPoint> PowerLine;
+	PowerLine.push_back(wxRealPoint(max_speed, rated_power));
+	PowerLine.push_back(wxRealPoint(0.5*max_speed, rated_power));
+	plot->AddAnnotation(new wxPLLineAnnotation(PowerLine, 2, *wxBLUE, wxPLOutputDevice::DASH), wxPLAnnotation::AXIS, wxPLPlot::X_BOTTOM, wxPLPlot::Y_RIGHT);
+
+	plot->ShowLegend(false);
+
+
+	/*
+	std::vector<wxRealPoint> p50LineGross;
+	p50LineGross.push_back(wxRealPoint(mu1, 1.1*ymax));
+	p50LineGross.push_back(wxRealPoint(mu1, 0));
+	plot->AddAnnotation(new wxPLLineAnnotation(p50LineGross, 2, *wxBLACK, wxPLOutputDevice::DASH), wxPLAnnotation::AXIS);
+
+	std::vector<wxRealPoint> p50LineNet;
+	p50LineNet.push_back(wxRealPoint(mu2, 1.1*ymax));
+	p50LineNet.push_back(wxRealPoint(mu2, 0));
+	plot->AddAnnotation(new wxPLLineAnnotation(p50LineNet, 2, *wxBLUE, wxPLOutputDevice::DASH), wxPLAnnotation::AXIS);
+
+	double p90 = 0.94* mu2;
+	std::vector<wxRealPoint> p90LineNet;
+	p90LineNet.push_back(wxRealPoint(p90, 0.1*ymax));
+	p90LineNet.push_back(wxRealPoint(p90, 0));
+	plot->AddAnnotation(new wxPLLineAnnotation(p90LineNet, 2, *wxBLUE, wxPLOutputDevice::DASH), wxPLAnnotation::AXIS);
+
+
+	std::vector<wxRealPoint> LossArrow;
+	LossArrow.push_back(wxRealPoint(mu1, ymax));
+	LossArrow.push_back(wxRealPoint(mu2, ymax));
+	plot->AddAnnotation(new wxPLLineAnnotation(LossArrow, 2, *wxBLUE, wxPLOutputDevice::DASH, wxPLLineAnnotation::FILLED_ARROW), wxPLAnnotation::AXIS);
+
+
+	plot->AddAnnotation(new wxPLTextAnnotation("Predicted Losses", wxRealPoint(mu2 + 0.4*(mu1 - mu2), 0.95*ymax), 2.0, 0, *wxBLACK), wxPLAnnotation::AXIS);
+	plot->AddAnnotation(new wxPLTextAnnotation("Gross Energy P50", wxRealPoint(mu1, 0.5*ymax), 2.0, 90, *wxBLACK), wxPLAnnotation::AXIS);
+	plot->AddAnnotation(new wxPLTextAnnotation("Net Energy P50", wxRealPoint(mu2, 0.5*ymax), 2.0, 90, *wxBLUE), wxPLAnnotation::AXIS);
+	plot->AddAnnotation(new wxPLTextAnnotation("P90", wxRealPoint(p90, 0.1*ymax), 2.0, 0, *wxBLUE), wxPLAnnotation::AXIS);
+	plot->GetYAxis1()->Show(false);
+	plot->GetXAxis1()->SetLabel("Annual Energy Delivered (kWh)");
+	plot->ShowLegend(false);
+	plot->SetBorderWidth(0);
+*/
+	frame->Show();
+}
+
+
 
 void TestPlotAnnotations(wxWindow *parent)
 {
@@ -959,7 +1045,8 @@ public:
 //		TestTextLayout();
 		//TestFreeTypeText();
 //		TestPlotAnnotations(0);
-		TestWindPrufFigure2(0);
+		TestWindPrufFigure2(0);		
+		TestWindPrufFigure5(0);
 
 		//wxFrame *frmgl = new wxFrame( NULL, wxID_ANY, "GL Easy Test", wxDefaultPosition, wxSize(700,700) );
 		//new wxGLEasyCanvasTest( frmgl );
