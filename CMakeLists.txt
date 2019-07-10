@@ -322,7 +322,6 @@ elseif( UNIX AND NOT APPLE )
 endif()
 
 # wex sandbox
-target_link_libraries(wexsandbox wex ${wxWidgets_LIBRARIES})
 if (${CMAKE_PROJECT_NAME} STREQUAL system_advisor_model)
 	target_link_libraries(wexsandbox lk)
 else()
@@ -337,6 +336,7 @@ else()
 	target_link_libraries(wexsandbox debug ${LKD_LIB})
 	target_link_libraries(wexsandbox optimized ${LK_LIB})
 endif()
+target_link_libraries(wexsandbox wex ${wxWidgets_LIBRARIES})
 
 if (UNIX)
 	target_link_libraries(wexsandbox -ldl -lcurl)
@@ -364,21 +364,23 @@ if(WIN32 OR APPLE)
 	")
 endif()
 
-set( LIBCURL_FILES
-   dbghelp.dll
-   libcurl.dll
-   libeay32.dll
-   libssh2.dll
-   msvcp140.dll
-   openssl.exe
-   ssleay32.dll
-   vcruntime140.dll
-)
-foreach( file_i ${LIBCURL_FILES})
-    add_custom_command(
-    TARGET wexsandbox
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND}
-    ARGS -E copy $ENV{WEXDIR}/build_vs2017/libcurl_ssl_x64/bin/${file_i} ${CMAKE_CURRENT_SOURCE_DIR}
-)
-endforeach( file_i )
+if (MSVC)
+	set( LIBCURL_FILES
+	   dbghelp.dll
+	   libcurl.dll
+	   libeay32.dll
+	   libssh2.dll
+	   msvcp140.dll
+	   openssl.exe
+	   ssleay32.dll
+	   vcruntime140.dll
+	)
+	foreach( file_i ${LIBCURL_FILES})
+	    add_custom_command(
+	    TARGET wexsandbox
+	    POST_BUILD
+	    COMMAND ${CMAKE_COMMAND}
+	    ARGS -E copy $ENV{WEXDIR}/build_vs2017/libcurl_ssl_x64/bin/${file_i} ${CMAKE_CURRENT_SOURCE_DIR}
+	)
+	endforeach( file_i )
+endif()
