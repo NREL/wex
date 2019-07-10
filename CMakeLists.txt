@@ -325,15 +325,17 @@ endif()
 if (${CMAKE_PROJECT_NAME} STREQUAL system_advisor_model)
 	target_link_libraries(wexsandbox lk)
 else()
+	if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR MSVC)
+		unset(LKD_LIB CACHE)
+		find_library( LKD_LIB
+			NAMES lkd.a lkd.lib
+			PATHS $ENV{LKDIR})
+		target_link_libraries(wexsandbox debug ${LKD_LIB})
+	endif()
 	unset(LK_LIB CACHE)
-	unset(LKD_LIB CACHE)
-	find_library( LKD_LIB
-		NAMES lkd.a lkd.lib
-		PATHS $ENV{LKDIR})
 	find_library( LK_LIB
 		NAMES lk.a lk.lib
 		PATHS $ENV{LKDIR})
-	target_link_libraries(wexsandbox debug ${LKD_LIB})
 	target_link_libraries(wexsandbox optimized ${LK_LIB})
 endif()
 target_link_libraries(wexsandbox wex ${wxWidgets_LIBRARIES})
