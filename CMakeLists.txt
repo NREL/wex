@@ -378,11 +378,12 @@ if (MSVC)
 	   vcruntime140.dll
 	)
 	foreach( file_i ${LIBCURL_FILES})
+		file(TO_CMAKE_PATH $ENV{WEXDIR}/build_vs2017/libcurl_ssl_x64/bin/${file_i} LIB_PATH)
 	    add_custom_command(
-	    TARGET wexsandbox
-	    POST_BUILD
-	    COMMAND ${CMAKE_COMMAND}
-	    ARGS -E copy $ENV{WEXDIR}/build_vs2017/libcurl_ssl_x64/bin/${file_i} ${CMAKE_CURRENT_SOURCE_DIR}
-	)
+		    TARGET wexsandbox
+		    POST_BUILD
+		    COMMAND ${CMAKE_COMMAND}
+		    ARGS -E copy ${LIB_PATH} ${CMAKE_CURRENT_SOURCE_DIR}
+		)
 	endforeach( file_i )
 endif()
