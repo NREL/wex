@@ -229,11 +229,6 @@ if (UNIX)
 	find_package(wxWidgets REQUIRED xrc stc richtext ribbon propgrid aui gl html qa adv core xml net base)
 else()
 	set(wxWidgets_ROOT_DIR $ENV{WXMSW3})
-	if (DEBUG_WXWIDGETS)
-		set(wxWidgets_CONFIGURATION mswud)
-	else()
-		set(wxWidgets_CONFIGURATION mswu)
-	endif()
 	find_package(wxWidgets REQUIRED xrc stc richtext ribbon propgrid aui gl html qa adv core xml net base scintilla)
 endif()
 
@@ -261,7 +256,7 @@ set_target_properties(wex
     PROPERTIES
     DEBUG_POSTFIX "d"
 	PREFIX ""
-	ARCHIVE_OUTPUT_DIRECTORY $<1:${CMAKE_CURRENT_SOURCE_DIR}>)
+	)
 if (MSVC)
 	set_target_properties(wex
 		PROPERTIES
@@ -273,7 +268,7 @@ add_executable(wexsandbox ${WEX_SRC} tools/sandbox/sandbox.cpp)
 set_target_properties(wexsandbox
     PROPERTIES
     DEBUG_POSTFIX "d"
-	RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_CURRENT_SOURCE_DIR}>)
+	)
 if (MSVC)
 	set_target_properties(wexsandbox
 		PROPERTIES
@@ -329,13 +324,13 @@ else()
 		unset(LKD_LIB CACHE)
 		find_library( LKD_LIB
 			NAMES lkd.a lkd.lib
-			PATHS $ENV{LKDIR})
+			PATHS $ENV{LKDIR}/build $ENV{LKDIR}/build/Debug)
 		target_link_libraries(wexsandbox debug ${LKD_LIB})
 	endif()
 	unset(LK_LIB CACHE)
 	find_library( LK_LIB
 		NAMES lk.a lk.lib
-		PATHS $ENV{LKDIR})
+		PATHS $ENV{LKDIR}/build $ENV{LKDIR}/build/Release)
 	target_link_libraries(wexsandbox optimized ${LK_LIB})
 endif()
 target_link_libraries(wexsandbox wex ${wxWidgets_LIBRARIES})
@@ -356,9 +351,8 @@ endif()
 #
 #####################################################################################################################
 
-install(TARGETS DView DESTINATION . )
-
-if(WIN32 OR APPLE)
+if(APPLE)
+	install(TARGETS DView DESTINATION . )
 	install(CODE "
 		include(BundleUtilities)
 		set(BU_CHMOD_BUNDLE_ITEMS true)
