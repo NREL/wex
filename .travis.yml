@@ -21,12 +21,11 @@ before_script:
   - cd ../
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export LKDIR=/home/travis/build/$user/lk; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export LKDIR=/Users/travis/build/$user/lk; fi
-  - git clone -b CMake https://github.com/nrel/lk $LKDIR
+  - git clone https://github.com/nrel/lk $LKDIR
 
 script:
   - export PATH=$PATH:$HOME/wx-3.1.1/bin
-  - pwd
-  - cd ${LKDIR} && cmake . -DCMAKE_BUILD_TYPE=Release && cmake --build . --target lk -- -j2
+  - mkdir ${LKDIR}/build && cd ${LKDIR}/build && cmake .. -DCMAKE_BUILD_TYPE=Release && cmake --build . --target lk -- -j2
   - cd ${HOME}/build/NREL/wex && cmake . -DCMAKE_BUILD_TYPE=Release && make -j2
 
 install:
