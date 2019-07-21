@@ -186,6 +186,7 @@ public:
 		AddProperty("Bold", new wxUIProperty(true));
 		Property("Width").Set(360);
 		Property("Height").Set(180);
+		Show(true);
 	}
 	virtual wxString GetTypeName() { return "GroupBox"; }
 	virtual wxUIObject *Duplicate() { wxUIObject *gb = new wxUIGroupBoxObject; gb->Copy(this); return gb; }
@@ -199,29 +200,32 @@ public:
 	}
 	virtual void Draw(wxWindow *win, wxDC &dc, const wxRect &geom)
 	{
-		wxString caption = Property("Caption").GetString();
-
-		int x = 0, y = 7;
-
-		if (!caption.IsEmpty())
+		if (IsVisible())
 		{
-			wxFont font(*wxNORMAL_FONT);
-			if (Property("Bold").GetBoolean()) font.SetWeight(wxFONTWEIGHT_BOLD);
-			dc.SetFont(font);
-			dc.GetTextExtent(caption, &x, &y);
-		}
+			wxString caption = Property("Caption").GetString();
 
-		dc.SetBrush(*wxTRANSPARENT_BRUSH);
-		dc.SetPen(wxPen(wxColour(135, 135, 135)));
-		dc.DrawRectangle(geom.x, geom.y + y / 2, geom.width, geom.height - y / 2 - 1);
+			int x = 0, y = 7;
 
-		if (!caption.IsEmpty())
-		{
-			dc.SetBrush(wxBrush(win->GetBackgroundColour()));
-			dc.SetPen(*wxTRANSPARENT_PEN);
-			dc.DrawRectangle(geom.x + 5, geom.y, x + 2, y + 1);
-			dc.SetTextForeground(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNTEXT));
-			dc.DrawText(caption, geom.x + 6, geom.y);
+			if (!caption.IsEmpty())
+			{
+				wxFont font(*wxNORMAL_FONT);
+				if (Property("Bold").GetBoolean()) font.SetWeight(wxFONTWEIGHT_BOLD);
+				dc.SetFont(font);
+				dc.GetTextExtent(caption, &x, &y);
+			}
+
+			dc.SetBrush(*wxTRANSPARENT_BRUSH);
+			dc.SetPen(wxPen(wxColour(135, 135, 135)));
+			dc.DrawRectangle(geom.x, geom.y + y / 2, geom.width, geom.height - y / 2 - 1);
+
+			if (!caption.IsEmpty())
+			{
+				dc.SetBrush(wxBrush(win->GetBackgroundColour()));
+				dc.SetPen(*wxTRANSPARENT_PEN);
+				dc.DrawRectangle(geom.x + 5, geom.y, x + 2, y + 1);
+				dc.SetTextForeground(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNTEXT));
+				dc.DrawText(caption, geom.x + 6, geom.y);
+			}
 		}
 	}
 };
@@ -376,6 +380,7 @@ public:
 		AddProperty("WordWrap", new wxUIProperty(false));
 		AddProperty("AlignRight", new wxUIProperty(false));
 		AddProperty("AlignTop", new wxUIProperty(false));
+		Show(true);
 	}
 	virtual wxString GetTypeName() { return "Label"; }
 	virtual wxUIObject *Duplicate() { wxUIObject *o = new wxUILabelObject; o->Copy(this); return o; }
