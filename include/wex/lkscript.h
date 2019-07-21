@@ -122,7 +122,7 @@ private:
 	wxArrayString m_syntaxErrorMessages;
 	wxCriticalSection m_syntaxCheckCS;
 
-	virtual wxThread::ExitCode Entry();
+	wxThread::ExitCode Entry();
 	void OnSyntaxCheckThreadFinished(wxThreadEvent& evt);
 	void StartSyntaxCheckThread();
 
