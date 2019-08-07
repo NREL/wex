@@ -529,7 +529,6 @@ void TestWindPrufFigure5(wxWindow *parent)
 	// turbine curve
 
 	double rated_power = 5000; // kWh mean gross annual energy output
-	double rated_wind_speed = 20;
 	double max_speed = 40;
 	double cut_out = 30;
 	double cut_in = 7.5;
