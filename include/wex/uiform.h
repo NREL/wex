@@ -137,6 +137,9 @@ public:
 	wxWindow *GetNative() { return m_nativeObject; }
 	template<typename c> c*GetNative() { return dynamic_cast<c*>(m_nativeObject); }
 
+	void SetToolTip(const wxString &str);
+	wxString GetToolTip();
+
 	void SetName(const wxString &name);
 	wxString GetName();
 	void SetGeometry(const wxRect &r);
@@ -163,6 +166,7 @@ protected:
 private:
 	void DeleteProperties();
 	bool m_visible;
+	wxString m_toolTip;
 	struct propdata { wxString name, lowered; wxUIProperty *prop; };
 	std::vector<propdata> m_properties;
 
