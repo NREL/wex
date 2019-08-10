@@ -114,7 +114,7 @@ wxLatexDCImpl::~wxLatexDCImpl()
 
 	write(wxT("\\end{pspicture}\n"));
 	if (m_outfile) {
-		m_outfile->Write(m_outstring, strlen((const char *)m_outstring));
+		m_outfile->Write(m_outstring.mb_str(), strlen(m_outstring.mb_str()));
 		m_OK = m_outfile->Ok();
 		m_outfile->Close();
 		delete m_outfile;
