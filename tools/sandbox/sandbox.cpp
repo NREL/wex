@@ -51,7 +51,7 @@ public:
 		wxInitAllImageHandlers();
 		wxFrame *frm = new wxFrame(NULL, wxID_ANY, "SchedCtrl", wxDefaultPosition, wxSize(300, 200));
 		frm->SetBackgroundColour(*wxWHITE);
-//		wxStaticBitmap *bitmap = new wxStaticBitmap(frm, wxID_ANY, wxBITMAP_PNG_FROM_DATA(time));
+		wxStaticBitmap *bitmap = new wxStaticBitmap(frm, wxID_ANY, wxBITMAP_PNG_FROM_DATA(time));
 
 		frm->Show();
 		return true;
@@ -1382,4 +1382,4 @@ public:
 	}
 };
 
-IMPLEMENT_APP(MyApp);
+ IMPLEMENT_APP(MyApp);

@@ -36,7 +36,7 @@
 #include <wx/mstream.h>
 #include <wx/sstream.h>
 #include <wx/filename.h>
-#include <wx/richtooltip.h>
+//#include <wx/richtooltip.h>
 
 #include <wex/extgrid.h>
 #include <wex/label.h>
@@ -1409,19 +1409,22 @@ wxString wxUIObject::GetName()
 	return Property("Name").GetString();
 }
 
-void wxUIObject::SetToolTip(const wxString &str)
+void wxUIObject::SetTip(const wxString &str)
 {
 	Property("Tool tip").Set(str);
 
 	if (!str.IsEmpty() && m_nativeObject != 0)
 	{
-		wxRichToolTip tip("Information", str);
-		tip.SetIcon(wxICON_WARNING);
-		tip.ShowFor(m_nativeObject);
+//		wxRichToolTip tip("Information", str);
+//		tip.SetIcon(wxICON_WARNING);
+//		tip.ShowFor(m_nativeObject);
+		wxString tmp = str;
+		tmp.Replace(wxT("\\n"), wxT("\n"));
+		m_nativeObject->SetToolTip(tmp);
 	}
 }
 
-wxString wxUIObject::GetToolTip()
+wxString wxUIObject::GetTip()
 {
 	return Property("Tool Tip").GetString();
 }

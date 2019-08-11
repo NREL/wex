@@ -137,8 +137,8 @@ public:
 	wxWindow *GetNative() { return m_nativeObject; }
 	template<typename c> c*GetNative() { return dynamic_cast<c*>(m_nativeObject); }
 
-	void SetToolTip(const wxString &str);
-	wxString GetToolTip();
+	void SetTip(const wxString &str);
+	wxString GetTip();
 
 	void SetName(const wxString &name);
 	wxString GetName();
