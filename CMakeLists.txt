@@ -376,7 +376,7 @@ if (MSVC)
 	set(WEXSB_DIR ${CMAKE_CURRENT_BINARY_DIR}/$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>)
 
 	foreach( file_i ${LIBCURL_FILES})
-		file(TO_CMAKE_PATH build_vs2017/libcurl_ssl_x64/bin/${file_i} LIB_PATH)
+		file(TO_CMAKE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/build_vs2017/libcurl_ssl_x64/bin/${file_i} LIB_PATH)
 	    add_custom_command(
 		    TARGET wexsandbox
 		    POST_BUILD
