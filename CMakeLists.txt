@@ -329,13 +329,13 @@ else()
 		unset(LKD_LIB CACHE)
 		find_library( LKD_LIB
 			NAMES lkd.a lkd.lib
-			PATHS ../lk/build ../lk/build/Debug)
+			PATHS ../lk/build ../lk/build_msvc/Debug)
 		target_link_libraries(wexsandbox debug ${LKD_LIB})
 	endif()
 	unset(LK_LIB CACHE)
 	find_library( LK_LIB
 		NAMES lk.a lk.lib
-		PATHS ../lk/build ../lk/build/Release)
+		PATHS ../lk/build ../lk/build_msvc/Release)
 	target_link_libraries(wexsandbox optimized ${LK_LIB})
 endif()
 target_link_libraries(wexsandbox wex ${wxWidgets_LIBRARIES})

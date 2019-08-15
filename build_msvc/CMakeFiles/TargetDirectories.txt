@@ -1,0 +1,5 @@
+C:/SAM-Development/sam/wex/build_msvc/CMakeFiles/wex.dir
+C:/SAM-Development/sam/wex/build_msvc/CMakeFiles/DView.dir
+C:/SAM-Development/sam/wex/build_msvc/CMakeFiles/wexsandbox.dir
+C:/SAM-Development/sam/wex/build_msvc/CMakeFiles/ALL_BUILD.dir
+C:/SAM-Development/sam/wex/build_msvc/CMakeFiles/ZERO_CHECK.dir
