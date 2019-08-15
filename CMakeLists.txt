@@ -259,7 +259,7 @@ if (MSVC)
 		LINK_FLAGS /SUBSYSTEM:CONSOLE)
 endif()
 
-target_include_directories(wex PUBLIC include src/freetype/include ../lk/include ${CURL_DIR}/include)
+target_include_directories(wex PRIVATE include src/freetype/include ../lk/include ${CURL_DIR}/include)
 
 # wexsandbox
 add_executable(wexsandbox ${WEX_SRC} tools/sandbox/sandbox.cpp)
@@ -273,7 +273,7 @@ if (MSVC)
 		LINK_FLAGS /SUBSYSTEM:WINDOWS)
 endif()
 
-target_include_directories(wexsandbox PUBLIC include src/freetype/include ../lk/include ${CURL_DIR}/include)
+target_include_directories(wexsandbox SYSTEM PRIVATE include src/freetype/include ../lk/include ${CURL_DIR}/include)
 
 if( APPLE )
 # dview bundle
@@ -290,6 +290,9 @@ add_executable(DView
 	MACOSX_BUNDLE
 	${DVIEW_SRC}
 	${DVIEW_ICON})
+
+target_include_directories(DView SYSTEM PRIVATE include src/freetype/include ../lk/include ${CURL_DIR}/include)
+
 set_target_properties(DView
     PROPERTIES
     DEBUG_POSTFIX "d"
