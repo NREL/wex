@@ -27,13 +27,9 @@ Project(wex C CXX)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-file(TO_CMAKE_PATH $ENV{LKDIR} LK_DIR)
-
 if ( NOT APPLE)
 	set(CURL_DIR build_vs2017/libcurl_ssl_x64)
 endif()
-
-include_directories(include src/freetype/include ${LK_DIR}/include ${CURL_DIR}/include)
 
 set(WEX_SRC
 	src/clipper/clipper.cpp
@@ -185,7 +181,7 @@ endif()
 
 set(DVIEW_SRC
 	tools/dview/dview.cpp
-	${LK_DIR}/src/sqlite3.c
+	../lk/src/sqlite3.c
 )
 
 
@@ -263,6 +259,8 @@ if (MSVC)
 		LINK_FLAGS /SUBSYSTEM:CONSOLE)
 endif()
 
+target_include_directories(wex PRIVATE include src/freetype/include ../lk/include ${CURL_DIR}/include)
+
 # wexsandbox
 add_executable(wexsandbox ${WEX_SRC} tools/sandbox/sandbox.cpp)
 set_target_properties(wexsandbox
@@ -275,6 +273,7 @@ if (MSVC)
 		LINK_FLAGS /SUBSYSTEM:WINDOWS)
 endif()
 
+target_include_directories(wexsandbox SYSTEM PRIVATE include src/freetype/include ../lk/include ${CURL_DIR}/include)
 
 if( APPLE )
 # dview bundle
@@ -291,6 +290,9 @@ add_executable(DView
 	MACOSX_BUNDLE
 	${DVIEW_SRC}
 	${DVIEW_ICON})
+
+target_include_directories(DView SYSTEM PRIVATE include src/freetype/include ../lk/include ${CURL_DIR}/include)
+
 set_target_properties(DView
     PROPERTIES
     DEBUG_POSTFIX "d"
@@ -327,13 +329,13 @@ else()
 		unset(LKD_LIB CACHE)
 		find_library( LKD_LIB
 			NAMES lkd.a lkd.lib
-			PATHS $ENV{LKDIR}/build $ENV{LKDIR}/build/Debug)
+			PATHS ../lk/build ../lk/build_msvc/Debug)
 		target_link_libraries(wexsandbox debug ${LKD_LIB})
 	endif()
 	unset(LK_LIB CACHE)
 	find_library( LK_LIB
 		NAMES lk.a lk.lib
-		PATHS $ENV{LKDIR}/build $ENV{LKDIR}/build/Release)
+		PATHS ../lk/build ../lk/build_msvc/Release)
 	target_link_libraries(wexsandbox optimized ${LK_LIB})
 endif()
 target_link_libraries(wexsandbox wex ${wxWidgets_LIBRARIES})
@@ -343,7 +345,7 @@ if (UNIX)
 elseif (MSVC)
 	find_library( CURL_LIB
 				NAMES libcurl.lib
-				PATHS $ENV{WEXDIR}/build_vs2017/libcurl_ssl_x64/lib)
+				PATHS build_vs2017/libcurl_ssl_x64/lib)
 	target_link_libraries(wexsandbox ${CURL_LIB} Winhttp)
 endif()
 
@@ -377,7 +379,7 @@ if (MSVC)
 	set(WEXSB_DIR ${CMAKE_CURRENT_BINARY_DIR}/$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>)
 
 	foreach( file_i ${LIBCURL_FILES})
-		file(TO_CMAKE_PATH $ENV{WEXDIR}/build_vs2017/libcurl_ssl_x64/bin/${file_i} LIB_PATH)
+		file(TO_CMAKE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/build_vs2017/libcurl_ssl_x64/bin/${file_i} LIB_PATH)
 	    add_custom_command(
 		    TARGET wexsandbox
 		    POST_BUILD
