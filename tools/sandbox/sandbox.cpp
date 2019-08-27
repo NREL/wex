@@ -40,6 +40,7 @@
 #include "wex/icons/scatter.cpng"
 #include "wex/pdf/pdfdoc.h"
 #include "wex/radiochoice.h"
+#include "wex/csv.h"
 //#include "wex/easycurl.h"
 
 
@@ -445,6 +446,74 @@ void TestContourPlot()
 	frame->Show();
 
 }
+
+void TestWaveAnnualEnergyPlot()
+{
+	wxFrame *frame = new wxFrame(0, wxID_ANY, wxT("Wave Annual energy"), wxDefaultPosition,
+		wxScaleSize(600, 500));
+	wxPLPlotCtrl *plot = new wxPLPlotCtrl(frame, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+	plot->SetBackgroundColour(*wxBLACK);
+	plot->SetHighlightMode(wxPLPlotCtrl::HIGHLIGHT_ZOOM);
+
+	double zmin = 1e99, zmax = -1e99;
+	wxMatrix<double> XX, YY, ZZ;
+
+
+	wxCSVData csv;
+	csv.ReadFile("C:/Projects/SAM/Documentation/MHK/2019.8.9_Final/WaveAnnualOutput.csv");
+	// Example 1
+	size_t nx = csv.NumRows(), ny=csv.NumCols();
+
+/* fails to color zero values in grid
+	XX.Resize(nx - 1, ny - 1);
+	YY.Resize(nx - 1, ny - 1);
+	ZZ.Resize(nx - 1, ny - 1);
+	for (size_t i = 1; i < nx; i++)
+	{
+		for (size_t j = 1; j < ny; j++)
+		{
+			XX.At(i - 1, j - 1) = std::stod(csv.Get(0,j).ToStdString());
+			YY.At(i - 1, j - 1) = std::stod(csv.Get(i, 0).ToStdString());
+			ZZ.At(i - 1, j - 1) = std::stod(csv.Get(i, j).ToStdString());
+			if (ZZ.At(i - 1, j - 1) < zmin) zmin = ZZ.At(i - 1, j - 1);
+			if (ZZ.At(i - 1, j - 1) > zmax) zmax = ZZ.At(i - 1, j - 1);
+		}
+	}
+*/
+
+	wxPLContourPlot::MeshGrid(0.5, 20.5, 21, 0.25, 9.75, 20, XX, YY);
+	ZZ.Resize(YY.Rows(), XX.Cols());
+	for (size_t i = 1; i < nx; i++)
+	{
+		for (size_t j = 1; j < ny; j++)
+		{
+			ZZ.At(i - 1, j - 1) = std::stod(csv.Get(i, j).ToStdString());
+			if (ZZ.At(i - 1, j - 1) < zmin) zmin = ZZ.At(i - 1, j - 1);
+			if (ZZ.At(i - 1, j - 1) > zmax) zmax = ZZ.At(i - 1, j - 1);
+		}
+	}
+
+
+
+	wxPLContourPlot *pl = 0;
+	wxPLColourMap *jet = new wxPLJetColourMap(zmin, zmax);
+	pl = new wxPLContourPlot(XX, YY, ZZ, true, wxEmptyString, 24, jet);
+	if (pl != 0)
+	{
+		plot->AddPlot(pl, wxPLPlotCtrl::X_TOP, wxPLPlotCtrl::Y_LEFT, wxPLPlotCtrl::PLOT_TOP, true);
+		plot->SetSideWidget(jet);
+	}
+	//wxPLAxis::ExtendBoundsToNiceNumber( &zmax, &zmin );
+//	wxPLColourMap *jet = new wxPLJetColourMap(zmin, zmax);
+//	plot->SetSideWidget(jet);
+//	plot->ShowGrid(false, false);
+
+//	plot->AddPlot(new wxPLContourPlot(XX, YY, ZZ, true, wxEmptyString, 24, jet));
+
+	frame->Show();
+
+}
+
 
 void TestWindPrufFigure2(wxWindow *parent)
 {
@@ -1219,19 +1288,20 @@ public:
 		//	int nf = wxFreeTypeLoadAllFonts();
 		//	wxMessageBox( wxString::Format("Loaded %d fonts in %d ms.", nf, (int)sw.Time()) );
 
-//		TestContourPlot();
+		TestContourPlot();
+		TestWaveAnnualEnergyPlot();
 
 //		TestPLPlot(0);
 //		TestPLPolarPlot(0);
 //		TestPLBarPlot(0);
-		TestStackedBarPlot(0);
-		TestSAMStackedBarPlot(0);
+//		TestStackedBarPlot(0);
+//		TestSAMStackedBarPlot(0);
 //		TestSectorPlot(0);
 //		TestTextLayout();
 		//TestFreeTypeText();
 //		TestPlotAnnotations(0);
-		TestWindPrufFigure2(0);		
-		TestWindPrufFigure5(0);
+//		TestWindPrufFigure2(0);		
+//		TestWindPrufFigure5(0);
 
 		//wxFrame *frmgl = new wxFrame( NULL, wxID_ANY, "GL Easy Test", wxDefaultPosition, wxSize(700,700) );
 		//new wxGLEasyCanvasTest( frmgl );

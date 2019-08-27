@@ -262,6 +262,15 @@ void wxPLContourPlot::Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map)
 	else
 	{
 		dc.NoPen();
+		// background set to min
+		// assume RebuildMask has been called
+		wxColor bgc(m_cmap->ColourForValue(m_zMin));
+		dc.Brush(bgc);
+		wxRealPoint pos, size;
+		map.GetDeviceExtents(&pos, &size);
+		dc.Rect(pos.x, pos.y, size.x, size.y);
+		// end background
+
 
 //		int ipoly = 0;
 		for (size_t i = 0; i < m_cPolys.size(); i++)
@@ -278,13 +287,13 @@ void wxPLContourPlot::Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map)
 				switch (m_cPolys[i].act[j])
 				{
 				case MOVETO:
-					dc.MoveTo(mapped.x, mapped.y);
+					dc.MoveTo(mapped.x,  mapped.y);
 					break;
 				case LINETO:
-					dc.LineTo(mapped.x, mapped.y);
+					dc.LineTo(mapped.x,   mapped.y);
 					break;
 				case CLOSEPOLY:
-					dc.LineTo(mapped.x, mapped.y);
+					dc.LineTo(mapped.x,  mapped.y);
 					dc.CloseSubPath();
 					break;
 				}
