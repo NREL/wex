@@ -438,7 +438,7 @@ void TestContourPlot()
 	plot->SetSideWidget(jet);
 	plot->ShowGrid(false, false);
 
-	plot->AddPlot(new wxPLContourPlot(XX, YY, ZZ, false, true, wxEmptyString, 24, jet));
+	plot->AddPlot(new wxPLContourPlot(XX, YY, ZZ, false, "Test Contour", 24, jet));
 
 	//plot->SetXAxis1( new wxPLLinearAxis( 0, np ) );
 	//plot->SetYAxis1( new wxPLLinearAxis( 0, np ) );
@@ -498,15 +498,18 @@ void TestWaveAnnualEnergyPlot()
 	wxPLContourPlot *pl = 0;
 	wxPLColourMap *jet = new wxPLJetColourMap(zmin, zmax);
 
-	pl = new wxPLContourPlot(XX, YY, ZZ, true, false, "Annual energy (kWh)", 24, jet);
+	pl = new wxPLContourPlot(XX, YY, ZZ, true, wxEmptyString, 24, jet);
 	if (pl != 0)
 	{
 		plot->AddPlot(pl, wxPLPlotCtrl::X_TOP, wxPLPlotCtrl::Y_LEFT, wxPLPlotCtrl::PLOT_TOP, true);
 		plot->SetSideWidget(jet);
+		plot->SetTitle("Annual energy (kWh)");
+		/*
 		wxArrayString as = jet->GetLabels();
 		for (size_t i = 0; i < as.size(); i++)
 			as[i] = as[i] + " kWh";
 		jet->SetLabels(as);
+		*/
 	}
 	//wxPLAxis::ExtendBoundsToNiceNumber( &zmax, &zmin );
 //	wxPLColourMap *jet = new wxPLJetColourMap(zmin, zmax);

@@ -45,9 +45,9 @@ wxPLContourPlot::wxPLContourPlot(
 	const wxMatrix<double> &x,
 	const wxMatrix<double> &y,
 	const wxMatrix<double> &z,
-	bool filled, bool yaxisflipped,
+	bool filled,
 	const wxString &label, int levels, wxPLColourMap *cmap)
-  	: wxPLPlottable(label), m_x(x), m_y(y), m_z(z), m_cmap(cmap), m_filled(filled), m_yaxisflipped(yaxisflipped)
+  	: wxPLPlottable(label), m_x(x), m_y(y), m_z(z), m_cmap(cmap), m_filled(filled)
 {
 	m_zMin = m_zMax = std::numeric_limits<double>::quiet_NaN();
 
@@ -244,16 +244,6 @@ void wxPLContourPlot::Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map)
 {
 	if (!m_cmap) return;
 
-	double ymin = 1e99, ymax = -1e99;
-	if (m_yaxisflipped)
-	{
-		for (size_t r = 0; r < m_y.Rows(); r++)
-		{
-			if (m_y(r, 0) < ymin) ymin = m_y(r, 0);
-			if (m_y(r, 0) > ymax) ymax = m_y(r, 0);
-		}
-	}
-
 	if (!m_filled)
 	{
 		dc.NoBrush();
@@ -264,12 +254,8 @@ void wxPLContourPlot::Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map)
 			size_t n = m_cPolys[i].pts.size();
 			std::vector<wxRealPoint> mapped(n);
 			for (size_t j = 0; j < n; j++)
-			{
-				if (m_yaxisflipped)
-					mapped[j] = map.ToDevice(m_cPolys[i].pts[j].x, ymax - m_cPolys[i].pts[j].y + ymin);
-				else
-					mapped[j] = map.ToDevice(m_cPolys[i].pts[j].x, m_cPolys[i].pts[j].y);
-			}
+				mapped[j] = map.ToDevice(m_cPolys[i].pts[j].x, m_cPolys[i].pts[j].y);
+
 			dc.Lines(m_cPolys[i].pts.size(), &mapped[0]);
 		}
 	}
@@ -296,11 +282,7 @@ void wxPLContourPlot::Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map)
 			size_t n = m_cPolys[i].pts.size();
 			for (size_t j = 0; j < n; j++)
 			{
-				wxRealPoint mapped;
-				if (m_yaxisflipped)
-					mapped = map.ToDevice(m_cPolys[i].pts[j].x, ymax - m_cPolys[i].pts[j].y + ymin);
-				else
-					mapped = map.ToDevice(m_cPolys[i].pts[j]);
+				wxRealPoint	mapped = map.ToDevice(m_cPolys[i].pts[j]);
 
 				switch (m_cPolys[i].act[j])
 				{
