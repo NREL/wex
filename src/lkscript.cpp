@@ -1080,7 +1080,7 @@ void fcall_contour(lk::invoke_t &cxt)
 	if (decimals > 0 && decimals < 20) cmap->SetFormat(wxString::Format("%%.%dlf", decimals));
 	else cmap->SetFormat("%lg");
 
-	wxPLContourPlot *contour = new wxPLContourPlot(x, y, z, filled, label, (int)levels, cmap);
+	wxPLContourPlot *contour = new wxPLContourPlot(x, y, z, filled, false, label, (int)levels, cmap);
 	plot->AddPlot(contour);
 }
 

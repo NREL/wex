@@ -39,6 +39,7 @@ public:
 		const wxMatrix<double> &y,
 		const wxMatrix<double> &z,
 		bool filled,
+		bool yaxisflipped = false,
 		const wxString &label = wxEmptyString,
 		int levels = 10,
 		wxPLColourMap *cmap = 0);
@@ -83,7 +84,7 @@ protected:
 	wxMatrix<unsigned int> m_mask;
 	double m_zMin, m_zMax;
 	wxPLColourMap *m_cmap;
-	bool m_filled;
+	bool m_filled, m_yaxisflipped;
 	std::vector<double> m_levels;
 
 	void RebuildMask();

@@ -438,7 +438,7 @@ void TestContourPlot()
 	plot->SetSideWidget(jet);
 	plot->ShowGrid(false, false);
 
-	plot->AddPlot(new wxPLContourPlot(XX, YY, ZZ, true, wxEmptyString, 24, jet));
+	plot->AddPlot(new wxPLContourPlot(XX, YY, ZZ, false, true, wxEmptyString, 24, jet));
 
 	//plot->SetXAxis1( new wxPLLinearAxis( 0, np ) );
 	//plot->SetYAxis1( new wxPLLinearAxis( 0, np ) );
@@ -497,18 +497,70 @@ void TestWaveAnnualEnergyPlot()
 
 	wxPLContourPlot *pl = 0;
 	wxPLColourMap *jet = new wxPLJetColourMap(zmin, zmax);
-	pl = new wxPLContourPlot(XX, YY, ZZ, true, wxEmptyString, 24, jet);
+
+	pl = new wxPLContourPlot(XX, YY, ZZ, true, false, "Annual energy (kWh)", 24, jet);
 	if (pl != 0)
 	{
 		plot->AddPlot(pl, wxPLPlotCtrl::X_TOP, wxPLPlotCtrl::Y_LEFT, wxPLPlotCtrl::PLOT_TOP, true);
 		plot->SetSideWidget(jet);
+		wxArrayString as = jet->GetLabels();
+		for (size_t i = 0; i < as.size(); i++)
+			as[i] = as[i] + " kWh";
+		jet->SetLabels(as);
 	}
 	//wxPLAxis::ExtendBoundsToNiceNumber( &zmax, &zmin );
 //	wxPLColourMap *jet = new wxPLJetColourMap(zmin, zmax);
 //	plot->SetSideWidget(jet);
-//	plot->ShowGrid(false, false);
+	plot->ShowGrid(true, true);
+
+//	plot->SetYAxis1(new wxPLLinearAxis(0, 1.0, "Wind speed frequecy"));
 
 //	plot->AddPlot(new wxPLContourPlot(XX, YY, ZZ, true, wxEmptyString, 24, jet));
+
+
+
+	plot->GetYAxis1()->SetReversed(true);
+	plot->GetYAxis1()->SetLabel("Hs = wave height (m)");
+	plot->GetXAxis2()->SetLabel("Te = wave period (s)");
+	/*
+	wxPLAxis *y = plot->GetYAxis1();
+	double ymin=0.25, ymax=9.75;
+	std::vector<wxPLAxis::TickData> ta;
+	y->GetAxisTicks(ymin, ymax, ta);
+
+	
+	wxPLLabelAxis *hs = new wxPLLabelAxis(ymin, ymax, "Hs = wave height (m)");
+//	hs->ShowLabel(false);
+//	hs->SetTickSizes(0.25, 0.75);
+
+	for (size_t i = 0; i < ta.size(); i++)
+	{
+		hs->Add(ta[i].world, wxString::Format("0.2f", ymax - ta[i].world));
+	}
+
+	hs->Add(0, "9.75");
+	hs->Add(1, "9.25");
+	hs->Add(2, "8.75");
+	hs->Add(3, "8.25");
+	hs->Add(4, "7.75");
+	hs->Add(5, "7.25");
+	hs->Add(6, "6.75");
+	hs->Add(7, "6.25");
+	hs->Add(8, "5.75");
+	hs->Add(9, "5.25");
+	hs->Add(10, "4.75");
+	hs->Add(11, "4.25");
+	hs->Add(12, "3.75");
+	hs->Add(13, "3.25");
+	hs->Add(14, "2.75");
+	hs->Add(15, "2.25");
+	hs->Add(16, "1.75");
+	hs->Add(17, "1.25");
+	hs->Add(18, "0.75");
+	hs->Add(19, "0.25");
+	
+	plot->SetYAxis1(hs);
+	*/
 
 	frame->Show();
 
