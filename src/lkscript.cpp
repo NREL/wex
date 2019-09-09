@@ -141,17 +141,6 @@ static int _iplot = 1;
 static PlotWin *s_curPlotWin = 0;
 static wxPLPlotCtrl *s_curPlot = 0;
 
-static wxWindow *GetCurrentTopLevelWindow()
-{
-	wxWindowList &wl = ::wxTopLevelWindows;
-	for (wxWindowList::iterator it = wl.begin(); it != wl.end(); ++it)
-		if (wxTopLevelWindow *tlw = dynamic_cast<wxTopLevelWindow*>(*it))
-			if (tlw->IsShown() && tlw->IsActive())
-				return tlw;
-
-	return 0;
-}
-
 class PlotWin : public wxFrame
 {
 public:
