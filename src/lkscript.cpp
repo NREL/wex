@@ -140,7 +140,7 @@ static wxWindow *s_curToplevelParent = 0;
 static int _iplot = 1;
 static PlotWin *s_curPlotWin = 0;
 static wxPLPlotCtrl *s_curPlot = 0;
-
+/*
 static wxWindow *GetCurrentTopLevelWindow()
 {
 	wxWindowList &wl = ::wxTopLevelWindows;
@@ -151,7 +151,7 @@ static wxWindow *GetCurrentTopLevelWindow()
 
 	return 0;
 }
-
+*/
 class PlotWin : public wxFrame
 {
 public:
