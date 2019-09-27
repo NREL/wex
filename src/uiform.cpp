@@ -36,6 +36,7 @@
 #include <wx/mstream.h>
 #include <wx/sstream.h>
 #include <wx/filename.h>
+//#include <wx/richtooltip.h>
 
 #include <wex/extgrid.h>
 #include <wex/label.h>
@@ -952,6 +953,8 @@ void wxUIProperty::Set(const wxImage &img)
 	else { m_image = img; ValueChanged(); }
 }
 
+
+
 void wxUIProperty::SetNamedOptions(const wxArrayString &opts, int selection)
 {
 	if (m_pReference) m_pReference->SetNamedOptions(opts, selection);
@@ -1302,6 +1305,7 @@ void wxUIProperty::Init()
 	m_doubleVal = 0.0;
 	m_intVal = 0;
 	m_boolVal = false;
+
 }
 
 wxUIObject::wxUIObject()
@@ -1310,11 +1314,13 @@ wxUIObject::wxUIObject()
 
 	m_nativeObject = 0;
 	m_visible = true;
+	m_toolTip = wxEmptyString;
 	AddProperty("Name", new wxUIProperty(wxString::Format("object %d", ++g_idCounter)));
 	AddProperty("X", new wxUIProperty((int)9));
 	AddProperty("Y", new wxUIProperty((int)9));
 	AddProperty("Width", new wxUIProperty((int)90));
 	AddProperty("Height", new wxUIProperty((int)24));
+	AddProperty("Tool Tip", new wxUIProperty(m_toolTip));
 }
 
 wxUIObject::~wxUIObject()
@@ -1402,6 +1408,27 @@ wxString wxUIObject::GetName()
 {
 	return Property("Name").GetString();
 }
+
+void wxUIObject::SetTip(const wxString &str)
+{
+	Property("Tool tip").Set(str);
+
+	if (!str.IsEmpty() && m_nativeObject != 0)
+	{
+//		wxRichToolTip tip("Information", str);
+//		tip.SetIcon(wxICON_WARNING);
+//		tip.ShowFor(m_nativeObject);
+		wxString tmp = str;
+		tmp.Replace(wxT("\\n"), wxT("\n"));
+		m_nativeObject->SetToolTip(tmp);
+	}
+}
+
+wxString wxUIObject::GetTip()
+{
+	return Property("Tool Tip").GetString();
+}
+
 
 void wxUIObject::SetGeometry(const wxRect &r)
 {

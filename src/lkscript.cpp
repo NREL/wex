@@ -984,7 +984,7 @@ void fcall_sector(lk::invoke_t &cxt)
 
 void fcall_contour(lk::invoke_t &cxt)
 {
-	LK_DOC("contour", "Creates a contour plot from gridded x,y,z data. Options are filled, colormap=jet/parula/grayscale/rainbow, reversecolors=t/f, scalelabels=['',''...], levels, min, max, decimals", "( matrix:x, matrix:y, matrix:z, { table:options } ):none");
+	LK_DOC("contour", "Creates a contour plot from gridded x,y,z data. Options are filled, colormap=jet/parula/grayscale/rainbow, reversecolors=t/f, reverseyaxis=t/f,reversexaxis=t/f, scalelabels=['',''...], levels, min, max, decimals", "( matrix:x, matrix:y, matrix:z, { table:options } ):none");
 
 	wxPLPlotCtrl *plot = GetPlotSurface(
 		(s_curToplevelParent != 0)
@@ -998,6 +998,8 @@ void fcall_contour(lk::invoke_t &cxt)
 	int decimals = -1;
 	size_t levels = 10;
 	bool reversed = false;
+	bool reverseyaxis = false;
+	bool reversexaxis = false;
 	double min, max;
 	min = max = std::numeric_limits<double>::quiet_NaN();
 	wxString label;
@@ -1009,6 +1011,10 @@ void fcall_contour(lk::invoke_t &cxt)
 			cmap_name = o->as_string().Lower();
 		if (lk::vardata_t *o = opt.lookup("reversecolors"))
 			reversed = o->as_boolean();
+		if (lk::vardata_t *o = opt.lookup("reversexaxis"))
+			reversexaxis = o->as_boolean();
+		if (lk::vardata_t *o = opt.lookup("reverseyaxis"))
+			reverseyaxis = o->as_boolean();
 		if (lk::vardata_t *o = opt.lookup("filled"))
 			filled = o->as_boolean();
 		if (lk::vardata_t *o = opt.lookup("levels"))
@@ -1054,6 +1060,9 @@ void fcall_contour(lk::invoke_t &cxt)
 			cmap = new wxPLJetColourMap(min, max);
 
 		plot->SetSideWidget(cmap, wxPLPlot::Y_RIGHT);
+
+		plot->GetXAxis2()->SetReversed(reversexaxis);
+		plot->GetYAxis1()->SetReversed(reverseyaxis);
 
 		for (size_t i = 0; i < plot->GetPlotCount(); i++)
 			if (wxPLContourPlot *cp = dynamic_cast<wxPLContourPlot*>(plot->GetPlot(i)))
