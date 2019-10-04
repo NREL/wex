@@ -523,8 +523,8 @@ void TestWaveAnnualEnergyPlot()
 
 
 	plot->GetYAxis1()->SetReversed(true);
-	plot->GetYAxis1()->SetLabel("Hs = wave height (m)");
-	plot->GetXAxis2()->SetLabel("Te = wave period (s)");
+	plot->GetYAxis1()->SetLabel("Hs = significant wave height (m)");
+	plot->GetXAxis2()->SetLabel("Te = wave energy period (s)");
 	/*
 	wxPLAxis *y = plot->GetYAxis1();
 	double ymin=0.25, ymax=9.75;
