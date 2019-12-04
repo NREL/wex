@@ -139,8 +139,9 @@ bool wxCSVData::Read(wxInputStream &in)
 
 	*/
 	Clear(); // erase the csv data first
+	wxTextInputStream txt(in, "\n", wxConvAuto(wxFONTENCODING_UTF8));
 
-	wxTextInputStream txt(in);
+//	wxTextInputStream txt(in);
 
 	m_errorLine = 0;
 	size_t max_row = 0;
