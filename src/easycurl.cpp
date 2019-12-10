@@ -681,10 +681,11 @@ bool wxEasyCurl::GeoCodeDeveloper(const wxString &address, double *lat, double *
 	}
 
 	wxCSVData csv;
+	wxString slat, slng;
 	if (csv.ReadString(curl.GetDataAsString()))
 	{
-		wxString slat = csv.Get(1, 14);
-		wxString slng = csv.Get(1, 15);
+		slat = csv.Get(1, 14);
+		slng = csv.Get(1, 15);
 		if (!slat.ToDouble(lat))
 			return false;
 		if (!slng.ToDouble(lon))
@@ -711,7 +712,43 @@ bool wxEasyCurl::GeoCodeDeveloper(const wxString &address, double *lat, double *
 	*/
 	if (tz != 0)
 	{
-		*tz = 0; // no current TZ API
+		url = "https://dev.virtualearth.net/REST/v1/TimeZone/" + slat +"," + slng + "?key=" + BING_API_KEY;
+
+		wxEasyCurl curl;
+		wxBusyCursor curs;
+		if (showprogress)
+		{
+			if (!curl.Get(url, "Geocoding address '" + address + "'..."))
+				return false;
+		}
+		else
+		{
+			if (!curl.Get(url))
+				return false;
+		}
+
+		wxJSONReader reader;
+		wxJSONValue root;
+		if (reader.Parse(curl.GetDataAsString(), &root) == 0)
+		{
+			wxJSONValue loc = root.Item("resourceSets").Item(0).Item("resources").Item(0).Item("timeZone").Item("convertedTime");
+			if (!loc.IsValid()) return false;
+			wxString stz = loc.Item("utcOffsetWithDst").AsString();
+			wxArrayString as = wxSplit(stz, ':');
+			if (as.Count() != 2) return false;
+			if (!as[0].ToDouble(tz)) return false;
+			double offset = 0;
+			if (as[1] == "30") offset = 0.5;
+			if (*tz < 0)
+				*tz = *tz - offset;
+			else
+				*tz = *tz + offset;
+
+			if (root.Item("statusDescription").AsString() != "OK")
+				return false;
+		}
+		else
+			return false;
 	}
 	return true;
 }
