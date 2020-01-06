@@ -334,51 +334,12 @@ class wxMetroDataViewTreeCtrl : public wxDataViewTreeCtrl
 {
 public:
 	wxMetroDataViewTreeCtrl(wxWindow *parent, int id,
-		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize) : wxDataViewTreeCtrl(parent, id, pos, size)
+		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize) : wxDataViewTreeCtrl(parent, id, pos, size, wxDV_NO_HEADER)
 	{
 		SetBackgroundStyle(wxBG_STYLE_CUSTOM);
 		SetBackgroundColour(*wxWHITE);
 		SetFont(wxMetroTheme::Font(wxMT_LIGHT, 15));
 	}
-/*	virtual ~wxMetroDataViewTreeCtrl();
-
-	void Add(const wxString &label);
-	void Add(const wxArrayString &list);
-	void Delete(size_t idx);
-	void Clear();
-	int Find(const wxString &label);
-	int Count();
-	void Set(size_t idx, const wxString &label);
-	wxString Get(size_t idx);
-	int GetSelection();
-	wxString GetSelectionString();
-	void SetSelection(int idx);
-	bool SetSelectionString(const wxString &s);
-	wxString GetValue();
-
-//	void Invalidate();
-private:
-/*	struct _item
-	{
-		wxString name;
-		wxRect geom;
-	};
-
-	std::vector<_item> m_items;
-	int m_hoverIdx;
-	int m_selectedIdx;
-	int m_space;
-
-	void OnPaint(wxPaintEvent &evt);
-	void OnErase(wxEraseEvent &evt);
-	void OnResize(wxSizeEvent &evt);
-	void OnLeftDown(wxMouseEvent &evt);
-	void OnMouseMove(wxMouseEvent &evt);
-	void OnLeave(wxMouseEvent &evt);
-	void OnDClick(wxMouseEvent &evt);
-
-	DECLARE_EVENT_TABLE();
-	*/
 };
 
 
