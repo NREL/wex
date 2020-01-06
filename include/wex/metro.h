@@ -35,6 +35,7 @@
 #include <wx/scrolwin.h>
 #include <wx/popupwin.h>
 #include <wx/bookctrl.h>
+#include <wx/dataview.h>
 
 class wxMetroThemeProvider
 {
@@ -328,6 +329,20 @@ private:
 
 	DECLARE_EVENT_TABLE();
 };
+
+class wxMetroDataViewTreeCtrl : public wxDataViewTreeCtrl
+{
+public:
+	wxMetroDataViewTreeCtrl(wxWindow *parent, int id,
+		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize) : wxDataViewTreeCtrl(parent, id, pos, size, wxDV_NO_HEADER)
+	{
+		SetBackgroundStyle(wxBG_STYLE_CUSTOM);
+		SetBackgroundColour(*wxWHITE);
+		SetFont(wxMetroTheme::Font(wxMT_LIGHT, 15));
+	}
+};
+
+
 
 class wxMetroPopupMenu
 {
