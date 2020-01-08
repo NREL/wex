@@ -21,13 +21,22 @@
 *  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
-
+#include <cmath>
 #include "wex/exttextstream.h"
 
 
 void wxExtTextOutputStream::WriteDouble(double d)
 {
 	wxString str;
-	str.Printf(wxT("%g"), d);
+	if (std::fabs(d) > 1e9)
+		str.Printf(wxT("%g"), d);
+	else
+	{
+		double intpart;
+		if (std::modf(d, &intpart) == 0.0)
+			str.Printf(wxT("%d"), (int)d);
+		else
+			str.Printf(wxT("%g"), d);
+	}
 	WriteString(str);
 }
