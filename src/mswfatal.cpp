@@ -37,8 +37,8 @@
 #include <wex/metro.h>
 #include <wex/utils.h>
 
-#include "../build_vs2017/dbghelp/dbghelp.h"
-#include "../build_vs2017/exception.cpng"
+#include "../build_resources/dbghelp/dbghelp.h"
+#include "../build_resources/exception.cpng"
 
 static wxString s_app, s_version, s_email;
 

@@ -28,7 +28,7 @@ Project(wex C CXX)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 if ( NOT APPLE)
-	set(CURL_DIR build_vs2017/libcurl_ssl_x64)
+	set(CURL_DIR build_resources/libcurl_ssl_x64)
 endif()
 
 set(WEX_SRC
@@ -277,11 +277,11 @@ target_include_directories(wexsandbox SYSTEM PRIVATE include src/freetype/includ
 
 if( APPLE )
 # dview bundle
-	set(DVIEW_ICON ${CMAKE_CURRENT_SOURCE_DIR}/build_osx/DView.icns)
+	set(DVIEW_ICON ${CMAKE_CURRENT_SOURCE_DIR}/build_resources/DView.icns)
 	set_source_files_properties(${DVIEW_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
 	set(APPS "\${CMAKE_INSTALL_PREFIX}/DView.app")
 elseif( WIN32 )
-	set(DVIEW_ICON ${CMAKE_CURRENT_SOURCE_DIR}/build_vs2017/dview.rc)
+	set(DVIEW_ICON ${CMAKE_CURRENT_SOURCE_DIR}/build_resources/dview.rc)
 	set(APPS "\${CMAKE_INSTALL_PREFIX}/DView.exe")
 endif()
 
@@ -345,7 +345,7 @@ if (UNIX)
 elseif (MSVC)
 	find_library( CURL_LIB
 				NAMES libcurl.lib
-				PATHS build_vs2017/libcurl_ssl_x64/lib)
+				PATHS build_resources/libcurl_ssl_x64/lib)
 	target_link_libraries(wexsandbox ${CURL_LIB} Winhttp)
 endif()
 
@@ -379,7 +379,7 @@ if (MSVC)
 	set(WEXSB_DIR ${CMAKE_CURRENT_BINARY_DIR}/$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>)
 
 	foreach( file_i ${LIBCURL_FILES})
-		file(TO_CMAKE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/build_vs2017/libcurl_ssl_x64/bin/${file_i} LIB_PATH)
+		file(TO_CMAKE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/build_resources/libcurl_ssl_x64/bin/${file_i} LIB_PATH)
 	    add_custom_command(
 		    TARGET wexsandbox
 		    POST_BUILD
