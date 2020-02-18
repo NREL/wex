@@ -277,7 +277,7 @@ target_include_directories(wexsandbox SYSTEM PRIVATE include src/freetype/includ
 
 if( APPLE )
 # dview bundle
-	set(DVIEW_ICON ${CMAKE_CURRENT_SOURCE_DIR}/build_osx/DView.icns)
+	set(DVIEW_ICON ${CMAKE_CURRENT_SOURCE_DIR}/build_resources/DView.icns)
 	set_source_files_properties(${DVIEW_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
 	set(APPS "\${CMAKE_INSTALL_PREFIX}/DView.app")
 elseif( WIN32 )
