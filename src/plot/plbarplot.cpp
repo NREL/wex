@@ -141,29 +141,31 @@ double wxPLBarPlot::CalcXPos(double x, const wxPLDeviceMapping &map, double disp
 		return m_stackedOn->CalcXPos(x, map, dispwidth);
 
 	double x_start = map.ToDevice(x, 0).x;
-
-	size_t g, idx;
-	std::vector<wxPLBarPlot*>::iterator iit = std::find(m_group.begin(), m_group.end(), this);
-	if (m_group.size() > 0
-		&& iit != m_group.end())
+	
+	if (m_data.size() <366 )
 	{
-		idx = iit - m_group.begin();
+		size_t g, idx;
+		std::vector<wxPLBarPlot*>::iterator iit = std::find(m_group.begin(), m_group.end(), this);
+		if (m_group.size() > 0
+			&& iit != m_group.end())
+		{
+			idx = iit - m_group.begin();
 
-		std::vector<double> barwidths;
-		for (g = 0; g < m_group.size(); g++)
-			barwidths.push_back(m_group[g]->CalcDispBarWidth(map));
+			std::vector<double> barwidths;
+			for (g = 0; g < m_group.size(); g++)
+				barwidths.push_back(m_group[g]->CalcDispBarWidth(map));
 
-		double group_width = 0;
-		for (g = 0; g < m_group.size(); g++)
-			group_width += barwidths[g];
+			double group_width = 0;
+			for (g = 0; g < m_group.size(); g++)
+				group_width += barwidths[g];
 
-		double bar_start = x_start - group_width / 2;
-		for (g = 0; g < idx; g++)
-			bar_start += barwidths[g];
+			double bar_start = x_start - group_width / 2;
+			for (g = 0; g < idx; g++)
+				bar_start += barwidths[g];
 
-		x_start = bar_start + dispwidth / 2;
+			x_start = bar_start + dispwidth / 2;
+		}
 	}
-
 	return x_start;
 }
 
@@ -178,6 +180,8 @@ double wxPLBarPlot::CalcDispBarWidth(const wxPLDeviceMapping &map)
 
 		double cxmin = 1e99, cxmax = -1e99;
 		int bars_in_view = 0;
+
+		// SLOW for multiple bar graphs
 		for (size_t i = 0; i < Len(); i++)
 		{
 			double x = At(i).x;
