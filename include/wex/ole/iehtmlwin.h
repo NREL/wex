@@ -9,12 +9,12 @@
 
                        wxActiveX LIBRARY LICENCE
      TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
-  
+
   This library is free software; you can redistribute it and/or modify it
   under the terms of the GNU Library General Public Licence as published by
   the Free Software Foundation; either version 2 of the Licence, or (at
   your option) any later version.
-  
+
   This library is distributed in the hope that it will be useful, but
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library
@@ -47,14 +47,14 @@
   accordingly.
 
   4. If you write modifications of your own for this library, it is your
-  choice whether to permit this exception to apply to your modifications. 
+  choice whether to permit this exception to apply to your modifications.
   If you do not wish that, you must delete the exception notice from such
   code and/or adjust the licensing conditions notice accordingly.
 */
 
-/*! \file iehtmlwin.h 
+/*! \file iehtmlwin.h
     \brief implements wxIEHtmlWin window class
-*/ 
+*/
 #ifndef _IEHTMLWIN_H_
 #define _IEHTMLWIN_H_
 #ifdef __WXMSW__
@@ -70,12 +70,12 @@
 #include "wex/ole/activex.h"
 
 
-enum wxIEHtmlRefreshLevel 
+enum wxIEHtmlRefreshLevel
 {
-	wxIEHTML_REFRESH_NORMAL = 0,
-	wxIEHTML_REFRESH_IFEXPIRED = 1,
-	wxIEHTML_REFRESH_CONTINUE = 2,
-	wxIEHTML_REFRESH_COMPLETELY = 3
+    wxIEHTML_REFRESH_NORMAL = 0,
+    wxIEHTML_REFRESH_IFEXPIRED = 1,
+    wxIEHTML_REFRESH_CONTINUE = 2,
+    wxIEHTML_REFRESH_COMPLETELY = 3
 };
 
 class IStreamAdaptorBase;
@@ -88,33 +88,33 @@ public:
         const wxSize& size = wxDefaultSize,
         long style = 0,
         const wxString& name = wxPanelNameStr);
-	virtual ~wxIEHtmlWin();
+    virtual ~wxIEHtmlWin();
 
-	void OpenURI(const wxString&loc) { LoadUrl(loc); }
-	void LoadUrl(const wxString&);
+    void OpenURI(const wxString&loc) { LoadUrl(loc); }
+    void LoadUrl(const wxString&);
     bool LoadString(wxString html);
     bool LoadStream(wxInputStream *is);
 
-	void SetCharset(wxString charset);
+    void SetCharset(wxString charset);
     void SetEditMode(bool seton);
     bool GetEditMode();
     wxString GetStringSelection(bool asHTML = false);
-	wxString GetText(bool asHTML = false);
+    wxString GetText(bool asHTML = false);
 
-	bool GoBack();
-	bool GoForward();
-	bool GoHome();
-	bool GoSearch();
-	bool Refresh(wxIEHtmlRefreshLevel level);
-	bool Stop();
+    bool GoBack();
+    bool GoForward();
+    bool GoHome();
+    bool GoSearch();
+    bool Refresh(wxIEHtmlRefreshLevel level);
+    bool Stop();
 
-	DECLARE_EVENT_TABLE();
+    DECLARE_EVENT_TABLE();
 
 protected:
     void SetupBrowser();
     bool LoadStream(IStreamAdaptorBase *pstrm);
 
-	wxAutoOleInterface<IWebBrowser2>		m_webBrowser;
+    wxAutoOleInterface<IWebBrowser2>		m_webBrowser;
 };
 #endif /* __WXMSW__ */
 #endif /* _IEHTMLWIN_H_ */

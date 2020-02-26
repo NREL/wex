@@ -20,118 +20,147 @@
 
 // The flags of the parser
 enum {
-	wxJSONREADER_STRICT = 0,
-	wxJSONREADER_ALLOW_COMMENTS = 1,
-	wxJSONREADER_STORE_COMMENTS = 2,
-	wxJSONREADER_CASE = 4,
-	wxJSONREADER_MISSING = 8,
-	wxJSONREADER_MULTISTRING = 16,
-	wxJSONREADER_COMMENTS_AFTER = 32,
-	wxJSONREADER_NOUTF8_STREAM = 64,
-	wxJSONREADER_MEMORYBUFF = 128,
+    wxJSONREADER_STRICT = 0,
+    wxJSONREADER_ALLOW_COMMENTS = 1,
+    wxJSONREADER_STORE_COMMENTS = 2,
+    wxJSONREADER_CASE = 4,
+    wxJSONREADER_MISSING = 8,
+    wxJSONREADER_MULTISTRING = 16,
+    wxJSONREADER_COMMENTS_AFTER = 32,
+    wxJSONREADER_NOUTF8_STREAM = 64,
+    wxJSONREADER_MEMORYBUFF = 128,
 
-	wxJSONREADER_TOLERANT = wxJSONREADER_ALLOW_COMMENTS | wxJSONREADER_CASE |
-	wxJSONREADER_MISSING | wxJSONREADER_MULTISTRING,
-	wxJSONREADER_COMMENTS_BEFORE = wxJSONREADER_ALLOW_COMMENTS | wxJSONREADER_STORE_COMMENTS
+    wxJSONREADER_TOLERANT = wxJSONREADER_ALLOW_COMMENTS | wxJSONREADER_CASE |
+                            wxJSONREADER_MISSING | wxJSONREADER_MULTISTRING,
+    wxJSONREADER_COMMENTS_BEFORE = wxJSONREADER_ALLOW_COMMENTS | wxJSONREADER_STORE_COMMENTS
 };
 
-class WXDLLIMPEXP_JSON  wxJSONReader
-{
+class WXDLLIMPEXP_JSON  wxJSONReader {
 public:
-	wxJSONReader(int flags = wxJSONREADER_TOLERANT, int maxErrors = 30);
-	virtual ~wxJSONReader();
+    wxJSONReader(int flags = wxJSONREADER_TOLERANT, int maxErrors = 30);
 
-	int Parse(const wxString& doc, wxJSONValue* val);
-	int Parse(wxInputStream& doc, wxJSONValue* val);
+    virtual ~wxJSONReader();
 
-	int   GetDepth() const;
-	int   GetErrorCount() const;
-	int   GetWarningCount() const;
-	const wxArrayString& GetErrors() const;
-	const wxArrayString& GetWarnings() const;
+    int Parse(const wxString &doc, wxJSONValue *val);
 
-	static int  UTF8NumBytes(char ch);
+    int Parse(wxInputStream &doc, wxJSONValue *val);
 
-	//! skip double quotest in strings
-	void SetSkipStringDoubleQuotes(bool skip){ m_skip_string_double_quotes = skip; }
-	bool GetSkipStringDoubleQuotes() { return m_skip_string_double_quotes; }
+    int GetDepth() const;
+
+    int GetErrorCount() const;
+
+    int GetWarningCount() const;
+
+    const wxArrayString &GetErrors() const;
+
+    const wxArrayString &GetWarnings() const;
+
+    static int UTF8NumBytes(char ch);
+
+    //! skip double quotest in strings
+    void SetSkipStringDoubleQuotes(bool skip) { m_skip_string_double_quotes = skip; }
+
+    bool GetSkipStringDoubleQuotes() { return m_skip_string_double_quotes; }
 
 #if defined( wxJSON_64BIT_INT )
-	static bool Strtoll(const wxString& str, wxInt64* i64);
-	static bool Strtoull(const wxString& str, wxUint64* ui64);
-	static bool DoStrto_ll(const wxString& str, wxUint64* ui64, wxChar* sign);
+
+    static bool Strtoll(const wxString &str, wxInt64 *i64);
+
+    static bool Strtoull(const wxString &str, wxUint64 *ui64);
+
+    static bool DoStrto_ll(const wxString &str, wxUint64 *ui64, wxChar *sign);
+
 #endif
 
 protected:
 
-	int  DoRead(wxInputStream& doc, wxJSONValue& val);
-	void AddError(const wxString& descr);
-	void AddError(const wxString& fmt, const wxString& str);
-	void AddError(const wxString& fmt, wxChar ch);
-	void AddWarning(int type, const wxString& descr);
-	int  GetStart(wxInputStream& is);
-	int  ReadChar(wxInputStream& is);
-	int  PeekChar(wxInputStream& is);
-	void StoreValue(int ch, const wxString& key, wxJSONValue& value, wxJSONValue& parent);
-	int  SkipWhiteSpace(wxInputStream& is);
-	int  SkipComment(wxInputStream& is);
-	void StoreComment(const wxJSONValue* parent);
-	int  ReadString(wxInputStream& is, wxJSONValue& val);
-	int  ReadToken(wxInputStream& is, int ch, wxString& s);
-	int  ReadValue(wxInputStream& is, int ch, wxJSONValue& val);
-	int  ReadUES(wxInputStream& is, char* uesBuffer);
-	int  AppendUES(wxMemoryBuffer& utf8Buff, const char* uesBuffer);
-	int  NumBytes(char ch);
-	int  ConvertCharByChar(wxString& s, const wxMemoryBuffer& utf8Buffer);
-	int  ReadMemoryBuff(wxInputStream& is, wxJSONValue& val);
+    int DoRead(wxInputStream &doc, wxJSONValue &val);
 
-	//! Flag that control the parser behaviour,
-	int  m_flags;
+    void AddError(const wxString &descr);
 
-	//! Maximum number of errors stored in the error's array
-	int  m_maxErrors;
+    void AddError(const wxString &fmt, const wxString &str);
 
-	//! The current line number (start at 1).
-	int  m_lineNo;
+    void AddError(const wxString &fmt, wxChar ch);
 
-	//! The current column number (start at 1).
-	int  m_colNo;
+    void AddWarning(int type, const wxString &descr);
 
-	//! The current level of object/array annidation (start at ZERO).
-	int  m_level;
+    int GetStart(wxInputStream &is);
 
-	//! The depth level of the read JSON text
-	int  m_depth;
+    int ReadChar(wxInputStream &is);
 
-	//! The pointer to the value object that is being read.
-	wxJSONValue* m_current;
+    int PeekChar(wxInputStream &is);
 
-	//! The pointer to the value object that was last stored.
-	wxJSONValue* m_lastStored;
+    void StoreValue(int ch, const wxString &key, wxJSONValue &value, wxJSONValue &parent);
 
-	//! The pointer to the value object that will be read.
-	wxJSONValue* m_next;
+    int SkipWhiteSpace(wxInputStream &is);
 
-	//! The comment string read by SkipComment().
-	wxString     m_comment;
+    int SkipComment(wxInputStream &is);
 
-	//! The starting line of the comment string.
-	int          m_commentLine;
+    void StoreComment(const wxJSONValue *parent);
 
-	//! The array of error messages.
-	wxArrayString m_errors;
+    int ReadString(wxInputStream &is, wxJSONValue &val);
 
-	//! The array of warning messages.
-	wxArrayString m_warnings;
+    int ReadToken(wxInputStream &is, int ch, wxString &s);
 
-	//! The character read by the PeekChar() function (-1 none)
-	int           m_peekChar;
+    int ReadValue(wxInputStream &is, int ch, wxJSONValue &val);
 
-	//! ANSI: do not convert UTF-8 strings
-	bool        m_noUtf8;
+    int ReadUES(wxInputStream &is, char *uesBuffer);
 
-	//! skip non-escaped double quotes in strings
-	bool m_skip_string_double_quotes;
+    int AppendUES(wxMemoryBuffer &utf8Buff, const char *uesBuffer);
+
+    int NumBytes(char ch);
+
+    int ConvertCharByChar(wxString &s, const wxMemoryBuffer &utf8Buffer);
+
+    int ReadMemoryBuff(wxInputStream &is, wxJSONValue &val);
+
+    //! Flag that control the parser behaviour,
+    int m_flags;
+
+    //! Maximum number of errors stored in the error's array
+    int m_maxErrors;
+
+    //! The current line number (start at 1).
+    int m_lineNo;
+
+    //! The current column number (start at 1).
+    int m_colNo;
+
+    //! The current level of object/array annidation (start at ZERO).
+    int m_level;
+
+    //! The depth level of the read JSON text
+    int m_depth;
+
+    //! The pointer to the value object that is being read.
+    wxJSONValue *m_current;
+
+    //! The pointer to the value object that was last stored.
+    wxJSONValue *m_lastStored;
+
+    //! The pointer to the value object that will be read.
+    wxJSONValue *m_next;
+
+    //! The comment string read by SkipComment().
+    wxString m_comment;
+
+    //! The starting line of the comment string.
+    int m_commentLine;
+
+    //! The array of error messages.
+    wxArrayString m_errors;
+
+    //! The array of warning messages.
+    wxArrayString m_warnings;
+
+    //! The character read by the PeekChar() function (-1 none)
+    int m_peekChar;
+
+    //! ANSI: do not convert UTF-8 strings
+    bool m_noUtf8;
+
+    //! skip non-escaped double quotes in strings
+    bool m_skip_string_double_quotes;
 };
 
 #endif            // not defined _WX_JSONREADER_H

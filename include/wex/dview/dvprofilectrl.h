@@ -31,87 +31,112 @@
 #include "wex/plot/plplotctrl.h"
 
 class wxDVTimeSeriesDataSet;
+
 class wxPLLinePlot;
+
 class wxDVSelectionListCtrl;
+
 class wxDVTimeSeriesDataSet;
+
 class wxGridSizer;
+
 class wxPLLinePlot;
+
 class wxSearchCtrl;
+
 class wxTimer;
+
 class wxTimerEvent;
 
-class wxDVProfileCtrl : public wxPanel
-{
+class wxDVProfileCtrl : public wxPanel {
 public:
-	wxDVProfileCtrl(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition,
-		const wxSize& size = wxDefaultSize, long style = wxTAB_TRAVERSAL, const wxString& name = "panel");
-	virtual ~wxDVProfileCtrl();
+    wxDVProfileCtrl(wxWindow *parent, wxWindowID id = wxID_ANY, const wxPoint &pos = wxDefaultPosition,
+                    const wxSize &size = wxDefaultSize, long style = wxTAB_TRAVERSAL, const wxString &name = "panel");
 
-	//Does not take ownership.
-	void AddDataSet(wxDVTimeSeriesDataSet *d, bool update_ui);
-	bool RemoveDataSet(wxDVTimeSeriesDataSet *d); //true if found & removed.
-	//RemoveAllDataSets does not delete original datasets since we never took ownership.
-	void RemoveAllDataSets();
+    virtual ~wxDVProfileCtrl();
 
-	bool IsMonthIndexSelected(int i);
-	void SetMonthIndexSelected(int i, bool value = true);
-	void ShowMonthPlotAtIndex(int index, bool show = true);
-	void ShowPlotAtIndex(int i);
-	void HidePlotAtIndex(int i, bool update = true);
-	void HideAllPlots(bool update = true);
-	void AutoScaleYAxes();
-	void RefreshDisabledCheckBoxes();
-	wxDVSelectionListCtrl* GetDataSelectionList();
-	void SetSelectedNames(const wxString& names);
-	void SelectDataSetAtIndex(int index);
-	int GetNumberOfSelections();
+    //Does not take ownership.
+    void AddDataSet(wxDVTimeSeriesDataSet *d, bool update_ui);
 
-	void ReadState(std::string filename);
-	void WriteState(std::string filename);
+    bool RemoveDataSet(wxDVTimeSeriesDataSet *d); //true if found & removed.
+    //RemoveAllDataSets does not delete original datasets since we never took ownership.
+    void RemoveAllDataSets();
 
-	class VerticalLabelCtrl;
+    bool IsMonthIndexSelected(int i);
+
+    void SetMonthIndexSelected(int i, bool value = true);
+
+    void ShowMonthPlotAtIndex(int index, bool show = true);
+
+    void ShowPlotAtIndex(int i);
+
+    void HidePlotAtIndex(int i, bool update = true);
+
+    void HideAllPlots(bool update = true);
+
+    void AutoScaleYAxes();
+
+    void RefreshDisabledCheckBoxes();
+
+    wxDVSelectionListCtrl *GetDataSelectionList();
+
+    void SetSelectedNames(const wxString &names);
+
+    void SelectDataSetAtIndex(int index);
+
+    int GetNumberOfSelections();
+
+    void ReadState(std::string filename);
+
+    void WriteState(std::string filename);
+
+    class VerticalLabelCtrl;
 
 private:
-	//Event Handlers
-	void OnDataChannelSelection(wxCommandEvent& e);
-	void OnMonthSelection(wxCommandEvent& e);
-	void OnSelAllMonths(wxCommandEvent& e);
-	void OnSearch(wxCommandEvent& e);
+    //Event Handlers
+    void OnDataChannelSelection(wxCommandEvent &e);
 
-	struct PlotSet
-	{
-		PlotSet(wxDVTimeSeriesDataSet *ds);
-		~PlotSet();
+    void OnMonthSelection(wxCommandEvent &e);
 
-		void CalculateProfileData();
+    void OnSelAllMonths(wxCommandEvent &e);
 
-		wxDVTimeSeriesDataSet *dataset;
-		wxPLLinePlot *plots[13];
-		wxPLPlotCtrl::AxisPos axisPosition;
-	};
+    void OnSearch(wxCommandEvent &e);
 
-	std::vector<PlotSet*> m_plots; //12 months of a day of data for each added data set.
-	wxDVSelectionListCtrl *m_dataSelector;
-	wxSearchCtrl *m_srchCtrl;
-	wxCheckBox *m_monthCheckBoxes[13];
-	wxPLPlotCtrl *m_plotSurfaces[13];
-	int m_numberOfPlotSurfacesShown;
-	wxGridSizer *m_graphsSizer;
+    struct PlotSet {
+        PlotSet(wxDVTimeSeriesDataSet *ds);
 
-	VerticalLabelCtrl *m_leftAxisLabel;
-	VerticalLabelCtrl *m_rightAxisLabel;
+        ~PlotSet();
 
-	void CalculateProfilePlotData(PlotSet *ps);
-	void MonthSelection(unsigned index);
+        void CalculateProfileData();
 
-	void OnTimer(wxTimerEvent& event);
+        wxDVTimeSeriesDataSet *dataset;
+        wxPLLinePlot *plots[13];
+        wxPLPlotCtrl::AxisPos axisPosition;
+    };
 
-	wxTimer * m_timer;
+    std::vector<PlotSet *> m_plots; //12 months of a day of data for each added data set.
+    wxDVSelectionListCtrl *m_dataSelector;
+    wxSearchCtrl *m_srchCtrl;
+    wxCheckBox *m_monthCheckBoxes[13];
+    wxPLPlotCtrl *m_plotSurfaces[13];
+    int m_numberOfPlotSurfacesShown;
+    wxGridSizer *m_graphsSizer;
 
-	std::vector<int> m_selections;
-	unsigned m_counter;
+    VerticalLabelCtrl *m_leftAxisLabel;
+    VerticalLabelCtrl *m_rightAxisLabel;
 
-	DECLARE_EVENT_TABLE();
+    void CalculateProfilePlotData(PlotSet *ps);
+
+    void MonthSelection(unsigned index);
+
+    void OnTimer(wxTimerEvent &event);
+
+    wxTimer *m_timer;
+
+    std::vector<int> m_selections;
+    unsigned m_counter;
+
+DECLARE_EVENT_TABLE();
 };
 
 #endif

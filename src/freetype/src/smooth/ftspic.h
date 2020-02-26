@@ -31,12 +31,12 @@ FT_BEGIN_HEADER
 
 #else /* FT_CONFIG_OPTION_PIC */
 
-  typedef struct  SmoothPIC_
-  {
-    int              ref_count;
-    FT_Raster_Funcs  ft_grays_raster;
+typedef struct  SmoothPIC_
+{
+  int              ref_count;
+  FT_Raster_Funcs  ft_grays_raster;
 
-  } SmoothPIC;
+} SmoothPIC;
 
 
 #define GET_PIC( lib ) \
@@ -44,28 +44,28 @@ FT_BEGIN_HEADER
 #define FT_GRAYS_RASTER_GET  ( GET_PIC( library )->ft_grays_raster )
 
 
-  /* see ftspic.c for the implementation */
-  void
-  ft_smooth_renderer_class_pic_free( FT_Library  library );
+/* see ftspic.c for the implementation */
+void
+ft_smooth_renderer_class_pic_free( FT_Library  library );
 
-  void
-  ft_smooth_lcd_renderer_class_pic_free( FT_Library  library );
+void
+ft_smooth_lcd_renderer_class_pic_free( FT_Library  library );
 
-  void
-  ft_smooth_lcdv_renderer_class_pic_free( FT_Library  library );
+void
+ft_smooth_lcdv_renderer_class_pic_free( FT_Library  library );
 
-  FT_Error
-  ft_smooth_renderer_class_pic_init( FT_Library  library );
+FT_Error
+ft_smooth_renderer_class_pic_init( FT_Library  library );
 
-  FT_Error
-  ft_smooth_lcd_renderer_class_pic_init( FT_Library  library );
+FT_Error
+ft_smooth_lcd_renderer_class_pic_init( FT_Library  library );
 
-  FT_Error
-  ft_smooth_lcdv_renderer_class_pic_init( FT_Library  library );
+FT_Error
+ft_smooth_lcdv_renderer_class_pic_init( FT_Library  library );
 
 #endif /* FT_CONFIG_OPTION_PIC */
 
- /* */
+/* */
 
 FT_END_HEADER
 

@@ -30,58 +30,71 @@
 #include "wex/plot/plplotctrl.h"
 
 class wxDVTimeSeriesDataSet;
+
 class wxPLLinePlot;
+
 class wxDVSelectionListCtrl;
+
 class wxSearchCtrl;
 
-class wxDVDCCtrl : public wxPanel
-{
+class wxDVDCCtrl : public wxPanel {
 public:
-	wxDVDCCtrl(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition,
-		const wxSize& size = wxDefaultSize, long style = wxTAB_TRAVERSAL, const wxString& name = "panel");
-	virtual ~wxDVDCCtrl();
+    wxDVDCCtrl(wxWindow *parent, wxWindowID id = wxID_ANY, const wxPoint &pos = wxDefaultPosition,
+               const wxSize &size = wxDefaultSize, long style = wxTAB_TRAVERSAL, const wxString &name = "panel");
 
-	//Data Set Functions - do not take ownership.
-	void AddDataSet(wxDVTimeSeriesDataSet* d, bool update_ui);
-	void RemoveDataSet(wxDVTimeSeriesDataSet* d);
-	void RemoveAllDataSets();
+    virtual ~wxDVDCCtrl();
 
-	void ShowPlotAtIndex(int index);
-	void HidePlotAtIndex(int index, bool update = true);
-	void RefreshDisabledCheckBoxes();
+    //Data Set Functions - do not take ownership.
+    void AddDataSet(wxDVTimeSeriesDataSet *d, bool update_ui);
 
-	wxDVSelectionListCtrl* GetDataSelectionList();
-	void SetSelectedNames(const wxString& names, bool restrictToSmallDataSets = false);
-	void SelectDataSetAtIndex(int index);
-	int GetNumberOfSelections();
-	void ReadState(std::string filename);
-	void WriteState(std::string filename);
+    void RemoveDataSet(wxDVTimeSeriesDataSet *d);
 
-	//Event Handlers
-	void OnDataChannelSelection(wxCommandEvent& e);
-	void OnSearch(wxCommandEvent& e);
+    void RemoveAllDataSets();
+
+    void ShowPlotAtIndex(int index);
+
+    void HidePlotAtIndex(int index, bool update = true);
+
+    void RefreshDisabledCheckBoxes();
+
+    wxDVSelectionListCtrl *GetDataSelectionList();
+
+    void SetSelectedNames(const wxString &names, bool restrictToSmallDataSets = false);
+
+    void SelectDataSetAtIndex(int index);
+
+    int GetNumberOfSelections();
+
+    void ReadState(std::string filename);
+
+    void WriteState(std::string filename);
+
+    //Event Handlers
+    void OnDataChannelSelection(wxCommandEvent &e);
+
+    void OnSearch(wxCommandEvent &e);
 
 private:
-	wxPLPlotCtrl *m_plotSurface;
-	wxDVSelectionListCtrl *m_dataSelector;
-	wxSearchCtrl * m_srchCtrl;
+    wxPLPlotCtrl *m_plotSurface;
+    wxDVSelectionListCtrl *m_dataSelector;
+    wxSearchCtrl *m_srchCtrl;
 
-	struct PlotSet
-	{
-		PlotSet(wxDVTimeSeriesDataSet *ds);
-		~PlotSet();
+    struct PlotSet {
+        PlotSet(wxDVTimeSeriesDataSet *ds);
 
-		wxDVTimeSeriesDataSet *dataset;
-		wxPLLinePlot *plot;
-		wxPLPlotCtrl::AxisPos axisPosition;
-	};
+        ~PlotSet();
 
-	std::vector<PlotSet*> m_plots;
-	std::vector<int> m_currentlyShownIndices;
+        wxDVTimeSeriesDataSet *dataset;
+        wxPLLinePlot *plot;
+        wxPLPlotCtrl::AxisPos axisPosition;
+    };
 
-	void CalculateDCPlotData(PlotSet *p);
+    std::vector<PlotSet *> m_plots;
+    std::vector<int> m_currentlyShownIndices;
 
-	DECLARE_EVENT_TABLE()
+    void CalculateDCPlotData(PlotSet *p);
+
+DECLARE_EVENT_TABLE()
 };
 
 #endif

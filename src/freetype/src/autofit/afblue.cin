@@ -19,21 +19,22 @@
 #include "aftypes.h"
 
 
-  FT_LOCAL_ARRAY_DEF( char )
-  af_blue_strings[] =
-  {
-    /* */
+FT_LOCAL_ARRAY_DEF(char)
+
+af_blue_strings[] =
+{
+/* */
 @AF_BLUE_STRINGS_ARRAY@
-  };
+};
 
 
-  /* stringsets are specific to styles */
-  FT_LOCAL_ARRAY_DEF( AF_Blue_StringRec )
-  af_blue_stringsets[] =
-  {
-    /* */
+/* stringsets are specific to styles */
+FT_LOCAL_ARRAY_DEF( AF_Blue_StringRec )
+af_blue_stringsets[] =
+{
+/* */
 @AF_BLUE_STRINGSETS_ARRAY@
-  };
+};
 
 
 /* END */

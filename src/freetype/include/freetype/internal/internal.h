@@ -16,12 +16,12 @@
 /***************************************************************************/
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* This file is automatically included by `ft2build.h'.                  */
-  /* Do not include it manually!                                           */
-  /*                                                                       */
-  /*************************************************************************/
+/*************************************************************************/
+/*                                                                       */
+/* This file is automatically included by `ft2build.h'.                  */
+/* Do not include it manually!                                           */
+/*                                                                       */
+/*************************************************************************/
 
 
 #define FT_INTERNAL_OBJECTS_H             <freetype/internal/ftobjs.h>
@@ -50,11 +50,11 @@
 
 #if defined( _MSC_VER )      /* Visual C++ (and Intel C++) */
 
-  /* We disable the warning `conditional expression is constant' here */
-  /* in order to compile cleanly with the maximum level of warnings.  */
-  /* In particular, the warning complains about stuff like `while(0)' */
-  /* which is very useful in macro definitions.  There is no benefit  */
-  /* in having it enabled.                                            */
+/* We disable the warning `conditional expression is constant' here */
+/* in order to compile cleanly with the maximum level of warnings.  */
+/* In particular, the warning complains about stuff like `while(0)' */
+/* which is very useful in macro definitions.  There is no benefit  */
+/* in having it enabled.                                            */
 #pragma warning( disable : 4127 )
 
 #endif /* _MSC_VER */

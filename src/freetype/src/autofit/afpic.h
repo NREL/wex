@@ -35,7 +35,7 @@
 
 #else /* FT_CONFIG_OPTION_PIC */
 
-  /* some include files required for members of AFModulePIC */
+/* some include files required for members of AFModulePIC */
 #include FT_SERVICE_PROPERTIES_H
 
 #include "aftypes.h"
@@ -43,29 +43,29 @@
 
 FT_BEGIN_HEADER
 
-  typedef struct  AFModulePIC_
-  {
-    FT_ServiceDescRec*          af_services;
-    FT_Service_PropertiesRec    af_service_properties;
+typedef struct  AFModulePIC_
+{
+  FT_ServiceDescRec*          af_services;
+  FT_Service_PropertiesRec    af_service_properties;
 
-    AF_WritingSystemClass       af_writing_system_classes
-                                  [AF_WRITING_SYSTEM_MAX + 1];
-    AF_WritingSystemClassRec    af_writing_system_classes_rec
-                                  [AF_WRITING_SYSTEM_MAX];
+  AF_WritingSystemClass       af_writing_system_classes
+                                [AF_WRITING_SYSTEM_MAX + 1];
+  AF_WritingSystemClassRec    af_writing_system_classes_rec
+                                [AF_WRITING_SYSTEM_MAX];
 
-    AF_ScriptClass              af_script_classes
-                                  [AF_SCRIPT_MAX + 1];
-    AF_ScriptClassRec           af_script_classes_rec
-                                  [AF_SCRIPT_MAX];
+  AF_ScriptClass              af_script_classes
+                                [AF_SCRIPT_MAX + 1];
+  AF_ScriptClassRec           af_script_classes_rec
+                                [AF_SCRIPT_MAX];
 
-    AF_StyleClass               af_style_classes
-                                  [AF_STYLE_MAX + 1];
-    AF_StyleClassRec            af_style_classes_rec
-                                  [AF_STYLE_MAX];
+  AF_StyleClass               af_style_classes
+                                [AF_STYLE_MAX + 1];
+  AF_StyleClassRec            af_style_classes_rec
+                                [AF_STYLE_MAX];
 
-    FT_AutoHinter_InterfaceRec  af_autofitter_interface;
+  FT_AutoHinter_InterfaceRec  af_autofitter_interface;
 
-  } AFModulePIC;
+} AFModulePIC;
 
 
 #define GET_PIC( lib )  \
@@ -86,18 +86,18 @@ FT_BEGIN_HEADER
           ( GET_PIC( library )->af_autofitter_interface )
 
 
-  /* see afpic.c for the implementation */
-  void
-  autofit_module_class_pic_free( FT_Library  library );
+/* see afpic.c for the implementation */
+void
+autofit_module_class_pic_free( FT_Library  library );
 
-  FT_Error
-  autofit_module_class_pic_init( FT_Library  library );
+FT_Error
+autofit_module_class_pic_init( FT_Library  library );
 
 FT_END_HEADER
 
 #endif /* FT_CONFIG_OPTION_PIC */
 
- /* */
+/* */
 
 #endif /* __AFPIC_H__ */
 

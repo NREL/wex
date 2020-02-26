@@ -30,58 +30,79 @@
 #include <vector>
 
 class wxCheckBox;
+
 class wxDVSelectionListCtrl;
+
 class wxDVTimeSeriesDataSet;
+
 class wxSearchCtrl;
+
 class wxPLPlotCtrl;
 
-class wxDVScatterPlotCtrl : public wxPanel
-{
+class wxDVScatterPlotCtrl : public wxPanel {
 public:
-	wxDVScatterPlotCtrl(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition,
-		const wxSize& size = wxDefaultSize, long style = wxTAB_TRAVERSAL, const wxString& name = "panel");
+    wxDVScatterPlotCtrl(wxWindow *parent, wxWindowID id = wxID_ANY, const wxPoint &pos = wxDefaultPosition,
+                        const wxSize &size = wxDefaultSize, long style = wxTAB_TRAVERSAL,
+                        const wxString &name = "panel");
 
-	virtual ~wxDVScatterPlotCtrl();
+    virtual ~wxDVScatterPlotCtrl();
 
-	void AddDataSet(wxDVTimeSeriesDataSet* d, bool update_ui);
-	void RemoveDataSet(wxDVTimeSeriesDataSet* d);
-	void RemoveAllDataSets();
+    void AddDataSet(wxDVTimeSeriesDataSet *d, bool update_ui);
 
-	wxDVSelectionListCtrl* GetScatterSelectionList();
-	void SetXSelectedName(const wxString& name);
-	void SetYSelectedNames(const wxString& names);
-	void SelectXDataAtIndex(int index);
-	void SelectYDataAtIndex(int index);
-	bool IsAnythingSelected();
-	void ReadState(std::string filename);
-	void WriteState(std::string filename);
+    void RemoveDataSet(wxDVTimeSeriesDataSet *d);
 
-	//EVENT HANDLERS
-	void OnChannelSelection(wxCommandEvent &);
-	void OnShowLine(wxCommandEvent &);
-	void RefreshPlot();
-	void OnSearch(wxCommandEvent& e);
+    void RemoveAllDataSets();
+
+    wxDVSelectionListCtrl *GetScatterSelectionList();
+
+    void SetXSelectedName(const wxString &name);
+
+    void SetYSelectedNames(const wxString &names);
+
+    void SelectXDataAtIndex(int index);
+
+    void SelectYDataAtIndex(int index);
+
+    bool IsAnythingSelected();
+
+    void ReadState(std::string filename);
+
+    void WriteState(std::string filename);
+
+    //EVENT HANDLERS
+    void OnChannelSelection(wxCommandEvent &);
+
+    void OnShowLine(wxCommandEvent &);
+
+    void RefreshPlot();
+
+    void OnSearch(wxCommandEvent &e);
 
 private:
-	std::vector<wxDVTimeSeriesDataSet*> m_dataSets;
+    std::vector<wxDVTimeSeriesDataSet *> m_dataSets;
 
-	wxDVSelectionListCtrl *m_dataSelectionList;
-	wxSearchCtrl *m_srchCtrl;
-	int m_xDataIndex;
-	std::vector<int> m_yDataIndices;
+    wxDVSelectionListCtrl *m_dataSelectionList;
+    wxSearchCtrl *m_srchCtrl;
+    int m_xDataIndex;
+    std::vector<int> m_yDataIndices;
 
-	wxPLPlotCtrl *m_plotSurface;
-	wxCheckBox *m_showPerfAgreeLine;
-	bool m_showLine;
+    wxPLPlotCtrl *m_plotSurface;
+    wxCheckBox *m_showPerfAgreeLine;
+    bool m_showLine;
 
-	void SetXAxisChannel(int index);
-	void AddYAxisChannel(int index);
-	void RemoveYAxisChannel(int index);
-	void UpdatePlotWithChannelSelections();
-	void RefreshDisabledCheckBoxes();
-	void ShowLine();
+    void SetXAxisChannel(int index);
 
-	DECLARE_EVENT_TABLE()
+    void AddYAxisChannel(int index);
+
+    void RemoveYAxisChannel(int index);
+
+    void UpdatePlotWithChannelSelections();
+
+    void RefreshDisabledCheckBoxes();
+
+    void ShowLine();
+
+DECLARE_EVENT_TABLE()
 };
 
 #endif

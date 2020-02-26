@@ -31,10 +31,10 @@ FT_BEGIN_HEADER
 #endif
 
 
-  FT_EXPORT_VAR( const FT_Driver_ClassRec )  pfr_driver_class;
+FT_EXPORT_VAR(const FT_Driver_ClassRec)pfr_driver_class;
 
 
-FT_END_HEADER
+        FT_END_HEADER
 
 
 #endif /* __PFRDRIVR_H__ */

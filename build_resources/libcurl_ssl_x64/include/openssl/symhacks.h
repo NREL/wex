@@ -6,7 +6,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -224,7 +224,7 @@
 #define ENGINE_get_pkey_asn1_meth_engine	ENGINE_get_pkey_asn1_meth_eng
 #undef ENGINE_set_load_ssl_client_cert_function
 #define ENGINE_set_load_ssl_client_cert_function \
-						ENGINE_set_ld_ssl_clnt_cert_fn
+                        ENGINE_set_ld_ssl_clnt_cert_fn
 #undef ENGINE_get_ssl_client_cert_function
 #define ENGINE_get_ssl_client_cert_function	ENGINE_get_ssl_client_cert_fn
 
@@ -259,7 +259,7 @@
 #define EC_GROUP_clear_free_all_extra_data	EC_GROUP_clr_free_all_xtra_data
 #undef EC_KEY_set_public_key_affine_coordinates
 #define EC_KEY_set_public_key_affine_coordinates \
-						EC_KEY_set_pub_key_aff_coords
+                        EC_KEY_set_pub_key_aff_coords
 #undef EC_POINT_set_Jprojective_coordinates_GFp
 #define EC_POINT_set_Jprojective_coordinates_GFp \
                                                 EC_POINT_set_Jproj_coords_GFp

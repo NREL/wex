@@ -182,16 +182,14 @@ typedef int libssh2_socket_t;
                                               void **abstract)
 #define LIBSSH2_FREE_FUNC(name)    void name(void *ptr, void **abstract)
 
-typedef struct _LIBSSH2_USERAUTH_KBDINT_PROMPT
-{
-    char* text;
+typedef struct _LIBSSH2_USERAUTH_KBDINT_PROMPT {
+    char *text;
     unsigned int length;
     unsigned char echo;
 } LIBSSH2_USERAUTH_KBDINT_PROMPT;
 
-typedef struct _LIBSSH2_USERAUTH_KBDINT_RESPONSE
-{
-    char* text;
+typedef struct _LIBSSH2_USERAUTH_KBDINT_RESPONSE {
+    char *text;
     unsigned int length;
 } LIBSSH2_USERAUTH_KBDINT_RESPONSE;
 
@@ -271,11 +269,11 @@ typedef struct _LIBSSH2_USERAUTH_KBDINT_RESPONSE
 #define LIBSSH2_FLAG_SIGPIPE        1
 #define LIBSSH2_FLAG_COMPRESS       2
 
-typedef struct _LIBSSH2_SESSION                     LIBSSH2_SESSION;
-typedef struct _LIBSSH2_CHANNEL                     LIBSSH2_CHANNEL;
-typedef struct _LIBSSH2_LISTENER                    LIBSSH2_LISTENER;
-typedef struct _LIBSSH2_KNOWNHOSTS                  LIBSSH2_KNOWNHOSTS;
-typedef struct _LIBSSH2_AGENT                       LIBSSH2_AGENT;
+typedef struct _LIBSSH2_SESSION LIBSSH2_SESSION;
+typedef struct _LIBSSH2_CHANNEL LIBSSH2_CHANNEL;
+typedef struct _LIBSSH2_LISTENER LIBSSH2_LISTENER;
+typedef struct _LIBSSH2_KNOWNHOSTS LIBSSH2_KNOWNHOSTS;
+typedef struct _LIBSSH2_AGENT LIBSSH2_AGENT;
 
 typedef struct _LIBSSH2_POLLFD {
     unsigned char type; /* LIBSSH2_POLLFD_* below */
@@ -329,9 +327,9 @@ typedef struct _LIBSSH2_POLLFD {
 #define LIBSSH2_HOSTKEY_HASH_SHA1                           2
 
 /* Hostkey Types */
-#define LIBSSH2_HOSTKEY_TYPE_UNKNOWN			    0
-#define LIBSSH2_HOSTKEY_TYPE_RSA			    1
-#define LIBSSH2_HOSTKEY_TYPE_DSS			    2
+#define LIBSSH2_HOSTKEY_TYPE_UNKNOWN                0
+#define LIBSSH2_HOSTKEY_TYPE_RSA                1
+#define LIBSSH2_HOSTKEY_TYPE_DSS                2
 
 /* Disconnect Codes (defined by SSH protocol) */
 #define SSH_DISCONNECT_HOST_NOT_ALLOWED_TO_CONNECT          1
@@ -452,9 +450,9 @@ LIBSSH2_API void libssh2_free(LIBSSH2_SESSION *session, void *ptr);
  * NOTE: on success, algs must be deallocated (by calling libssh2_free) when
  * not needed anymore
  */
-LIBSSH2_API int libssh2_session_supported_algs(LIBSSH2_SESSION* session,
+LIBSSH2_API int libssh2_session_supported_algs(LIBSSH2_SESSION *session,
                                                int method_type,
-                                               const char*** algs);
+                                               const char ***algs);
 
 /* Session API */
 LIBSSH2_API LIBSSH2_SESSION *
@@ -572,7 +570,7 @@ libssh2_userauth_hostbased_fromfile_ex(LIBSSH2_SESSION *session,
  * after callback return, but before subsequent callback invokation.
  */
 LIBSSH2_API int
-libssh2_userauth_keyboard_interactive_ex(LIBSSH2_SESSION* session,
+libssh2_userauth_keyboard_interactive_ex(LIBSSH2_SESSION *session,
                                          const char *username,
                                          unsigned int username_len,
                                          LIBSSH2_USERAUTH_KBDINT_RESPONSE_FUNC((*response_callback)));
@@ -726,16 +724,16 @@ libssh2_channel_window_write_ex(LIBSSH2_CHANNEL *channel,
 #define libssh2_channel_window_write(channel) \
   libssh2_channel_window_write_ex((channel), NULL)
 
-LIBSSH2_API void libssh2_session_set_blocking(LIBSSH2_SESSION* session,
+LIBSSH2_API void libssh2_session_set_blocking(LIBSSH2_SESSION *session,
                                               int blocking);
-LIBSSH2_API int libssh2_session_get_blocking(LIBSSH2_SESSION* session);
+LIBSSH2_API int libssh2_session_get_blocking(LIBSSH2_SESSION *session);
 
 LIBSSH2_API void libssh2_channel_set_blocking(LIBSSH2_CHANNEL *channel,
                                               int blocking);
 
-LIBSSH2_API void libssh2_session_set_timeout(LIBSSH2_SESSION* session,
+LIBSSH2_API void libssh2_session_set_timeout(LIBSSH2_SESSION *session,
                                              long timeout);
-LIBSSH2_API long libssh2_session_get_timeout(LIBSSH2_SESSION* session);
+LIBSSH2_API long libssh2_session_get_timeout(LIBSSH2_SESSION *session);
 
 /* libssh2_channel_handle_extended_data is DEPRECATED, do not use! */
 LIBSSH2_API void libssh2_channel_handle_extended_data(LIBSSH2_CHANNEL *channel,
@@ -765,8 +763,8 @@ LIBSSH2_API int libssh2_channel_flush_ex(LIBSSH2_CHANNEL *channel,
 #define libssh2_channel_flush_stderr(channel) \
  libssh2_channel_flush_ex((channel), SSH_EXTENDED_DATA_STDERR)
 
-LIBSSH2_API int libssh2_channel_get_exit_status(LIBSSH2_CHANNEL* channel);
-LIBSSH2_API int libssh2_channel_get_exit_signal(LIBSSH2_CHANNEL* channel,
+LIBSSH2_API int libssh2_channel_get_exit_status(LIBSSH2_CHANNEL *channel);
+LIBSSH2_API int libssh2_channel_get_exit_signal(LIBSSH2_CHANNEL *channel,
                                                 char **exitsignal,
                                                 size_t *exitsignal_len,
                                                 char **errmsg,
@@ -1093,8 +1091,8 @@ libssh2_agent_list_identities(LIBSSH2_AGENT *agent);
  */
 LIBSSH2_API int
 libssh2_agent_get_identity(LIBSSH2_AGENT *agent,
-               struct libssh2_agent_publickey **store,
-               struct libssh2_agent_publickey *prev);
+                           struct libssh2_agent_publickey **store,
+                           struct libssh2_agent_publickey *prev);
 
 /*
  * libssh2_agent_userauth()
@@ -1105,8 +1103,8 @@ libssh2_agent_get_identity(LIBSSH2_AGENT *agent,
  */
 LIBSSH2_API int
 libssh2_agent_userauth(LIBSSH2_AGENT *agent,
-               const char *username,
-               struct libssh2_agent_publickey *identity);
+                       const char *username,
+                       struct libssh2_agent_publickey *identity);
 
 /*
  * libssh2_agent_disconnect()
@@ -1141,9 +1139,9 @@ libssh2_agent_free(LIBSSH2_AGENT *agent);
  * Note that non-blocking applications are responsible for sending the
  * keepalive messages using libssh2_keepalive_send().
  */
-LIBSSH2_API void libssh2_keepalive_config (LIBSSH2_SESSION *session,
-                                           int want_reply,
-                                           unsigned interval);
+LIBSSH2_API void libssh2_keepalive_config(LIBSSH2_SESSION *session,
+                                          int want_reply,
+                                          unsigned interval);
 
 /*
  * libssh2_keepalive_send()
@@ -1153,8 +1151,8 @@ LIBSSH2_API void libssh2_keepalive_config (LIBSSH2_SESSION *session,
  * it again.  Returns 0 on success, or LIBSSH2_ERROR_SOCKET_SEND on
  * I/O errors.
  */
-LIBSSH2_API int libssh2_keepalive_send (LIBSSH2_SESSION *session,
-                                        int *seconds_to_next);
+LIBSSH2_API int libssh2_keepalive_send(LIBSSH2_SESSION *session,
+                                       int *seconds_to_next);
 
 /* NOTE NOTE NOTE
    libssh2_trace() has no function in builds that aren't built with debug
@@ -1171,12 +1169,12 @@ LIBSSH2_API int libssh2_trace(LIBSSH2_SESSION *session, int bitmask);
 #define LIBSSH2_TRACE_PUBLICKEY (1<<8)
 #define LIBSSH2_TRACE_SOCKET (1<<9)
 
-typedef void (*libssh2_trace_handler_func)(LIBSSH2_SESSION*,
-                                           void*,
+typedef void (*libssh2_trace_handler_func)(LIBSSH2_SESSION *,
+                                           void *,
                                            const char *,
                                            size_t);
 LIBSSH2_API int libssh2_trace_sethandler(LIBSSH2_SESSION *session,
-                                         void* context,
+                                         void *context,
                                          libssh2_trace_handler_func callback);
 
 #ifdef __cplusplus

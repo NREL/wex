@@ -27,23 +27,20 @@
 
 #include <wx/txtstrm.h>
 
-class wxExtTextOutputStream : public wxTextOutputStream
-{
+class wxExtTextOutputStream : public wxTextOutputStream {
 public:
-	wxExtTextOutputStream(wxOutputStream& s,
-		wxEOL mode = wxEOL_NATIVE,
-		const wxMBConv& conv = wxConvAuto()) :wxTextOutputStream(s, mode, conv)
-	{};
-	void WriteDouble(double d);
+    wxExtTextOutputStream(wxOutputStream &s,
+                          wxEOL mode = wxEOL_NATIVE,
+                          const wxMBConv &conv = wxConvAuto()) : wxTextOutputStream(s, mode, conv) {};
+
+    void WriteDouble(double d);
 };
 
-class wxExtTextInputStream : public wxTextInputStream
-{
+class wxExtTextInputStream : public wxTextInputStream {
 public:
-	wxExtTextInputStream(wxInputStream& s,
-		const wxString &sep = wxT(" \t"),
-		const wxMBConv& conv = wxConvAuto()) :wxTextInputStream(s, sep, conv)
-	{};
+    wxExtTextInputStream(wxInputStream &s,
+                         const wxString &sep = wxT(" \t"),
+                         const wxMBConv &conv = wxConvAuto()) : wxTextInputStream(s, sep, conv) {};
 
 };
 
