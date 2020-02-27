@@ -29,11 +29,11 @@ FT_BEGIN_HEADER
 
 #ifdef TT_CONFIG_OPTION_SUBPIXEL_HINTING
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* ID flags to identify special functions at FDEF and runtime.           */
-  /*                                                                       */
-  /*                                                                       */
+/*************************************************************************/
+/*                                                                       */
+/* ID flags to identify special functions at FDEF and runtime.           */
+/*                                                                       */
+/*                                                                       */
 #define SPH_FDEF_INLINE_DELTA_1       0x0000001
 #define SPH_FDEF_INLINE_DELTA_2       0x0000002
 #define SPH_FDEF_DIAGONAL_STROKE      0x0000004
@@ -45,11 +45,11 @@ FT_BEGIN_HEADER
 #define SPH_FDEF_TYPEMAN_DIAGENDCTRL  0x0000100
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Tweak flags that are set for each glyph by the below rules.           */
-  /*                                                                       */
-  /*                                                                       */
+/*************************************************************************/
+/*                                                                       */
+/* Tweak flags that are set for each glyph by the below rules.           */
+/*                                                                       */
+/*                                                                       */
 #define SPH_TWEAK_ALLOW_X_DMOVE                   0x0000001UL
 #define SPH_TWEAK_ALWAYS_DO_DELTAP                0x0000002UL
 #define SPH_TWEAK_ALWAYS_SKIP_DELTAP              0x0000004UL
@@ -72,28 +72,28 @@ FT_BEGIN_HEADER
 #define SPH_TWEAK_SKIP_NONPIXEL_Y_MOVES_DELTAP    0x0080000UL
 
 
-  FT_LOCAL( FT_Bool )
-  sph_test_tweak( TT_Face               face,
-                  const FT_String*      family,
-                  FT_UInt               ppem,
-                  const FT_String*      style,
-                  FT_UInt               glyph_index,
-                  const SPH_TweakRule*  rule,
-                  FT_UInt               num_rules );
+FT_LOCAL( FT_Bool )
+sph_test_tweak( TT_Face               face,
+                const FT_String*      family,
+                FT_UInt               ppem,
+                const FT_String*      style,
+                FT_UInt               glyph_index,
+                const SPH_TweakRule*  rule,
+                FT_UInt               num_rules );
 
-  FT_LOCAL( FT_UInt )
-  sph_test_tweak_x_scaling( TT_Face           face,
-                            const FT_String*  family,
-                            FT_UInt           ppem,
-                            const FT_String*  style,
-                            FT_UInt           glyph_index );
+FT_LOCAL( FT_UInt )
+sph_test_tweak_x_scaling( TT_Face           face,
+                          const FT_String*  family,
+                          FT_UInt           ppem,
+                          const FT_String*  style,
+                          FT_UInt           glyph_index );
 
-  FT_LOCAL( void )
-  sph_set_tweaks( TT_Loader  loader,
-                  FT_UInt    glyph_index );
+FT_LOCAL( void )
+sph_set_tweaks( TT_Loader  loader,
+                FT_UInt    glyph_index );
 
 
-  /* These macros are defined absent a method for setting them */
+/* These macros are defined absent a method for setting them */
 #define SPH_OPTION_BITMAP_WIDTHS           FALSE
 #define SPH_OPTION_SET_SUBPIXEL            TRUE
 #define SPH_OPTION_SET_GRAYSCALE           FALSE

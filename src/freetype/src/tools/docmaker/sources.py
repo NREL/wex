@@ -45,15 +45,15 @@ import fileinput, re, sys, os, string
 ##  Later on, paragraphs are converted to long lines, which simplifies the
 ##  regular expressions that act upon the text.
 ##
-class  SourceBlockFormat:
+class SourceBlockFormat:
 
-    def  __init__( self, id, start, column, end ):
+    def __init__(self, id, start, column, end):
         """Create a block pattern, used to recognize special documentation
            blocks."""
-        self.id     = id
-        self.start  = re.compile( start, re.VERBOSE )
-        self.column = re.compile( column, re.VERBOSE )
-        self.end    = re.compile( end, re.VERBOSE )
+        self.id = id
+        self.start = re.compile(start, re.VERBOSE)
+        self.column = re.compile(column, re.VERBOSE)
+        self.end = re.compile(end, re.VERBOSE)
 
 
 #
@@ -79,8 +79,7 @@ column = r'''
   \s*$     # probably followed by whitespace
 '''
 
-re_source_block_format1 = SourceBlockFormat( 1, start, column, start )
-
+re_source_block_format1 = SourceBlockFormat(1, start, column, start)
 
 #
 # Format 2 documentation comment blocks.
@@ -108,15 +107,13 @@ end = r'''
   \*+/ # followed by at least one asterisk, then '/'
 '''
 
-re_source_block_format2 = SourceBlockFormat( 2, start, column, end )
-
+re_source_block_format2 = SourceBlockFormat(2, start, column, end)
 
 #
 # The list of supported documentation block formats.  We could add new ones
 # quite easily.
 #
 re_source_block_formats = [re_source_block_format1, re_source_block_format2]
-
 
 #
 # The following regular expressions correspond to markup tags within the
@@ -127,14 +124,13 @@ re_source_block_formats = [re_source_block_format1, re_source_block_format2]
 #
 # Notice that a markup tag _must_ begin a new paragraph.
 #
-re_markup_tag1 = re.compile( r'''\s*<((?:\w|-)*)>''' )  # <xxxx> format
-re_markup_tag2 = re.compile( r'''\s*@((?:\w|-)*):''' )  # @xxxx: format
+re_markup_tag1 = re.compile(r'''\s*<((?:\w|-)*)>''')  # <xxxx> format
+re_markup_tag2 = re.compile(r'''\s*@((?:\w|-)*):''')  # @xxxx: format
 
 #
 # The list of supported markup tags.  We could add new ones quite easily.
 #
 re_markup_tags = [re_markup_tag1, re_markup_tag2]
-
 
 #
 # A regular expression to detect a cross reference, after markup tags have
@@ -150,12 +146,12 @@ re_markup_tags = [re_markup_tag1, re_markup_tag2]
 #
 # Example: @foo[bar]
 #
-re_crossref = re.compile( r"""
+re_crossref = re.compile(r"""
                             @
                             (?P<name>(?:\w|-)+
                                      (?:\[(?:\w|-)+\])?)
                             (?P<rest>.*)
-                          """, re.VERBOSE )
+                          """, re.VERBOSE)
 
 #
 # Two regular expressions to detect italic and bold markup, respectively.
@@ -165,8 +161,8 @@ re_crossref = re.compile( r"""
 # the characters `_' and `-', or an apostrophe (but not as the first
 # character).
 #
-re_italic = re.compile( r"_((?:\w|-)(?:\w|'|-)*)_(.*)" )     #  _italic_
-re_bold   = re.compile( r"\*((?:\w|-)(?:\w|'|-)*)\*(.*)" )   #  *bold*
+re_italic = re.compile(r"_((?:\w|-)(?:\w|'|-)*)_(.*)")  # _italic_
+re_bold = re.compile(r"\*((?:\w|-)(?:\w|'|-)*)\*(.*)")  # *bold*
 
 #
 # This regular expression code to identify an URL has been taken from
@@ -179,10 +175,10 @@ urls = r'(?:https?|telnet|gopher|file|wais|ftp)'
 ltrs = r'\w'
 gunk = r'/#~:.?+=&%@!\-'
 punc = r'.:?\-'
-any  = "%(ltrs)s%(gunk)s%(punc)s" % { 'ltrs' : ltrs,
-                                      'gunk' : gunk,
-                                      'punc' : punc }
-url  = r"""
+any = "%(ltrs)s%(gunk)s%(punc)s" % {'ltrs': ltrs,
+                                    'gunk': gunk,
+                                    'punc': punc}
+url = r"""
          (
            \b                    # start at word boundary
            %(urls)s :            # need resource and a colon
@@ -197,17 +193,17 @@ url  = r"""
              )
            )
          )
-        """ % {'urls' : urls,
-               'any'  : any,
-               'punc' : punc }
+        """ % {'urls': urls,
+               'any': any,
+               'punc': punc}
 
-re_url = re.compile( url, re.VERBOSE | re.MULTILINE )
+re_url = re.compile(url, re.VERBOSE | re.MULTILINE)
 
 #
 # A regular expression that stops collection of comments for the current
 # block.
 #
-re_source_sep = re.compile( r'\s*/\*\s*\*/' )   #  /* */
+re_source_sep = re.compile(r'\s*/\*\s*\*/')  # /* */
 
 #
 # A regular expression to find possible C identifiers while outputting
@@ -216,12 +212,12 @@ re_source_sep = re.compile( r'\s*/\*\s*\*/' )   #  /* */
 # right, sequentially splitting the source code into prefix and identifier
 # is fully sufficient for our purposes.
 #
-re_source_crossref = re.compile( r'(\W*)(\w*)' )
+re_source_crossref = re.compile(r'(\W*)(\w*)')
 
 #
 # A regular expression that matches a list of reserved C source keywords.
 #
-re_source_keywords = re.compile( '''\\b ( typedef   |
+re_source_keywords = re.compile('''\\b ( typedef   |
                                           struct    |
                                           enum      |
                                           union     |
@@ -240,7 +236,7 @@ re_source_keywords = re.compile( '''\\b ( typedef   |
                                           \#ifdef   |
                                           \#ifndef  |
                                           \#else    |
-                                          \#endif   ) \\b''', re.VERBOSE )
+                                          \#endif   ) \\b''', re.VERBOSE)
 
 
 ################################################################
@@ -258,15 +254,15 @@ re_source_keywords = re.compile( '''\\b ( typedef   |
 ##      other blocks (i.e., sources or ordinary comments with no starting
 ##      markup tag)
 ##
-class  SourceBlock:
+class SourceBlock:
 
-    def  __init__( self, processor, filename, lineno, lines ):
+    def __init__(self, processor, filename, lineno, lines):
         self.processor = processor
-        self.filename  = filename
-        self.lineno    = lineno
-        self.lines     = lines[:]
-        self.format    = processor.format
-        self.content   = []
+        self.filename = filename
+        self.lineno = lineno
+        self.lines = lines[:]
+        self.format = processor.format
+        self.content = []
 
         if self.format == None:
             return
@@ -277,37 +273,41 @@ class  SourceBlock:
         lines = []
 
         for line0 in self.lines:
-            m = self.format.column.match( line0 )
+            m = self.format.column.match(line0)
             if m:
-                lines.append( m.group( 1 ) )
+                lines.append(m.group(1))
 
         # now, look for a markup tag
         for l in lines:
-            l = string.strip( l )
-            if len( l ) > 0:
+            l = string.strip(l)
+            if len(l) > 0:
                 for tag in re_markup_tags:
-                    if tag.match( l ):
+                    if tag.match(l):
                         self.content = lines
                         return
 
-    def  location( self ):
-        return "(" + self.filename + ":" + repr( self.lineno ) + ")"
+    def location(self):
+        return "(" + self.filename + ":" + repr(self.lineno) + ")"
 
     # debugging only -- not used in normal operations
-    def  dump( self ):
+    def dump(self):
         if self.content:
-            print "{{{content start---"
+            print
+            "{{{content start---"
             for l in self.content:
-                print l
-            print "---content end}}}"
+                print
+                l
+            print
+            "---content end}}}"
             return
 
         fmt = ""
         if self.format:
-            fmt = repr( self.format.id ) + " "
+            fmt = repr(self.format.id) + " "
 
         for line in self.lines:
-            print line
+            print
+            line
 
 
 ################################################################
@@ -325,21 +325,21 @@ class  SourceBlock:
 ##    - Normal sources lines, including comments.
 ##
 ##
-class  SourceProcessor:
+class SourceProcessor:
 
-    def  __init__( self ):
+    def __init__(self):
         """Initialize a source processor."""
-        self.blocks   = []
+        self.blocks = []
         self.filename = None
-        self.format   = None
-        self.lines    = []
+        self.format = None
+        self.lines = []
 
-    def  reset( self ):
+    def reset(self):
         """Reset a block processor and clean up all its blocks."""
         self.blocks = []
         self.format = None
 
-    def  parse_file( self, filename ):
+    def parse_file(self, filename):
         """Parse a C source file and add its blocks to the processor's
            list."""
         self.reset()
@@ -349,60 +349,60 @@ class  SourceProcessor:
         fileinput.close()
         self.format = None
         self.lineno = 0
-        self.lines  = []
+        self.lines = []
 
-        for line in fileinput.input( filename ):
+        for line in fileinput.input(filename):
             # strip trailing newlines, important on Windows machines!
             if line[-1] == '\012':
                 line = line[0:-1]
 
             if self.format == None:
-                self.process_normal_line( line )
+                self.process_normal_line(line)
             else:
-                if self.format.end.match( line ):
+                if self.format.end.match(line):
                     # A normal block end.  Add it to `lines' and create a
                     # new block
-                    self.lines.append( line )
+                    self.lines.append(line)
                     self.add_block_lines()
-                elif self.format.column.match( line ):
+                elif self.format.column.match(line):
                     # A normal column line.  Add it to `lines'.
-                    self.lines.append( line )
+                    self.lines.append(line)
                 else:
                     # An unexpected block end.  Create a new block, but
                     # don't process the line.
                     self.add_block_lines()
 
                     # we need to process the line again
-                    self.process_normal_line( line )
+                    self.process_normal_line(line)
 
         # record the last lines
         self.add_block_lines()
 
-    def  process_normal_line( self, line ):
+    def process_normal_line(self, line):
         """Process a normal line and check whether it is the start of a new
            block."""
         for f in re_source_block_formats:
-            if f.start.match( line ):
+            if f.start.match(line):
                 self.add_block_lines()
                 self.format = f
                 self.lineno = fileinput.filelineno()
 
-        self.lines.append( line )
+        self.lines.append(line)
 
-    def  add_block_lines( self ):
+    def add_block_lines(self):
         """Add the current accumulated lines and create a new block."""
         if self.lines != []:
-            block = SourceBlock( self,
-                                 self.filename,
-                                 self.lineno,
-                                 self.lines )
+            block = SourceBlock(self,
+                                self.filename,
+                                self.lineno,
+                                self.lines)
 
-            self.blocks.append( block )
+            self.blocks.append(block)
             self.format = None
-            self.lines  = []
+            self.lines = []
 
     # debugging only, not used in normal operations
-    def  dump( self ):
+    def dump(self):
         """Print all blocks in a processor."""
         for b in self.blocks:
             b.dump()

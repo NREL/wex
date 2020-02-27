@@ -49,15 +49,15 @@ extern "C" {
 #endif
 
 #ifdef _IMAGEHLP_SOURCE_
- #define IMAGEAPI __stdcall
- #define DBHLP_DEPRECIATED
+#define IMAGEAPI __stdcall
+#define DBHLP_DEPRECIATED
 #else
- #define IMAGEAPI DECLSPEC_IMPORT __stdcall
- #if (_MSC_VER >= 1300) && !defined(MIDL_PASS)
-  #define DBHLP_DEPRECIATED   __declspec(deprecated)
- #else
-  #define DBHLP_DEPRECIATED
- #endif
+#define IMAGEAPI DECLSPEC_IMPORT __stdcall
+#if (_MSC_VER >= 1300) && !defined(MIDL_PASS)
+#define DBHLP_DEPRECIATED   __declspec(deprecated)
+#else
+#define DBHLP_DEPRECIATED
+#endif
 #endif
 
 #define DBHLPAPI IMAGEAPI
@@ -67,10 +67,10 @@ extern "C" {
 // Observant readers may notice that 2 new fields,
 // 'fReadOnly' and 'Version' have been added to
 // the LOADED_IMAGE structure after 'fDOSImage'.
-// This does not change the size of the structure 
-// from previous headers.  That is because while 
-// 'fDOSImage' is a byte, it is padded by the 
-// compiler to 4 bytes.  So the 2 new fields are 
+// This does not change the size of the structure
+// from previous headers.  That is because while
+// 'fDOSImage' is a byte, it is padded by the
+// compiler to 4 bytes.  So the 2 new fields are
 // slipped into the extra space.
 
 typedef struct _LOADED_IMAGE {
@@ -506,8 +506,8 @@ typedef struct _MODLOAD_CVMISC {
 } MODLOAD_CVMISC, *PMODLOAD_CVMISC;
 
 typedef struct _MODLOAD_PDBGUID_PDBAGE {
-    GUID    PdbGuid;                // Pdb Guid 
-    DWORD   PdbAge;                 // Pdb Age 
+    GUID    PdbGuid;                // Pdb Guid
+    DWORD   PdbAge;                 // Pdb Age
 } MODLOAD_PDBGUID_PDBAGE, *PMODLOAD_PDBGUID_PDBAGE;
 
 //
@@ -1186,14 +1186,14 @@ typedef struct _IMAGEHLP_SYMBOLW64_PACKAGE {
 
 #if !defined(_IMAGEHLP_SOURCE_) && defined(_IMAGEHLP64)
 
- #define IMAGEHLP_SYMBOL IMAGEHLP_SYMBOL64
- #define PIMAGEHLP_SYMBOL PIMAGEHLP_SYMBOL64
- #define IMAGEHLP_SYMBOL_PACKAGE IMAGEHLP_SYMBOL64_PACKAGE
- #define PIMAGEHLP_SYMBOL_PACKAGE PIMAGEHLP_SYMBOL64_PACKAGE
- #define IMAGEHLP_SYMBOLW IMAGEHLP_SYMBOLW64
- #define PIMAGEHLP_SYMBOLW PIMAGEHLP_SYMBOLW64
- #define IMAGEHLP_SYMBOLW_PACKAGE IMAGEHLP_SYMBOLW64_PACKAGE
- #define PIMAGEHLP_SYMBOLW_PACKAGE PIMAGEHLP_SYMBOLW64_PACKAGE
+#define IMAGEHLP_SYMBOL IMAGEHLP_SYMBOL64
+#define PIMAGEHLP_SYMBOL PIMAGEHLP_SYMBOL64
+#define IMAGEHLP_SYMBOL_PACKAGE IMAGEHLP_SYMBOL64_PACKAGE
+#define PIMAGEHLP_SYMBOL_PACKAGE PIMAGEHLP_SYMBOL64_PACKAGE
+#define IMAGEHLP_SYMBOLW IMAGEHLP_SYMBOLW64
+#define PIMAGEHLP_SYMBOLW PIMAGEHLP_SYMBOLW64
+#define IMAGEHLP_SYMBOLW_PACKAGE IMAGEHLP_SYMBOLW64_PACKAGE
+#define PIMAGEHLP_SYMBOLW_PACKAGE PIMAGEHLP_SYMBOLW64_PACKAGE
 
 #else
 
@@ -1708,7 +1708,7 @@ EnumerateLoadedModulesEx(
     _In_ PENUMLOADED_MODULES_CALLBACK64 EnumLoadedModulesCallback,
     _In_opt_ PVOID UserContext
     );
-    
+
 BOOL
 IMAGEAPI
 EnumerateLoadedModulesExW(
@@ -3372,9 +3372,9 @@ typedef BOOL (WINAPI *PSYMBOLSERVERPINGPROCWEX)(PCWSTR);
 #define SSRVOPT_WINHTTP             0x00800000
 #define SSRVOPT_WININET             0x01000000
 #define SSRVOPT_DONT_UNCOMPRESS     0x02000000
-#define SSRVOPT_DISABLE_PING_HOST   0x04000000    
-#define SSRVOPT_DISABLE_TIMEOUT     0x08000000    
-#define SSRVOPT_ENABLE_COMM_MSG     0x10000000    
+#define SSRVOPT_DISABLE_PING_HOST   0x04000000
+#define SSRVOPT_DISABLE_TIMEOUT     0x08000000
+#define SSRVOPT_ENABLE_COMM_MSG     0x10000000
 
 #define SSRVOPT_MAX                 0x10000000
 
@@ -3398,102 +3398,102 @@ typedef BOOL (WINAPI *PSYMBOLSERVERPINGPROCWEX)(PCWSTR);
 #define SYMSTOREOPT_PASS_IF_EXISTS  0x40
 
 #ifdef DBGHELP_TRANSLATE_TCHAR
- #define SymInitialize                     SymInitializeW
- #define SymAddSymbol                      SymAddSymbolW
- #define SymDeleteSymbol                   SymDeleteSymbolW
- #define SearchTreeForFile                 SearchTreeForFileW
- #define UnDecorateSymbolName              UnDecorateSymbolNameW
- #define SymGetLineFromName64              SymGetLineFromNameW64
- #define SymGetLineFromAddr64              SymGetLineFromAddrW64
- #define SymGetLineFromInlineContext       SymGetLineFromInlineContextW
- #define SymGetLineNext64                  SymGetLineNextW64
- #define SymGetLinePrev64                  SymGetLinePrevW64
- #define SymFromName                       SymFromNameW
- #define SymFindExecutableImage            SymFindExecutableImageW
- #define FindExecutableImageEx             FindExecutableImageExW
- #define SymSearch                         SymSearchW
- #define SymEnumLines                      SymEnumLinesW
- #define SymEnumSourceLines                SymEnumSourceLinesW
- #define SymGetTypeFromName                SymGetTypeFromNameW
- #define SymEnumSymbolsForAddr             SymEnumSymbolsForAddrW
- #define SymFromAddr                       SymFromAddrW
- #define SymFromInlineContext              SymFromInlineContextW
- #define SymMatchString                    SymMatchStringW
- #define SymEnumSourceFiles                SymEnumSourceFilesW
- #define SymEnumSymbols                    SymEnumSymbolsW
- #define SymEnumSymbolsEx                  SymEnumSymbolsExW
- #define SymLoadModuleEx                   SymLoadModuleExW
- #define SymSetSearchPath                  SymSetSearchPathW
- #define SymGetSearchPath                  SymGetSearchPathW
- #define EnumDirTree                       EnumDirTreeW
- #define SymFromToken                      SymFromTokenW
- #define SymFromIndex                      SymFromIndexW
- #define SymGetScope                       SymGetScopeW
- #define SymNext                           SymNextW
- #define SymPrev                           SymPrevW
- #define SymEnumTypes                      SymEnumTypesW
- #define SymEnumTypesByName                SymEnumTypesByNameW
- #define SymRegisterCallback64             SymRegisterCallbackW64
- #define SymFindDebugInfoFile              SymFindDebugInfoFileW
- #define FindDebugInfoFileEx               FindDebugInfoFileExW
- #define SymFindFileInPath                 SymFindFileInPathW
- #define SymEnumerateModules64             SymEnumerateModulesW64
- #define SymSetHomeDirectory               SymSetHomeDirectoryW
- #define SymGetHomeDirectory               SymGetHomeDirectoryW
- #define SymGetSourceFile                  SymGetSourceFileW
- #define SymGetSourceFileToken             SymGetSourceFileTokenW
- #define SymGetSourceFileFromToken         SymGetSourceFileFromTokenW
- #define SymGetSourceVarFromToken          SymGetSourceVarFromTokenW
- #define SymGetSourceFileToken             SymGetSourceFileTokenW
- #define SymGetFileLineOffsets64           SymGetFileLineOffsetsW64
- #define SymFindFileInPath                 SymFindFileInPathW
- #define SymMatchFileName                  SymMatchFileNameW
- #define SymGetSourceFileFromToken         SymGetSourceFileFromTokenW
- #define SymGetSourceVarFromToken          SymGetSourceVarFromTokenW
- #define SymGetModuleInfo64                SymGetModuleInfoW64
- #define SymAddSourceStream                SymAddSourceStreamW
- #define SymSrvIsStore                     SymSrvIsStoreW
- #define SymSrvDeltaName                   SymSrvDeltaNameW
- #define SymSrvGetSupplement               SymSrvGetSupplementW
- #define SymSrvStoreSupplement             SymSrvStoreSupplementW
- #define SymSrvGetFileIndexes              SymSrvGetFileIndexes
- #define SymSrvGetFileIndexString          SymSrvGetFileIndexStringW
- #define SymSrvStoreFile                   SymSrvStoreFileW
- #define SymGetSymbolFile                  SymGetSymbolFileW
- #define EnumerateLoadedModules64          EnumerateLoadedModulesW64
- #define EnumerateLoadedModulesEx          EnumerateLoadedModulesExW
- #define SymSrvGetFileIndexInfo            SymSrvGetFileIndexInfoW
+#define SymInitialize                     SymInitializeW
+#define SymAddSymbol                      SymAddSymbolW
+#define SymDeleteSymbol                   SymDeleteSymbolW
+#define SearchTreeForFile                 SearchTreeForFileW
+#define UnDecorateSymbolName              UnDecorateSymbolNameW
+#define SymGetLineFromName64              SymGetLineFromNameW64
+#define SymGetLineFromAddr64              SymGetLineFromAddrW64
+#define SymGetLineFromInlineContext       SymGetLineFromInlineContextW
+#define SymGetLineNext64                  SymGetLineNextW64
+#define SymGetLinePrev64                  SymGetLinePrevW64
+#define SymFromName                       SymFromNameW
+#define SymFindExecutableImage            SymFindExecutableImageW
+#define FindExecutableImageEx             FindExecutableImageExW
+#define SymSearch                         SymSearchW
+#define SymEnumLines                      SymEnumLinesW
+#define SymEnumSourceLines                SymEnumSourceLinesW
+#define SymGetTypeFromName                SymGetTypeFromNameW
+#define SymEnumSymbolsForAddr             SymEnumSymbolsForAddrW
+#define SymFromAddr                       SymFromAddrW
+#define SymFromInlineContext              SymFromInlineContextW
+#define SymMatchString                    SymMatchStringW
+#define SymEnumSourceFiles                SymEnumSourceFilesW
+#define SymEnumSymbols                    SymEnumSymbolsW
+#define SymEnumSymbolsEx                  SymEnumSymbolsExW
+#define SymLoadModuleEx                   SymLoadModuleExW
+#define SymSetSearchPath                  SymSetSearchPathW
+#define SymGetSearchPath                  SymGetSearchPathW
+#define EnumDirTree                       EnumDirTreeW
+#define SymFromToken                      SymFromTokenW
+#define SymFromIndex                      SymFromIndexW
+#define SymGetScope                       SymGetScopeW
+#define SymNext                           SymNextW
+#define SymPrev                           SymPrevW
+#define SymEnumTypes                      SymEnumTypesW
+#define SymEnumTypesByName                SymEnumTypesByNameW
+#define SymRegisterCallback64             SymRegisterCallbackW64
+#define SymFindDebugInfoFile              SymFindDebugInfoFileW
+#define FindDebugInfoFileEx               FindDebugInfoFileExW
+#define SymFindFileInPath                 SymFindFileInPathW
+#define SymEnumerateModules64             SymEnumerateModulesW64
+#define SymSetHomeDirectory               SymSetHomeDirectoryW
+#define SymGetHomeDirectory               SymGetHomeDirectoryW
+#define SymGetSourceFile                  SymGetSourceFileW
+#define SymGetSourceFileToken             SymGetSourceFileTokenW
+#define SymGetSourceFileFromToken         SymGetSourceFileFromTokenW
+#define SymGetSourceVarFromToken          SymGetSourceVarFromTokenW
+#define SymGetSourceFileToken             SymGetSourceFileTokenW
+#define SymGetFileLineOffsets64           SymGetFileLineOffsetsW64
+#define SymFindFileInPath                 SymFindFileInPathW
+#define SymMatchFileName                  SymMatchFileNameW
+#define SymGetSourceFileFromToken         SymGetSourceFileFromTokenW
+#define SymGetSourceVarFromToken          SymGetSourceVarFromTokenW
+#define SymGetModuleInfo64                SymGetModuleInfoW64
+#define SymAddSourceStream                SymAddSourceStreamW
+#define SymSrvIsStore                     SymSrvIsStoreW
+#define SymSrvDeltaName                   SymSrvDeltaNameW
+#define SymSrvGetSupplement               SymSrvGetSupplementW
+#define SymSrvStoreSupplement             SymSrvStoreSupplementW
+#define SymSrvGetFileIndexes              SymSrvGetFileIndexes
+#define SymSrvGetFileIndexString          SymSrvGetFileIndexStringW
+#define SymSrvStoreFile                   SymSrvStoreFileW
+#define SymGetSymbolFile                  SymGetSymbolFileW
+#define EnumerateLoadedModules64          EnumerateLoadedModulesW64
+#define EnumerateLoadedModulesEx          EnumerateLoadedModulesExW
+#define SymSrvGetFileIndexInfo            SymSrvGetFileIndexInfoW
 
- #define IMAGEHLP_LINE64                   IMAGEHLP_LINEW64
- #define PIMAGEHLP_LINE64                  PIMAGEHLP_LINEW64
- #define SYMBOL_INFO                       SYMBOL_INFOW
- #define PSYMBOL_INFO                      PSYMBOL_INFOW
- #define SYMBOL_INFO_PACKAGE               SYMBOL_INFO_PACKAGEW
- #define PSYMBOL_INFO_PACKAGE              PSYMBOL_INFO_PACKAGEW
- #define FIND_EXE_FILE_CALLBACK            FIND_EXE_FILE_CALLBACKW
- #define PFIND_EXE_FILE_CALLBACK           PFIND_EXE_FILE_CALLBACKW
- #define SYM_ENUMERATESYMBOLS_CALLBACK     SYM_ENUMERATESYMBOLS_CALLBACKW
- #define PSYM_ENUMERATESYMBOLS_CALLBACK    PSYM_ENUMERATESYMBOLS_CALLBACKW
- #define SRCCODEINFO                       SRCCODEINFOW
- #define PSRCCODEINFO                      PSRCCODEINFOW
- #define SOURCEFILE                        SOURCEFILEW
- #define PSOURCEFILE                       PSOURCEFILEW
- #define SYM_ENUMSOURECFILES_CALLBACK      SYM_ENUMSOURCEFILES_CALLBACKW
- #define PSYM_ENUMSOURCEFILES_CALLBACK     PSYM_ENUMSOURECFILES_CALLBACKW
- #define IMAGEHLP_CBA_EVENT                IMAGEHLP_CBA_EVENTW
- #define PIMAGEHLP_CBA_EVENT               PIMAGEHLP_CBA_EVENTW
- #define PENUMDIRTREE_CALLBACK             PENUMDIRTREE_CALLBACKW
- #define IMAGEHLP_DEFERRED_SYMBOL_LOAD64   IMAGEHLP_DEFERRED_SYMBOL_LOADW64
- #define PIMAGEHLP_DEFERRED_SYMBOL_LOAD64  PIMAGEHLP_DEFERRED_SYMBOL_LOADW64
- #define PFIND_DEBUG_FILE_CALLBACK         PFIND_DEBUG_FILE_CALLBACKW
- #define PFINDFILEINPATHCALLBACK           PFINDFILEINPATHCALLBACKW
- #define IMAGEHLP_MODULE64                 IMAGEHLP_MODULEW64
- #define PIMAGEHLP_MODULE64                PIMAGEHLP_MODULEW64
- #define SYMSRV_INDEX_INFO                 SYMSRV_INDEX_INFOW
- #define PSYMSRV_INDEX_INFO                PSYMSRV_INDEX_INFOW
+#define IMAGEHLP_LINE64                   IMAGEHLP_LINEW64
+#define PIMAGEHLP_LINE64                  PIMAGEHLP_LINEW64
+#define SYMBOL_INFO                       SYMBOL_INFOW
+#define PSYMBOL_INFO                      PSYMBOL_INFOW
+#define SYMBOL_INFO_PACKAGE               SYMBOL_INFO_PACKAGEW
+#define PSYMBOL_INFO_PACKAGE              PSYMBOL_INFO_PACKAGEW
+#define FIND_EXE_FILE_CALLBACK            FIND_EXE_FILE_CALLBACKW
+#define PFIND_EXE_FILE_CALLBACK           PFIND_EXE_FILE_CALLBACKW
+#define SYM_ENUMERATESYMBOLS_CALLBACK     SYM_ENUMERATESYMBOLS_CALLBACKW
+#define PSYM_ENUMERATESYMBOLS_CALLBACK    PSYM_ENUMERATESYMBOLS_CALLBACKW
+#define SRCCODEINFO                       SRCCODEINFOW
+#define PSRCCODEINFO                      PSRCCODEINFOW
+#define SOURCEFILE                        SOURCEFILEW
+#define PSOURCEFILE                       PSOURCEFILEW
+#define SYM_ENUMSOURECFILES_CALLBACK      SYM_ENUMSOURCEFILES_CALLBACKW
+#define PSYM_ENUMSOURCEFILES_CALLBACK     PSYM_ENUMSOURECFILES_CALLBACKW
+#define IMAGEHLP_CBA_EVENT                IMAGEHLP_CBA_EVENTW
+#define PIMAGEHLP_CBA_EVENT               PIMAGEHLP_CBA_EVENTW
+#define PENUMDIRTREE_CALLBACK             PENUMDIRTREE_CALLBACKW
+#define IMAGEHLP_DEFERRED_SYMBOL_LOAD64   IMAGEHLP_DEFERRED_SYMBOL_LOADW64
+#define PIMAGEHLP_DEFERRED_SYMBOL_LOAD64  PIMAGEHLP_DEFERRED_SYMBOL_LOADW64
+#define PFIND_DEBUG_FILE_CALLBACK         PFIND_DEBUG_FILE_CALLBACKW
+#define PFINDFILEINPATHCALLBACK           PFINDFILEINPATHCALLBACKW
+#define IMAGEHLP_MODULE64                 IMAGEHLP_MODULEW64
+#define PIMAGEHLP_MODULE64                PIMAGEHLP_MODULEW64
+#define SYMSRV_INDEX_INFO                 SYMSRV_INDEX_INFOW
+#define PSYMSRV_INDEX_INFO                PSYMSRV_INDEX_INFOW
 
- #define PSYMBOLSERVERPROC                 PSYMBOLSERVERPROCW
- #define PSYMBOLSERVERPINGPROC             PSYMBOLSERVERPINGPROCW
+#define PSYMBOLSERVERPROC                 PSYMBOLSERVERPROCW
+#define PSYMBOLSERVERPINGPROC             PSYMBOLSERVERPINGPROCW
 #endif
 
 // -----------------------------------------------------------------
@@ -3691,7 +3691,7 @@ typedef ULONG (__stdcall *LPCALL_BACK_USER_INTERRUPT_ROUTINE )(VOID);
 typedef struct
 {
     PCWSTR pBinPathNonExist;
-    PCWSTR pSymbolPathNonExist;        
+    PCWSTR pSymbolPathNonExist;
 }DBGHELP_DATA_REPORT_STRUCT, *PDBGHELP_DATA_REPORT_STRUCT;
 
 void
@@ -3702,17 +3702,17 @@ SetCheckUserInterruptShared(
 
 LPCALL_BACK_USER_INTERRUPT_ROUTINE
 IMAGEAPI
-GetCheckUserInterruptShared( 
-    void 
+GetCheckUserInterruptShared(
+    void
     );
 
-DWORD 
+DWORD
 IMAGEAPI
-GetSymLoadError( 
-    void 
+GetSymLoadError(
+    void
     );
 
-void 
+void
 IMAGEAPI
 SetSymLoadError(
     _In_ DWORD error
@@ -3890,7 +3890,7 @@ typedef struct _MINIDUMP_HEADER {
 } MINIDUMP_HEADER, *PMINIDUMP_HEADER;
 
 //
-// The MINIDUMP_HEADER field StreamDirectoryRva points to 
+// The MINIDUMP_HEADER field StreamDirectoryRva points to
 // an array of MINIDUMP_DIRECTORY structures.
 //
 
@@ -3944,12 +3944,12 @@ typedef enum _MINIDUMP_STREAM_TYPE {
     ceStreamException           = 0x8002,
     ceStreamModuleList          = 0x8003,
     ceStreamProcessList         = 0x8004,
-    ceStreamThreadList          = 0x8005, 
+    ceStreamThreadList          = 0x8005,
     ceStreamThreadContextList   = 0x8006,
     ceStreamThreadCallStackList = 0x8007,
     ceStreamMemoryVirtualList   = 0x8008,
     ceStreamMemoryPhysicalList  = 0x8009,
-    ceStreamBucketParameters    = 0x800A,     
+    ceStreamBucketParameters    = 0x800A,
     ceStreamProcessModuleMap    = 0x800B,
     ceStreamDiagnosisList       = 0x800C,
 
@@ -3961,7 +3961,7 @@ typedef enum _MINIDUMP_STREAM_TYPE {
 //
 // The minidump system information contains processor and
 // Operating System specific information.
-// 
+//
 
 //
 // CPU information is obtained from one of two places.
@@ -3979,34 +3979,34 @@ typedef union _CPU_INFORMATION {
     //
     // X86 platforms use CPUID function to obtain processor information.
     //
-    
+
     struct {
 
         //
         // CPUID Subfunction 0, register EAX (VendorId [0]),
         // EBX (VendorId [1]) and ECX (VendorId [2]).
         //
-        
+
         ULONG32 VendorId [ 3 ];
-        
+
         //
         // CPUID Subfunction 1, register EAX
         //
-        
+
         ULONG32 VersionInformation;
 
         //
         // CPUID Subfunction 1, register EDX
         //
-        
+
         ULONG32 FeatureInformation;
-        
+
 
         //
         // CPUID, Subfunction 80000001, register EBX. This will only
         // be obtained if the vendor id is "AuthenticAMD".
         //
-        
+
         ULONG32 AMDExtendedCpuFeatures;
 
     } X86CpuInfo;
@@ -4014,22 +4014,22 @@ typedef union _CPU_INFORMATION {
     //
     // Non-x86 platforms use processor feature flags.
     //
-    
+
     struct {
 
         ULONG64 ProcessorFeatures [ 2 ];
-        
+
     } OtherCpuInfo;
 
 } CPU_INFORMATION, *PCPU_INFORMATION;
-        
+
 typedef struct _MINIDUMP_SYSTEM_INFO {
 
     //
     // ProcessorArchitecture, ProcessorLevel and ProcessorRevision are all
     // taken from the SYSTEM_INFO structure obtained by GetSystemInfo( ).
     //
-    
+
     USHORT ProcessorArchitecture;
     USHORT ProcessorLevel;
     USHORT ProcessorRevision;
@@ -4047,7 +4047,7 @@ typedef struct _MINIDUMP_SYSTEM_INFO {
     // CSDVersion are all taken from the OSVERSIONINFO structure
     // returned by GetVersionEx( ).
     //
-    
+
     ULONG32 MajorVersion;
     ULONG32 MinorVersion;
     ULONG32 BuildNumber;
@@ -4056,7 +4056,7 @@ typedef struct _MINIDUMP_SYSTEM_INFO {
     //
     // RVA to a CSDVersion string in the string table.
     //
-    
+
     RVA CSDVersionRva;
 
     union {
@@ -4074,7 +4074,7 @@ typedef struct _MINIDUMP_SYSTEM_INFO {
 
 //
 // The minidump thread contains standard thread
-// information plus an RVA to the memory for this 
+// information plus an RVA to the memory for this
 // thread and an RVA to the CONTEXT structure for
 // this thread.
 //
@@ -4175,7 +4175,7 @@ typedef struct _MINIDUMP_MODULE {
     MINIDUMP_LOCATION_DESCRIPTOR MiscRecord;
     ULONG64 Reserved0;                          // Reserved for future use.
     ULONG64 Reserved1;                          // Reserved for future use.
-} MINIDUMP_MODULE, *PMINIDUMP_MODULE;   
+} MINIDUMP_MODULE, *PMINIDUMP_MODULE;
 
 
 //
@@ -4454,7 +4454,7 @@ typedef struct _MINIDUMP_MEMORY_INFO_LIST {
     ULONG64 NumberOfEntries;
 } MINIDUMP_MEMORY_INFO_LIST, *PMINIDUMP_MEMORY_INFO_LIST;
 
-    
+
 //
 // The memory information stream contains memory region
 // description information.  This stream corresponds to
@@ -4601,7 +4601,7 @@ typedef struct _MINIDUMP_MODULE_CALLBACK {
     ULONG CheckSum;
     ULONG TimeDateStamp;
     VS_FIXEDFILEINFO VersionInfo;
-    PVOID CvRecord; 
+    PVOID CvRecord;
     ULONG SizeOfCvRecord;
     PVOID MiscRecord;
     ULONG SizeOfMiscRecord;
@@ -4711,7 +4711,7 @@ typedef struct _MINIDUMP_CALLBACK_OUTPUT {
     };
 } MINIDUMP_CALLBACK_OUTPUT, *PMINIDUMP_CALLBACK_OUTPUT;
 
-        
+
 //
 // A normal minidump contains just the information
 // necessary to capture stack traces for all of the
@@ -4823,7 +4823,7 @@ typedef enum _MINIDUMP_TYPE {
 // query that retrieves processor power information for
 // MINIDUMP_MISC_INFO.
 //
-    
+
 typedef enum _MINIDUMP_SECONDARY_FLAGS {
     MiniSecondaryWithoutPowerInfo = 0x00000001,
 

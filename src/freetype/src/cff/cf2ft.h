@@ -43,7 +43,7 @@
 #include "cf2types.h"
 
 
-  /* TODO: disable asserts for now */
+/* TODO: disable asserts for now */
 #define CF2_NDEBUG
 
 
@@ -56,86 +56,96 @@
 FT_BEGIN_HEADER
 
 
-  FT_LOCAL( FT_Error )
-  cf2_decoder_parse_charstrings( CFF_Decoder*  decoder,
-                                 FT_Byte*      charstring_base,
-                                 FT_ULong      charstring_len );
+FT_LOCAL(FT_Error)
+cf2_decoder_parse_charstrings(CFF_Decoder *decoder,
+                              FT_Byte *charstring_base,
+                              FT_ULong charstring_len);
 
-  FT_LOCAL( CFF_SubFont )
-  cf2_getSubfont( CFF_Decoder*  decoder );
-
-
-  FT_LOCAL( CF2_Fixed )
-  cf2_getPpemY( CFF_Decoder*  decoder );
-  FT_LOCAL( CF2_Fixed )
-  cf2_getStdVW( CFF_Decoder*  decoder );
-  FT_LOCAL( CF2_Fixed )
-  cf2_getStdHW( CFF_Decoder*  decoder );
-
-  FT_LOCAL( void )
-  cf2_getBlueMetrics( CFF_Decoder*  decoder,
-                      CF2_Fixed*    blueScale,
-                      CF2_Fixed*    blueShift,
-                      CF2_Fixed*    blueFuzz );
-  FT_LOCAL( void )
-  cf2_getBlueValues( CFF_Decoder*  decoder,
-                     size_t*       count,
-                     FT_Pos*      *data );
-  FT_LOCAL( void )
-  cf2_getOtherBlues( CFF_Decoder*  decoder,
-                     size_t*       count,
-                     FT_Pos*      *data );
-  FT_LOCAL( void )
-  cf2_getFamilyBlues( CFF_Decoder*  decoder,
-                      size_t*       count,
-                      FT_Pos*      *data );
-  FT_LOCAL( void )
-  cf2_getFamilyOtherBlues( CFF_Decoder*  decoder,
-                           size_t*       count,
-                           FT_Pos*      *data );
-
-  FT_LOCAL( CF2_Int )
-  cf2_getLanguageGroup( CFF_Decoder*  decoder );
-
-  FT_LOCAL( CF2_Int )
-  cf2_initGlobalRegionBuffer( CFF_Decoder*  decoder,
-                              CF2_Int       subrNum,
-                              CF2_Buffer    buf );
-  FT_LOCAL( FT_Error )
-  cf2_getSeacComponent( CFF_Decoder*  decoder,
-                        CF2_Int       code,
-                        CF2_Buffer    buf );
-  FT_LOCAL( void )
-  cf2_freeSeacComponent( CFF_Decoder*  decoder,
-                         CF2_Buffer    buf );
-  FT_LOCAL( CF2_Int )
-  cf2_initLocalRegionBuffer( CFF_Decoder*  decoder,
-                             CF2_Int       subrNum,
-                             CF2_Buffer    buf );
-
-  FT_LOCAL( CF2_Fixed )
-  cf2_getDefaultWidthX( CFF_Decoder*  decoder );
-  FT_LOCAL( CF2_Fixed )
-  cf2_getNominalWidthX( CFF_Decoder*  decoder );
+FT_LOCAL(CFF_SubFont)
+cf2_getSubfont(CFF_Decoder *decoder);
 
 
-  /*
-   * FreeType client outline
-   *
-   * process output from the charstring interpreter
-   */
-  typedef struct  CF2_OutlineRec_
-  {
-    CF2_OutlineCallbacksRec  root;        /* base class must be first */
-    CFF_Decoder*             decoder;
+FT_LOCAL(CF2_Fixed)
+cf2_getPpemY(CFF_Decoder *decoder);
 
-  } CF2_OutlineRec, *CF2_Outline;
+FT_LOCAL(CF2_Fixed)
+cf2_getStdVW(CFF_Decoder *decoder);
+
+FT_LOCAL(CF2_Fixed)
+cf2_getStdHW(CFF_Decoder *decoder);
+
+FT_LOCAL(void)
+cf2_getBlueMetrics(CFF_Decoder *decoder,
+                   CF2_Fixed *blueScale,
+                   CF2_Fixed *blueShift,
+                   CF2_Fixed *blueFuzz);
+
+FT_LOCAL(void)
+cf2_getBlueValues(CFF_Decoder *decoder,
+                  size_t *count,
+                  FT_Pos **data);
+
+FT_LOCAL(void)
+cf2_getOtherBlues(CFF_Decoder *decoder,
+                  size_t *count,
+                  FT_Pos **data);
+
+FT_LOCAL(void)
+cf2_getFamilyBlues(CFF_Decoder *decoder,
+                   size_t *count,
+                   FT_Pos **data);
+
+FT_LOCAL(void)
+cf2_getFamilyOtherBlues(CFF_Decoder *decoder,
+                        size_t *count,
+                        FT_Pos **data);
+
+FT_LOCAL(CF2_Int)
+cf2_getLanguageGroup(CFF_Decoder *decoder);
+
+FT_LOCAL(CF2_Int)
+cf2_initGlobalRegionBuffer(CFF_Decoder *decoder,
+                           CF2_Int subrNum,
+                           CF2_Buffer buf);
+
+FT_LOCAL(FT_Error)
+cf2_getSeacComponent(CFF_Decoder *decoder,
+                     CF2_Int code,
+                     CF2_Buffer buf);
+
+FT_LOCAL(void)
+cf2_freeSeacComponent(CFF_Decoder *decoder,
+                      CF2_Buffer buf);
+
+FT_LOCAL(CF2_Int)
+cf2_initLocalRegionBuffer(CFF_Decoder *decoder,
+                          CF2_Int subrNum,
+                          CF2_Buffer buf);
+
+FT_LOCAL(CF2_Fixed)
+cf2_getDefaultWidthX(CFF_Decoder *decoder);
+
+FT_LOCAL(CF2_Fixed)
+cf2_getNominalWidthX(CFF_Decoder *decoder);
 
 
-  FT_LOCAL( void )
-  cf2_outline_reset( CF2_Outline  outline );
-  FT_LOCAL( void )
-  cf2_outline_close( CF2_Outline  outline );
+/*
+ * FreeType client outline
+ *
+ * process output from the charstring interpreter
+ */
+typedef struct CF2_OutlineRec_ {
+    CF2_OutlineCallbacksRec root;        /* base class must be first */
+    CFF_Decoder *decoder;
+
+} CF2_OutlineRec, *CF2_Outline;
+
+
+FT_LOCAL(void)
+cf2_outline_reset(CF2_Outline outline);
+
+FT_LOCAL(void)
+cf2_outline_close(CF2_Outline outline);
 
 
 FT_END_HEADER

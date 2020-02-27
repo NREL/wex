@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Name:        pdfspotcolour.h
-// Purpose:     
+// Purpose:
 // Author:      Ulrich Telle
 // Modified by:
 // Created:     2009-05-25
@@ -19,43 +19,42 @@
 #include "wex/pdf/pdfdocdef.h"
 
 /// Class representing spot colours.
-class WXDLLIMPEXP_PDFDOC wxPdfSpotColour
-{
+class WXDLLIMPEXP_PDFDOC wxPdfSpotColour {
 public:
-  /// Constructor for spot colour
-  wxPdfSpotColour(int index, double cyan, double magenta, double yellow, double black);
+    /// Constructor for spot colour
+    wxPdfSpotColour(int index, double cyan, double magenta, double yellow, double black);
 
-  /// Copy constructor
-  wxPdfSpotColour(const wxPdfSpotColour& colour);
+    /// Copy constructor
+    wxPdfSpotColour(const wxPdfSpotColour &colour);
 
-  /// Set object index
-  void SetObjIndex(int index) { m_objIndex = index; }
+    /// Set object index
+    void SetObjIndex(int index) { m_objIndex = index; }
 
-  /// Get object index
-  int GetObjIndex() const { return m_objIndex; }
+    /// Get object index
+    int GetObjIndex() const { return m_objIndex; }
 
-  /// Get spot colour index
-  int GetIndex() const { return m_index; }
+    /// Get spot colour index
+    int GetIndex() const { return m_index; }
 
-  /// Get cyan level
-  double GetCyan() const { return m_cyan; }
+    /// Get cyan level
+    double GetCyan() const { return m_cyan; }
 
-  /// Get magenta level
-  double GetMagenta() const { return m_magenta; }
+    /// Get magenta level
+    double GetMagenta() const { return m_magenta; }
 
-  /// Get yellow level
-  double GetYellow() const { return m_yellow; }
+    /// Get yellow level
+    double GetYellow() const { return m_yellow; }
 
-  /// Get black level
-  double GetBlack() const { return m_black; }
+    /// Get black level
+    double GetBlack() const { return m_black; }
 
 private:
-  int    m_objIndex;   ///< object index
-  int    m_index;      ///< colour index
-  double m_cyan;       ///< cyan level
-  double m_magenta;    ///< magenta level
-  double m_yellow;     ///< yellow level
-  double m_black;      ///< black level
+    int m_objIndex;   ///< object index
+    int m_index;      ///< colour index
+    double m_cyan;       ///< cyan level
+    double m_magenta;    ///< magenta level
+    double m_yellow;     ///< yellow level
+    double m_black;      ///< black level
 };
 
 #endif

@@ -42,31 +42,44 @@
 struct sqlite3;
 
 class wxDVPlotCtrl;
+
 class wxDVArrayDataSet;
+
 class wxDateTime;
 
 using namespace std;
 
-class wxDVFileReader
-{
+class wxDVFileReader {
 public:
-	static void ReadDataFromCSV(wxDVPlotCtrl* plotWin, const wxString& filename, wxChar separator = ',');
-	static bool FastRead(wxDVPlotCtrl* plotWin, const wxString& filename, int prealloc_data = 8760, int prealloc_lnchars = 1024);
-	static bool Read8760WFLines(std::vector<wxDVArrayDataSet*> &dataSets, FILE* infile, int wfType);
-	static bool ReadWeatherFile(wxDVPlotCtrl* plotWin, const wxString& filename);
-	static bool ReadSQLFile(wxDVPlotCtrl* plotWin, const wxString& filename);
-	static bool IsNumeric(wxString stringToCheck);
-	static bool IsDate(wxString stringToCheck);
+    static void ReadDataFromCSV(wxDVPlotCtrl *plotWin, const wxString &filename, wxChar separator = ',');
+
+    static bool
+    FastRead(wxDVPlotCtrl *plotWin, const wxString &filename, int prealloc_data = 8760, int prealloc_lnchars = 1024);
+
+    static bool Read8760WFLines(std::vector<wxDVArrayDataSet *> &dataSets, FILE *infile, int wfType);
+
+    static bool ReadWeatherFile(wxDVPlotCtrl *plotWin, const wxString &filename);
+
+    static bool ReadSQLFile(wxDVPlotCtrl *plotWin, const wxString &filename);
+
+    static bool IsNumeric(wxString stringToCheck);
+
+    static bool IsDate(wxString stringToCheck);
 
 private:
-	static wxString ColumnText(const unsigned char* column);
-	static bool IsEnergyPlus(sqlite3 * db);
-	static void ExecAndThrowOnError(const std::string &t_stmt, sqlite3 * db);
-	// Interpolates to synthesize data at the 1 minute timeStep
-	static void NonuniformTimestepInterpolation(const std::vector<wxDateTime> & times, std::vector<double> & values);
-	static void InitUnitConversions();
-	// Converts both the units and the values
-	static bool ConvertUnits(std::string & units, std::vector<double> & values, bool convertSIToIP = true);
+    static wxString ColumnText(const unsigned char *column);
+
+    static bool IsEnergyPlus(sqlite3 *db);
+
+    static void ExecAndThrowOnError(const std::string &t_stmt, sqlite3 *db);
+
+    // Interpolates to synthesize data at the 1 minute timeStep
+    static void NonuniformTimestepInterpolation(const std::vector<wxDateTime> &times, std::vector<double> &values);
+
+    static void InitUnitConversions();
+
+    // Converts both the units and the values
+    static bool ConvertUnits(std::string &units, std::vector<double> &values, bool convertSIToIP = true);
 };
 
 #endif

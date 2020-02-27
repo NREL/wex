@@ -29,56 +29,70 @@
 #include <wx/panel.h>
 #include <wx/radiobut.h>
 
-class wxRadioChoice : public wxPanel
-{
+class wxRadioChoice : public wxPanel {
 public:
-	wxRadioChoice(wxWindow *parent, int id,
-		const wxPoint &pos = wxDefaultPosition,
-		const wxSize &size = wxDefaultSize);
+    wxRadioChoice(wxWindow *parent, int id,
+                  const wxPoint &pos = wxDefaultPosition,
+                  const wxSize &size = wxDefaultSize);
 
-	virtual wxSize DoGetBestSize() const;
+    virtual wxSize DoGetBestSize() const;
 
-	void Add(const wxString &caption, bool arrange = true);
-	void Add(const wxArrayString &list);
-	int Find(const wxString &caption);
-	void Remove(int idx);
-	void Remove(const wxString &caption);
-	void Clear();
-	int GetCount();
+    void Add(const wxString &caption, bool arrange = true);
 
-	virtual bool Enable(bool b = true);
-	void Enable(int idx, bool b = true);
-	bool IsEnabled(int idx);
+    void Add(const wxArrayString &list);
 
-	void SetLabel(int idx, const wxString &lbl);
-	wxString GetLabel(int idx);
+    int Find(const wxString &caption);
 
-	int GetSelection();
-	wxString GetValue();
-	void SetValue(const wxString &sel);
-	void SetSelection(int idx);
+    void Remove(int idx);
 
-	void Rearrange();
+    void Remove(const wxString &caption);
 
-	void ShowCaptions(bool b);
-	bool CaptionsShown();
+    void Clear();
 
-	void SetHorizontal(bool b);
-	bool IsHorizontal();
+    int GetCount();
 
-	void LayoutEvenly(bool b);
+    virtual bool Enable(bool b = true);
+
+    void Enable(int idx, bool b = true);
+
+    bool IsEnabled(int idx);
+
+    void SetLabel(int idx, const wxString &lbl);
+
+    wxString GetLabel(int idx);
+
+    int GetSelection();
+
+    wxString GetValue();
+
+    void SetValue(const wxString &sel);
+
+    void SetSelection(int idx);
+
+    void Rearrange();
+
+    void ShowCaptions(bool b);
+
+    bool CaptionsShown();
+
+    void SetHorizontal(bool b);
+
+    bool IsHorizontal();
+
+    void LayoutEvenly(bool b);
 
 private:
-	void OnRadio(wxCommandEvent &evt);
-	void OnResize(wxSizeEvent &evt);
+    void OnRadio(wxCommandEvent &evt);
 
-	bool m_showCaptions;
-	bool m_horizontal;
-	bool m_evenly;
-	wxArrayString m_captions;
-	std::vector<wxRadioButton*> m_buttons;
+    void OnResize(wxSizeEvent &evt);
 
-	DECLARE_EVENT_TABLE()
+    bool m_showCaptions;
+    bool m_horizontal;
+    bool m_evenly;
+    wxArrayString m_captions;
+    std::vector<wxRadioButton *> m_buttons;
+
+DECLARE_EVENT_TABLE()
 };
 
 #endif

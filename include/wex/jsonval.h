@@ -22,36 +22,37 @@
 
 // forward declarations
 class wxJSONReader;
+
 class wxJSONRefData;
 
 //! The type of the value held by the wxJSONRefData class
 enum wxJSONType {
-	wxJSONTYPE_INVALID = 0,  /*!< the object is not uninitialized        */
-	wxJSONTYPE_NULL,       /*!< the object contains a NULL value         */
-	wxJSONTYPE_INT,        /*!< the object contains an integer           */
-	wxJSONTYPE_UINT,       /*!< the object contains an unsigned integer  */
-	wxJSONTYPE_DOUBLE,     /*!< the object contains a double             */
-	wxJSONTYPE_STRING,     /*!< the object contains a wxString object    */
-	wxJSONTYPE_CSTRING,    /*!< the object contains a static C-string    */
-	wxJSONTYPE_BOOL,       /*!< the object contains a boolean            */
-	wxJSONTYPE_ARRAY,      /*!< the object contains an array of values   */
-	wxJSONTYPE_OBJECT,     /*!< the object contains a map of keys/values */
-	wxJSONTYPE_LONG,       /*!< the object contains a 32-bit integer     */
-	wxJSONTYPE_INT64,      /*!< the object contains a 64-bit integer     */
-	wxJSONTYPE_ULONG,      /*!< the object contains an unsigned 32-bit integer  */
-	wxJSONTYPE_UINT64,     /*!< the object contains an unsigned 64-bit integer  */
-	wxJSONTYPE_SHORT,      /*!< the object contains a 16-bit integer            */
-	wxJSONTYPE_USHORT,     /*!< the object contains a 16-bit unsigned integer   */
-	wxJSONTYPE_MEMORYBUFF  /*!< the object contains a binary memory buffer   */
+    wxJSONTYPE_INVALID = 0,  /*!< the object is not uninitialized        */
+    wxJSONTYPE_NULL,       /*!< the object contains a NULL value         */
+    wxJSONTYPE_INT,        /*!< the object contains an integer           */
+    wxJSONTYPE_UINT,       /*!< the object contains an unsigned integer  */
+    wxJSONTYPE_DOUBLE,     /*!< the object contains a double             */
+    wxJSONTYPE_STRING,     /*!< the object contains a wxString object    */
+    wxJSONTYPE_CSTRING,    /*!< the object contains a static C-string    */
+    wxJSONTYPE_BOOL,       /*!< the object contains a boolean            */
+    wxJSONTYPE_ARRAY,      /*!< the object contains an array of values   */
+    wxJSONTYPE_OBJECT,     /*!< the object contains a map of keys/values */
+    wxJSONTYPE_LONG,       /*!< the object contains a 32-bit integer     */
+    wxJSONTYPE_INT64,      /*!< the object contains a 64-bit integer     */
+    wxJSONTYPE_ULONG,      /*!< the object contains an unsigned 32-bit integer  */
+    wxJSONTYPE_UINT64,     /*!< the object contains an unsigned 64-bit integer  */
+    wxJSONTYPE_SHORT,      /*!< the object contains a 16-bit integer            */
+    wxJSONTYPE_USHORT,     /*!< the object contains a 16-bit unsigned integer   */
+    wxJSONTYPE_MEMORYBUFF  /*!< the object contains a binary memory buffer   */
 };
 
 // the comment position: every value only has one comment position
 // althrough comments may be splitted into several lines
 enum {
-	wxJSONVALUE_COMMENT_DEFAULT = 0,
-	wxJSONVALUE_COMMENT_BEFORE,
-	wxJSONVALUE_COMMENT_AFTER,
-	wxJSONVALUE_COMMENT_INLINE,
+    wxJSONVALUE_COMMENT_DEFAULT = 0,
+    wxJSONVALUE_COMMENT_BEFORE,
+    wxJSONVALUE_COMMENT_AFTER,
+    wxJSONVALUE_COMMENT_INLINE,
 };
 
 /***********************************************************************
@@ -61,212 +62,349 @@ enum {
 						***********************************************************************/
 
 // class WXDLLIMPEXP_JSON wxJSONValue : public wxObject
-class WXDLLIMPEXP_JSON wxJSONValue
-{
-	friend class wxJSONReader;
+class WXDLLIMPEXP_JSON wxJSONValue {
+    friend class wxJSONReader;
 
 public:
 
-	// ctors and dtor
-	wxJSONValue();
-	wxJSONValue(wxJSONType type);
-	wxJSONValue(int i);
-	wxJSONValue(unsigned int i);
-	wxJSONValue(short i);
-	wxJSONValue(unsigned short i);
-	wxJSONValue(long int i);
-	wxJSONValue(unsigned long int i);
+    // ctors and dtor
+    wxJSONValue();
+
+    wxJSONValue(wxJSONType type);
+
+    wxJSONValue(int i);
+
+    wxJSONValue(unsigned int i);
+
+    wxJSONValue(short i);
+
+    wxJSONValue(unsigned short i);
+
+    wxJSONValue(long int i);
+
+    wxJSONValue(unsigned long int i);
+
 #if defined( wxJSON_64BIT_INT)
-	wxJSONValue(wxInt64 i);
-	wxJSONValue(wxUint64 ui);
-#endif
-	wxJSONValue(bool b);
-	wxJSONValue(double d);
-	wxJSONValue(const wxChar* str);     // assume static ASCIIZ strings
-	wxJSONValue(const wxString& str);
-	wxJSONValue(const wxMemoryBuffer& buff);
-	wxJSONValue(const void* buff, size_t len);
-	wxJSONValue(const wxJSONValue& other);
-	virtual ~wxJSONValue();
 
-	// functions for retrieving the value type
-	wxJSONType  GetType() const;
-	bool IsValid() const;
-	bool IsNull() const;
-	bool IsInt() const;
-	bool IsUInt() const;
-	bool IsShort() const;
-	bool IsUShort() const;
-	bool IsLong() const;
-	bool IsULong() const;
+    wxJSONValue(wxInt64 i);
+
+    wxJSONValue(wxUint64 ui);
+
+#endif
+
+    wxJSONValue(bool b);
+
+    wxJSONValue(double d);
+
+    wxJSONValue(const wxChar *str);     // assume static ASCIIZ strings
+    wxJSONValue(const wxString &str);
+
+    wxJSONValue(const wxMemoryBuffer &buff);
+
+    wxJSONValue(const void *buff, size_t len);
+
+    wxJSONValue(const wxJSONValue &other);
+
+    virtual ~wxJSONValue();
+
+    // functions for retrieving the value type
+    wxJSONType GetType() const;
+
+    bool IsValid() const;
+
+    bool IsNull() const;
+
+    bool IsInt() const;
+
+    bool IsUInt() const;
+
+    bool IsShort() const;
+
+    bool IsUShort() const;
+
+    bool IsLong() const;
+
+    bool IsULong() const;
+
 #if defined( wxJSON_64BIT_INT)
-	bool IsInt32() const;
-	bool IsInt64() const;
-	bool IsUInt32() const;
-	bool IsUInt64() const;
-#endif
-	bool IsBool() const;
-	bool IsDouble() const;
-	bool IsString() const;
-	bool IsCString() const;
-	bool IsArray() const;
-	bool IsObject() const;
-	bool IsMemoryBuff() const;
 
-	// function for retireving the value as ...
-	int            AsInt() const;
-	unsigned int   AsUInt() const;
-	short          AsShort() const;
-	unsigned short AsUShort() const;
-	long int       AsLong() const;
-	unsigned long  AsULong() const;
-	bool        AsInt(int& i) const;
-	bool        AsUInt(unsigned int& ui) const;
-	bool        AsShort(short int& s) const;
-	bool        AsUShort(unsigned short& us) const;
-	bool        AsLong(long int& l) const;
-	bool        AsULong(unsigned long& ul) const;
+    bool IsInt32() const;
+
+    bool IsInt64() const;
+
+    bool IsUInt32() const;
+
+    bool IsUInt64() const;
+
+#endif
+
+    bool IsBool() const;
+
+    bool IsDouble() const;
+
+    bool IsString() const;
+
+    bool IsCString() const;
+
+    bool IsArray() const;
+
+    bool IsObject() const;
+
+    bool IsMemoryBuff() const;
+
+    // function for retireving the value as ...
+    int AsInt() const;
+
+    unsigned int AsUInt() const;
+
+    short AsShort() const;
+
+    unsigned short AsUShort() const;
+
+    long int AsLong() const;
+
+    unsigned long AsULong() const;
+
+    bool AsInt(int &i) const;
+
+    bool AsUInt(unsigned int &ui) const;
+
+    bool AsShort(short int &s) const;
+
+    bool AsUShort(unsigned short &us) const;
+
+    bool AsLong(long int &l) const;
+
+    bool AsULong(unsigned long &ul) const;
+
 #if defined( wxJSON_64BIT_INT)
-	wxInt32        AsInt32() const;
-	wxUint32       AsUInt32() const;
-	wxInt64        AsInt64() const;
-	wxUint64       AsUInt64() const;
-	bool        AsInt32(wxInt32& i32) const;
-	bool        AsUInt32(wxUint32& ui32) const;
-	bool        AsInt64(wxInt64& i64) const;
-	bool        AsUInt64(wxUint64& ui64) const;
+
+    wxInt32 AsInt32() const;
+
+    wxUint32 AsUInt32() const;
+
+    wxInt64 AsInt64() const;
+
+    wxUint64 AsUInt64() const;
+
+    bool AsInt32(wxInt32 &i32) const;
+
+    bool AsUInt32(wxUint32 &ui32) const;
+
+    bool AsInt64(wxInt64 &i64) const;
+
+    bool AsUInt64(wxUint64 &ui64) const;
+
 #endif
-	bool           AsBool() const;
-	double         AsDouble() const;
-	wxString       AsString() const;
-	const wxChar*  AsCString() const;
-	bool        AsBool(bool& b) const;
-	bool        AsDouble(double& d) const;
-	bool        AsString(wxString& str) const;
-	bool        AsCString(wxChar* ch) const;
-	wxMemoryBuffer AsMemoryBuff() const;
-	bool        AsMemoryBuff(wxMemoryBuffer& buff) const;
 
-	// get members names, size and other info
-	bool      HasMember(unsigned index) const;
-	bool      HasMember(const wxString& key) const;
-	int       Size() const;
-	wxArrayString  GetMemberNames() const;
+    bool AsBool() const;
 
-	// appending items, resizing and deleting items
-	wxJSONValue& Append(const wxJSONValue& value);
-	wxJSONValue& Append(bool b);
-	wxJSONValue& Append(int i);
-	wxJSONValue& Append(unsigned int ui);
-	wxJSONValue& Append(short int i);
-	wxJSONValue& Append(unsigned short int ui);
-	wxJSONValue& Append(long int l);
-	wxJSONValue& Append(unsigned long int ul);
+    double AsDouble() const;
+
+    wxString AsString() const;
+
+    const wxChar *AsCString() const;
+
+    bool AsBool(bool &b) const;
+
+    bool AsDouble(double &d) const;
+
+    bool AsString(wxString &str) const;
+
+    bool AsCString(wxChar *ch) const;
+
+    wxMemoryBuffer AsMemoryBuff() const;
+
+    bool AsMemoryBuff(wxMemoryBuffer &buff) const;
+
+    // get members names, size and other info
+    bool HasMember(unsigned index) const;
+
+    bool HasMember(const wxString &key) const;
+
+    int Size() const;
+
+    wxArrayString GetMemberNames() const;
+
+    // appending items, resizing and deleting items
+    wxJSONValue &Append(const wxJSONValue &value);
+
+    wxJSONValue &Append(bool b);
+
+    wxJSONValue &Append(int i);
+
+    wxJSONValue &Append(unsigned int ui);
+
+    wxJSONValue &Append(short int i);
+
+    wxJSONValue &Append(unsigned short int ui);
+
+    wxJSONValue &Append(long int l);
+
+    wxJSONValue &Append(unsigned long int ul);
+
 #if defined( wxJSON_64BIT_INT )
-	wxJSONValue& Append(wxInt64 i);
-	wxJSONValue& Append(wxUint64 ui);
+
+    wxJSONValue &Append(wxInt64 i);
+
+    wxJSONValue &Append(wxUint64 ui);
+
 #endif
-	wxJSONValue& Append(double d);
-	wxJSONValue& Append(const wxChar* str);
-	wxJSONValue& Append(const wxString& str);
-	wxJSONValue& Append(const wxMemoryBuffer& buff);
-	wxJSONValue& Append(const void* buff, size_t len);
-	bool         Remove(int index);
-	bool         Remove(const wxString& key);
-	void         Clear();
-	bool         Cat(const wxChar* str);
-	bool         Cat(const wxString& str);
-	bool         Cat(const wxMemoryBuffer& buff);
 
-	// retrieve an item
-	wxJSONValue& Item(unsigned index);
-	wxJSONValue& Item(const wxString& key);
-	wxJSONValue  ItemAt(unsigned index) const;
-	wxJSONValue  ItemAt(const wxString& key) const;
+    wxJSONValue &Append(double d);
 
-	wxJSONValue& operator [] (unsigned index);
-	wxJSONValue& operator [] (const wxString& key);
+    wxJSONValue &Append(const wxChar *str);
 
-	wxJSONValue& operator = (int i);
-	wxJSONValue& operator = (unsigned int ui);
-	wxJSONValue& operator = (short int i);
-	wxJSONValue& operator = (unsigned short int ui);
-	wxJSONValue& operator = (long int l);
-	wxJSONValue& operator = (unsigned long int ul);
+    wxJSONValue &Append(const wxString &str);
+
+    wxJSONValue &Append(const wxMemoryBuffer &buff);
+
+    wxJSONValue &Append(const void *buff, size_t len);
+
+    bool Remove(int index);
+
+    bool Remove(const wxString &key);
+
+    void Clear();
+
+    bool Cat(const wxChar *str);
+
+    bool Cat(const wxString &str);
+
+    bool Cat(const wxMemoryBuffer &buff);
+
+    // retrieve an item
+    wxJSONValue &Item(unsigned index);
+
+    wxJSONValue &Item(const wxString &key);
+
+    wxJSONValue ItemAt(unsigned index) const;
+
+    wxJSONValue ItemAt(const wxString &key) const;
+
+    wxJSONValue &operator[](unsigned index);
+
+    wxJSONValue &operator[](const wxString &key);
+
+    wxJSONValue &operator=(int i);
+
+    wxJSONValue &operator=(unsigned int ui);
+
+    wxJSONValue &operator=(short int i);
+
+    wxJSONValue &operator=(unsigned short int ui);
+
+    wxJSONValue &operator=(long int l);
+
+    wxJSONValue &operator=(unsigned long int ul);
+
 #if defined( wxJSON_64BIT_INT )
-	wxJSONValue& operator = (wxInt64 i);
-	wxJSONValue& operator = (wxUint64 ui);
+
+    wxJSONValue &operator=(wxInt64 i);
+
+    wxJSONValue &operator=(wxUint64 ui);
+
 #endif
-	wxJSONValue& operator = (bool b);
-	wxJSONValue& operator = (double d);
-	wxJSONValue& operator = (const wxChar* str);
-	wxJSONValue& operator = (const wxString& str);
-	wxJSONValue& operator = (const wxMemoryBuffer& buff);
-	// wxJSONValue& operator = ( const void* buff, size_t len ); cannot be declared
-	wxJSONValue& operator = (const wxJSONValue& value);
 
-	// get the value or a default value
-	wxJSONValue  Get(const wxString& key, const wxJSONValue& defaultValue) const;
+    wxJSONValue &operator=(bool b);
 
-	// comparison function
-	bool         IsSameAs(const wxJSONValue& other) const;
+    wxJSONValue &operator=(double d);
 
-	// comment-related functions
-	int      AddComment(const wxString& str, int position = wxJSONVALUE_COMMENT_DEFAULT);
-	int      AddComment(const wxArrayString& comments, int position = wxJSONVALUE_COMMENT_DEFAULT);
-	wxString GetComment(int idx = -1) const;
-	int      GetCommentPos() const;
-	int      GetCommentCount() const;
-	void     ClearComments();
-	const wxArrayString& GetCommentArray() const;
+    wxJSONValue &operator=(const wxChar *str);
 
-	// debugging functions
-	wxString         GetInfo() const;
-	wxString         Dump(bool deep = false, int mode = 0) const;
+    wxJSONValue &operator=(const wxString &str);
 
-	//misc functions
-	wxJSONRefData*   GetRefData() const;
-	wxJSONRefData*   SetType(wxJSONType type);
-	int              GetLineNo() const;
-	void             SetLineNo(int num);
+    wxJSONValue &operator=(const wxMemoryBuffer &buff);
 
-	// public static functions: mainly used for debugging
-	static  wxString TypeToString(wxJSONType type);
-	static  wxString MemoryBuffToString(const wxMemoryBuffer& buff, size_t len = -1);
-	static  wxString MemoryBuffToString(const void* buff, size_t len, size_t actualLen = -1);
-	static  int      CompareMemoryBuff(const wxMemoryBuffer& buff1, const wxMemoryBuffer& buff2);
-	static  int      CompareMemoryBuff(const wxMemoryBuffer& buff1, const void* buff2);
-	static wxMemoryBuffer ArrayToMemoryBuff(const wxJSONValue& value);
+    // wxJSONValue& operator = ( const void* buff, size_t len ); cannot be declared
+    wxJSONValue &operator=(const wxJSONValue &value);
+
+    // get the value or a default value
+    wxJSONValue Get(const wxString &key, const wxJSONValue &defaultValue) const;
+
+    // comparison function
+    bool IsSameAs(const wxJSONValue &other) const;
+
+    // comment-related functions
+    int AddComment(const wxString &str, int position = wxJSONVALUE_COMMENT_DEFAULT);
+
+    int AddComment(const wxArrayString &comments, int position = wxJSONVALUE_COMMENT_DEFAULT);
+
+    wxString GetComment(int idx = -1) const;
+
+    int GetCommentPos() const;
+
+    int GetCommentCount() const;
+
+    void ClearComments();
+
+    const wxArrayString &GetCommentArray() const;
+
+    // debugging functions
+    wxString GetInfo() const;
+
+    wxString Dump(bool deep = false, int mode = 0) const;
+
+    //misc functions
+    wxJSONRefData *GetRefData() const;
+
+    wxJSONRefData *SetType(wxJSONType type);
+
+    int GetLineNo() const;
+
+    void SetLineNo(int num);
+
+    // public static functions: mainly used for debugging
+    static wxString TypeToString(wxJSONType type);
+
+    static wxString MemoryBuffToString(const wxMemoryBuffer &buff, size_t len = -1);
+
+    static wxString MemoryBuffToString(const void *buff, size_t len, size_t actualLen = -1);
+
+    static int CompareMemoryBuff(const wxMemoryBuffer &buff1, const wxMemoryBuffer &buff2);
+
+    static int CompareMemoryBuff(const wxMemoryBuffer &buff1, const void *buff2);
+
+    static wxMemoryBuffer ArrayToMemoryBuff(const wxJSONValue &value);
 
 protected:
-	wxJSONValue*  Find(unsigned index) const;
-	wxJSONValue*  Find(const wxString& key) const;
-	void          DeepCopy(const wxJSONValue& other);
+    wxJSONValue *Find(unsigned index) const;
 
-	wxJSONRefData*  Init(wxJSONType type);
-	wxJSONRefData*  COW();
+    wxJSONValue *Find(const wxString &key) const;
 
-	// overidden from wxObject
-	virtual wxJSONRefData*  CloneRefData(const wxJSONRefData *data) const;
-	virtual wxJSONRefData*  CreateRefData() const;
+    void DeepCopy(const wxJSONValue &other);
 
-	void            SetRefData(wxJSONRefData* data);
-	void            Ref(const wxJSONValue& clone);
-	void            UnRef();
-	void            UnShare();
-	void            AllocExclusive();
+    wxJSONRefData *Init(wxJSONType type);
 
-	//! the referenced data
-	wxJSONRefData*  m_refData;
+    wxJSONRefData *COW();
 
-	// used for debugging purposes: only in debug builds.
+    // overidden from wxObject
+    virtual wxJSONRefData *CloneRefData(const wxJSONRefData *data) const;
+
+    virtual wxJSONRefData *CreateRefData() const;
+
+    void SetRefData(wxJSONRefData *data);
+
+    void Ref(const wxJSONValue &clone);
+
+    void UnRef();
+
+    void UnShare();
+
+    void AllocExclusive();
+
+    //! the referenced data
+    wxJSONRefData *m_refData;
+
+    // used for debugging purposes: only in debug builds.
 #if defined( WXJSON_USE_VALUE_COUNTER )
-	int         m_progr;
-	static int  sm_progr;
+    int         m_progr;
+    static int  sm_progr;
 #endif
 };
 
 WX_DECLARE_OBJARRAY(wxJSONValue, wxJSONInternalArray);
+
 WX_DECLARE_STRING_HASH_MAP(wxJSONValue, wxJSONInternalMap);
 
 /***********************************************************************
@@ -286,19 +424,19 @@ WX_DECLARE_STRING_HASH_MAP(wxJSONValue, wxJSONInternalMap);
  To know more about the internal structure of the wxJSONValue class
  see \ref pg_json_internals.
  */
-union wxJSONValueHolder  {
-	int             m_valInt;
-	unsigned int    m_valUInt;
-	short int       m_valShort;
-	unsigned short  m_valUShort;
-	long int        m_valLong;
-	unsigned long   m_valULong;
-	double          m_valDouble;
-	const wxChar*   m_valCString;
-	bool            m_valBool;
+union wxJSONValueHolder {
+    int m_valInt;
+    unsigned int m_valUInt;
+    short int m_valShort;
+    unsigned short m_valUShort;
+    long int m_valLong;
+    unsigned long m_valULong;
+    double m_valDouble;
+    const wxChar *m_valCString;
+    bool m_valBool;
 #if defined( wxJSON_64BIT_INT )
-	wxInt64         m_valInt64;
-	wxUint64        m_valUInt64;
+    wxInt64 m_valInt64;
+    wxUint64 m_valUInt64;
 #endif
 };
 
@@ -316,87 +454,91 @@ union wxJSONValueHolder  {
 #endif
 
 double json_double(const wxJSONValue &jv, double defaultval = 0.0, bool *Exists = NULL);
+
 int json_integer(const wxJSONValue &jv, int defaultval = 0, bool *Exists = NULL);
+
 wxString json_string(const wxJSONValue &jv, const wxString &defaultval = wxEmptyString, bool *Exists = NULL);
 
 // class WXDLLIMPEXP_JSON wxJSONRefData : public wxObjectRefData
-class WXDLLIMPEXP_JSON wxJSONRefData
-{
-	// friend class wxJSONReader;
-	friend class wxJSONValue;
-	friend class wxJSONWriter;
+class WXDLLIMPEXP_JSON wxJSONRefData {
+    // friend class wxJSONReader;
+    friend class wxJSONValue;
+
+    friend class wxJSONWriter;
 
 public:
 
-	wxJSONRefData();
-	virtual ~wxJSONRefData();
+    wxJSONRefData();
 
-	int GetRefCount() const;
+    virtual ~wxJSONRefData();
 
-	// there is no need to define copy ctor
+    int GetRefCount() const;
 
-	//! the references count
-	int               m_refCount;
+    // there is no need to define copy ctor
 
-	//! The actual type of the value held by this object.
-	wxJSONType        m_type;
+    //! the references count
+    int m_refCount;
 
-	//! The JSON value held by this object.
-	/*!
-	This data member contains the JSON data types defined by the
-	JSON syntax with the exception of the complex objects.
-	This data member is an union of the primitive types
-	so that it is simplier to cast them in other compatible types.
-	*/
-	wxJSONValueHolder m_value;
+    //! The actual type of the value held by this object.
+    wxJSONType m_type;
 
-	//! The JSON string value.
-	wxString            m_valString;
+    //! The JSON value held by this object.
+    /*!
+    This data member contains the JSON data types defined by the
+    JSON syntax with the exception of the complex objects.
+    This data member is an union of the primitive types
+    so that it is simplier to cast them in other compatible types.
+    */
+    wxJSONValueHolder m_value;
 
-	//! The JSON array value.
-	wxJSONInternalArray m_valArray;
+    //! The JSON string value.
+    wxString m_valString;
 
-	//! The JSON object value.
-	wxJSONInternalMap   m_valMap;
+    //! The JSON array value.
+    wxJSONInternalArray m_valArray;
 
-	//! The position of the comment line(s), if any.
-	/*!
-	The data member contains one of the following constants:
-	\li \c wxJSONVALUE_COMMENT_BEFORE
-	\li \c wxJSONVALUE_COMMENT_AFTER
-	\li \c wxJSONVALUE_COMMENT_INLINE
-	*/
-	int               m_commentPos;
+    //! The JSON object value.
+    wxJSONInternalMap m_valMap;
 
-	//! The array of comment lines; may be empty.
-	wxArrayString     m_comments;
+    //! The position of the comment line(s), if any.
+    /*!
+    The data member contains one of the following constants:
+    \li \c wxJSONVALUE_COMMENT_BEFORE
+    \li \c wxJSONVALUE_COMMENT_AFTER
+    \li \c wxJSONVALUE_COMMENT_INLINE
+    */
+    int m_commentPos;
 
-	//! The line number when this value was read
-	/*!
-	This data member is used by the wxJSONReader class and it is
-	used to store the line number of the JSON text document where
-	the value appeared. This value is compared to the line number
-	of a comment line in order to obtain the value which a
-	comment refersto.
-	*/
-	int               m_lineNo;
+    //! The array of comment lines; may be empty.
+    wxArrayString m_comments;
 
-	//! The pointer to the memory buffer object
-	/*!
-	 Note that despite using reference counting, the \b wxMemoryBuffer is not a
-	 \e copy-on-write structure so the wxJSON library uses some tricks in order to
-	 avoid the side effects of copying / assigning wxMemoryBuffer objects
-	 */
-	wxMemoryBuffer* m_memBuff;
+    //! The line number when this value was read
+    /*!
+    This data member is used by the wxJSONReader class and it is
+    used to store the line number of the JSON text document where
+    the value appeared. This value is compared to the line number
+    of a comment line in order to obtain the value which a
+    comment refersto.
+    */
+    int m_lineNo;
 
-	// used for debugging purposes: only in debug builds.
+    //! The pointer to the memory buffer object
+    /*!
+     Note that despite using reference counting, the \b wxMemoryBuffer is not a
+     \e copy-on-write structure so the wxJSON library uses some tricks in order to
+     avoid the side effects of copying / assigning wxMemoryBuffer objects
+     */
+    wxMemoryBuffer *m_memBuff;
+
+    // used for debugging purposes: only in debug builds.
 #if defined( WXJSON_USE_VALUE_COUNTER )
-	int         m_progr;
-	static int  sm_progr;
+    int         m_progr;
+    static int  sm_progr;
 #endif
 };
 
-const wxJSONInternalArray* wxJSONValueAsArray(const wxJSONValue &val);
-const wxJSONInternalMap* wxJSONValueAsMap(const wxJSONValue &val);
+const wxJSONInternalArray *wxJSONValueAsArray(const wxJSONValue &val);
+
+const wxJSONInternalMap *wxJSONValueAsMap(const wxJSONValue &val);
 
 #endif            // not defined _WX_JSONVAL_H

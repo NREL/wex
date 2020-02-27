@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Name:        pdfannotation.h
-// Purpose:     
+// Purpose:
 // Author:      Ulrich Telle
 // Modified by:
 // Created:     2009-06-24
@@ -20,37 +20,36 @@
 #include "wex/pdf/pdfdocdef.h"
 
 /// Class representing text annotations.
-class WXDLLIMPEXP_PDFDOC wxPdfAnnotation
-{
+class WXDLLIMPEXP_PDFDOC wxPdfAnnotation {
 public:
-  /// Constructor for text annotation
-  /**
-  * Use this constructor to create a text annotation.
-  * \param x X offset of the annotation
-  * \param y Y offset of the annotation
-  * \param text annotation text
-  */
-  wxPdfAnnotation(double x, double y, const wxString& text);
+    /// Constructor for text annotation
+    /**
+    * Use this constructor to create a text annotation.
+    * \param x X offset of the annotation
+    * \param y Y offset of the annotation
+    * \param text annotation text
+    */
+    wxPdfAnnotation(double x, double y, const wxString &text);
 
-  /// Copy constructor
-  wxPdfAnnotation(const wxPdfAnnotation& annotation);
+    /// Copy constructor
+    wxPdfAnnotation(const wxPdfAnnotation &annotation);
 
-  /// Destructor
-  virtual ~wxPdfAnnotation() {}
+    /// Destructor
+    virtual ~wxPdfAnnotation() {}
 
-  /// Get the X offset of the annotation
-  double GetX() const { return m_x; }
+    /// Get the X offset of the annotation
+    double GetX() const { return m_x; }
 
-  /// Get the Y offset of the annotation
-  double GetY() const { return m_y; }
+    /// Get the Y offset of the annotation
+    double GetY() const { return m_y; }
 
-  /// Get the text of the annotation
-  wxString GetText() const { return m_text; }
+    /// Get the text of the annotation
+    wxString GetText() const { return m_text; }
 
 private:
-  double   m_x;     ///< X offset of the annotation
-  double   m_y;     ///< Y offset of the annotation
-  wxString m_text;  ///< Annotation text
+    double m_x;     ///< X offset of the annotation
+    double m_y;     ///< Y offset of the annotation
+    wxString m_text;  ///< Annotation text
 };
 
 #endif

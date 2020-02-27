@@ -509,15 +509,18 @@
 
 #else  /* !FT_CONFIG_OPTION_USE_BZIP2 */
 
-  FT_EXPORT_DEF( FT_Error )
-  FT_Stream_OpenBzip2( FT_Stream  stream,
-                       FT_Stream  source )
-  {
-    FT_UNUSED( stream );
-    FT_UNUSED( source );
+FT_EXPORT_DEF( FT_Error )
+FT_Stream_OpenBzip2( FT_Stream
+stream,
+FT_Stream source
+)
+{
+FT_UNUSED( stream );
+FT_UNUSED( source );
 
-    return FT_THROW( Unimplemented_Feature );
-  }
+return
+FT_THROW( Unimplemented_Feature );
+}
 
 #endif /* !FT_CONFIG_OPTION_USE_BZIP2 */
 

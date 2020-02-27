@@ -24,190 +24,196 @@
 
 FT_BEGIN_HEADER
 
-#define _FTC_FACE_ID_HASH( i )                                  \
+#define _FTC_FACE_ID_HASH(i)                                  \
           ( ( (FT_Offset)(i) >> 3 ) ^ ( (FT_Offset)(i) << 7 ) )
 
-  /* handle to cache object */
-  typedef struct FTC_CacheRec_*  FTC_Cache;
+/* handle to cache object */
+typedef struct FTC_CacheRec_ *FTC_Cache;
 
-  /* handle to cache class */
-  typedef const struct FTC_CacheClassRec_*  FTC_CacheClass;
-
-
-  /*************************************************************************/
-  /*************************************************************************/
-  /*****                                                               *****/
-  /*****                   CACHE NODE DEFINITIONS                      *****/
-  /*****                                                               *****/
-  /*************************************************************************/
-  /*************************************************************************/
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* Each cache controls one or more cache nodes.  Each node is part of    */
-  /* the global_lru list of the manager.  Its `data' field however is used */
-  /* as a reference count for now.                                         */
-  /*                                                                       */
-  /* A node can be anything, depending on the type of information held by  */
-  /* the cache.  It can be an individual glyph image, a set of bitmaps     */
-  /* glyphs for a given size, some metrics, etc.                           */
-  /*                                                                       */
-  /*************************************************************************/
-
-  /* structure size should be 20 bytes on 32-bits machines */
-  typedef struct  FTC_NodeRec_
-  {
-    FTC_MruNodeRec  mru;          /* circular mru list pointer           */
-    FTC_Node        link;         /* used for hashing                    */
-    FT_Offset       hash;         /* used for hashing too                */
-    FT_UShort       cache_index;  /* index of cache the node belongs to  */
-    FT_Short        ref_count;    /* reference count for this node       */
-
-  } FTC_NodeRec;
+/* handle to cache class */
+typedef const struct FTC_CacheClassRec_ *FTC_CacheClass;
 
 
-#define FTC_NODE( x )    ( (FTC_Node)(x) )
-#define FTC_NODE_P( x )  ( (FTC_Node*)(x) )
+/*************************************************************************/
+/*************************************************************************/
+/*****                                                               *****/
+/*****                   CACHE NODE DEFINITIONS                      *****/
+/*****                                                               *****/
+/*************************************************************************/
+/*************************************************************************/
 
-#define FTC_NODE__NEXT( x )  FTC_NODE( (x)->mru.next )
-#define FTC_NODE__PREV( x )  FTC_NODE( (x)->mru.prev )
+/*************************************************************************/
+/*                                                                       */
+/* Each cache controls one or more cache nodes.  Each node is part of    */
+/* the global_lru list of the manager.  Its `data' field however is used */
+/* as a reference count for now.                                         */
+/*                                                                       */
+/* A node can be anything, depending on the type of information held by  */
+/* the cache.  It can be an individual glyph image, a set of bitmaps     */
+/* glyphs for a given size, some metrics, etc.                           */
+/*                                                                       */
+/*************************************************************************/
+
+/* structure size should be 20 bytes on 32-bits machines */
+typedef struct FTC_NodeRec_ {
+    FTC_MruNodeRec mru;          /* circular mru list pointer           */
+    FTC_Node link;         /* used for hashing                    */
+    FT_Offset hash;         /* used for hashing too                */
+    FT_UShort cache_index;  /* index of cache the node belongs to  */
+    FT_Short ref_count;    /* reference count for this node       */
+
+} FTC_NodeRec;
+
+
+#define FTC_NODE(x)    ( (FTC_Node)(x) )
+#define FTC_NODE_P(x)  ( (FTC_Node*)(x) )
+
+#define FTC_NODE__NEXT(x)  FTC_NODE( (x)->mru.next )
+#define FTC_NODE__PREV(x)  FTC_NODE( (x)->mru.prev )
 
 #ifdef FTC_INLINE
-#define FTC_NODE__TOP_FOR_HASH( cache, hash )                     \
+#define FTC_NODE__TOP_FOR_HASH(cache, hash)                     \
         ( ( cache )->buckets +                                    \
             ( ( ( ( hash ) &   ( cache )->mask ) < ( cache )->p ) \
               ? ( ( hash ) & ( ( cache )->mask * 2 + 1 ) )        \
               : ( ( hash ) &   ( cache )->mask ) ) )
 #else
-  FT_LOCAL( FTC_Node* )
-  ftc_get_top_node_for_hash( FTC_Cache  cache,
-                             FT_Offset  hash );
+FT_LOCAL( FTC_Node* )
+ftc_get_top_node_for_hash( FTC_Cache  cache,
+                           FT_Offset  hash );
 #define FTC_NODE__TOP_FOR_HASH( cache, hash )            \
         ftc_get_top_node_for_hash( ( cache ), ( hash ) )
 #endif
 
 
-  /*************************************************************************/
-  /*************************************************************************/
-  /*****                                                               *****/
-  /*****                       CACHE DEFINITIONS                       *****/
-  /*****                                                               *****/
-  /*************************************************************************/
-  /*************************************************************************/
+/*************************************************************************/
+/*************************************************************************/
+/*****                                                               *****/
+/*****                       CACHE DEFINITIONS                       *****/
+/*****                                                               *****/
+/*************************************************************************/
+/*************************************************************************/
 
-  /* initialize a new cache node */
-  typedef FT_Error
-  (*FTC_Node_NewFunc)( FTC_Node    *pnode,
-                       FT_Pointer   query,
-                       FTC_Cache    cache );
+/* initialize a new cache node */
+typedef FT_Error
+(*FTC_Node_NewFunc)(FTC_Node *pnode,
+                    FT_Pointer query,
+                    FTC_Cache cache);
 
-  typedef FT_Offset
-  (*FTC_Node_WeightFunc)( FTC_Node   node,
-                          FTC_Cache  cache );
+typedef FT_Offset
+(*FTC_Node_WeightFunc)(FTC_Node node,
+                       FTC_Cache cache);
 
-  /* compare a node to a given key pair */
-  typedef FT_Bool
-  (*FTC_Node_CompareFunc)( FTC_Node    node,
-                           FT_Pointer  key,
-                           FTC_Cache   cache,
-                           FT_Bool*    list_changed );
-
-
-  typedef void
-  (*FTC_Node_FreeFunc)( FTC_Node   node,
-                        FTC_Cache  cache );
-
-  typedef FT_Error
-  (*FTC_Cache_InitFunc)( FTC_Cache  cache );
-
-  typedef void
-  (*FTC_Cache_DoneFunc)( FTC_Cache  cache );
+/* compare a node to a given key pair */
+typedef FT_Bool
+(*FTC_Node_CompareFunc)(FTC_Node node,
+                        FT_Pointer key,
+                        FTC_Cache cache,
+                        FT_Bool *list_changed);
 
 
-  typedef struct  FTC_CacheClassRec_
-  {
-    FTC_Node_NewFunc      node_new;
-    FTC_Node_WeightFunc   node_weight;
-    FTC_Node_CompareFunc  node_compare;
-    FTC_Node_CompareFunc  node_remove_faceid;
-    FTC_Node_FreeFunc     node_free;
+typedef void
+(*FTC_Node_FreeFunc)(FTC_Node node,
+                     FTC_Cache cache);
 
-    FT_Offset             cache_size;
-    FTC_Cache_InitFunc    cache_init;
-    FTC_Cache_DoneFunc    cache_done;
+typedef FT_Error
+(*FTC_Cache_InitFunc)(FTC_Cache cache);
 
-  } FTC_CacheClassRec;
+typedef void
+(*FTC_Cache_DoneFunc)(FTC_Cache cache);
 
 
-  /* each cache really implements a dynamic hash table to manage its nodes */
-  typedef struct  FTC_CacheRec_
-  {
-    FT_UFast           p;
-    FT_UFast           mask;
-    FT_Long            slack;
-    FTC_Node*          buckets;
+typedef struct FTC_CacheClassRec_ {
+    FTC_Node_NewFunc node_new;
+    FTC_Node_WeightFunc node_weight;
+    FTC_Node_CompareFunc node_compare;
+    FTC_Node_CompareFunc node_remove_faceid;
+    FTC_Node_FreeFunc node_free;
 
-    FTC_CacheClassRec  clazz;       /* local copy, for speed  */
+    FT_Offset cache_size;
+    FTC_Cache_InitFunc cache_init;
+    FTC_Cache_DoneFunc cache_done;
 
-    FTC_Manager        manager;
-    FT_Memory          memory;
-    FT_UInt            index;       /* in manager's table     */
-
-    FTC_CacheClass     org_class;   /* original class pointer */
-
-  } FTC_CacheRec;
+} FTC_CacheClassRec;
 
 
-#define FTC_CACHE( x )    ( (FTC_Cache)(x) )
-#define FTC_CACHE_P( x )  ( (FTC_Cache*)(x) )
+/* each cache really implements a dynamic hash table to manage its nodes */
+typedef struct FTC_CacheRec_ {
+    FT_UFast p;
+    FT_UFast mask;
+    FT_Long slack;
+    FTC_Node *buckets;
+
+    FTC_CacheClassRec clazz;       /* local copy, for speed  */
+
+    FTC_Manager manager;
+    FT_Memory memory;
+    FT_UInt index;       /* in manager's table     */
+
+    FTC_CacheClass org_class;   /* original class pointer */
+
+} FTC_CacheRec;
 
 
-  /* default cache initialize */
-  FT_LOCAL( FT_Error )
-  FTC_Cache_Init( FTC_Cache  cache );
+#define FTC_CACHE(x)    ( (FTC_Cache)(x) )
+#define FTC_CACHE_P(x)  ( (FTC_Cache*)(x) )
 
-  /* default cache finalizer */
-  FT_LOCAL( void )
-  FTC_Cache_Done( FTC_Cache  cache );
 
-  /* Call this function to look up the cache.  If no corresponding
-   * node is found, a new one is automatically created.  This function
-   * is capable of flushing the cache adequately to make room for the
-   * new cache object.
-   */
+/* default cache initialize */
+FT_LOCAL( FT_Error )
+FTC_Cache_Init( FTC_Cache
+cache );
+
+/* default cache finalizer */
+FT_LOCAL(void)
+
+FTC_Cache_Done( FTC_Cache
+cache );
+
+/* Call this function to look up the cache.  If no corresponding
+ * node is found, a new one is automatically created.  This function
+ * is capable of flushing the cache adequately to make room for the
+ * new cache object.
+ */
 
 #ifndef FTC_INLINE
-  FT_LOCAL( FT_Error )
-  FTC_Cache_Lookup( FTC_Cache   cache,
-                    FT_Offset   hash,
-                    FT_Pointer  query,
-                    FTC_Node   *anode );
+FT_LOCAL( FT_Error )
+FTC_Cache_Lookup( FTC_Cache   cache,
+                  FT_Offset   hash,
+                  FT_Pointer  query,
+                  FTC_Node   *anode );
 #endif
 
-  FT_LOCAL( FT_Error )
-  FTC_Cache_NewNode( FTC_Cache   cache,
-                     FT_Offset   hash,
-                     FT_Pointer  query,
-                     FTC_Node   *anode );
+FT_LOCAL( FT_Error )
+FTC_Cache_NewNode( FTC_Cache
+cache,
+FT_Offset hash,
+        FT_Pointer
+query,
+FTC_Node *anode
+);
 
-  /* Remove all nodes that relate to a given face_id.  This is useful
-   * when un-installing fonts.  Note that if a cache node relates to
-   * the face_id but is locked (i.e., has `ref_count > 0'), the node
-   * will _not_ be destroyed, but its internal face_id reference will
-   * be modified.
-   *
-   * The final result will be that the node will never come back
-   * in further lookup requests, and will be flushed on demand from
-   * the cache normally when its reference count reaches 0.
-   */
-  FT_LOCAL( void )
-  FTC_Cache_RemoveFaceID( FTC_Cache   cache,
-                          FTC_FaceID  face_id );
+/* Remove all nodes that relate to a given face_id.  This is useful
+ * when un-installing fonts.  Note that if a cache node relates to
+ * the face_id but is locked (i.e., has `ref_count > 0'), the node
+ * will _not_ be destroyed, but its internal face_id reference will
+ * be modified.
+ *
+ * The final result will be that the node will never come back
+ * in further lookup requests, and will be flushed on demand from
+ * the cache normally when its reference count reaches 0.
+ */
+FT_LOCAL(void)
+
+FTC_Cache_RemoveFaceID( FTC_Cache
+cache,
+FTC_FaceID face_id
+);
 
 
 #ifdef FTC_INLINE
 
-#define FTC_CACHE_LOOKUP_CMP( cache, nodecmp, hash, query, node, error ) \
+#define FTC_CACHE_LOOKUP_CMP(cache, nodecmp, hash, query, node, error) \
   FT_BEGIN_STMNT                                                         \
     FTC_Node             *_bucket, *_pnode, _node;                       \
     FTC_Cache             _cache   = FTC_CACHE(cache);                   \
@@ -293,23 +299,23 @@ FT_BEGIN_HEADER
 #endif /* !FTC_INLINE */
 
 
-  /*
-   * This macro, together with FTC_CACHE_TRYLOOP_END, defines a retry
-   * loop to flush the cache repeatedly in case of memory overflows.
-   *
-   * It is used when creating a new cache node, or within a lookup
-   * that needs to allocate data (e.g. the sbit cache lookup).
-   *
-   * Example:
-   *
-   *   {
-   *     FTC_CACHE_TRYLOOP( cache )
-   *       error = load_data( ... );
-   *     FTC_CACHE_TRYLOOP_END()
-   *   }
-   *
-   */
-#define FTC_CACHE_TRYLOOP( cache )                           \
+/*
+ * This macro, together with FTC_CACHE_TRYLOOP_END, defines a retry
+ * loop to flush the cache repeatedly in case of memory overflows.
+ *
+ * It is used when creating a new cache node, or within a lookup
+ * that needs to allocate data (e.g. the sbit cache lookup).
+ *
+ * Example:
+ *
+ *   {
+ *     FTC_CACHE_TRYLOOP( cache )
+ *       error = load_data( ... );
+ *     FTC_CACHE_TRYLOOP_END()
+ *   }
+ *
+ */
+#define FTC_CACHE_TRYLOOP(cache)                           \
   {                                                          \
     FTC_Manager  _try_manager = FTC_CACHE( cache )->manager; \
     FT_UInt      _try_count   = 4;                           \
@@ -320,7 +326,7 @@ FT_BEGIN_HEADER
       FT_UInt  _try_done;
 
 
-#define FTC_CACHE_TRYLOOP_END( list_changed )                     \
+#define FTC_CACHE_TRYLOOP_END(list_changed)                     \
       if ( !error || FT_ERR_NEQ( error, Out_Of_Memory ) )         \
         break;                                                    \
                                                                   \
@@ -341,7 +347,7 @@ FT_BEGIN_HEADER
     }                                                             \
   }
 
- /* */
+/* */
 
 FT_END_HEADER
 

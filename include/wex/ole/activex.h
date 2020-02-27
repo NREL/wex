@@ -9,12 +9,12 @@
 
                        wxActiveX LIBRARY LICENCE
      TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
-  
+
   This library is free software; you can redistribute it and/or modify it
   under the terms of the GNU Library General Public Licence as published by
   the Free Software Foundation; either version 2 of the Licence, or (at
   your option) any later version.
-  
+
   This library is distributed in the hope that it will be useful, but
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library
@@ -47,14 +47,14 @@
   accordingly.
 
   4. If you write modifications of your own for this library, it is your
-  choice whether to permit this exception to apply to your modifications. 
+  choice whether to permit this exception to apply to your modifications.
   If you do not wish that, you must delete the exception notice from such
   code and/or adjust the licensing conditions notice accordingly.
 */
 
-/*! \file wxactivex.h 
+/*! \file wxactivex.h
     \brief implements wxActiveX window class and OLE tools
-*/ 
+*/
 
 #ifndef WX_ACTIVE_X
 #define WX_ACTIVE_X
@@ -84,13 +84,13 @@ namespace NS_wxActiveX
     /// STL utilty class.
     /// specific to wxActiveX, for creating
     /// case insenstive maps etc
-	struct less_wxStringI
-	{
-		bool operator()(const wxString& x, const wxString& y) const
-		{
-			return x.CmpNoCase(y) < 0;
-		};
-	};
+    struct less_wxStringI
+    {
+        bool operator()(const wxString& x, const wxString& y) const
+        {
+            return x.CmpNoCase(y) < 0;
+        };
+    };
 };
 
 
@@ -102,52 +102,52 @@ namespace NS_wxActiveX
 /// - Can query for other interfaces
 template <class I> class wxAutoOleInterface
 {
-	protected:
+    protected:
     I *m_interface;
 
-	public:
-	/// takes ownership of an existing interface
-	/// Assumed to already have a AddRef() applied
+    public:
+    /// takes ownership of an existing interface
+    /// Assumed to already have a AddRef() applied
     explicit wxAutoOleInterface(I *pInterface = NULL) : m_interface(pInterface) {}
 
-	/// queries for an interface 
+    /// queries for an interface
     wxAutoOleInterface(REFIID riid, IUnknown *pUnk) : m_interface(NULL)
-	{
-		QueryInterface(riid, pUnk);
-	};
-	/// queries for an interface 
+    {
+        QueryInterface(riid, pUnk);
+    };
+    /// queries for an interface
     wxAutoOleInterface(REFIID riid, IDispatch *pDispatch) : m_interface(NULL)
-	{
-		QueryInterface(riid, pDispatch);
-	};
+    {
+        QueryInterface(riid, pDispatch);
+    };
 
-	/// Creates an Interface
-	wxAutoOleInterface(REFCLSID clsid, REFIID riid) : m_interface(NULL)
-	{
-		CreateInstance(clsid, riid);
-	};
+    /// Creates an Interface
+    wxAutoOleInterface(REFCLSID clsid, REFIID riid) : m_interface(NULL)
+    {
+        CreateInstance(clsid, riid);
+    };
 
-	/// copy constructor
+    /// copy constructor
     wxAutoOleInterface(const wxAutoOleInterface<I>& ti) : m_interface(NULL)
     {
-		operator = (ti);
+        operator = (ti);
     }
 
-	/// assignment operator
+    /// assignment operator
     wxAutoOleInterface<I>& operator = (const wxAutoOleInterface<I>& ti)
     {
-		if (ti.m_interface)
-			ti.m_interface->AddRef();
-    	Free();
+        if (ti.m_interface)
+            ti.m_interface->AddRef();
+        Free();
         m_interface = ti.m_interface;
         return *this;
     }
 
-	/// takes ownership of an existing interface
-	/// Assumed to already have a AddRef() applied
+    /// takes ownership of an existing interface
+    /// Assumed to already have a AddRef() applied
     wxAutoOleInterface<I>& operator = (I *&ti)
     {
-    	Free();
+        Free();
         m_interface = ti;
         return *this;
     }
@@ -155,31 +155,31 @@ template <class I> class wxAutoOleInterface
     /// invokes Free()
     ~wxAutoOleInterface()
     {
-    	Free();
+        Free();
     };
 
 
     /// Releases interface (i.e decrements refCount)
     inline void Free()
     {
-    	if (m_interface)
-        	m_interface->Release();
+        if (m_interface)
+            m_interface->Release();
         m_interface = NULL;
     };
 
-	/// queries for an interface 
+    /// queries for an interface
     HRESULT QueryInterface(REFIID riid, IUnknown *pUnk)
-	{
-		Free();
-		wxASSERT(pUnk != NULL);
-	    return pUnk->QueryInterface(riid, (void **) &m_interface);
-	};
+    {
+        Free();
+        wxASSERT(pUnk != NULL);
+        return pUnk->QueryInterface(riid, (void **) &m_interface);
+    };
 
-	/// Create a Interface instance
+    /// Create a Interface instance
     HRESULT CreateInstance(REFCLSID clsid, REFIID riid)
     {
-		Free();
-	    return CoCreateInstance(clsid, NULL, CLSCTX_ALL, riid, (void **) &m_interface);
+        Free();
+        return CoCreateInstance(clsid, NULL, CLSCTX_ALL, riid, (void **) &m_interface);
     };
 
 
@@ -189,9 +189,9 @@ template <class I> class wxAutoOleInterface
     /// returns the dereferenced interface pointer
     inline I* operator ->() {return m_interface;}
     /// returns a pointer to the interface pointer
-	inline I** GetRef()	{return &m_interface;}
+    inline I** GetRef()	{return &m_interface;}
     /// returns true if we have a valid interface pointer
-	inline bool Ok() const	{return m_interface != NULL;}
+    inline bool Ok() const	{return m_interface != NULL;}
 };
 
 
@@ -206,15 +206,15 @@ wxString GetIIDName(REFIID riid);
 
 
 #ifdef __WXOLEDEBUG
-    #define WXOLE_TRACE(str) {OutputDebugString(str);OutputDebugString("\r\n");}
-    #define WXOLE_TRACEOUT(stuff)\
+#define WXOLE_TRACE(str) {OutputDebugString(str);OutputDebugString("\r\n");}
+#define WXOLE_TRACEOUT(stuff)\
     {\
         wxString os;\
         os << stuff << "\r\n";\
         WXOLE_TRACE(os.mb_str());\
     }
 
-    #define WXOLE_WARN(__hr,msg)\
+#define WXOLE_WARN(__hr,msg)\
     {\
         if (__hr != S_OK)\
         {\
@@ -225,14 +225,14 @@ wxString GetIIDName(REFIID riid);
         }\
     }
 #else
-    #define WXOLE_TRACE(str)
-    #define WXOLE_TRACEOUT(stuff)
-    #define WXOLE_WARN(_proc,msg) {_proc;}
+#define WXOLE_TRACE(str)
+#define WXOLE_TRACEOUT(stuff)
+#define WXOLE_WARN(_proc,msg) {_proc;}
 #endif
 
 class wxOleInit
 {
-	public:
+    public:
     static IMalloc *GetIMalloc();
 
     wxOleInit();
@@ -240,26 +240,26 @@ class wxOleInit
 };
 
 #define DECLARE_OLE_UNKNOWN(cls)\
-	private:\
+    private:\
     class TAutoInitInt\
     {\
-    	public:\
+        public:\
         LONG l;\
         TAutoInitInt() : l(0) {}\
     };\
     TAutoInitInt refCount, lockCount;\
     wxOleInit oleInit;\
-	static void _GetInterface(cls *self, REFIID iid, void **_interface, const char *&desc);\
+    static void _GetInterface(cls *self, REFIID iid, void **_interface, const char *&desc);\
     public:\
     LONG GetRefCount();\
-	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void ** ppvObject);\
-	ULONG STDMETHODCALLTYPE AddRef();\
-	ULONG STDMETHODCALLTYPE Release();\
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void ** ppvObject);\
+    ULONG STDMETHODCALLTYPE AddRef();\
+    ULONG STDMETHODCALLTYPE Release();\
     ULONG STDMETHODCALLTYPE AddLock();\
-	ULONG STDMETHODCALLTYPE ReleaseLock()
+    ULONG STDMETHODCALLTYPE ReleaseLock()
 
 #define DEFINE_OLE_TABLE(cls)\
-	LONG cls::GetRefCount() {return refCount.l;}\
+    LONG cls::GetRefCount() {return refCount.l;}\
     HRESULT STDMETHODCALLTYPE cls::QueryInterface(REFIID iid, void ** ppvObject)\
     {\
         if (! ppvObject)\
@@ -280,57 +280,57 @@ class wxOleInit
     };\
     ULONG STDMETHODCALLTYPE cls::AddRef()\
     {\
-    	WXOLE_TRACEOUT(# cls << "::Add ref(" << refCount.l << ")");\
+        WXOLE_TRACEOUT(# cls << "::Add ref(" << refCount.l << ")");\
         InterlockedIncrement(&refCount.l);\
         return refCount.l;\
     };\
     ULONG STDMETHODCALLTYPE cls::Release()\
     {\
-    	if (refCount.l > 0)\
+        if (refCount.l > 0)\
         {\
-	    	InterlockedDecrement(&refCount.l);\
-	    	WXOLE_TRACEOUT(# cls << "::Del ref(" << refCount.l << ")");\
-    	    if (refCount.l == 0)\
-        	{\
-            	delete this;\
-	            return 0;\
-	        };\
-	        return refCount.l;\
+            InterlockedDecrement(&refCount.l);\
+            WXOLE_TRACEOUT(# cls << "::Del ref(" << refCount.l << ")");\
+            if (refCount.l == 0)\
+            {\
+                delete this;\
+                return 0;\
+            };\
+            return refCount.l;\
         }\
         else\
-        	return 0;\
+            return 0;\
     }\
     ULONG STDMETHODCALLTYPE cls::AddLock()\
     {\
-    	WXOLE_TRACEOUT(# cls << "::Add Lock(" << lockCount.l << ")");\
+        WXOLE_TRACEOUT(# cls << "::Add Lock(" << lockCount.l << ")");\
         InterlockedIncrement(&lockCount.l);\
         return lockCount.l;\
     };\
     ULONG STDMETHODCALLTYPE cls::ReleaseLock()\
     {\
-    	if (lockCount.l > 0)\
+        if (lockCount.l > 0)\
         {\
-	        InterlockedDecrement(&lockCount.l);\
-	    	WXOLE_TRACEOUT(# cls << "::Del Lock(" << lockCount.l << ")");\
-    	    return lockCount.l;\
+            InterlockedDecrement(&lockCount.l);\
+            WXOLE_TRACEOUT(# cls << "::Del Lock(" << lockCount.l << ")");\
+            return lockCount.l;\
         }\
         else\
-        	return 0;\
+            return 0;\
     }\
     DEFINE_OLE_BASE(cls)
 
 #define DEFINE_OLE_BASE(cls)\
-	void cls::_GetInterface(cls *self, REFIID iid, void **_interface, const char *&desc)\
-	{\
-		*_interface = NULL;\
-	    desc = NULL;
+    void cls::_GetInterface(cls *self, REFIID iid, void **_interface, const char *&desc)\
+    {\
+        *_interface = NULL;\
+        desc = NULL;
 
 #define OLE_INTERFACE(_iid, _type)\
     if (IsEqualIID(iid, _iid))\
     {\
         WXOLE_TRACE("Found Interface <" # _type ">");\
-    	*_interface = (IUnknown *) (_type *) self;\
-    	desc = # _iid;\
+        *_interface = (IUnknown *) (_type *) self;\
+        desc = # _iid;\
         return;\
     }
 
@@ -338,29 +338,29 @@ class wxOleInit
 
 #define OLE_INTERFACE_CUSTOM(func)\
     if (func(self, iid, _interface, desc))\
-	{\
+    {\
         return;\
-	}
+    }
 
 #define END_OLE_TABLE\
-	}
+    }
 
 
 /// Main class for embedding a ActiveX control.
 /// Use by itself or derive from it
 /// \note The utility program (wxie) can generate a list of events, methods & properties
-/// for a control. 
-/// First display the control (File|Display), 
-/// then get the type info (ActiveX|Get Type Info) - these are copied to the clipboard. 
-/// Eventually this will be expanded to autogenerate 
+/// for a control.
+/// First display the control (File|Display),
+/// then get the type info (ActiveX|Get Type Info) - these are copied to the clipboard.
+/// Eventually this will be expanded to autogenerate
 /// wxWindows source files for a control with all methods etc encapsulated.
-/// \par Usage: 
+/// \par Usage:
 ///     construct using a ProgId or class id
 ///     \code new wxActiveX(parent, CLSID_WebBrowser, id, pos, size, style, name)\endcode
 ///     \code new wxActiveX(parent, "ShockwaveFlash.ShockwaveFlash", id, pos, size, style, name)\endcode
 /// \par Properties
 /// Properties can be set using \c SetProp() and set/retrieved using \c Prop()
-///         \code SetProp(name, wxVariant(x)) \endcode or 
+///         \code SetProp(name, wxVariant(x)) \endcode or
 ///         \code wxString Prop("<name>") = x\endcode
 ///         \code wxString result = Prop("<name>")\endcode
 ///         \code flash_ctl.Prop("movie") = "file:///movies/test.swf";\endcode
@@ -373,7 +373,7 @@ class wxOleInit
 /// wxVariant result = X->CallMethod("LoadMovie", args);\endcode
 /// \par events
 /// respond to events with the
-///         \c EVT_ACTIVEX(controlId, eventName, handler) & 
+///         \c EVT_ACTIVEX(controlId, eventName, handler) &
 ///         \c EVT_ACTIVEX_DISPID(controlId, eventDispId, handler) macros
 /// \code
 /// BEGIN_EVENT_TABLE(wxIEFrame, wxFrame)
@@ -387,48 +387,48 @@ class wxActiveX : public wxWindow {
 public:
     /// General parameter and return type infoformation for Events, Properties and Methods.
     /// refer to ELEMDESC, IDLDESC in MSDN
-	class ParamX 
-	{
-	public:
-		USHORT	    flags;
+    class ParamX
+    {
+    public:
+        USHORT	    flags;
         bool isPtr, isSafeArray;
-		VARTYPE	    vt;
+        VARTYPE	    vt;
         wxString    name;
 
         ParamX() : vt(VT_EMPTY) {}
-		inline bool IsIn() const		{return (flags & IDLFLAG_FIN) != 0;}
-		inline bool IsOut() const		{return (flags & IDLFLAG_FOUT) != 0;}
-		inline bool IsRetVal() const	{return (flags & IDLFLAG_FRETVAL) != 0;}
-	};
-	typedef vector<ParamX>	ParamXArray;
+        inline bool IsIn() const		{return (flags & IDLFLAG_FIN) != 0;}
+        inline bool IsOut() const		{return (flags & IDLFLAG_FOUT) != 0;}
+        inline bool IsRetVal() const	{return (flags & IDLFLAG_FRETVAL) != 0;}
+    };
+    typedef vector<ParamX>	ParamXArray;
 
     /// Type & Parameter info for Events and Methods.
     /// refer to FUNCDESC in MSDN
-    class FuncX 
+    class FuncX
     {
     public:
         wxString    name;
         MEMBERID    memid;
-		bool		hasOut;
+        bool		hasOut;
 
         ParamX      retType;
-		ParamXArray	params;
+        ParamXArray	params;
     };
 
     /// Type info for properties.
-	class PropX
-	{
-	public:
-		wxString	name;
+    class PropX
+    {
+    public:
+        wxString	name;
         MEMBERID    memid;
         ParamX      type;
         ParamX      arg;
-		bool		putByRef;
+        bool		putByRef;
 
-		PropX() : putByRef (false) {}
-		inline bool CanGet() const {return type.vt != VT_EMPTY;}
-		inline bool CanSet() const {return arg.vt != VT_EMPTY;}
-	};
+        PropX() : putByRef (false) {}
+        inline bool CanGet() const {return type.vt != VT_EMPTY;}
+        inline bool CanSet() const {return arg.vt != VT_EMPTY;}
+    };
 
     /// Create using clsid.
     wxActiveX(wxWindow * parent, REFCLSID clsid, wxWindowID id = -1,
@@ -442,7 +442,7 @@ public:
         const wxSize& size = wxDefaultSize,
         long style = 0,
         const wxString& name = wxPanelNameStr);
-	virtual ~wxActiveX();
+    virtual ~wxActiveX();
 
     /// Number of events defined for this control.
     inline int GetEventCount() const {return m_events.size();}
@@ -468,20 +468,20 @@ public:
     /// throws exception for invalid name
     const FuncX& GetMethodDesc(wxString name) const;
 
-	/// Set property VARIANTARG value by MEMBERID.
+    /// Set property VARIANTARG value by MEMBERID.
     void SetProp(MEMBERID name, VARIANTARG& value);
     /// Set property using wxVariant by name.
     void SetProp(const wxString &name, const wxVariant &value);
-    
+
     class wxPropertySetter
     {
     public:
         wxActiveX *m_ctl;
         wxString m_propName;
 
-        wxPropertySetter(wxActiveX *ctl, wxString propName) : 
+        wxPropertySetter(wxActiveX *ctl, wxString propName) :
             m_ctl(ctl), m_propName(propName) {}
-        
+
         inline const wxPropertySetter& operator = (wxVariant v) const
         {
             m_ctl->SetProp(m_propName, v);
@@ -526,7 +526,7 @@ public:
     void *GetPropAsPointer(const wxString& name);
 
     // methods
-    // VARIANTARG form is passed straight to Invoke, 
+    // VARIANTARG form is passed straight to Invoke,
     // so args in *REVERSE* order
     VARIANT CallMethod(MEMBERID name, VARIANTARG args[], int argc);
     VARIANT CallMethod(wxString name, VARIANTARG args[] = NULL, int argc = -1);
@@ -549,59 +549,59 @@ public:
     /// \note Since wxVariant has built in type conversion, most the std types can be passed easily
     wxVariant CallMethod(wxString name, wxVariant args[], int nargs = -1);
 
-	HRESULT ConnectAdvise(REFIID riid, IUnknown *eventSink);
+    HRESULT ConnectAdvise(REFIID riid, IUnknown *eventSink);
 
-	void OnSize(wxSizeEvent&);
+    void OnSize(wxSizeEvent&);
     void OnPaint(wxPaintEvent& event);
     void OnMouse(wxMouseEvent& event);
-	void OnSetFocus(wxFocusEvent&);
+    void OnSetFocus(wxFocusEvent&);
     void OnKillFocus(wxFocusEvent&);
 
-	DECLARE_EVENT_TABLE();
+    DECLARE_EVENT_TABLE();
 
 protected:
     friend class FrameSite;
     friend class wxActiveXEvents;
 
-        
+
     typedef vector<FuncX>                                       FuncXArray;
     typedef vector<PropX>                                       PropXArray;
-	typedef map<MEMBERID, int>	                                MemberIdMap;
+    typedef map<MEMBERID, int>	                                MemberIdMap;
     typedef map<wxString, int, NS_wxActiveX::less_wxStringI>    NameMap;
-	
-    typedef wxAutoOleInterface<IConnectionPoint>	wxOleConnectionPoint;
-	typedef pair<wxOleConnectionPoint, DWORD>		wxOleConnection;
-	typedef vector<wxOleConnection>					wxOleConnectionArray;
 
-	wxAutoOleInterface<IDispatch>			m_Dispatch;
+    typedef wxAutoOleInterface<IConnectionPoint>	wxOleConnectionPoint;
+    typedef pair<wxOleConnectionPoint, DWORD>		wxOleConnection;
+    typedef vector<wxOleConnection>					wxOleConnectionArray;
+
+    wxAutoOleInterface<IDispatch>			m_Dispatch;
     wxAutoOleInterface<IOleClientSite>      m_clientSite;
     wxAutoOleInterface<IUnknown>            m_ActiveX;
-	wxAutoOleInterface<IOleObject>			m_oleObject;
-	wxAutoOleInterface<IOleInPlaceObject>	m_oleInPlaceObject;
+    wxAutoOleInterface<IOleObject>			m_oleObject;
+    wxAutoOleInterface<IOleInPlaceObject>	m_oleInPlaceObject;
     wxAutoOleInterface<IOleInPlaceActiveObject>
 
                                             m_oleInPlaceActiveObject;
     wxAutoOleInterface<IOleDocumentView>	m_docView;
     wxAutoOleInterface<IViewObject>	        m_viewObject;
-	HWND m_oleObjectHWND;
+    HWND m_oleObjectHWND;
     bool m_bAmbientUserMode;
     DWORD m_docAdviseCookie;
-	wxOleConnectionArray					m_connections;
+    wxOleConnectionArray					m_connections;
 
-	void CreateActiveX(REFCLSID clsid);
+    void CreateActiveX(REFCLSID clsid);
     void CreateActiveX(LPOLESTR progId);
     HRESULT AmbientPropertyChanged(DISPID dispid);
 
-	void GetTypeInfo();
-	void GetTypeInfo(ITypeInfo *ti, bool defInterface, bool defEventSink);
+    void GetTypeInfo();
+    void GetTypeInfo(ITypeInfo *ti, bool defInterface, bool defEventSink);
 
 
     // events
     FuncXArray		m_events;
     MemberIdMap     m_eventMemberIds;
 
-	// properties
-	PropXArray		m_props;
+    // properties
+    PropXArray		m_props;
     NameMap         m_propNames;
 
     // Methods

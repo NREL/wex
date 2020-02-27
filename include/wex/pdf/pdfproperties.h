@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Name:        pdfproperties.h
-// Purpose:     
+// Purpose:
 // Author:      Ulrich Telle
 // Modified by:
 // Created:     2006-07-13
@@ -41,35 +41,33 @@
 #define wxPDF_STYLE_MASK      0x0007
 
 /// Text render mode
-enum wxPdfTextRenderMode
-{
-  wxPDF_TEXT_RENDER_FILL       = 0,
-  wxPDF_TEXT_RENDER_STROKE     = 1,
-  wxPDF_TEXT_RENDER_FILLSTROKE = 2,
-  wxPDF_TEXT_RENDER_INVISIBLE  = 3
+enum wxPdfTextRenderMode {
+    wxPDF_TEXT_RENDER_FILL = 0,
+    wxPDF_TEXT_RENDER_STROKE = 1,
+    wxPDF_TEXT_RENDER_FILLSTROKE = 2,
+    wxPDF_TEXT_RENDER_INVISIBLE = 3
 };
 
 /// Font style flags
-enum
-{
-  wxPDF_FONTSTYLE_REGULAR    = 0,
-  wxPDF_FONTSTYLE_ITALIC     = 1 << 0,
-  wxPDF_FONTSTYLE_BOLD       = 1 << 1,
-  wxPDF_FONTSTYLE_BOLDITALIC = wxPDF_FONTSTYLE_ITALIC |
-                               wxPDF_FONTSTYLE_BOLD,
-  wxPDF_FONTSTYLE_UNDERLINE  = 1 << 2,
-  wxPDF_FONTSTYLE_OVERLINE   = 1 << 3,
-  wxPDF_FONTSTYLE_STRIKEOUT  = 1 << 4,
+enum {
+    wxPDF_FONTSTYLE_REGULAR = 0,
+    wxPDF_FONTSTYLE_ITALIC = 1 << 0,
+    wxPDF_FONTSTYLE_BOLD = 1 << 1,
+    wxPDF_FONTSTYLE_BOLDITALIC = wxPDF_FONTSTYLE_ITALIC |
+                                 wxPDF_FONTSTYLE_BOLD,
+    wxPDF_FONTSTYLE_UNDERLINE = 1 << 2,
+    wxPDF_FONTSTYLE_OVERLINE = 1 << 3,
+    wxPDF_FONTSTYLE_STRIKEOUT = 1 << 4,
 
-  wxPDF_FONTSTYLE_DECORATION_MASK = wxPDF_FONTSTYLE_UNDERLINE |
-                                    wxPDF_FONTSTYLE_OVERLINE  |
-                                    wxPDF_FONTSTYLE_STRIKEOUT,  ///< Mask of decoration styles
-  wxPDF_FONTSTYLE_MASK = wxPDF_FONTSTYLE_REGULAR   |
-                         wxPDF_FONTSTYLE_ITALIC    |
-                         wxPDF_FONTSTYLE_BOLD      |
-                         wxPDF_FONTSTYLE_UNDERLINE |
-                         wxPDF_FONTSTYLE_OVERLINE  |
-                         wxPDF_FONTSTYLE_STRIKEOUT
+    wxPDF_FONTSTYLE_DECORATION_MASK = wxPDF_FONTSTYLE_UNDERLINE |
+                                      wxPDF_FONTSTYLE_OVERLINE |
+                                      wxPDF_FONTSTYLE_STRIKEOUT,  ///< Mask of decoration styles
+    wxPDF_FONTSTYLE_MASK = wxPDF_FONTSTYLE_REGULAR |
+                           wxPDF_FONTSTYLE_ITALIC |
+                           wxPDF_FONTSTYLE_BOLD |
+                           wxPDF_FONTSTYLE_UNDERLINE |
+                           wxPDF_FONTSTYLE_OVERLINE |
+                           wxPDF_FONTSTYLE_STRIKEOUT
 };
 
 /// Permission options
@@ -85,62 +83,56 @@ enum
 #define wxPDF_PERMISSION_ALL      0x0F3C  ///< Allow anything
 
 /// Encryption methods
-enum wxPdfEncryptionMethod
-{
-  wxPDF_ENCRYPTION_RC4V1,
-  wxPDF_ENCRYPTION_RC4V2,
-  wxPDF_ENCRYPTION_AESV2
+enum wxPdfEncryptionMethod {
+    wxPDF_ENCRYPTION_RC4V1,
+    wxPDF_ENCRYPTION_RC4V2,
+    wxPDF_ENCRYPTION_AESV2
 };
 
 /// Page box types
-enum wxPdfPageBox
-{
-  wxPDF_PAGEBOX_MEDIABOX,
-  wxPDF_PAGEBOX_CROPBOX,
-  wxPDF_PAGEBOX_BLEEDBOX,
-  wxPDF_PAGEBOX_TRIMBOX,
-  wxPDF_PAGEBOX_ARTBOX
+enum wxPdfPageBox {
+    wxPDF_PAGEBOX_MEDIABOX,
+    wxPDF_PAGEBOX_CROPBOX,
+    wxPDF_PAGEBOX_BLEEDBOX,
+    wxPDF_PAGEBOX_TRIMBOX,
+    wxPDF_PAGEBOX_ARTBOX
 };
 
 /// Form field border styles
-enum wxPdfBorderStyle
-{
-  wxPDF_BORDER_SOLID,
-  wxPDF_BORDER_DASHED,
-  wxPDF_BORDER_BEVELED,
-  wxPDF_BORDER_INSET,
-  wxPDF_BORDER_UNDERLINE
+enum wxPdfBorderStyle {
+    wxPDF_BORDER_SOLID,
+    wxPDF_BORDER_DASHED,
+    wxPDF_BORDER_BEVELED,
+    wxPDF_BORDER_INSET,
+    wxPDF_BORDER_UNDERLINE
 };
 
 /// Alignment options
-enum wxPdfAlignment
-{
-  wxPDF_ALIGN_LEFT,
-  wxPDF_ALIGN_CENTER,
-  wxPDF_ALIGN_RIGHT,
-  wxPDF_ALIGN_JUSTIFY,
-  wxPDF_ALIGN_TOP    = wxPDF_ALIGN_LEFT,
-  wxPDF_ALIGN_MIDDLE = wxPDF_ALIGN_CENTER,
-  wxPDF_ALIGN_BOTTOM = wxPDF_ALIGN_RIGHT
+enum wxPdfAlignment {
+    wxPDF_ALIGN_LEFT,
+    wxPDF_ALIGN_CENTER,
+    wxPDF_ALIGN_RIGHT,
+    wxPDF_ALIGN_JUSTIFY,
+    wxPDF_ALIGN_TOP = wxPDF_ALIGN_LEFT,
+    wxPDF_ALIGN_MIDDLE = wxPDF_ALIGN_CENTER,
+    wxPDF_ALIGN_BOTTOM = wxPDF_ALIGN_RIGHT
 };
 
 /// Zoom options
-enum wxPdfZoom
-{
-  wxPDF_ZOOM_FULLPAGE,
-  wxPDF_ZOOM_FULLWIDTH,
-  wxPDF_ZOOM_REAL,
-  wxPDF_ZOOM_DEFAULT,
-  wxPDF_ZOOM_FACTOR
+enum wxPdfZoom {
+    wxPDF_ZOOM_FULLPAGE,
+    wxPDF_ZOOM_FULLWIDTH,
+    wxPDF_ZOOM_REAL,
+    wxPDF_ZOOM_DEFAULT,
+    wxPDF_ZOOM_FACTOR
 };
 
 /// Layout options
-enum wxPdfLayout
-{
-  wxPDF_LAYOUT_CONTINUOUS,
-  wxPDF_LAYOUT_SINGLE,
-  wxPDF_LAYOUT_TWO,
-  wxPDF_LAYOUT_DEFAULT
+enum wxPdfLayout {
+    wxPDF_LAYOUT_CONTINUOUS,
+    wxPDF_LAYOUT_SINGLE,
+    wxPDF_LAYOUT_TWO,
+    wxPDF_LAYOUT_DEFAULT
 };
 
 /// Viewer preferences
@@ -152,87 +144,81 @@ enum wxPdfLayout
 #define wxPDF_VIEWER_DISPLAYDOCTITLE 0x0020
 
 /// Marker symbols
-enum wxPdfMarker
-{
-  wxPDF_MARKER_CIRCLE,
-  wxPDF_MARKER_SQUARE,
-  wxPDF_MARKER_TRIANGLE_UP,
-  wxPDF_MARKER_TRIANGLE_DOWN,
-  wxPDF_MARKER_TRIANGLE_LEFT,
-  wxPDF_MARKER_TRIANGLE_RIGHT,
-  wxPDF_MARKER_DIAMOND,
-  wxPDF_MARKER_PENTAGON_UP,
-  wxPDF_MARKER_PENTAGON_DOWN,
-  wxPDF_MARKER_PENTAGON_LEFT,
-  wxPDF_MARKER_PENTAGON_RIGHT,
-  wxPDF_MARKER_STAR,
-  wxPDF_MARKER_STAR4,
-  wxPDF_MARKER_PLUS,
-  wxPDF_MARKER_CROSS,
-  wxPDF_MARKER_SUN,
-  wxPDF_MARKER_BOWTIE_HORIZONTAL,
-  wxPDF_MARKER_BOWTIE_VERTICAL,
-  wxPDF_MARKER_ASTERISK,
-  wxPDF_MARKER_LAST  // Marks the last available marker symbol; do not use!
+enum wxPdfMarker {
+    wxPDF_MARKER_CIRCLE,
+    wxPDF_MARKER_SQUARE,
+    wxPDF_MARKER_TRIANGLE_UP,
+    wxPDF_MARKER_TRIANGLE_DOWN,
+    wxPDF_MARKER_TRIANGLE_LEFT,
+    wxPDF_MARKER_TRIANGLE_RIGHT,
+    wxPDF_MARKER_DIAMOND,
+    wxPDF_MARKER_PENTAGON_UP,
+    wxPDF_MARKER_PENTAGON_DOWN,
+    wxPDF_MARKER_PENTAGON_LEFT,
+    wxPDF_MARKER_PENTAGON_RIGHT,
+    wxPDF_MARKER_STAR,
+    wxPDF_MARKER_STAR4,
+    wxPDF_MARKER_PLUS,
+    wxPDF_MARKER_CROSS,
+    wxPDF_MARKER_SUN,
+    wxPDF_MARKER_BOWTIE_HORIZONTAL,
+    wxPDF_MARKER_BOWTIE_VERTICAL,
+    wxPDF_MARKER_ASTERISK,
+    wxPDF_MARKER_LAST  // Marks the last available marker symbol; do not use!
 };
 
 /// Linear gradient types
-enum wxPdfLinearGradientType
-{
-  wxPDF_LINEAR_GRADIENT_HORIZONTAL,
-  wxPDF_LINEAR_GRADIENT_VERTICAL,
-  wxPDF_LINEAR_GRADIENT_MIDHORIZONTAL,
-  wxPDF_LINEAR_GRADIENT_MIDVERTICAL,
-  wxPDF_LINEAR_GRADIENT_REFLECTION_LEFT,
-  wxPDF_LINEAR_GRADIENT_REFLECTION_RIGHT,
-  wxPDF_LINEAR_GRADIENT_REFLECTION_TOP,
-  wxPDF_LINEAR_GRADIENT_REFLECTION_BOTTOM
+enum wxPdfLinearGradientType {
+    wxPDF_LINEAR_GRADIENT_HORIZONTAL,
+    wxPDF_LINEAR_GRADIENT_VERTICAL,
+    wxPDF_LINEAR_GRADIENT_MIDHORIZONTAL,
+    wxPDF_LINEAR_GRADIENT_MIDVERTICAL,
+    wxPDF_LINEAR_GRADIENT_REFLECTION_LEFT,
+    wxPDF_LINEAR_GRADIENT_REFLECTION_RIGHT,
+    wxPDF_LINEAR_GRADIENT_REFLECTION_TOP,
+    wxPDF_LINEAR_GRADIENT_REFLECTION_BOTTOM
 };
 
-enum wxPdfBlendMode
-{
-  wxPDF_BLENDMODE_NORMAL,
-  wxPDF_BLENDMODE_MULTIPLY, 
-  wxPDF_BLENDMODE_SCREEN, 
-  wxPDF_BLENDMODE_OVERLAY, 
-  wxPDF_BLENDMODE_DARKEN, 
-  wxPDF_BLENDMODE_LIGHTEN, 
-  wxPDF_BLENDMODE_COLORDODGE, 
-  wxPDF_BLENDMODE_COLORBURN,
-  wxPDF_BLENDMODE_HARDLIGHT,
-  wxPDF_BLENDMODE_SOFTLIGHT,
-  wxPDF_BLENDMODE_DIFFERENCE, 
-  wxPDF_BLENDMODE_EXCLUSION, 
-  wxPDF_BLENDMODE_HUE, 
-  wxPDF_BLENDMODE_SATURATION, 
-  wxPDF_BLENDMODE_COLOR, 
-  wxPDF_BLENDMODE_LUMINOSITY
+enum wxPdfBlendMode {
+    wxPDF_BLENDMODE_NORMAL,
+    wxPDF_BLENDMODE_MULTIPLY,
+    wxPDF_BLENDMODE_SCREEN,
+    wxPDF_BLENDMODE_OVERLAY,
+    wxPDF_BLENDMODE_DARKEN,
+    wxPDF_BLENDMODE_LIGHTEN,
+    wxPDF_BLENDMODE_COLORDODGE,
+    wxPDF_BLENDMODE_COLORBURN,
+    wxPDF_BLENDMODE_HARDLIGHT,
+    wxPDF_BLENDMODE_SOFTLIGHT,
+    wxPDF_BLENDMODE_DIFFERENCE,
+    wxPDF_BLENDMODE_EXCLUSION,
+    wxPDF_BLENDMODE_HUE,
+    wxPDF_BLENDMODE_SATURATION,
+    wxPDF_BLENDMODE_COLOR,
+    wxPDF_BLENDMODE_LUMINOSITY
 };
 
-enum wxPdfShapedTextMode
-{
-  wxPDF_SHAPEDTEXTMODE_ONETIME,
-  wxPDF_SHAPEDTEXTMODE_STRETCHTOFIT,
-  wxPDF_SHAPEDTEXTMODE_REPEAT
+enum wxPdfShapedTextMode {
+    wxPDF_SHAPEDTEXTMODE_ONETIME,
+    wxPDF_SHAPEDTEXTMODE_STRETCHTOFIT,
+    wxPDF_SHAPEDTEXTMODE_REPEAT
 };
 
 /// PDF/X conformance
-enum wxPdfXConformanceType
-{
-  wxPDF_PDFXNONE,
-  wxPDF_PDFX1A2001,
-  wxPDF_PDFX32002,
-  wxPDF_PDFA1A,
-  wxPDF_PDFA1B
+enum wxPdfXConformanceType {
+    wxPDF_PDFXNONE,
+    wxPDF_PDFX1A2001,
+    wxPDF_PDFX32002,
+    wxPDF_PDFA1A,
+    wxPDF_PDFA1B
 };
 
 /// Run direction of text
-enum wxPdfRunDirection
-{
-  wxPDF_RUN_DIRECTION_DEFAULT, // default run direction
-  wxPDF_RUN_DIRECTION_NO_BIDI, // do not use bidirectional reordering
-  wxPDF_RUN_DIRECTION_LTR,     // bidirectional reordering with left-to-right preferential run direction
-  wxPDF_RUN_DIRECTION_RTL      // bidirectional reordering with right-to-left preferential run direction
-};  
+enum wxPdfRunDirection {
+    wxPDF_RUN_DIRECTION_DEFAULT, // default run direction
+    wxPDF_RUN_DIRECTION_NO_BIDI, // do not use bidirectional reordering
+    wxPDF_RUN_DIRECTION_LTR,     // bidirectional reordering with left-to-right preferential run direction
+    wxPDF_RUN_DIRECTION_RTL      // bidirectional reordering with right-to-left preferential run direction
+};
 
 #endif

@@ -26,7 +26,9 @@
 #include "t1gload.c"
 
 #ifndef T1_CONFIG_OPTION_NO_AFM
+
 #include "t1afm.c"
+
 #endif
 
 

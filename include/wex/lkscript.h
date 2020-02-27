@@ -48,14 +48,14 @@
 #define wxLK_STDLIB_SOUT   0x0100 // out,outln via wxLKScriptCtrl::OnOutput() virtual method
 
 #define wxLK_STDLIB_ALL \
-	(wxLK_STDLIB_BASIC|wxLK_STDLIB_SYSIO|wxLK_STDLIB_STRING \
-	|wxLK_STDLIB_MATH|wxLK_STDLIB_WXUI|wxLK_STDLIB_PLOT \
-	|wxLK_STDLIB_MISC|wxLK_STDLIB_FILE) // by default don't include stdout functions
+    (wxLK_STDLIB_BASIC|wxLK_STDLIB_SYSIO|wxLK_STDLIB_STRING \
+    |wxLK_STDLIB_MATH|wxLK_STDLIB_WXUI|wxLK_STDLIB_PLOT \
+    |wxLK_STDLIB_MISC|wxLK_STDLIB_FILE) // by default don't include stdout functions
 
-lk::fcall_t* wxLKPlotFunctions(); // newplot, plot, plotopt, plotout, gifanim
-lk::fcall_t* wxLKMiscFunctions(); // geocode, curl, apikeys, rand
-lk::fcall_t* wxLKFileFunctions(); // csvread, csvwrite, decompress
-lk::fcall_t* wxLKStdOutFunctions(); // out, outln:  must use an extended wxLKScriptCtrl that implements ::OnOutput()
+lk::fcall_t *wxLKPlotFunctions(); // newplot, plot, plotopt, plotout, gifanim
+lk::fcall_t *wxLKMiscFunctions(); // geocode, curl, apikeys, rand
+lk::fcall_t *wxLKFileFunctions(); // csvread, csvwrite, decompress
+lk::fcall_t *wxLKStdOutFunctions(); // out, outln:  must use an extended wxLKScriptCtrl that implements ::OnOutput()
 
 class wxPLPlotCtrl;
 
@@ -63,169 +63,207 @@ class wxPLPlotCtrl;
 // otherwise, even if parent=NULL, LK will use the currently active
 // toplevel window as the parent.
 void wxLKSetToplevelParentForPlots(wxWindow *parent);
+
 void wxLKSetPlotTarget(wxPLPlotCtrl *plot);
+
 wxPLPlotCtrl *wxLKGetPlotTarget();
 
 class wxLKDebugger;
+
 class wxLKScriptCtrl :
-	public wxCodeEditCtrl,
-	public wxThreadHelper
-{
+        public wxCodeEditCtrl,
+        public wxThreadHelper {
 public:
 
-	wxLKScriptCtrl(wxWindow *parent, int id = wxID_ANY,
-		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize,
-		unsigned long libs = wxLK_STDLIB_ALL);
+    wxLKScriptCtrl(wxWindow *parent, int id = wxID_ANY,
+                   const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize,
+                   unsigned long libs = wxLK_STDLIB_ALL);
 
-	virtual ~wxLKScriptCtrl();
+    virtual ~wxLKScriptCtrl();
 
-	void SetSyntaxCheck(bool on);
+    void SetSyntaxCheck(bool on);
 
-	virtual bool OnEval(int line);
-	virtual void OnOutput(const wxString &);
-	virtual void OnSyntaxCheck(int line = -1, const wxString &error = wxEmptyString);
+    virtual bool OnEval(int line);
 
-	void RegisterLibrary(lk::fcall_t *funcs, const wxString &group = "Miscellaneous", void *user_data = 0);
+    virtual void OnOutput(const wxString &);
 
-	wxString GetHtmlDocs();
-	void ShowHelpDialog(wxWindow *custom_parent = 0);
+    virtual void OnSyntaxCheck(int line = -1, const wxString &error = wxEmptyString);
 
-	bool IsScriptRunning();
-	bool IsStopFlagSet();
-	void Stop();
+    void RegisterLibrary(lk::fcall_t *funcs, const wxString &group = "Miscellaneous", void *user_data = 0);
 
-	void SetWorkDir(const wxString &path);
-	wxString GetWorkDir();
-	bool Execute();
-	bool CompileAndLoad();
-	void UpdateInfo();
+    wxString GetHtmlDocs();
 
-	enum { DEBUG_RUN, DEBUG_STEP, DEBUG_SINGLE };
-	bool Debug(int mode);
+    void ShowHelpDialog(wxWindow *custom_parent = 0);
 
-	lk::env_t *GetEnvironment() { return m_env; }
+    bool IsScriptRunning();
 
-	struct libdata
-	{
-		lk::fcall_t *library;
-		wxString name;
-	};
+    bool IsStopFlagSet();
+
+    void Stop();
+
+    void SetWorkDir(const wxString &path);
+
+    wxString GetWorkDir();
+
+    bool Execute();
+
+    bool CompileAndLoad();
+
+    void UpdateInfo();
+
+    enum {
+        DEBUG_RUN, DEBUG_STEP, DEBUG_SINGLE
+    };
+
+    bool Debug(int mode);
+
+    lk::env_t *GetEnvironment() { return m_env; }
+
+    struct libdata {
+        lk::fcall_t *library;
+        wxString name;
+    };
 private:
 
-	wxString m_workDir;
-	bool m_syntaxCheck;
+    wxString m_workDir;
+    bool m_syntaxCheck;
 
-	unsigned int m_syntaxCheckRequestId, m_syntaxCheckThreadId;
-	wxString m_codeToSyntaxCheck;
-	wxString m_syntaxCheckWorkDir;
-	std::vector<int> m_syntaxErrorLines;
-	wxArrayString m_syntaxErrorMessages;
-	wxCriticalSection m_syntaxCheckCS;
+    unsigned int m_syntaxCheckRequestId, m_syntaxCheckThreadId;
+    wxString m_codeToSyntaxCheck;
+    wxString m_syntaxCheckWorkDir;
+    std::vector<int> m_syntaxErrorLines;
+    wxArrayString m_syntaxErrorMessages;
+    wxCriticalSection m_syntaxCheckCS;
 
-	wxThread::ExitCode Entry();
-	void OnSyntaxCheckThreadFinished(wxThreadEvent& evt);
-	void StartSyntaxCheckThread();
+    wxThread::ExitCode Entry();
 
-	void OnScriptTextChanged(wxStyledTextEvent &);
-	void OnMarginClick(wxStyledTextEvent &);
-	void OnTimer(wxTimerEvent &);
+    void OnSyntaxCheckThreadFinished(wxThreadEvent &evt);
 
-	wxTimer m_timer;
+    void StartSyntaxCheckThread();
 
-	std::vector<libdata> m_libs;
-	lk::env_t *m_env;
+    void OnScriptTextChanged(wxStyledTextEvent &);
 
-	class my_vm : public lk::vm
-	{
-		wxLKScriptCtrl *m_lcs;
-		size_t m_counter;
-	public:
-		my_vm(wxLKScriptCtrl *lcs);
-		virtual bool on_run(const lk::srcpos_t &sp);
-	};
-	lk::bytecode m_bc;
-	my_vm m_vm;
+    void OnMarginClick(wxStyledTextEvent &);
 
-	wxString m_assemblyText;
+    void OnTimer(wxTimerEvent &);
 
-	bool m_scriptRunning;
-	bool m_stopScriptFlag;
-	wxLKDebugger *m_debugger;
-	bool m_debuggerFirstShow;
+    wxTimer m_timer;
 
-	DECLARE_EVENT_TABLE();
+    std::vector<libdata> m_libs;
+    lk::env_t *m_env;
+
+    class my_vm : public lk::vm {
+        wxLKScriptCtrl *m_lcs;
+        size_t m_counter;
+    public:
+        my_vm(wxLKScriptCtrl *lcs);
+
+        virtual bool on_run(const lk::srcpos_t &sp);
+    };
+
+    lk::bytecode m_bc;
+    my_vm m_vm;
+
+    wxString m_assemblyText;
+
+    bool m_scriptRunning;
+    bool m_stopScriptFlag;
+    wxLKDebugger *m_debugger;
+    bool m_debuggerFirstShow;
+
+DECLARE_EVENT_TABLE();
 };
 
 class wxBoxSizer;
+
 class wxTextCtrl;
+
 class wxMetroButton;
+
 class wxLKScriptWindow;
 
-class wxLKScriptWindowFactory
-{
+class wxLKScriptWindowFactory {
 public:
-	wxLKScriptWindowFactory();
-	virtual ~wxLKScriptWindowFactory();
-	virtual wxLKScriptWindow *Create() = 0;
+    wxLKScriptWindowFactory();
+
+    virtual ~wxLKScriptWindowFactory();
+
+    virtual wxLKScriptWindow *Create() = 0;
 };
 
-class wxLKScriptWindow : public wxFrame
-{
+class wxLKScriptWindow : public wxFrame {
 public:
-	wxLKScriptWindow(wxWindow *parent, int id = wxID_ANY,
-		const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxScaleSize(760, 800));
+    wxLKScriptWindow(wxWindow *parent, int id = wxID_ANY,
+                     const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxScaleSize(760, 800));
 
-	static wxLKScriptWindowFactory &GetFactory();
-	static void SetFactory(wxLKScriptWindowFactory *f);
+    static wxLKScriptWindowFactory &GetFactory();
 
-	static wxLKScriptWindow *CreateNewWindow(bool show = true);
-	static void OpenFiles();
-	static std::vector<wxLKScriptWindow*> GetWindows();
-	static wxLKScriptWindow *FindOpenFile(const wxString &file);
-	static bool CloseAll();
+    static void SetFactory(wxLKScriptWindowFactory *f);
 
-	void AddOutput(const wxString &out);
-	void ClearOutput();
+    static wxLKScriptWindow *CreateNewWindow(bool show = true);
 
-	bool Save();
-	bool SaveAs();
-	bool Load(const wxString &file);
-	bool Write(const wxString &file);
-	wxString GetFileName();
+    static void OpenFiles();
 
-	bool Find(const wxString &text, bool match_case, bool whole_word, bool at_beginning,
-		int *pos, int *line, wxString *line_text);
+    static std::vector<wxLKScriptWindow *> GetWindows();
 
-	bool IsModified();
-	wxLKScriptCtrl *GetEditor();
+    static wxLKScriptWindow *FindOpenFile(const wxString &file);
 
-	virtual void OnHelp();
-	virtual bool RunScript();
-	virtual void StopScript();
+    static bool CloseAll();
+
+    void AddOutput(const wxString &out);
+
+    void ClearOutput();
+
+    bool Save();
+
+    bool SaveAs();
+
+    bool Load(const wxString &file);
+
+    bool Write(const wxString &file);
+
+    wxString GetFileName();
+
+    bool Find(const wxString &text, bool match_case, bool whole_word, bool at_beginning,
+              int *pos, int *line, wxString *line_text);
+
+    bool IsModified();
+
+    wxLKScriptCtrl *GetEditor();
+
+    virtual void OnHelp();
+
+    virtual bool RunScript();
+
+    virtual void StopScript();
 
 protected:
-	bool QueryAndCanClose();
-	static void OpenFilesInternal(wxLKScriptWindow *current = 0);
+    bool QueryAndCanClose();
 
-	wxBoxSizer *m_toolbar;
+    static void OpenFilesInternal(wxLKScriptWindow *current = 0);
 
-	class MyScriptCtrl;
-	MyScriptCtrl *m_script;
-	wxTextCtrl *m_output;
-	wxMetroButton *m_runBtn, *m_stopBtn;
-	wxString m_fileName;
-	wxString m_lastTitle;
+    wxBoxSizer *m_toolbar;
 
-	int m_lastFindPos;
+    class MyScriptCtrl;
 
-	void UpdateWindowTitle();
+    MyScriptCtrl *m_script;
+    wxTextCtrl *m_output;
+    wxMetroButton *m_runBtn, *m_stopBtn;
+    wxString m_fileName;
+    wxString m_lastTitle;
+
+    int m_lastFindPos;
+
+    void UpdateWindowTitle();
 
 private:
-	void OnCommand(wxCommandEvent &);
-	void OnModified(wxStyledTextEvent &);
-	void OnClose(wxCloseEvent &);
+    void OnCommand(wxCommandEvent &);
 
-	DECLARE_EVENT_TABLE();
+    void OnModified(wxStyledTextEvent &);
+
+    void OnClose(wxCloseEvent &);
+
+DECLARE_EVENT_TABLE();
 };
 
 #endif

@@ -29,28 +29,32 @@
 #include "gxvmorx.h"
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+/*************************************************************************/
+/*                                                                       */
+/* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
+/* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
+/* messages during execution.                                            */
+/*                                                                       */
 #undef  FT_COMPONENT
 #define FT_COMPONENT  trace_gxvmorx
 
 
-  FT_LOCAL_DEF( void )
-  gxv_morx_subtable_type4_validate( FT_Bytes       table,
-                                    FT_Bytes       limit,
-                                    GXV_Validator  gxvalid )
-  {
-    GXV_NAME_ENTER( "morx chain subtable type4 "
-                    "(Non-Contextual Glyph Substitution)" );
+FT_LOCAL_DEF(void)
 
-    gxv_mort_subtable_type4_validate( table, limit, gxvalid );
+gxv_morx_subtable_type4_validate( FT_Bytes
+table,
+FT_Bytes limit,
+        GXV_Validator
+gxvalid )
+{
+GXV_NAME_ENTER("morx chain subtable type4 "
+               "(Non-Contextual Glyph Substitution)");
 
-    GXV_EXIT;
-  }
+gxv_mort_subtable_type4_validate( table, limit, gxvalid
+);
+
+GXV_EXIT;
+}
 
 
 /* END */

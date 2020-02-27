@@ -22,34 +22,32 @@
 #include FT_SERVICE_FONT_FORMAT_H
 
 
-  /* documentation is in ftfntfmt.h */
+/* documentation is in ftfntfmt.h */
 
-  FT_EXPORT_DEF( const char* )
-  FT_Get_Font_Format( FT_Face  face )
-  {
-    const char*  result = NULL;
-
-
-    if ( face )
-      FT_FACE_FIND_SERVICE( face, result, FONT_FORMAT );
-
-    return result;
-  }
+FT_EXPORT_DEF(const char*)
+FT_Get_Font_Format(FT_Face face) {
+    const char *result = NULL;
 
 
-  /* deprecated function name; retained for ABI compatibility */
-
-  FT_EXPORT_DEF( const char* )
-  FT_Get_X11_Font_Format( FT_Face  face )
-  {
-    const char*  result = NULL;
-
-
-    if ( face )
-      FT_FACE_FIND_SERVICE( face, result, FONT_FORMAT );
+    if (face)
+        FT_FACE_FIND_SERVICE(face, result, FONT_FORMAT);
 
     return result;
-  }
+}
+
+
+/* deprecated function name; retained for ABI compatibility */
+
+FT_EXPORT_DEF(const char*)
+FT_Get_X11_Font_Format(FT_Face face) {
+    const char *result = NULL;
+
+
+    if (face)
+        FT_FACE_FIND_SERVICE(face, result, FONT_FORMAT);
+
+    return result;
+}
 
 
 /* END */
