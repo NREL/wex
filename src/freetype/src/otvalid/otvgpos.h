@@ -23,9 +23,12 @@
 FT_BEGIN_HEADER
 
 
-  FT_LOCAL( void )
-  otv_GPOS_subtable_validate( FT_Bytes       table,
-                              OTV_Validator  valid );
+FT_LOCAL(void)
+
+otv_GPOS_subtable_validate( FT_Bytes
+table,
+OTV_Validator valid
+);
 
 
 FT_END_HEADER

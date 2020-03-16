@@ -30,77 +30,90 @@
 
 #define wxPL_BAR_AUTOSIZE -1
 
-class wxPLBarPlotBase : public wxPLPlottable
-{
+class wxPLBarPlotBase : public wxPLPlottable {
 public:
-	wxPLBarPlotBase();
-	wxPLBarPlotBase(const std::vector<wxRealPoint> &data, double baseline,
-		const wxString &label = wxEmptyString,
-		const wxColour &col = *wxLIGHT_GREY);
-	virtual ~wxPLBarPlotBase();
+    wxPLBarPlotBase();
 
-	virtual wxRealPoint At(size_t i) const;
-	virtual size_t Len() const;
+    wxPLBarPlotBase(const std::vector<wxRealPoint> &data, double baseline,
+                    const wxString &label = wxEmptyString,
+                    const wxColour &col = *wxLIGHT_GREY);
 
-	void SetColour(const wxColour &col) { m_colour = col; }
-	void SetThickness(double thick = wxPL_BAR_AUTOSIZE) { m_thickness = thick; }
-	void SetData(const std::vector<wxRealPoint> &data) { m_data = data; }
+    virtual ~wxPLBarPlotBase();
 
-	virtual void DrawInLegend(wxPLOutputDevice &dc, const wxPLRealRect &rct);
+    virtual wxRealPoint At(size_t i) const;
+
+    virtual size_t Len() const;
+
+    void SetColour(const wxColour &col) { m_colour = col; }
+
+    void SetThickness(double thick = wxPL_BAR_AUTOSIZE) { m_thickness = thick; }
+
+    void SetData(const std::vector<wxRealPoint> &data) { m_data = data; }
+
+    virtual void DrawInLegend(wxPLOutputDevice &dc, const wxPLRealRect &rct);
 
 protected:
 
-	void Init();
-	double m_baseline;
-	wxColour m_colour;
-	double m_thickness;
-	std::vector< wxRealPoint > m_data;
+    void Init();
+
+    double m_baseline;
+    wxColour m_colour;
+    double m_thickness;
+    std::vector<wxRealPoint> m_data;
 };
 
-class wxPLBarPlot : public wxPLBarPlotBase
-{
+class wxPLBarPlot : public wxPLBarPlotBase {
 public:
-	wxPLBarPlot();
-	wxPLBarPlot(const std::vector<wxRealPoint> &data, double baseline_y = 0.0,
-		const wxString &label = wxEmptyString,
-		const wxColour &col = *wxLIGHT_GREY);
-	virtual ~wxPLBarPlot();
+    wxPLBarPlot();
 
-	virtual void Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map);
+    wxPLBarPlot(const std::vector<wxRealPoint> &data, double baseline_y = 0.0,
+                const wxString &label = wxEmptyString,
+                const wxColour &col = *wxLIGHT_GREY);
 
-	void SetStackedOn(wxPLBarPlot *bp) { m_stackedOn = bp; }
-	void SetGroup(const std::vector<wxPLBarPlot*> &grp) { m_group = grp; }
+    virtual ~wxPLBarPlot();
 
-	virtual wxPLAxis *SuggestYAxis() const;
+    virtual void Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map);
+
+    void SetStackedOn(wxPLBarPlot *bp) { m_stackedOn = bp; }
+
+    void SetGroup(const std::vector<wxPLBarPlot *> &grp) { m_group = grp; }
+
+    virtual wxPLAxis *SuggestYAxis() const;
 
 protected:
 
-	double CalcYPos(double x) const;
-	double CalcXPos(double x, const wxPLDeviceMapping &map, double dispwidth);
-	double CalcDispBarWidth(const wxPLDeviceMapping &map);
+    double CalcYPos(double x) const;
 
-	wxPLBarPlot *m_stackedOn;
-	std::vector<wxPLBarPlot*> m_group;
+    double CalcXPos(double x, const wxPLDeviceMapping &map, double dispwidth);
+
+    double CalcDispBarWidth(const wxPLDeviceMapping &map);
+
+    wxPLBarPlot *m_stackedOn;
+    std::vector<wxPLBarPlot *> m_group;
 };
 
-class wxPLHBarPlot : public wxPLBarPlotBase
-{
+class wxPLHBarPlot : public wxPLBarPlotBase {
 public:
-	wxPLHBarPlot();
-	wxPLHBarPlot(const std::vector<wxRealPoint> &data, double baseline_x = 0.0,
-		const wxString &label = wxEmptyString,
-		const wxColour &col = *wxLIGHT_GREY);
-	virtual ~wxPLHBarPlot();
+    wxPLHBarPlot();
 
-	void SetStackedOn(wxPLHBarPlot *bp) { m_stackedOn = bp; }
-	virtual void Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map);
+    wxPLHBarPlot(const std::vector<wxRealPoint> &data, double baseline_x = 0.0,
+                 const wxString &label = wxEmptyString,
+                 const wxColour &col = *wxLIGHT_GREY);
 
-	virtual wxPLAxis *SuggestXAxis() const;
+    virtual ~wxPLHBarPlot();
+
+    void SetStackedOn(wxPLHBarPlot *bp) { m_stackedOn = bp; }
+
+    virtual void Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map);
+
+    virtual wxPLAxis *SuggestXAxis() const;
+
 protected:
-	double CalcXPos(double y) const;
-	double CalcDispBarWidth(const wxPLDeviceMapping &map);
+    double CalcXPos(double y) const;
 
-	wxPLHBarPlot *m_stackedOn;
+    double CalcDispBarWidth(const wxPLDeviceMapping &map);
+
+    wxPLHBarPlot *m_stackedOn;
 };
 
 #endif

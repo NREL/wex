@@ -114,36 +114,36 @@ typedef struct setT setT;          /* defined in qset.h */
 
 /* Update qhmem in mem.c if add or remove fields */
 struct qhmemT {               /* global memory management variables */
-  int      BUFsize;           /* size of memory allocation buffer */
-  int      BUFinit;           /* initial size of memory allocation buffer */
-  int      TABLEsize;         /* actual number of sizes in free list table */
-  int      NUMsizes;          /* maximum number of sizes in free list table */
-  int      LASTsize;          /* last size in free list table */
-  int      ALIGNmask;         /* worst-case alignment, must be 2^n-1 */
-  void   **freelists;          /* free list table, linked by offset 0 */
-  int     *sizetable;         /* size of each freelist */
-  int     *indextable;        /* size->index table */
-  void    *curbuffer;         /* current buffer, linked by offset 0 */
-  void    *freemem;           /*   free memory in curbuffer */
-  int      freesize;          /*   size of freemem in bytes */
-  setT    *tempstack;         /* stack of temporary memory, managed by users */
-  FILE    *ferr;              /* file for reporting errors when 'qh' may be undefined */
-  int      IStracing;         /* =5 if tracing memory allocations */
-  int      cntquick;          /* count of quick allocations */
-                              /* Note: removing statistics doesn't effect speed */
-  int      cntshort;          /* count of short allocations */
-  int      cntlong;           /* count of long allocations */
-  int      freeshort;         /* count of short memfrees */
-  int      freelong;          /* count of long memfrees */
-  int      totbuffer;         /* total short memory buffers minus buffer links */
-  int      totdropped;        /* total dropped memory at end of short memory buffers (e.g., freesize) */
-  int      totfree;           /* total size of free, short memory on freelists */
-  int      totlong;           /* total size of long memory in use */
-  int      maxlong;           /*   maximum totlong */
-  int      totshort;          /* total size of short memory in use */
-  int      totunused;         /* total unused short memory (estimated, short size - request size of first allocations) */
-  int      cntlarger;         /* count of setlarger's */
-  int      totlarger;         /* total copied by setlarger */
+    int BUFsize;           /* size of memory allocation buffer */
+    int BUFinit;           /* initial size of memory allocation buffer */
+    int TABLEsize;         /* actual number of sizes in free list table */
+    int NUMsizes;          /* maximum number of sizes in free list table */
+    int LASTsize;          /* last size in free list table */
+    int ALIGNmask;         /* worst-case alignment, must be 2^n-1 */
+    void **freelists;          /* free list table, linked by offset 0 */
+    int *sizetable;         /* size of each freelist */
+    int *indextable;        /* size->index table */
+    void *curbuffer;         /* current buffer, linked by offset 0 */
+    void *freemem;           /*   free memory in curbuffer */
+    int freesize;          /*   size of freemem in bytes */
+    setT *tempstack;         /* stack of temporary memory, managed by users */
+    FILE *ferr;              /* file for reporting errors when 'qh' may be undefined */
+    int IStracing;         /* =5 if tracing memory allocations */
+    int cntquick;          /* count of quick allocations */
+    /* Note: removing statistics doesn't effect speed */
+    int cntshort;          /* count of short allocations */
+    int cntlong;           /* count of long allocations */
+    int freeshort;         /* count of short memfrees */
+    int freelong;          /* count of long memfrees */
+    int totbuffer;         /* total short memory buffers minus buffer links */
+    int totdropped;        /* total dropped memory at end of short memory buffers (e.g., freesize) */
+    int totfree;           /* total size of free, short memory on freelists */
+    int totlong;           /* total size of long memory in use */
+    int maxlong;           /*   maximum totlong */
+    int totshort;          /* total size of short memory in use */
+    int totunused;         /* total unused short memory (estimated, short size - request size of first allocations) */
+    int cntlarger;         /* count of setlarger's */
+    int totlarger;         /* total copied by setlarger */
 };
 
 
@@ -208,15 +208,24 @@ struct qhmemT {               /* global memory management variables */
 /*=============== prototypes in alphabetical order ============*/
 
 void *qh_memalloc(int insize);
+
 void qh_memcheck(void);
+
 void qh_memfree(void *object, int insize);
+
 void qh_memfreeshort(int *curlong, int *totlong);
+
 void qh_meminit(FILE *ferr);
+
 void qh_meminitbuffers(int tracelevel, int alignment, int numsizes,
-                        int bufsize, int bufinit);
+                       int bufsize, int bufinit);
+
 void qh_memsetup(void);
+
 void qh_memsize(int size);
+
 void qh_memstatistics(FILE *fp);
+
 void qh_memtotal(int *totlong, int *curlong, int *totshort, int *curshort, int *maxlong, int *totbuffer);
 
 #endif /* qhDEFmem */

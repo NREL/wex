@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Name:        pdfcffdecoder.cpp
-// Purpose:     
+// Purpose:
 // Author:      Ulrich Telle
 // Modified by:
 // Created:     2008-08-01
@@ -23,7 +23,9 @@
 #endif
 
 #ifndef WX_PRECOMP
+
 #include <wx/wx.h>
+
 #endif
 
 // includes
@@ -40,27 +42,27 @@
 // If the high byte is 0 the command is encoded with a single byte.
 
 enum {
-  BASEFONTNAME_OP = 0x0c16,
-  CHARSET_OP      = 0x000f,
-  CHARSTRINGS_OP  = 0x0011,
-  CIDCOUNT_OP     = 0x0c22,
-  COPYRIGHT_OP    = 0x0c00,
-  ENCODING_OP     = 0x0010,
-  FAMILYNAME_OP   = 0x0003,
-  FDARRAY_OP      = 0x0c24,
-  FDSELECT_OP     = 0x0c25,
-  FONTBBOX_OP     = 0x0005,
-  FONTNAME_OP     = 0x0c26,
-  FULLNAME_OP     = 0x0002,
-  LOCAL_SUB_OP    = 0x0013,
-  NOTICE_OP       = 0x0001,
-  POSTSCRIPT_OP   = 0x0c15,
-  PRIVATE_OP      = 0x0012,
-  ROS_OP          = 0x0c1e,
-  UNIQUEID_OP     = 0x000d,
-  VERSION_OP      = 0x0000,
-  WEIGHT_OP       = 0x0004,
-  XUID_OP         = 0x000e
+    BASEFONTNAME_OP = 0x0c16,
+    CHARSET_OP = 0x000f,
+    CHARSTRINGS_OP = 0x0011,
+    CIDCOUNT_OP = 0x0c22,
+    COPYRIGHT_OP = 0x0c00,
+    ENCODING_OP = 0x0010,
+    FAMILYNAME_OP = 0x0003,
+    FDARRAY_OP = 0x0c24,
+    FDSELECT_OP = 0x0c25,
+    FONTBBOX_OP = 0x0005,
+    FONTNAME_OP = 0x0c26,
+    FULLNAME_OP = 0x0002,
+    LOCAL_SUB_OP = 0x0013,
+    NOTICE_OP = 0x0001,
+    POSTSCRIPT_OP = 0x0c15,
+    PRIVATE_OP = 0x0012,
+    ROS_OP = 0x0c1e,
+    UNIQUEID_OP = 0x000d,
+    VERSION_OP = 0x0000,
+    WEIGHT_OP = 0x0004,
+    XUID_OP = 0x000e
 };
 
 #if 0
@@ -68,7 +70,7 @@ static const wxChar* gs_standardStrings[] = {
     // Generated from Appendix A of the CFF specification. Size should be 391.
     wxT(".notdef"),             wxT("space"),              wxT("exclam"),           wxT("quotedbl"),       wxT("numbersign"),
     wxT("dollar"),              wxT("percent"),            wxT("ampersand"),        wxT("quoteright"),     wxT("parenleft"),
-    wxT("parenright"),          wxT("asterisk"),           wxT("plus"),             wxT("comma"),          wxT("hyphen"), 
+    wxT("parenright"),          wxT("asterisk"),           wxT("plus"),             wxT("comma"),          wxT("hyphen"),
     wxT("period"),              wxT("slash"),              wxT("zero"),             wxT("one"),            wxT("two"),
     wxT("three"),               wxT("four"),               wxT("five"),             wxT("six"),            wxT("seven"),
     wxT("eight"),               wxT("nine"),               wxT("colon"),            wxT("semicolon"),      wxT("less"),
@@ -150,31 +152,31 @@ static int gs_standardStringsCount = sizeof(gs_standardStrings) / sizeof(wxChar*
 #endif
 
 // The Strings in this array represent Type1/Type2 operator names
-static const wxChar* gs_subrsFunctions[] = {
-    wxT("RESERVED_0"),  wxT("hstem"),       wxT("RESERVED_2"),  wxT("vstem"),          wxT("vmoveto"),
-    wxT("rlineto"),     wxT("hlineto"),     wxT("vlineto"),     wxT("rrcurveto"),      wxT("RESERVED_9"),
-    wxT("callsubr"),    wxT("return"),      wxT("escape"),      wxT("hsbw"),/*RES_13*/ wxT("endchar"),
-    wxT("RESERVED_15"), wxT("RESERVED_16"), wxT("RESERVED_17"), wxT("hstemhm"),        wxT("hintmask"),
-    wxT("cntrmask"),    wxT("rmoveto"),     wxT("hmoveto"),     wxT("vstemhm"),        wxT("rcurveline"),
-    wxT("rlinecurve"),  wxT("vvcurveto"),   wxT("hhcurveto"),   wxT("shortint"),       wxT("callgsubr"),
-    wxT("vhcurveto"),   wxT("hvcurveto")
-  };
+static const wxChar *gs_subrsFunctions[] = {
+        wxT("RESERVED_0"), wxT("hstem"), wxT("RESERVED_2"), wxT("vstem"), wxT("vmoveto"),
+        wxT("rlineto"), wxT("hlineto"), wxT("vlineto"), wxT("rrcurveto"), wxT("RESERVED_9"),
+        wxT("callsubr"), wxT("return"), wxT("escape"), wxT("hsbw"),/*RES_13*/ wxT("endchar"),
+        wxT("RESERVED_15"), wxT("RESERVED_16"), wxT("RESERVED_17"), wxT("hstemhm"), wxT("hintmask"),
+        wxT("cntrmask"), wxT("rmoveto"), wxT("hmoveto"), wxT("vstemhm"), wxT("rcurveline"),
+        wxT("rlinecurve"), wxT("vvcurveto"), wxT("hhcurveto"), wxT("shortint"), wxT("callgsubr"),
+        wxT("vhcurveto"), wxT("hvcurveto")
+};
 #if 0
 static int gs_subrsFunctionsCount = sizeof(gs_subrsFunctions) / sizeof(wxChar*);
 #endif
 
 // The Strings in this array represent Type1/Type2 escape operator names
-static const wxChar* gs_subrsEscapeFuncs[] = {
-    wxT("RESERVED_0"),  wxT("RESERVED_1"),    wxT("RESERVED_2"),   wxT("and"),           wxT("or"), 
-    wxT("not"),         wxT("seac"),/*RES_6*/ wxT("sbw"),/*RES_7*/ wxT("RESERVED_8"),    wxT("abs"),
-    wxT("add"),         wxT("sub"),           wxT("div"),          wxT("RESERVED_13"),   wxT("neg"),
-    wxT("eq"),          wxT("RESERVED_16"),   wxT("RESERVED_17"),  wxT("drop"),          wxT("RESERVED_19"),
-    wxT("put"),         wxT("get"),           wxT("ifelse"),       wxT("random"),        wxT("mul"),
-    wxT("RESERVED_25"), wxT("sqrt"),          wxT("dup"),          wxT("exch"),          wxT("index"), 
-    wxT("roll"),        wxT("RESERVED_31"),   wxT("RESERVED_32"),  wxT("RESERVED_33"),   wxT("hflex"),
-    wxT("flex"),        wxT("hflex1"),        wxT("flex1"),        wxT("RESERVED_REST")
-  };
-static int gs_subrsEscapeFuncsCount = sizeof(gs_subrsEscapeFuncs) / sizeof(wxChar*);
+static const wxChar *gs_subrsEscapeFuncs[] = {
+        wxT("RESERVED_0"), wxT("RESERVED_1"), wxT("RESERVED_2"), wxT("and"), wxT("or"),
+        wxT("not"), wxT("seac"),/*RES_6*/ wxT("sbw"),/*RES_7*/ wxT("RESERVED_8"), wxT("abs"),
+        wxT("add"), wxT("sub"), wxT("div"), wxT("RESERVED_13"), wxT("neg"),
+        wxT("eq"), wxT("RESERVED_16"), wxT("RESERVED_17"), wxT("drop"), wxT("RESERVED_19"),
+        wxT("put"), wxT("get"), wxT("ifelse"), wxT("random"), wxT("mul"),
+        wxT("RESERVED_25"), wxT("sqrt"), wxT("dup"), wxT("exch"), wxT("index"),
+        wxT("roll"), wxT("RESERVED_31"), wxT("RESERVED_32"), wxT("RESERVED_33"), wxT("hflex"),
+        wxT("flex"), wxT("hflex1"), wxT("flex1"), wxT("RESERVED_REST")
+};
+static int gs_subrsEscapeFuncsCount = sizeof(gs_subrsEscapeFuncs) / sizeof(wxChar *);
 
 #if 0
 static wxChar* gs_operatorNames[] = {
@@ -197,497 +199,424 @@ static wxChar* gs_operatorNames[] = {
 static int gs_operatorNamesCount = sizeof(gs_operatorNames) / sizeof(wxChar*);
 #endif
 
-class wxPdfCffFontObject
-{
+class wxPdfCffFontObject {
 public:
-  wxPdfCffFontObject() {}
-  int      m_type;
-  int      m_intValue;
-  wxString m_strValue;
+    wxPdfCffFontObject() {}
+
+    int m_type;
+    int m_intValue;
+    wxString m_strValue;
 };
 
-wxPdfCffDecoder::wxPdfCffDecoder()
-{
-  m_charstringType = 1;
-  
-  m_globalSubrIndex  = NULL;
-  m_hGlobalSubrsUsed = NULL;
-  m_lGlobalSubrsUsed = NULL;
+wxPdfCffDecoder::wxPdfCffDecoder() {
+    m_charstringType = 1;
 
-  m_args = new wxPdfCffFontObject[48];
-  m_argCount = 0;
+    m_globalSubrIndex = NULL;
+    m_hGlobalSubrsUsed = NULL;
+    m_lGlobalSubrsUsed = NULL;
+
+    m_args = new wxPdfCffFontObject[48];
+    m_argCount = 0;
 }
 
-wxPdfCffDecoder::wxPdfCffDecoder(wxPdfCffIndexArray* globalSubrIndex,
-                                 wxPdfSortedArrayInt* hGlobalSubrsUsed,
-                                 wxArrayInt* lGlobalSubrsUsed)
-{
-  m_charstringType = 2;
-  
-  m_globalSubrIndex  = globalSubrIndex;
-  m_hGlobalSubrsUsed = hGlobalSubrsUsed;
-  m_lGlobalSubrsUsed = lGlobalSubrsUsed;
+wxPdfCffDecoder::wxPdfCffDecoder(wxPdfCffIndexArray *globalSubrIndex,
+                                 wxPdfSortedArrayInt *hGlobalSubrsUsed,
+                                 wxArrayInt *lGlobalSubrsUsed) {
+    m_charstringType = 2;
 
-  m_args = new wxPdfCffFontObject[48];
-  m_argCount = 0;
+    m_globalSubrIndex = globalSubrIndex;
+    m_hGlobalSubrsUsed = hGlobalSubrsUsed;
+    m_lGlobalSubrsUsed = lGlobalSubrsUsed;
+
+    m_args = new wxPdfCffFontObject[48];
+    m_argCount = 0;
 }
 
-wxPdfCffDecoder::~wxPdfCffDecoder()
-{
-  delete [] m_args;
+wxPdfCffDecoder::~wxPdfCffDecoder() {
+    delete[] m_args;
 }
 
 // --- Read original CFF stream
 
 unsigned char
-wxPdfCffDecoder::ReadByte(wxInputStream* stream)
-{
-  unsigned char card8;
-  stream->Read(&card8, 1);
-  return card8;
+wxPdfCffDecoder::ReadByte(wxInputStream *stream) {
+    unsigned char card8;
+    stream->Read(&card8, 1);
+    return card8;
 }
 
 short
-wxPdfCffDecoder::ReadShort(wxInputStream* stream)
-{
-  // Read a 2-byte integer from file (big endian)
-  short i16;
-  stream->Read(&i16, 2);
-  return wxINT16_SWAP_ON_LE(i16);
+wxPdfCffDecoder::ReadShort(wxInputStream *stream) {
+    // Read a 2-byte integer from file (big endian)
+    short i16;
+    stream->Read(&i16, 2);
+    return wxINT16_SWAP_ON_LE(i16);
 }
 
 int
-wxPdfCffDecoder::ReadInt(wxInputStream* stream)
-{
-  // Read a 4-byte integer from file (big endian)
-  int i32;
-  stream->Read(&i32, 4);
-  return wxINT32_SWAP_ON_LE(i32);
+wxPdfCffDecoder::ReadInt(wxInputStream *stream) {
+    // Read a 4-byte integer from file (big endian)
+    int i32;
+    stream->Read(&i32, 4);
+    return wxINT32_SWAP_ON_LE(i32);
 }
 
 // -- Subset global and local subroutines
 
 int
-wxPdfCffDecoder::CalcBias(int nSubrs)
-{
-  int bias;
-  // If type == 1 then bias = 0, else calc according to the count
-  if (m_charstringType == 1)
-  {
-    bias = 0;
-  }
-  else if (nSubrs < 1240)
-  {
-    bias = 107;
-  }
-  else if (nSubrs < 33900)
-  {
-    bias = 1131;
-  }
-  else
-  {
-    bias = 32768;
-  }
-  return bias;
+wxPdfCffDecoder::CalcBias(int nSubrs) {
+    int bias;
+    // If type == 1 then bias = 0, else calc according to the count
+    if (m_charstringType == 1) {
+        bias = 0;
+    } else if (nSubrs < 1240) {
+        bias = 107;
+    } else if (nSubrs < 33900) {
+        bias = 1131;
+    } else {
+        bias = 32768;
+    }
+    return bias;
 }
 
 bool
-wxPdfCffDecoder::GetCharWidthAndComposite(wxPdfCffIndexElement& charstring, int& width, bool& isComposite, int& bchar, int& achar)
-{
-  bool ok = false;
-  width = -1;
-  isComposite = false;
-  bchar = -1;
-  achar = -1;
+wxPdfCffDecoder::GetCharWidthAndComposite(wxPdfCffIndexElement &charstring, int &width, bool &isComposite, int &bchar,
+                                          int &achar) {
+    bool ok = false;
+    width = -1;
+    isComposite = false;
+    bchar = -1;
+    achar = -1;
 
-  wxInputStream* stream = charstring.GetBuffer();
-  int begin = charstring.GetOffset();
-  int end   = begin + charstring.GetLength();
+    wxInputStream *stream = charstring.GetBuffer();
+    int begin = charstring.GetOffset();
+    int end = begin + charstring.GetLength();
 
-  // Clear the stack
-  EmptyStack();
-  m_numHints = 0;
-
-  stream->SeekI(begin);
-  ReadCommand(stream);
-  wxPdfCffFontObject* element = NULL;
-  int numArgs = m_argCount;
-  HandleStack();
-  if (m_key == wxT("hsbw"))
-  {
-    if (numArgs == 2)
-    {
-      ok = true;
-      element = &m_args[1]; // 2nd argument is width
-      width = element->m_intValue;
-    }
-  }
-  else if (m_key == wxT("sbw"))
-  {
-    if (numArgs == 4)
-    {
-      ok = true;
-      element = &m_args[2]; // 3rd argument is width
-      width = element->m_intValue;
-    }
-  }
-  if (ok && (stream->TellI() < end))
-  {
-    ReadCommand(stream);
-    numArgs = m_argCount;
-    // Check the modification needed on the Argument Stack according to key;
-    HandleStack();
-    if (m_key == wxT("seac"))
-    {
-      if (numArgs == 5)
-      {
-        isComposite = true;
-        // third argument
-        element = &m_args[3];
-        bchar = element->m_intValue;
-        element = &m_args[4];
-        achar = element->m_intValue;
-      }
-    }
-  }
-  return ok;
-}
-
-void
-wxPdfCffDecoder::ReadASubr(wxInputStream* stream, int begin, int end,
-                           int globalBias, int localBias, 
-                           wxPdfSortedArrayInt& hSubrsUsed, wxArrayInt& lSubrsUsed,
-                           wxPdfCffIndexArray& localSubrIndex)
-{
-  int beginSubr, endSubr;
-#if 0
-  wxLogDebug(wxT("ReadAsubr %d %d %d %d"), begin, end, globalBias, localBias);
-#endif
-  // Clear the stack for the subrs
-  EmptyStack();
-  m_numHints = 0;
-  // Goto begining of the subr
-  stream->SeekI(begin);
-  while (stream->TellI() < end)
-  {
-    // Read the next command
-    ReadCommand(stream);
-    int pos = stream->TellI();
-    wxPdfCffFontObject* topElement = NULL;
-    if (m_argCount > 0)
-    {
-      topElement = &m_args[m_argCount-1];
-    }
-    int numArgs = m_argCount;
-    // Check the modification needed on the Argument Stack according to key;
-    HandleStack();
-    // a call to a Lsubr
-    if (m_key == wxT("callsubr")) 
-    {
-      // Verify that arguments are passed 
-      if (numArgs > 0)
-      {
-        // Calc the index of the Subrs
-        int subr = topElement->m_intValue + localBias;
-        // If the subr isn't in the HashMap -> Put in
-        if (hSubrsUsed.Index(subr) == wxNOT_FOUND)
-        {
-#if 0
-          wxLogDebug(wxT("Add hSubr: %s %d"), m_key.c_str(), subr);
-#endif
-          hSubrsUsed.Add(subr);
-          lSubrsUsed.Add(subr);
-        }
-        wxPdfCffIndexElement& localSubr = localSubrIndex[subr];
-        beginSubr = localSubr.GetOffset();
-        endSubr = beginSubr + localSubr.GetLength();
-        CalcHints(localSubr.GetBuffer(), beginSubr, endSubr, globalBias, localBias, localSubrIndex);
-        stream->SeekI(pos);
-      }            
-    }
-    // a call to a Gsubr
-    else if (m_key == wxT("callgsubr"))
-    {
-      // Verify that arguments are passed 
-      if (numArgs > 0)
-      {
-        // Calc the index of the Subrs
-        int subr = topElement->m_intValue + globalBias;
-        // If the subr isn't in the HashMap -> Put in
-        if (m_hGlobalSubrsUsed->Index(subr) == wxNOT_FOUND)
-        {
-#if 0
-          wxLogDebug(wxT("Add hGSubr: %s %d"), m_key.c_str(), subr);
-#endif
-          m_hGlobalSubrsUsed->Add(subr);
-          m_lGlobalSubrsUsed->Add(subr);
-        }
-        wxPdfCffIndexElement& globalSubr = (*m_globalSubrIndex)[subr];
-        beginSubr = globalSubr.GetOffset();
-        endSubr = beginSubr + globalSubr.GetLength();
-        CalcHints(globalSubr.GetBuffer(), beginSubr, endSubr, globalBias, localBias, localSubrIndex);
-        stream->SeekI(pos);
-      }
-    }
-    // A call to "stem"
-    else if (m_key == wxT("hstem") || m_key == wxT("vstem") || m_key == wxT("hstemhm") || m_key == wxT("vstemhm"))
-    {
-      // Increment the NumOfHints by the number couples of of arguments
-      m_numHints += numArgs / 2;
-    }
-          // A call to "mask"
-    else if (m_key == wxT("hintmask") || m_key == wxT("cntrmask"))
-    {
-      // Compute the size of the mask
-      int sizeOfMask = m_numHints / 8;
-      if (m_numHints % 8 != 0 || sizeOfMask == 0)
-      {
-        sizeOfMask++;
-      }
-      // Continue the pointer in SizeOfMask steps
-      int i;
-      for (i = 0; i < sizeOfMask; i++)
-      {
-        ReadByte(stream);
-      }
-    }
-  }
-#if 0
-  wxLogDebug(wxT("ReadASubr end"));
-#endif
-}
-
-void
-wxPdfCffDecoder::HandleStack()
-{
-  // Findout what the operator does to the stack
-  int stackHandle = StackOpp();
-  if (stackHandle < 2)
-  {
-    // The operators that enlarge the stack by one
-    if (stackHandle == 1)
-    {
-      PushStack();
-    }
-    // The operators that pop the stack
-    else
-    {
-      // Abs value for the for loop
-      stackHandle *= -1;
-      int i;
-      for (i = 0; i < stackHandle; i++)
-      {
-        PopStack();
-      }
-    }
-  }
-  // All other flush the stack
-  else
-  {
+    // Clear the stack
     EmptyStack();
-  }
-}
-  
-int
-wxPdfCffDecoder::StackOpp()
-{
-  int op;
-  if (m_key == wxT("ifelse"))
-  {
-    op = -3;
-  }
-  else if (m_key == wxT("roll") || m_key == wxT("put"))
-  {
-    op = -2;
-  }
-  else if (m_key == wxT("callsubr") || m_key == wxT("callgsubr") || m_key == wxT("add")  ||
-           m_key == wxT("sub")      || m_key == wxT("div")       || m_key == wxT("mul")  ||
-           m_key == wxT("drop")     || m_key == wxT("and")       || m_key == wxT("or")   ||
-           m_key == wxT("eq"))
-  {
-    op = -1;
-  }
-  else if (m_key == wxT("abs")  || m_key == wxT("neg")   || m_key == wxT("sqrt") ||
-           m_key == wxT("exch") || m_key == wxT("index") || m_key == wxT("get")  ||
-           m_key == wxT("not")  || m_key == wxT("return"))
-  {
-    op = 0;
-  }
-  else if (m_key == wxT("random") || m_key == wxT("dup"))
-  {
-    op = 1;
-  }
-  else
-  {
-    op = 2;
-  }
-  return op;
-}
-  
-void
-wxPdfCffDecoder::EmptyStack()
-{
-  m_argCount = 0;    
-}
-  
-void
-wxPdfCffDecoder::PopStack()
-{
-  if (m_argCount > 0)
-  {
-    m_argCount--;
-  }
-}
-  
-void
-wxPdfCffDecoder::PushStack()
-{
-  m_argCount++;
-}
-  
-void
-wxPdfCffDecoder::ReadCommand(wxInputStream* stream)
-{
-  m_key = wxEmptyString;
-  bool gotKey = false;
-  // Until a key is found
-  while (!gotKey)
-  {
-    // Read the first Char
-    unsigned char b0 = ReadByte(stream);
-    // decode according to the type1/type2 format
-    if (b0 == 28) // the two next bytes represent a short int;
-    {
-      int first = ReadByte(stream) & 0xff;
-      int second = ReadByte(stream) & 0xff;
-      m_args[m_argCount].m_type = 0;
-      m_args[m_argCount].m_intValue = first << 8 | second;
-      m_argCount++;
-      continue;
-    }
-    if (b0 >= 32 && b0 <= 246) // The byte read is the byte;
-    {
-      m_args[m_argCount].m_type = 0;
-      m_args[m_argCount].m_intValue = (int) (b0 - 139);
-      m_argCount++;
-      continue;
-    }
-    if (b0 >= 247 && b0 <= 250) // The byte read and the next byte constetute a short int
-    {
-      unsigned char b1 = ReadByte(stream);
-      short item = (short) ((b0-247)*256 + b1 + 108);
-      m_args[m_argCount].m_type = 0;
-      m_args[m_argCount].m_intValue = item;
-      m_argCount++;
-      continue;
-    }
-    if (b0 >= 251 && b0 <= 254)// Same as above except negative
-    {
-      unsigned char b1 = ReadByte(stream);
-      short item = (short) (-(b0-251)*256-b1-108);
-      m_args[m_argCount].m_type = 0;
-      m_args[m_argCount].m_intValue = item;
-      m_argCount++;
-      continue;
-    }
-    if (b0 == 255)// The next for bytes represent a double.
-    {
-      int item = ReadInt(stream);
-      m_args[m_argCount].m_type = 0;
-      m_args[m_argCount].m_intValue = item;
-      m_argCount++;
-      continue;
-    }
-    if (b0 <= 31 && b0 != 28) // An operator was found.. Set Key.
-    {
-      gotKey = true;
-      // 12 is an escape command therefor the next byte is a part
-      // of this command
-      if (b0 == 12)
-      {
-        unsigned char b1 = ReadByte(stream);
-        if (b1 > gs_subrsEscapeFuncsCount-1)
-        {
-          b1 = gs_subrsEscapeFuncsCount-1;
-        }
-        m_key = gs_subrsEscapeFuncs[b1];
-      }
-      else
-      {
-        m_key = gs_subrsFunctions[b0];
-      }
-      continue;
-    }
-  }
-}
-  
-int
-wxPdfCffDecoder::CalcHints(wxInputStream* stream, int begin, int end, int globalBias, int localBias, wxPdfCffIndexArray& localSubrIndex)
-{
-  int beginSubr, endSubr;
-  // Goto begining of the subr
-  stream->SeekI(begin);
-  while (stream->TellI() < end)
-  {
-    // Read the next command
+    m_numHints = 0;
+
+    stream->SeekI(begin);
     ReadCommand(stream);
-    int pos = stream->TellI();
-    wxPdfCffFontObject* topElement = NULL;
-    if (m_argCount > 0)
-    {
-      topElement = &m_args[m_argCount-1];
-    }
+    wxPdfCffFontObject *element = NULL;
     int numArgs = m_argCount;
-    //Check the modification needed on the Argument Stack according to key;
     HandleStack();
-    // a call to a Lsubr
-    if (m_key == wxT("callsubr")) 
-    {
-      if (numArgs > 0)
-      {
-        int subr = topElement->m_intValue + localBias;
-        wxPdfCffIndexElement& localSubr = localSubrIndex[subr];
-        beginSubr = localSubr.GetOffset();
-        endSubr = beginSubr + localSubr.GetLength();
-        CalcHints(localSubr.GetBuffer(), beginSubr, endSubr, globalBias, localBias, localSubrIndex);
-        stream->SeekI(pos);
-      }
+    if (m_key == wxT("hsbw")) {
+        if (numArgs == 2) {
+            ok = true;
+            element = &m_args[1]; // 2nd argument is width
+            width = element->m_intValue;
+        }
+    } else if (m_key == wxT("sbw")) {
+        if (numArgs == 4) {
+            ok = true;
+            element = &m_args[2]; // 3rd argument is width
+            width = element->m_intValue;
+        }
     }
-    // a call to a Gsubr
-    else if (m_key == wxT("callgsubr"))
-    {
-      if (numArgs > 0)
-      {
-        int subr = topElement->m_intValue + globalBias;
-        wxPdfCffIndexElement& globalSubr = (*m_globalSubrIndex)[subr];
-        beginSubr = globalSubr.GetOffset();
-        endSubr = beginSubr + globalSubr.GetLength();
-        CalcHints(globalSubr.GetBuffer(), beginSubr, endSubr, globalBias, localBias, localSubrIndex);
-        stream->SeekI(pos);
-      }
+    if (ok && (stream->TellI() < end)) {
+        ReadCommand(stream);
+        numArgs = m_argCount;
+        // Check the modification needed on the Argument Stack according to key;
+        HandleStack();
+        if (m_key == wxT("seac")) {
+            if (numArgs == 5) {
+                isComposite = true;
+                // third argument
+                element = &m_args[3];
+                bchar = element->m_intValue;
+                element = &m_args[4];
+                achar = element->m_intValue;
+            }
+        }
     }
-    // A call to "stem"
-    else if (m_key == wxT("hstem") || m_key == wxT("vstem") || m_key == wxT("hstemhm") || m_key == wxT("vstemhm"))
-    {
-      // Increment the NumOfHints by the number couples of of arguments
-      m_numHints += numArgs / 2;
+    return ok;
+}
+
+void
+wxPdfCffDecoder::ReadASubr(wxInputStream *stream, int begin, int end,
+                           int globalBias, int localBias,
+                           wxPdfSortedArrayInt &hSubrsUsed, wxArrayInt &lSubrsUsed,
+                           wxPdfCffIndexArray &localSubrIndex) {
+    int beginSubr, endSubr;
+#if 0
+    wxLogDebug(wxT("ReadAsubr %d %d %d %d"), begin, end, globalBias, localBias);
+#endif
+    // Clear the stack for the subrs
+    EmptyStack();
+    m_numHints = 0;
+    // Goto begining of the subr
+    stream->SeekI(begin);
+    while (stream->TellI() < end) {
+        // Read the next command
+        ReadCommand(stream);
+        int pos = stream->TellI();
+        wxPdfCffFontObject *topElement = NULL;
+        if (m_argCount > 0) {
+            topElement = &m_args[m_argCount - 1];
+        }
+        int numArgs = m_argCount;
+        // Check the modification needed on the Argument Stack according to key;
+        HandleStack();
+        // a call to a Lsubr
+        if (m_key == wxT("callsubr")) {
+            // Verify that arguments are passed
+            if (numArgs > 0) {
+                // Calc the index of the Subrs
+                int subr = topElement->m_intValue + localBias;
+                // If the subr isn't in the HashMap -> Put in
+                if (hSubrsUsed.Index(subr) == wxNOT_FOUND) {
+#if 0
+                    wxLogDebug(wxT("Add hSubr: %s %d"), m_key.c_str(), subr);
+#endif
+                    hSubrsUsed.Add(subr);
+                    lSubrsUsed.Add(subr);
+                }
+                wxPdfCffIndexElement &localSubr = localSubrIndex[subr];
+                beginSubr = localSubr.GetOffset();
+                endSubr = beginSubr + localSubr.GetLength();
+                CalcHints(localSubr.GetBuffer(), beginSubr, endSubr, globalBias, localBias, localSubrIndex);
+                stream->SeekI(pos);
+            }
+        }
+            // a call to a Gsubr
+        else if (m_key == wxT("callgsubr")) {
+            // Verify that arguments are passed
+            if (numArgs > 0) {
+                // Calc the index of the Subrs
+                int subr = topElement->m_intValue + globalBias;
+                // If the subr isn't in the HashMap -> Put in
+                if (m_hGlobalSubrsUsed->Index(subr) == wxNOT_FOUND) {
+#if 0
+                    wxLogDebug(wxT("Add hGSubr: %s %d"), m_key.c_str(), subr);
+#endif
+                    m_hGlobalSubrsUsed->Add(subr);
+                    m_lGlobalSubrsUsed->Add(subr);
+                }
+                wxPdfCffIndexElement &globalSubr = (*m_globalSubrIndex)[subr];
+                beginSubr = globalSubr.GetOffset();
+                endSubr = beginSubr + globalSubr.GetLength();
+                CalcHints(globalSubr.GetBuffer(), beginSubr, endSubr, globalBias, localBias, localSubrIndex);
+                stream->SeekI(pos);
+            }
+        }
+            // A call to "stem"
+        else if (m_key == wxT("hstem") || m_key == wxT("vstem") || m_key == wxT("hstemhm") || m_key == wxT("vstemhm")) {
+            // Increment the NumOfHints by the number couples of of arguments
+            m_numHints += numArgs / 2;
+        }
+            // A call to "mask"
+        else if (m_key == wxT("hintmask") || m_key == wxT("cntrmask")) {
+            // Compute the size of the mask
+            int sizeOfMask = m_numHints / 8;
+            if (m_numHints % 8 != 0 || sizeOfMask == 0) {
+                sizeOfMask++;
+            }
+            // Continue the pointer in SizeOfMask steps
+            int i;
+            for (i = 0; i < sizeOfMask; i++) {
+                ReadByte(stream);
+            }
+        }
     }
-    // A call to "mask"
-    else if (m_key == wxT("hintmask") || m_key == wxT("cntrmask"))
-    {
-      // Compute the size of the mask
-      int sizeOfMask = m_numHints / 8;
-      if (m_numHints % 8 != 0 || sizeOfMask == 0)
-      {
-        sizeOfMask++;
-      }
-      // Continue the pointer in SizeOfMask steps
-      int i;
-      for (i = 0; i < sizeOfMask; i++)
-      {
-        ReadByte(stream);
-      }
+#if 0
+    wxLogDebug(wxT("ReadASubr end"));
+#endif
+}
+
+void
+wxPdfCffDecoder::HandleStack() {
+    // Findout what the operator does to the stack
+    int stackHandle = StackOpp();
+    if (stackHandle < 2) {
+        // The operators that enlarge the stack by one
+        if (stackHandle == 1) {
+            PushStack();
+        }
+            // The operators that pop the stack
+        else {
+            // Abs value for the for loop
+            stackHandle *= -1;
+            int i;
+            for (i = 0; i < stackHandle; i++) {
+                PopStack();
+            }
+        }
     }
-  }
-  return m_numHints;
+        // All other flush the stack
+    else {
+        EmptyStack();
+    }
+}
+
+int
+wxPdfCffDecoder::StackOpp() {
+    int op;
+    if (m_key == wxT("ifelse")) {
+        op = -3;
+    } else if (m_key == wxT("roll") || m_key == wxT("put")) {
+        op = -2;
+    } else if (m_key == wxT("callsubr") || m_key == wxT("callgsubr") || m_key == wxT("add") ||
+               m_key == wxT("sub") || m_key == wxT("div") || m_key == wxT("mul") ||
+               m_key == wxT("drop") || m_key == wxT("and") || m_key == wxT("or") ||
+               m_key == wxT("eq")) {
+        op = -1;
+    } else if (m_key == wxT("abs") || m_key == wxT("neg") || m_key == wxT("sqrt") ||
+               m_key == wxT("exch") || m_key == wxT("index") || m_key == wxT("get") ||
+               m_key == wxT("not") || m_key == wxT("return")) {
+        op = 0;
+    } else if (m_key == wxT("random") || m_key == wxT("dup")) {
+        op = 1;
+    } else {
+        op = 2;
+    }
+    return op;
+}
+
+void
+wxPdfCffDecoder::EmptyStack() {
+    m_argCount = 0;
+}
+
+void
+wxPdfCffDecoder::PopStack() {
+    if (m_argCount > 0) {
+        m_argCount--;
+    }
+}
+
+void
+wxPdfCffDecoder::PushStack() {
+    m_argCount++;
+}
+
+void
+wxPdfCffDecoder::ReadCommand(wxInputStream *stream) {
+    m_key = wxEmptyString;
+    bool gotKey = false;
+    // Until a key is found
+    while (!gotKey) {
+        // Read the first Char
+        unsigned char b0 = ReadByte(stream);
+        // decode according to the type1/type2 format
+        if (b0 == 28) // the two next bytes represent a short int;
+        {
+            int first = ReadByte(stream) & 0xff;
+            int second = ReadByte(stream) & 0xff;
+            m_args[m_argCount].m_type = 0;
+            m_args[m_argCount].m_intValue = first << 8 | second;
+            m_argCount++;
+            continue;
+        }
+        if (b0 >= 32 && b0 <= 246) // The byte read is the byte;
+        {
+            m_args[m_argCount].m_type = 0;
+            m_args[m_argCount].m_intValue = (int) (b0 - 139);
+            m_argCount++;
+            continue;
+        }
+        if (b0 >= 247 && b0 <= 250) // The byte read and the next byte constetute a short int
+        {
+            unsigned char b1 = ReadByte(stream);
+            short item = (short) ((b0 - 247) * 256 + b1 + 108);
+            m_args[m_argCount].m_type = 0;
+            m_args[m_argCount].m_intValue = item;
+            m_argCount++;
+            continue;
+        }
+        if (b0 >= 251 && b0 <= 254)// Same as above except negative
+        {
+            unsigned char b1 = ReadByte(stream);
+            short item = (short) (-(b0 - 251) * 256 - b1 - 108);
+            m_args[m_argCount].m_type = 0;
+            m_args[m_argCount].m_intValue = item;
+            m_argCount++;
+            continue;
+        }
+        if (b0 == 255)// The next for bytes represent a double.
+        {
+            int item = ReadInt(stream);
+            m_args[m_argCount].m_type = 0;
+            m_args[m_argCount].m_intValue = item;
+            m_argCount++;
+            continue;
+        }
+        if (b0 <= 31 && b0 != 28) // An operator was found.. Set Key.
+        {
+            gotKey = true;
+            // 12 is an escape command therefor the next byte is a part
+            // of this command
+            if (b0 == 12) {
+                unsigned char b1 = ReadByte(stream);
+                if (b1 > gs_subrsEscapeFuncsCount - 1) {
+                    b1 = gs_subrsEscapeFuncsCount - 1;
+                }
+                m_key = gs_subrsEscapeFuncs[b1];
+            } else {
+                m_key = gs_subrsFunctions[b0];
+            }
+            continue;
+        }
+    }
+}
+
+int
+wxPdfCffDecoder::CalcHints(wxInputStream *stream, int begin, int end, int globalBias, int localBias,
+                           wxPdfCffIndexArray &localSubrIndex) {
+    int beginSubr, endSubr;
+    // Goto begining of the subr
+    stream->SeekI(begin);
+    while (stream->TellI() < end) {
+        // Read the next command
+        ReadCommand(stream);
+        int pos = stream->TellI();
+        wxPdfCffFontObject *topElement = NULL;
+        if (m_argCount > 0) {
+            topElement = &m_args[m_argCount - 1];
+        }
+        int numArgs = m_argCount;
+        //Check the modification needed on the Argument Stack according to key;
+        HandleStack();
+        // a call to a Lsubr
+        if (m_key == wxT("callsubr")) {
+            if (numArgs > 0) {
+                int subr = topElement->m_intValue + localBias;
+                wxPdfCffIndexElement &localSubr = localSubrIndex[subr];
+                beginSubr = localSubr.GetOffset();
+                endSubr = beginSubr + localSubr.GetLength();
+                CalcHints(localSubr.GetBuffer(), beginSubr, endSubr, globalBias, localBias, localSubrIndex);
+                stream->SeekI(pos);
+            }
+        }
+            // a call to a Gsubr
+        else if (m_key == wxT("callgsubr")) {
+            if (numArgs > 0) {
+                int subr = topElement->m_intValue + globalBias;
+                wxPdfCffIndexElement &globalSubr = (*m_globalSubrIndex)[subr];
+                beginSubr = globalSubr.GetOffset();
+                endSubr = beginSubr + globalSubr.GetLength();
+                CalcHints(globalSubr.GetBuffer(), beginSubr, endSubr, globalBias, localBias, localSubrIndex);
+                stream->SeekI(pos);
+            }
+        }
+            // A call to "stem"
+        else if (m_key == wxT("hstem") || m_key == wxT("vstem") || m_key == wxT("hstemhm") || m_key == wxT("vstemhm")) {
+            // Increment the NumOfHints by the number couples of of arguments
+            m_numHints += numArgs / 2;
+        }
+            // A call to "mask"
+        else if (m_key == wxT("hintmask") || m_key == wxT("cntrmask")) {
+            // Compute the size of the mask
+            int sizeOfMask = m_numHints / 8;
+            if (m_numHints % 8 != 0 || sizeOfMask == 0) {
+                sizeOfMask++;
+            }
+            // Continue the pointer in SizeOfMask steps
+            int i;
+            for (i = 0; i < sizeOfMask; i++) {
+                ReadByte(stream);
+            }
+        }
+    }
+    return m_numHints;
 }

@@ -37,7 +37,7 @@
      exit qh_fprintf_rbox via qh_errexit_rbox()
 */
 
-void qh_fprintf_rbox(FILE *fp, int msgcode, const char *fmt, ... ) {
+void qh_fprintf_rbox(FILE *fp, int msgcode, const char *fmt, ...) {
     va_list args;
 
     if (!fp) {
@@ -45,7 +45,7 @@ void qh_fprintf_rbox(FILE *fp, int msgcode, const char *fmt, ... ) {
         qh_errexit_rbox(6231);
     }
     if (msgcode >= MSG_ERROR && msgcode < MSG_STDERR)
-      fprintf(fp, "QH%.4d ", msgcode);
+        fprintf(fp, "QH%.4d ", msgcode);
     va_start(args, fmt);
     vfprintf(fp, fmt, args);
     va_end(args);

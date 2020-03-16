@@ -39,7 +39,7 @@
      may be called for errors in qh_initstatistics and qh_meminit
 */
 
-void qh_fprintf(FILE *fp, int msgcode, const char *fmt, ... ) {
+void qh_fprintf(FILE *fp, int msgcode, const char *fmt, ...) {
     va_list args;
 
     if (!fp) {
@@ -53,9 +53,9 @@ void qh_fprintf(FILE *fp, int msgcode, const char *fmt, ... ) {
 #else
     if (qh ANNOTATEoutput) {
 #endif
-      fprintf(fp, "[QH%.4d]", msgcode);
-    }else if (msgcode >= MSG_ERROR && msgcode < MSG_STDERR ) {
-      fprintf(fp, "QH%.4d ", msgcode);
+        fprintf(fp, "[QH%.4d]", msgcode);
+    } else if (msgcode >= MSG_ERROR && msgcode < MSG_STDERR) {
+        fprintf(fp, "QH%.4d ", msgcode);
     }
     vfprintf(fp, fmt, args);
     va_end(args);

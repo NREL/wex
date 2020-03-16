@@ -24,25 +24,24 @@
 #include "wex/pdf/pdffontdata.h"
 
 /// Class representing the Adobe core fonts. (For internal use only)
-class WXDLLIMPEXP_PDFDOC wxPdfVolt
-{
+class WXDLLIMPEXP_PDFDOC wxPdfVolt {
 public :
-  /// Default constructor
-  wxPdfVolt();
+    /// Default constructor
+    wxPdfVolt();
 
-  /// Default destructor
-  virtual ~wxPdfVolt();
+    /// Default destructor
+    virtual ~wxPdfVolt();
 
-  /// Load VOLT data
-  void LoadVoltData(wxXmlNode* volt);
+    /// Load VOLT data
+    void LoadVoltData(wxXmlNode *volt);
 
-  /// Process VOLT rules
-  wxString ProcessRules(const wxString& text);
+    /// Process VOLT rules
+    wxString ProcessRules(const wxString &text);
 
 protected:
 
 private:
-  wxArrayPtrVoid m_rules; ///< Array of VOLT rules
+    wxArrayPtrVoid m_rules; ///< Array of VOLT rules
 };
 
 #endif

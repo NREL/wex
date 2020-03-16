@@ -33,7 +33,9 @@
 #endif
 
 #ifdef TT_CONFIG_OPTION_POSTSCRIPT_NAMES
+
 #include "ttpost.c"
+
 #endif
 
 #ifdef TT_CONFIG_OPTION_BDF

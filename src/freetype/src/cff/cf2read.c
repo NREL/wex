@@ -44,69 +44,64 @@
 #include "cf2error.h"
 
 
-  /* Define CF2_IO_FAIL as 1 to enable random errors and random */
-  /* value errors in I/O.                                       */
+/* Define CF2_IO_FAIL as 1 to enable random errors and random */
+/* value errors in I/O.                                       */
 #define CF2_IO_FAIL  0
 
 
 #if CF2_IO_FAIL
 
-  /* set the .00 value to a nonzero probability */
-  static int
-  randomError2( void )
-  {
-    /* for region buffer ReadByte (interp) function */
-    return (double)rand() / RAND_MAX < .00;
-  }
+/* set the .00 value to a nonzero probability */
+static int
+randomError2( void )
+{
+  /* for region buffer ReadByte (interp) function */
+  return (double)rand() / RAND_MAX < .00;
+}
 
-  /* set the .00 value to a nonzero probability */
-  static CF2_Int
-  randomValue()
-  {
-    return (double)rand() / RAND_MAX < .00 ? rand() : 0;
-  }
+/* set the .00 value to a nonzero probability */
+static CF2_Int
+randomValue()
+{
+  return (double)rand() / RAND_MAX < .00 ? rand() : 0;
+}
 
 #endif /* CF2_IO_FAIL */
 
 
-  /* Region Buffer                                      */
-  /*                                                    */
-  /* Can be constructed from a copied buffer managed by */
-  /* `FCM_getDatablock'.                                */
-  /* Reads bytes with check for end of buffer.          */
+/* Region Buffer                                      */
+/*                                                    */
+/* Can be constructed from a copied buffer managed by */
+/* `FCM_getDatablock'.                                */
+/* Reads bytes with check for end of buffer.          */
 
-  /* reading past the end of the buffer sets error and returns zero */
-  FT_LOCAL_DEF( CF2_Int )
-  cf2_buf_readByte( CF2_Buffer  buf )
-  {
-    if ( buf->ptr < buf->end )
-    {
+/* reading past the end of the buffer sets error and returns zero */
+FT_LOCAL_DEF(CF2_Int)
+cf2_buf_readByte(CF2_Buffer buf) {
+    if (buf->ptr < buf->end) {
 #if CF2_IO_FAIL
-      if ( randomError2() )
-      {
-        CF2_SET_ERROR( buf->error, Invalid_Stream_Operation );
-        return 0;
-      }
+        if ( randomError2() )
+        {
+          CF2_SET_ERROR( buf->error, Invalid_Stream_Operation );
+          return 0;
+        }
 
-      return *(buf->ptr)++ + randomValue();
+        return *(buf->ptr)++ + randomValue();
 #else
-      return *(buf->ptr)++;
+        return *(buf->ptr)++;
 #endif
+    } else {
+        CF2_SET_ERROR(buf->error, Invalid_Stream_Operation);
+        return 0;
     }
-    else
-    {
-      CF2_SET_ERROR( buf->error, Invalid_Stream_Operation );
-      return 0;
-    }
-  }
+}
 
 
-  /* note: end condition can occur without error */
-  FT_LOCAL_DEF( FT_Bool )
-  cf2_buf_isEnd( CF2_Buffer  buf )
-  {
-    return (FT_Bool)( buf->ptr >= buf->end );
-  }
+/* note: end condition can occur without error */
+FT_LOCAL_DEF(FT_Bool)
+cf2_buf_isEnd(CF2_Buffer buf) {
+    return (FT_Bool) (buf->ptr >= buf->end);
+}
 
 
 /* END */

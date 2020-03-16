@@ -31,12 +31,12 @@ FT_BEGIN_HEADER
 
 #else /* FT_CONFIG_OPTION_PIC */
 
-  typedef struct  RasterPIC_
-  {
-    int              ref_count;
-    FT_Raster_Funcs  ft_standard_raster;
+typedef struct  RasterPIC_
+{
+  int              ref_count;
+  FT_Raster_Funcs  ft_standard_raster;
 
-  } RasterPIC;
+} RasterPIC;
 
 
 #define GET_PIC( lib )                                    \
@@ -44,16 +44,16 @@ FT_BEGIN_HEADER
 #define FT_STANDARD_RASTER_GET  ( GET_PIC( library )->ft_standard_raster )
 
 
-  /* see rastpic.c for the implementation */
-  void
-  ft_raster1_renderer_class_pic_free( FT_Library  library );
+/* see rastpic.c for the implementation */
+void
+ft_raster1_renderer_class_pic_free( FT_Library  library );
 
-  FT_Error
-  ft_raster1_renderer_class_pic_init( FT_Library  library );
+FT_Error
+ft_raster1_renderer_class_pic_init( FT_Library  library );
 
 #endif /* FT_CONFIG_OPTION_PIC */
 
- /* */
+/* */
 
 FT_END_HEADER
 

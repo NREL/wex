@@ -25,166 +25,166 @@
 
 from sources import *
 from content import *
-from utils   import *
+from utils import *
 
 
 ################################################################
 ##
 ##  FORMATTER CLASS
 ##
-class  Formatter:
+class Formatter:
 
-    def  __init__( self, processor ):
-        self.processor   = processor
+    def __init__(self, processor):
+        self.processor = processor
         self.identifiers = {}
-        self.chapters    = processor.chapters
-        self.sections    = processor.sections.values()
+        self.chapters = processor.chapters
+        self.sections = processor.sections.values()
         self.block_index = []
 
         # store all blocks in a dictionary
         self.blocks = []
         for section in self.sections:
             for block in section.blocks.values():
-                self.add_identifier( block.name, block )
+                self.add_identifier(block.name, block)
 
                 # add enumeration values to the index, since this is useful
                 for markup in block.markups:
                     if markup.tag == 'values':
                         for field in markup.fields:
-                            self.add_identifier( field.name, block )
+                            self.add_identifier(field.name, block)
 
         self.block_index = self.identifiers.keys()
-        self.block_index.sort( key = index_key )
+        self.block_index.sort(key=index_key)
 
         # also add section names to dictionary (without making them appear
         # in the index)
         for section in self.sections:
-            self.add_identifier( section.name, section )
+            self.add_identifier(section.name, section)
 
-    def  add_identifier( self, name, block ):
+    def add_identifier(self, name, block):
         if name in self.identifiers:
             # duplicate name!
-            sys.stderr.write( "WARNING: duplicate definition for"
-                              + " '" + name + "' "
-                              + "in " + block.location() + ", "
-                              + "previous definition in "
-                              + self.identifiers[name].location()
-                              + "\n" )
+            sys.stderr.write("WARNING: duplicate definition for"
+                             + " '" + name + "' "
+                             + "in " + block.location() + ", "
+                             + "previous definition in "
+                             + self.identifiers[name].location()
+                             + "\n")
         else:
             self.identifiers[name] = block
 
     #
     # formatting the table of contents
     #
-    def  toc_enter( self ):
+    def toc_enter(self):
         pass
 
-    def  toc_chapter_enter( self, chapter ):
+    def toc_chapter_enter(self, chapter):
         pass
 
-    def  toc_section_enter( self, section ):
+    def toc_section_enter(self, section):
         pass
 
-    def  toc_section_exit( self, section ):
+    def toc_section_exit(self, section):
         pass
 
-    def  toc_chapter_exit( self, chapter ):
+    def toc_chapter_exit(self, chapter):
         pass
 
-    def  toc_index( self, index_filename ):
+    def toc_index(self, index_filename):
         pass
 
-    def  toc_exit( self ):
+    def toc_exit(self):
         pass
 
-    def  toc_dump( self, toc_filename = None, index_filename = None ):
+    def toc_dump(self, toc_filename=None, index_filename=None):
         output = None
         if toc_filename:
-            output = open_output( toc_filename )
+            output = open_output(toc_filename)
 
         self.toc_enter()
 
         for chap in self.processor.chapters:
 
-            self.toc_chapter_enter( chap )
+            self.toc_chapter_enter(chap)
 
             for section in chap.sections:
-                self.toc_section_enter( section )
-                self.toc_section_exit( section )
+                self.toc_section_enter(section)
+                self.toc_section_exit(section)
 
-            self.toc_chapter_exit( chap )
+            self.toc_chapter_exit(chap)
 
-        self.toc_index( index_filename )
+        self.toc_index(index_filename)
 
         self.toc_exit()
 
         if output:
-            close_output( output )
+            close_output(output)
 
     #
     # formatting the index
     #
-    def  index_enter( self ):
+    def index_enter(self):
         pass
 
-    def  index_name_enter( self, name ):
+    def index_name_enter(self, name):
         pass
 
-    def  index_name_exit( self, name ):
+    def index_name_exit(self, name):
         pass
 
-    def  index_exit( self ):
+    def index_exit(self):
         pass
 
-    def  index_dump( self, index_filename = None ):
+    def index_dump(self, index_filename=None):
         output = None
         if index_filename:
-            output = open_output( index_filename )
+            output = open_output(index_filename)
 
         self.index_enter()
 
         for name in self.block_index:
-            self.index_name_enter( name )
-            self.index_name_exit( name )
+            self.index_name_enter(name)
+            self.index_name_exit(name)
 
         self.index_exit()
 
         if output:
-            close_output( output )
+            close_output(output)
 
     #
     # formatting a section
     #
-    def  section_enter( self, section ):
+    def section_enter(self, section):
         pass
 
-    def  block_enter( self, block ):
+    def block_enter(self, block):
         pass
 
-    def  markup_enter( self, markup, block = None ):
+    def markup_enter(self, markup, block=None):
         pass
 
-    def  field_enter( self, field, markup = None, block = None ):
+    def field_enter(self, field, markup=None, block=None):
         pass
 
-    def  field_exit( self, field, markup = None, block = None ):
+    def field_exit(self, field, markup=None, block=None):
         pass
 
-    def  markup_exit( self, markup, block = None ):
+    def markup_exit(self, markup, block=None):
         pass
 
-    def  block_exit( self, block ):
+    def block_exit(self, block):
         pass
 
-    def  section_exit( self, section ):
+    def section_exit(self, section):
         pass
 
-    def  section_dump( self, section, section_filename = None ):
+    def section_dump(self, section, section_filename=None):
         output = None
         if section_filename:
-            output = open_output( section_filename )
+            output = open_output(section_filename)
 
-        self.section_enter( section )
+        self.section_enter(section)
 
         for name in section.block_names:
             skip_entry = 0
@@ -198,31 +198,31 @@ class  Formatter:
                             if field.name == name:
                                 skip_entry = 1
             except:
-                skip_entry = 1   # this happens e.g. for `/empty/' entries
+                skip_entry = 1  # this happens e.g. for `/empty/' entries
 
             if skip_entry:
-              continue
+                continue
 
-            self.block_enter( block )
+            self.block_enter(block)
 
-            for markup in block.markups[1:]:   # always ignore first markup!
-                self.markup_enter( markup, block )
+            for markup in block.markups[1:]:  # always ignore first markup!
+                self.markup_enter(markup, block)
 
                 for field in markup.fields:
-                    self.field_enter( field, markup, block )
-                    self.field_exit( field, markup, block )
+                    self.field_enter(field, markup, block)
+                    self.field_exit(field, markup, block)
 
-                self.markup_exit( markup, block )
+                self.markup_exit(markup, block)
 
-            self.block_exit( block )
+            self.block_exit(block)
 
-        self.section_exit( section )
+        self.section_exit(section)
 
         if output:
-            close_output( output )
+            close_output(output)
 
-    def  section_dump_all( self ):
+    def section_dump_all(self):
         for section in self.sections:
-            self.section_dump( section )
+            self.section_dump(section)
 
 # eof

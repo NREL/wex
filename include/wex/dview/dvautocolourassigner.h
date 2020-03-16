@@ -28,38 +28,42 @@
 #include <wx/wx.h>
 #include <vector>
 
-class wxDVAutoColourAssigner
-{
+class wxDVAutoColourAssigner {
 public:
-	wxDVAutoColourAssigner();
-	virtual ~wxDVAutoColourAssigner();
+    wxDVAutoColourAssigner();
 
-	wxColour GetColourForIndex(int index);
-	bool IsColourAssigned(int index);
+    virtual ~wxDVAutoColourAssigner();
 
-	virtual wxColour AssignLineColour(int index);
-	virtual void DeAssignLineColour(int index);
+    wxColour GetColourForIndex(int index);
 
-	void ResetColourList();
-	void DeAssignAll();
+    bool IsColourAssigned(int index);
+
+    virtual wxColour AssignLineColour(int index);
+
+    virtual void DeAssignLineColour(int index);
+
+    void ResetColourList();
+
+    void DeAssignAll();
+
 private:
 
-	struct ColourCounter
-	{
-		ColourCounter() { useCount = 0; }
-		ColourCounter(const wxColour &c) : colour(c), useCount(0) { }
-		wxColour colour;
-		int useCount;
-	};
+    struct ColourCounter {
+        ColourCounter() { useCount = 0; }
 
-	struct ColourPair
-	{
-		int index;
-		wxColour colour;
-	};
+        ColourCounter(const wxColour &c) : colour(c), useCount(0) {}
 
-	std::vector<ColourCounter> mAvailableColours;
-	std::vector<ColourPair> mAssignedColours;
+        wxColour colour;
+        int useCount;
+    };
+
+    struct ColourPair {
+        int index;
+        wxColour colour;
+    };
+
+    std::vector<ColourCounter> mAvailableColours;
+    std::vector<ColourPair> mAssignedColours;
 };
 
 #endif

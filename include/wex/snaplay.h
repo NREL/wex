@@ -31,88 +31,118 @@
 
 class wxFrame;
 
-class wxSnapLayout : public wxScrolledWindow
-{
+class wxSnapLayout : public wxScrolledWindow {
 public:
-	wxSnapLayout( wxWindow *parent, int id, const wxPoint &pos = wxDefaultPosition,
-		const wxSize &size = wxDefaultSize );
-	virtual ~wxSnapLayout();
+    wxSnapLayout(wxWindow *parent, int id, const wxPoint &pos = wxDefaultPosition,
+                 const wxSize &size = wxDefaultSize);
 
-	void Add( wxWindow *win, int width = -1, int height = -1 );
-	void Delete( wxWindow * );
-	size_t Count();
-	wxWindow *Get( size_t i );
-	std::vector<wxWindow*> Windows();
-	int Find( wxWindow *w );
-	void DeleteAll();
-	void ScrollTo( wxWindow * );
-	void AutoLayout();
-	void ClearHighlights();
-	void Highlight( wxWindow * );
-	void SetShowSizing( bool b ) { m_showSizing = b; }
-	void SetBackgroundText( const wxString & );
+    virtual ~wxSnapLayout();
+
+    void Add(wxWindow *win, int width = -1, int height = -1);
+
+    void Delete(wxWindow *);
+
+    size_t Count();
+
+    wxWindow *Get(size_t i);
+
+    std::vector<wxWindow *> Windows();
+
+    int Find(wxWindow *w);
+
+    void DeleteAll();
+
+    void ScrollTo(wxWindow *);
+
+    void AutoLayout();
+
+    void ClearHighlights();
+
+    void Highlight(wxWindow *);
+
+    void SetShowSizing(bool b) { m_showSizing = b; }
+
+    void SetBackgroundText(const wxString &);
 
 private:
 
-	struct layout_box {
-		wxWindow *win;
-		wxSize req;
-		wxRect rect;
-		wxRect active;
-		wxRect size_nw, size_se, size_ne, size_sw, move_box[4];
-		bool highlight;
-	};
+    struct layout_box {
+        wxWindow *win;
+        wxSize req;
+        wxRect rect;
+        wxRect active;
+        wxRect size_nw, size_se, size_ne, size_sw, move_box[4];
+        bool highlight;
+    };
 
-	std::vector<layout_box*> m_list;
+    std::vector<layout_box *> m_list;
 
-	struct drop_target {
-		int index;
-		wxRect target;
-	};
-	std::vector<drop_target> m_targets;
+    struct drop_target {
+        int index;
+        wxRect target;
+    };
+    std::vector<drop_target> m_targets;
 
-	void OnLeftDown( wxMouseEvent & );
-	void OnLeftUp( wxMouseEvent & );
-	void OnMotion( wxMouseEvent & );
-	void OnCaptureLost( wxMouseCaptureLostEvent & );
-	void OnSize( wxSizeEvent & );
-	void OnLeaveWindow( wxMouseEvent & );
-	void OnPaint( wxPaintEvent & );
-	void OnErase( wxEraseEvent & );
+    void OnLeftDown(wxMouseEvent &);
 
-	enum { NW, NE, SW, SE };
-	layout_box *CheckActive( const wxPoint &p, int *handle );
+    void OnLeftUp(wxMouseEvent &);
 
-	struct wydata { int y; layout_box *lb; };
-	std::vector<wydata> GetSortedYPositions( size_t imax );
-	void AutoLayout2();
-	bool CanPlace( size_t idx, int width, int height, int xplace, int yplace, int client_width );
-	void Place( size_t i, int cwidth );
+    void OnMotion(wxMouseEvent &);
 
-	int m_handle;
-	layout_box *m_active;
-	drop_target *m_curtarget;
+    void OnCaptureLost(wxMouseCaptureLostEvent &);
 
-	void ShowTransparency( wxRect r );
-	void HideTransparency();
+    void OnSize(wxSizeEvent &);
 
-	class OverlayWindow;
+    void OnLeaveWindow(wxMouseEvent &);
 
-	OverlayWindow *m_transp;
-	wxRect m_sizerect;
-	bool m_showSizing;
+    void OnPaint(wxPaintEvent &);
 
-	int m_sizeHover;
-	int m_moveHover;
+    void OnErase(wxEraseEvent &);
 
-	wxString m_backgroundText;
+    enum {
+        NW, NE, SW, SE
+    };
 
-	int m_space;
-	int m_scrollRate;
+    layout_box *CheckActive(const wxPoint &p, int *handle);
 
-	wxPoint m_orig;
+    struct wydata {
+        int y;
+        layout_box *lb;
+    };
 
-	DECLARE_EVENT_TABLE();
+    std::vector<wydata> GetSortedYPositions(size_t imax);
+
+    void AutoLayout2();
+
+    bool CanPlace(size_t idx, int width, int height, int xplace, int yplace, int client_width);
+
+    void Place(size_t i, int cwidth);
+
+    int m_handle;
+    layout_box *m_active;
+    drop_target *m_curtarget;
+
+    void ShowTransparency(wxRect r);
+
+    void HideTransparency();
+
+    class OverlayWindow;
+
+    OverlayWindow *m_transp;
+    wxRect m_sizerect;
+    bool m_showSizing;
+
+    int m_sizeHover;
+    int m_moveHover;
+
+    wxString m_backgroundText;
+
+    int m_space;
+    int m_scrollRate;
+
+    wxPoint m_orig;
+
+DECLARE_EVENT_TABLE();
 };
 
 #endif

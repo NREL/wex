@@ -8,16 +8,18 @@
 #include "zutil.h"
 
 #ifndef STDC
+
 extern void exit OF((int));
+
 #endif
 
 
 #ifndef HAVE_MEMCPY
 
 void zmemcpy(dest, source, len)
-    Bytef* dest;
-    const Bytef* source;
-    uInt  len;
+        Bytef *dest;
+        const Bytef *source;
+        uInt len;
 {
     if (len == 0) return;
     do {
@@ -26,21 +28,21 @@ void zmemcpy(dest, source, len)
 }
 
 int zmemcmp(s1, s2, len)
-    const Bytef* s1;
-    const Bytef* s2;
-    uInt  len;
+const Bytef *s1;
+      const Bytef *s2;
+      uInt len;
 {
     uInt j;
 
     for (j = 0; j < len; j++) {
-        if (s1[j] != s2[j]) return 2*(s1[j] > s2[j])-1;
+        if (s1[j] != s2[j]) return 2 * (s1[j] > s2[j]) - 1;
     }
     return 0;
 }
 
 void zmemzero(dest, len)
-    Bytef* dest;
-    uInt  len;
+        Bytef *dest;
+        uInt len;
 {
     if (len == 0) return;
     do {
@@ -157,22 +159,28 @@ void  zcfree (voidpf opaque, voidpf ptr)
 #ifndef MY_ZCALLOC /* Any system without a special alloc function */
 
 #ifndef STDC
-extern voidp  ft_scalloc OF((uInt items, uInt size));
-extern void   ft_sfree   OF((voidpf ptr));
+
+extern voidp ft_scalloc OF((uInt
+                                   items, uInt
+                                   size));
+
+extern void ft_sfree OF((voidpf
+                                ptr));
+
 #endif
 
-voidpf zcalloc (opaque, items, size)
-    voidpf opaque;
-    unsigned items;
-    unsigned size;
+voidpf zcalloc(opaque, items, size)
+        voidpf opaque;
+        unsigned items;
+        unsigned size;
 {
     if (opaque) items += size - size; /* make compiler happy */
-    return (voidpf)ft_scalloc(items, size);
+    return (voidpf) ft_scalloc(items, size);
 }
 
-void  zcfree (opaque, ptr)
-    voidpf opaque;
-    voidpf ptr;
+void zcfree(opaque, ptr)
+        voidpf opaque;
+        voidpf ptr;
 {
     ft_sfree(ptr);
     if (opaque) return; /* make compiler happy */

@@ -29,87 +29,106 @@
 #include "wex/plot/plplot.h"
 #include "wex/numeric.h"
 
-class wxPLSectorPlot : public wxPLPlottable
-{
+class wxPLSectorPlot : public wxPLPlottable {
 public:
-	wxPLSectorPlot();
+    wxPLSectorPlot();
 
-	void AddSector(double value, const wxString &label);
-	void AddInnerSector(double value, const wxString &label);
+    void AddSector(double value, const wxString &label);
 
-	void SetColours(const std::vector<wxColour> &cl) {
-		m_colourList = cl;
-	}
+    void AddInnerSector(double value, const wxString &label);
 
-	void SetFormat(wxNumericMode m, int deci, bool thousep,
-		const wxString &pre, const wxString &post) {
-		m_fmtMode = m; m_fmtDeci = deci; m_fmtThouSep = thousep;
-		m_fmtPre = pre; m_fmtPost = post;
-		Invalidate();
-	}
+    void SetColours(const std::vector<wxColour> &cl) {
+        m_colourList = cl;
+    }
 
-	void ShowSegmentValues(bool b) { m_labelValues = b; }
-	void SetCalloutSize(double len) { m_calloutSize = len; }
-	void SetCenterHoleSize(double fraction) { m_holeFraction = fraction; }
-	void SetTextSpace(double sp) { m_textSpace = sp; }
-	void SetBorder(double br) { m_border = br; }
+    void SetFormat(wxNumericMode m, int deci, bool thousep,
+                   const wxString &pre, const wxString &post) {
+        m_fmtMode = m;
+        m_fmtDeci = deci;
+        m_fmtThouSep = thousep;
+        m_fmtPre = pre;
+        m_fmtPost = post;
+        Invalidate();
+    }
 
-	virtual wxRealPoint At(size_t i) const;
-	virtual size_t Len() const;
-	virtual void Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map);
-	virtual void DrawInLegend(wxPLOutputDevice &dc, const wxPLRealRect &rct);
-	virtual wxPLAxis *SuggestXAxis();
-	virtual wxPLAxis *SuggestYAxis();
+    void ShowSegmentValues(bool b) { m_labelValues = b; }
+
+    void SetCalloutSize(double len) { m_calloutSize = len; }
+
+    void SetCenterHoleSize(double fraction) { m_holeFraction = fraction; }
+
+    void SetTextSpace(double sp) { m_textSpace = sp; }
+
+    void SetBorder(double br) { m_border = br; }
+
+    virtual wxRealPoint At(size_t i) const;
+
+    virtual size_t Len() const;
+
+    virtual void Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map);
+
+    virtual void DrawInLegend(wxPLOutputDevice &dc, const wxPLRealRect &rct);
+
+    virtual wxPLAxis *SuggestXAxis();
+
+    virtual wxPLAxis *SuggestYAxis();
 
 protected:
 
-	bool m_labelValues;
-	double m_holeFraction;
-	double m_calloutSize;
-	double m_textSpace;
-	double m_border;
+    bool m_labelValues;
+    double m_holeFraction;
+    double m_calloutSize;
+    double m_textSpace;
+    double m_border;
 
-	wxNumericMode m_fmtMode;
-	int m_fmtDeci;
-	bool m_fmtThouSep;
-	wxString m_fmtPre, m_fmtPost;
+    wxNumericMode m_fmtMode;
+    int m_fmtDeci;
+    bool m_fmtThouSep;
+    wxString m_fmtPre, m_fmtPost;
 
-	struct sector {
-		sector(double v, const wxString &l) : value(v), label(l), layout(0) { }
-		~sector() { if (layout) delete layout; }
-		sector(const sector &s) { layout = 0; copy(s); }
+    struct sector {
+        sector(double v, const wxString &l) : value(v), label(l), layout(0) {}
 
-		void copy(const sector &s) {
-			value = s.value;
-			label = s.label;
-			if (layout) delete layout;
-			layout = 0;
-		}
+        ~sector() { if (layout) delete layout; }
 
-		sector &operator=(const sector &rhs) {
-			copy(rhs);
-			return *this;
-		}
+        sector(const sector &s) {
+            layout = 0;
+            copy(s);
+        }
 
-		double value;
-		wxString label;
+        void copy(const sector &s) {
+            value = s.value;
+            label = s.label;
+            if (layout) delete layout;
+            layout = 0;
+        }
 
-		wxPLTextLayout *layout;
-		double start, angle;
-		wxRealPoint textpos;
-		wxRealPoint textsize;
-		wxRealPoint callout_start, callout_end;
-	};
+        sector &operator=(const sector &rhs) {
+            copy(rhs);
+            return *this;
+        }
 
-	void Invalidate();
-	void Invalidate(std::vector<sector> &list);
+        double value;
+        wxString label;
 
-	void Layout(double radius, wxRealPoint *TL, wxRealPoint *BR);
-	void CalculateAngles(std::vector<sector> &list);
+        wxPLTextLayout *layout;
+        double start, angle;
+        wxRealPoint textpos;
+        wxRealPoint textsize;
+        wxRealPoint callout_start, callout_end;
+    };
 
-	std::vector<sector> m_sectors;
-	std::vector<sector> m_inner;
-	std::vector<wxColour> m_colourList;
+    void Invalidate();
+
+    void Invalidate(std::vector<sector> &list);
+
+    void Layout(double radius, wxRealPoint *TL, wxRealPoint *BR);
+
+    void CalculateAngles(std::vector<sector> &list);
+
+    std::vector<sector> m_sectors;
+    std::vector<sector> m_inner;
+    std::vector<wxColour> m_colourList;
 };
 
 #endif

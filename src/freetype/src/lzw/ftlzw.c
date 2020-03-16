@@ -403,15 +403,18 @@
 #else  /* !FT_CONFIG_OPTION_USE_LZW */
 
 
-  FT_EXPORT_DEF( FT_Error )
-  FT_Stream_OpenLZW( FT_Stream  stream,
-                     FT_Stream  source )
-  {
-    FT_UNUSED( stream );
-    FT_UNUSED( source );
+FT_EXPORT_DEF( FT_Error )
+FT_Stream_OpenLZW( FT_Stream
+stream,
+FT_Stream source
+)
+{
+FT_UNUSED( stream );
+FT_UNUSED( source );
 
-    return FT_THROW( Unimplemented_Feature );
-  }
+return
+FT_THROW( Unimplemented_Feature );
+}
 
 
 #endif /* !FT_CONFIG_OPTION_USE_LZW */
