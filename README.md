@@ -56,8 +56,5 @@ Please see the [Contributing](https://github.com/NREL/wex/blob/develop/CONTRIBUT
 If you would like to submit code to fix an issue or add a feature, you can use GitHub to do so. The overall steps are to create a fork on GitHub.com using the link above, and then install GitHub on your computer and use it to clone your fork, create a branch for your changes, and then once you have made your changes, commit and push the changes to your fork. You can then create a pull request that we will review and merge into the repository if approved.  
 
 # License
-
-WEX is licensed under an MIT [license](LICENSE.md).
-
-
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FNREL%2Fwex.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FNREL%2Fwex?ref=badge_large)
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause) 
+WEX is licensed under a BSD-3-clause [license](LICENSE.md).

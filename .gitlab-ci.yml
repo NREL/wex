@@ -1,114 +1,114 @@
 stages:
-- build
-- deploy
+    - build
+    - deploy
 
 build:windows:
-  stage: build
-  only:
-  - develop
-  - master
-  tags:
-  - windows
-  before_script:
-  - set PATH=%PATH%;C:\GitLab-Runner\builds\f56554cd\0\NREL\wex\build_vs2013\libcurl_ssl_win32\include\
-  script:
-  - git clone https://github.com/NREL/lk.git
-  # may want to pull a specific SHA here
-  - mkdir build
-  - cd build
-  - cmake -G "Visual Studio 12 2013 Win64" -DLK_DIR="../lk/" -DCURL_DIR="../build_vs2013/libcurl_ssl_win32/include/" -DCMAKE_BUILD_TYPE=Release ../
-  - cmake --build . --config Release --target ALL_BUILD
-  artifacts:
-    expire_in: 1 hrs
-    paths:
-    - build/Release/DView.exe
+    stage: build
+    only:
+        - develop
+        - master
+    tags:
+        - windows
+    before_script:
+        - set PATH=%PATH%;C:\GitLab-Runner\builds\f56554cd\0\NREL\wex\build_vs2013\libcurl_ssl_win32\include\
+    script:
+        - git clone https://github.com/NREL/lk.git
+        # may want to pull a specific SHA here
+        - mkdir build
+        - cd build
+        - cmake -G "Visual Studio 12 2013 Win64" -DLK_DIR="../lk/" -DCURL_DIR="../build_vs2013/libcurl_ssl_win32/include/" -DCMAKE_BUILD_TYPE=Release ../
+        - cmake --build . --config Release --target ALL_BUILD
+    artifacts:
+        expire_in: 1 hrs
+        paths:
+            - build/Release/DView.exe
 
 build:mac:
-  stage: build
-  only:
-  - develop
-  - master
-  tags:
-  - mac
-  script:
-  - git clone https://github.com/NREL/lk.git
-  # may want to pull a specific SHA here
-  - mkdir build
-  - cd build
-  - cmake -DLK_DIR="../lk/" -DCMAKE_BUILD_TYPE=Release ../
-  - make
-  artifacts:
-    expire_in: 1 hrs
-    paths:
-    - build/DView.app
+    stage: build
+    only:
+        - develop
+        - master
+    tags:
+        - mac
+    script:
+        - git clone https://github.com/NREL/lk.git
+        # may want to pull a specific SHA here
+        - mkdir build
+        - cd build
+        - cmake -DLK_DIR="../lk/" -DCMAKE_BUILD_TYPE=Release ../
+        - make
+    artifacts:
+        expire_in: 1 hrs
+        paths:
+            - build/DView.app
 
 build:ubuntu:
-  stage: build
-  only:
-  - develop
-  - master
-  tags:
-  - ubuntu
-  script:
-  - git clone https://github.com/NREL/lk.git
-  # may want to pull a specific SHA here
-  - mkdir build
-  - cd build
-  - cmake -DLK_DIR="../lk/" -DCMAKE_BUILD_TYPE=Release ../
-  - make
-  artifacts:
-    expire_in: 1 hrs
-    paths:
-    - build/DView
+    stage: build
+    only:
+        - develop
+        - master
+    tags:
+        - ubuntu
+    script:
+        - git clone https://github.com/NREL/lk.git
+        # may want to pull a specific SHA here
+        - mkdir build
+        - cd build
+        - cmake -DLK_DIR="../lk/" -DCMAKE_BUILD_TYPE=Release ../
+        - make
+    artifacts:
+        expire_in: 1 hrs
+        paths:
+            - build/DView
 
 deploy:windows:
-  stage: deploy
-  only:
-  - develop
-  - master
-  tags:
-  - windows
-  dependencies:
-  - build:windows
-  script:
-  - cd build/Release
-  - mkdir DView-install
-  - mv DView.exe DView-install
-  - 7z a -tzip DView-windows.zip DView-install
-  - dir
-  - aws s3 cp ./ s3://openstudio-builds/_CI/DView --recursive --exclude "*" --include "DView-windows.zip"
+    stage: deploy
+    only:
+        - develop
+        - master
+    tags:
+        - windows
+    dependencies:
+        - build:windows
+    script:
+        - cd build/Release
+        - mkdir DView-install
+        - mv DView.exe DView-install
+        - 7z a -tzip DView-windows.zip DView-install
+        - dir
+        - aws s3 cp ./ s3://openstudio-builds/_CI/DView --recursive --exclude "*" --include "DView-windows.zip"
 
 deploy:mac:
-  stage: deploy
-  only:
-  - develop
-  - master
-  tags:
-  - mac
-  dependencies:
-  - build:mac
-  script:
-  - cd build
-  - mkdir DView-install
-  - mv DView.app DView-install
-  - tar -zcvf DView-osx.tar.gz DView-install
-  - ls
-  - aws s3 cp ./ s3://openstudio-builds/_CI/DView --recursive --exclude "*" --include "DView-osx.tar.gz"
+    stage: deploy
+    only:
+        - develop
+        - master
+    tags:
+        - mac
+    dependencies:
+        - build:mac
+    script:
+        - cd build
+        - mkdir DView-install
+        - mv DView.app DView-install
+        - tar -zcvf DView-osx.tar.gz DView-install
+        - ls
+        - aws s3 cp ./ s3://openstudio-builds/_CI/DView --recursive --exclude "*" --include "DView-osx.tar.gz"
 
 deploy:ubuntu:
-  stage: deploy
-  only:
-  - develop
-  - master
-  tags:
-  - ubuntu
-  dependencies:
-  - build:ubuntu
-  script:
-  - cd build
-  - mkdir DView-install
-  - mv DView DView-install
-  - tar -zcvf DView-linux.tar.gz DView-install
-  - ls
-  - aws s3 cp ./ s3://openstudio-builds/_CI/DView --recursive --exclude "*" --include "DView-linux.tar.gz"  
+    stage: deploy
+    only:
+        - develop
+        - master
+    tags:
+        - ubuntu
+    dependencies:
+        - build:ubuntu
+    script:
+        - cd build
+        - mkdir DView-install
+        - mv DView DView-install
+        - tar -zcvf DView-linux.tar.gz DView-install
+        - ls
+        - aws s3 cp ./ s3://openstudio-builds/_CI/DView --recursive --exclude "*" --include "DView-linux.tar.gz"
 

@@ -275,7 +275,8 @@ enum qh_statistics {     /* alphabetical after Z/W */
     Zvvisit2max,
     Zwidefacet,
     Zwidevertices,
-    ZEND};
+    ZEND
+};
 
 /*-<a                             href="qh-stat.htm#TOC"
   >-------------------------------</a><a name="ZZstat">-</a>
@@ -344,7 +345,9 @@ enum qh_statistics {     /* for zzdef etc. macros */
   notes:
     The type should be the same as the macro for collecting the statistic
 */
-enum ztypes {zdoc,zinc,zadd,zmax,zmin,ZTYPEreal,wadd,wmax,wmin,ZTYPEend};
+enum ztypes {
+    zdoc, zinc, zadd, zmax, zmin, ZTYPEreal, wadd, wmax, wmin, ZTYPEend
+};
 
 /*========== macros and constants =============*/
 
@@ -366,10 +369,10 @@ enum ztypes {zdoc,zinc,zadd,zmax,zmin,ZTYPEreal,wadd,wmax,wmin,ZTYPEend};
     define an averaged statistic
     printed as name/count
 */
-#define zzdef_(stype,name,string,cnt) qhstat id[qhstat next++]=name; \
+#define zzdef_(stype, name, string, cnt) qhstat id[qhstat next++]=name; \
    qhstat doc[name]= string; qhstat count[name]= cnt; qhstat type[name]= stype
 #if qh_KEEPstatistics
-#define zdef_(stype,name,string,cnt) qhstat id[qhstat next++]=name; \
+#define zdef_(stype, name, string, cnt) qhstat id[qhstat next++]=name; \
    qhstat doc[name]= string; qhstat count[name]= cnt; qhstat type[name]= stype
 #else
 #define zdef_(type,name,doc,count)
@@ -501,43 +504,63 @@ __declspec(dllimport) extern qhstatT qh_qhstat;
 extern qhstatT qh_qhstat;
 #endif
 struct qhstatT {
-  intrealT   stats[ZEND];     /* integer and real statistics */
-  unsigned   char id[ZEND+10]; /* id's in print order */
-  const char *doc[ZEND];       /* array of documentation strings */
-  short int  count[ZEND];     /* -1 if none, else index of count to use */
-  char       type[ZEND];      /* type, see ztypes above */
-  char       printed[ZEND];   /* true, if statistic has been printed */
-  intrealT   init[ZTYPEend];  /* initial values by types, set initstatistics */
+    intrealT stats[ZEND];     /* integer and real statistics */
+    unsigned char id[ZEND + 10]; /* id's in print order */
+    const char *doc[ZEND];       /* array of documentation strings */
+    short int count[ZEND];     /* -1 if none, else index of count to use */
+    char type[ZEND];      /* type, see ztypes above */
+    char printed[ZEND];   /* true, if statistic has been printed */
+    intrealT init[ZTYPEend];  /* initial values by types, set initstatistics */
 
-  int        next;            /* next index for zdef_ */
-  int        precision;       /* index for precision problems */
-  int        vridges;         /* index for Voronoi ridges */
-  int        tempi;
-  realT      tempr;
+    int next;            /* next index for zdef_ */
+    int precision;       /* index for precision problems */
+    int vridges;         /* index for Voronoi ridges */
+    int tempi;
+    realT tempr;
 };
 
 /*========== function prototypes ===========*/
 
-void    qh_allstatA(void);
-void    qh_allstatB(void);
-void    qh_allstatC(void);
-void    qh_allstatD(void);
-void    qh_allstatE(void);
-void    qh_allstatE2(void);
-void    qh_allstatF(void);
-void    qh_allstatG(void);
-void    qh_allstatH(void);
-void    qh_allstatI(void);
-void    qh_allstatistics(void);
-void    qh_collectstatistics(void);
-void    qh_freestatistics(void);
-void    qh_initstatistics(void);
-boolT   qh_newstats(int idx, int *nextindex);
-boolT   qh_nostatistic(int i);
-void    qh_printallstatistics(FILE *fp, const char *string);
-void    qh_printstatistics(FILE *fp, const char *string);
-void    qh_printstatlevel(FILE *fp, int id);
-void    qh_printstats(FILE *fp, int idx, int *nextindex);
-realT   qh_stddev(int num, realT tot, realT tot2, realT *ave);
+void qh_allstatA(void);
+
+void qh_allstatB(void);
+
+void qh_allstatC(void);
+
+void qh_allstatD(void);
+
+void qh_allstatE(void);
+
+void qh_allstatE2(void);
+
+void qh_allstatF(void);
+
+void qh_allstatG(void);
+
+void qh_allstatH(void);
+
+void qh_allstatI(void);
+
+void qh_allstatistics(void);
+
+void qh_collectstatistics(void);
+
+void qh_freestatistics(void);
+
+void qh_initstatistics(void);
+
+boolT qh_newstats(int idx, int *nextindex);
+
+boolT qh_nostatistic(int i);
+
+void qh_printallstatistics(FILE *fp, const char *string);
+
+void qh_printstatistics(FILE *fp, const char *string);
+
+void qh_printstatlevel(FILE *fp, int id);
+
+void qh_printstats(FILE *fp, int idx, int *nextindex);
+
+realT qh_stddev(int num, realT tot, realT tot2, realT *ave);
 
 #endif   /* qhDEFstat */

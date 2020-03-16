@@ -28,24 +28,24 @@
 FT_BEGIN_HEADER
 
 
-  FT_LOCAL( FT_Error )
-  tt_face_load_hhea( TT_Face    face,
-                     FT_Stream  stream,
-                     FT_Bool    vertical );
+FT_LOCAL(FT_Error)
+tt_face_load_hhea(TT_Face face,
+                  FT_Stream stream,
+                  FT_Bool vertical);
 
 
-  FT_LOCAL( FT_Error )
-  tt_face_load_hmtx( TT_Face    face,
-                     FT_Stream  stream,
-                     FT_Bool    vertical );
+FT_LOCAL(FT_Error)
+tt_face_load_hmtx(TT_Face face,
+                  FT_Stream stream,
+                  FT_Bool vertical);
 
 
-  FT_LOCAL( void )
-  tt_face_get_metrics( TT_Face     face,
-                       FT_Bool     vertical,
-                       FT_UInt     gindex,
-                       FT_Short*   abearing,
-                       FT_UShort*  aadvance );
+FT_LOCAL(void)
+tt_face_get_metrics(TT_Face face,
+                    FT_Bool vertical,
+                    FT_UInt gindex,
+                    FT_Short *abearing,
+                    FT_UShort *aadvance);
 
 FT_END_HEADER
 

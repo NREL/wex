@@ -31,44 +31,59 @@
 #include <wx/dc.h>
 
 std::vector<int> wxCommaDashListToIndices(const wxString &value);
+
 wxString wxLimitTextColumns(const wxString &str, size_t numcols);
 
 wxString wxConvertToBase26(unsigned int val);
+
 unsigned int wxConvertFromBase26(const wxString &val);
+
 wxArrayString wxEnumerateAlphaIndex(const wxString &_start, const wxString &_end);
 
 wxString wxWebHttpGet(const wxString &url,
-	const wxString &addtlhdr_name = wxEmptyString,
-	const wxString &addtlhdr_value = wxEmptyString);
+                      const wxString &addtlhdr_name = wxEmptyString,
+                      const wxString &addtlhdr_value = wxEmptyString);
 
 bool wxWebHttpDownload(const wxString &url,
-	const wxString &local_file,
-	int timeout = 10 /*seconds*/,
-	const wxString &mime = "application/binary",
-	bool with_progress_dialog = true,
-	void(*callback)(int bytes, int total, void *data) = NULL,
-	void *data = NULL);
+                       const wxString &local_file,
+                       int timeout = 10 /*seconds*/,
+                       const wxString &mime = "application/binary",
+                       bool with_progress_dialog = true,
+                       void(*callback)(int bytes, int total, void *data) = NULL,
+                       void *data = NULL);
 
 bool wxDecompressFile(const wxString &archive, const wxString &target);
+
 bool wxUnzipFile(const wxString &archive, const wxString &target);
+
 bool wxUntarFile(const wxString &archive, const wxString &target);
+
 bool wxGunzipFile(const wxString &archive, const wxString &target);
 
-enum wxArrowType { wxARROW_UP, wxARROW_DOWN, wxARROW_LEFT, wxARROW_RIGHT };
+enum wxArrowType {
+    wxARROW_UP, wxARROW_DOWN, wxARROW_LEFT, wxARROW_RIGHT
+};
 
-int wxDrawWordWrappedText(wxDC& dc, const wxString &str, int width, bool draw = false, int x = 0, int y = 0, wxArrayString *lines = NULL);
+int wxDrawWordWrappedText(wxDC &dc, const wxString &str, int width, bool draw = false, int x = 0, int y = 0,
+                          wxArrayString *lines = NULL);
+
 void wxDrawRaisedPanel(wxDC &dc, int x, int y, int width, int height);
+
 void wxDrawSunkenPanel(wxDC &dc, int x, int y, int width, int height);
+
 void wxDrawEngravedPanel(wxDC &dc, int x, int y, int width, int height, bool fill);
+
 void wxDrawScrollBar(wxDC &dc, bool vertical, int x, int y, int width, int height);
+
 void wxDrawArrowButton(wxDC &dc, wxArrowType type, int x, int y, int width, int height);
+
 void wxDrawArrow(wxDC &dc, wxArrowType type, int x, int y, int width, int height);
 
 int wxShowTextMessageDialog(const wxString &text,
-	const wxString &title = wxEmptyString,
-	wxWindow *parent = 0,
-	const wxSize &size = wxDefaultSize,
-	long buttons = wxOK);
+                            const wxString &title = wxEmptyString,
+                            wxWindow *parent = 0,
+                            const wxSize &size = wxDefaultSize,
+                            long buttons = wxOK);
 
 /* time/date helper functions for working with generic years */
 
@@ -93,23 +108,36 @@ double wxMDHMToTime(int mo, int dy, int hr, int min = 0);
 
 /* format a MDHM time into a pretty string */
 wxString wxFormatMDHM(int mo, int dy, int hr, int min = 0, bool use_12_hr = true);
+
 wxString wxFormatTime(double time, bool use_12_hr = true);
+
 wxString wxFormatTime(size_t istep, size_t steps_per_hour, bool use_12_hr = true);
 
 // return the scaling level for the current display
 double wxGetScreenHDScale();
+
 void wxGetScreenHDScale(double *xs, double *ys);
+
 void wxDevicePPIToScale(const wxSize &ppi, double *xs, double *ys);
+
 double wxGetDrawingDPI();
 
 wxPoint wxScalePoint(const wxPoint &p, double xs, double ys);
+
 wxSize wxScaleSize(const wxSize &s, double xs, double ys);
+
 inline wxSize wxScaleSize(const wxSize &s, double sf) { return wxScaleSize(s, sf, sf); }
+
 inline wxSize wxScaleSize(const wxSize &s) { return wxScaleSize(s, wxGetScreenHDScale()); }
+
 inline wxSize wxScaleSize(int width, int height) { return wxScaleSize(wxSize(width, height)); }
+
 wxRect wxScaleRect(const wxRect &r, double xs, double ys);
+
 inline wxRect wxScaleRect(const wxRect &r, double sf) { return wxScaleRect(r, sf, sf); }
+
 inline wxRect wxScaleRect(const wxRect &r) { return wxScaleRect(r, wxGetScreenHDScale()); }
+
 inline wxRect wxScaleRect(int x, int y, int width, int height) { return wxScaleRect(wxRect(x, y, width, height)); }
 
 // sort (n^2) names and labels together
@@ -144,7 +172,9 @@ wxFrame *wxCreateTransparentOverlay(wxWindow *parent);
 //! Utilities to calculate MD5 checksums from files or strings.
 //! Returns the MD5 checksum for the given file
 wxString wxGetFileMD5(wxInputStream &str);
+
 wxString wxGetFileMD5(const wxString &filename);
+
 //! Returns the MD5 for the given string.
 wxString wxGetMD5(const wxString &str);
 

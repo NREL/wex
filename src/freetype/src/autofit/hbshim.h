@@ -35,18 +35,20 @@
 
 FT_BEGIN_HEADER
 
-  FT_Error
-  af_get_coverage( AF_FaceGlobals  globals,
-                   AF_StyleClass   style_class,
-                   FT_UShort*      gstyles );
+        FT_Error
+af_get_coverage( AF_FaceGlobals
+globals,
+AF_StyleClass style_class,
+        FT_UShort
+*      gstyles );
 
-  FT_Error
-  af_get_char_index( AF_StyleMetrics  metrics,
-                     FT_ULong         charcode,
-                     FT_ULong        *codepoint,
-                     FT_Long         *y_offset );
+FT_Error
+af_get_char_index(AF_StyleMetrics metrics,
+                  FT_ULong charcode,
+                  FT_ULong *codepoint,
+                  FT_Long *y_offset);
 
- /* */
+/* */
 
 FT_END_HEADER
 

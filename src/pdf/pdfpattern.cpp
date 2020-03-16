@@ -18,7 +18,9 @@
 #endif
 
 #ifndef WX_PRECOMP
+
 #include <wx/wx.h>
+
 #endif
 
 //#include "wex/pdf/pdfcolour.h"
@@ -26,15 +28,13 @@
 //#include "wex/pdf/pdfutility.h"
 
 wxPdfPattern::wxPdfPattern(int index, double width, double height)
-  : m_objIndex(0), m_index(index), m_width(width), m_height(height)
-{
+        : m_objIndex(0), m_index(index), m_width(width), m_height(height) {
 }
 
-wxPdfPattern::wxPdfPattern(const wxPdfPattern& pattern)
-{
-  m_objIndex = pattern.m_objIndex;
-  m_index    = pattern.m_index; 
-  m_width    = pattern.m_width;
-  m_height   = pattern.m_height;
-  m_image    = pattern.m_image;
+wxPdfPattern::wxPdfPattern(const wxPdfPattern &pattern) {
+    m_objIndex = pattern.m_objIndex;
+    m_index = pattern.m_index;
+    m_width = pattern.m_width;
+    m_height = pattern.m_height;
+    m_image = pattern.m_image;
 }

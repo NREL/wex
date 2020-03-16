@@ -36,30 +36,45 @@
 #include FT_SFNT_NAMES_H
 
 
-  FT_LOCAL( void )
-  gxv_morx_subtable_type0_validate( FT_Bytes       table,
-                                    FT_Bytes       limit,
-                                    GXV_Validator  gxvalid );
+FT_LOCAL(void)
 
-  FT_LOCAL( void )
-  gxv_morx_subtable_type1_validate( FT_Bytes       table,
-                                    FT_Bytes       limit,
-                                    GXV_Validator  gxvalid );
+gxv_morx_subtable_type0_validate( FT_Bytes
+table,
+FT_Bytes limit,
+        GXV_Validator
+gxvalid );
 
-  FT_LOCAL( void )
-  gxv_morx_subtable_type2_validate( FT_Bytes       table,
-                                    FT_Bytes       limit,
-                                    GXV_Validator  gxvalid );
+FT_LOCAL(void)
 
-  FT_LOCAL( void )
-  gxv_morx_subtable_type4_validate( FT_Bytes       table,
-                                    FT_Bytes       limit,
-                                    GXV_Validator  gxvalid );
+gxv_morx_subtable_type1_validate( FT_Bytes
+table,
+FT_Bytes limit,
+        GXV_Validator
+gxvalid );
 
-  FT_LOCAL( void )
-  gxv_morx_subtable_type5_validate( FT_Bytes       table,
-                                    FT_Bytes       limit,
-                                    GXV_Validator  gxvalid );
+FT_LOCAL(void)
+
+gxv_morx_subtable_type2_validate( FT_Bytes
+table,
+FT_Bytes limit,
+        GXV_Validator
+gxvalid );
+
+FT_LOCAL(void)
+
+gxv_morx_subtable_type4_validate( FT_Bytes
+table,
+FT_Bytes limit,
+        GXV_Validator
+gxvalid );
+
+FT_LOCAL(void)
+
+gxv_morx_subtable_type5_validate( FT_Bytes
+table,
+FT_Bytes limit,
+        GXV_Validator
+gxvalid );
 
 
 #endif /* __GXVMORX_H__ */

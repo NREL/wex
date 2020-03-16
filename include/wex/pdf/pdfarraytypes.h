@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Name:        pdfarraytypes.h
-// Purpose:     
+// Purpose:
 // Author:      Ulrich Telle
 // Modified by:
 // Created:     2008-08-08
@@ -21,6 +21,7 @@
 
 /// Unsorted array types
 WX_DEFINE_USER_EXPORTED_ARRAY_SHORT(wxUint16, wxPdfArrayUint16, class WXDLLIMPEXP_PDFDOC);
+
 WX_DEFINE_USER_EXPORTED_ARRAY_LONG(wxUint32, wxPdfArrayUint32, class WXDLLIMPEXP_PDFDOC);
 
 /// Sorted array types

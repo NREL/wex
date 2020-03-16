@@ -76,17 +76,17 @@ structure for set of n elements:
 */
 typedef union setelemT setelemT;
 union setelemT {
-  void    *p;
-  int      i;         /* integer used for e[maxSize] */
+    void *p;
+    int i;         /* integer used for e[maxSize] */
 };
 
 struct setT {
-  int maxsize;          /* maximum number of elements (except NULL) */
-  setelemT e[1];        /* array of pointers, tail is NULL */
-                        /* last slot (unless NULL) is actual size+1
-                           e[maxsize]==NULL or e[e[maxsize]-1]==NULL */
-                        /* this may generate a warning since e[] contains
-                           maxsize elements */
+    int maxsize;          /* maximum number of elements (except NULL) */
+    setelemT e[1];        /* array of pointers, tail is NULL */
+    /* last slot (unless NULL) is actual size+1
+       e[maxsize]==NULL or e[e[maxsize]-1]==NULL */
+    /* this may generate a warning since e[] contains
+       maxsize elements */
 };
 
 /*=========== -constants- =========================*/
@@ -393,7 +393,7 @@ struct setT {
    SETaddr_(set, type)
        return address of set's elements
 */
-#define SETaddr_(set,type)         ((type **)(&((set)->e[0].p)))
+#define SETaddr_(set, type)         ((type **)(&((set)->e[0].p)))
 
 /*-<a                                     href="qh-set.htm#TOC"
   >---------------------------------------</a><a name="SETreturnsize_">-</a>
@@ -447,44 +447,81 @@ struct setT {
 
 /*======= prototypes in alphabetical order ============*/
 
-void  qh_setaddsorted(setT **setp, void *elem);
-void  qh_setaddnth(setT **setp, int nth, void *newelem);
-void  qh_setappend(setT **setp, void *elem);
-void  qh_setappend_set(setT **setp, setT *setA);
-void  qh_setappend2ndlast(setT **setp, void *elem);
-void  qh_setcheck(setT *set, const char *tname, unsigned id);
-void  qh_setcompact(setT *set);
+void qh_setaddsorted(setT **setp, void *elem);
+
+void qh_setaddnth(setT **setp, int nth, void *newelem);
+
+void qh_setappend(setT **setp, void *elem);
+
+void qh_setappend_set(setT **setp, setT *setA);
+
+void qh_setappend2ndlast(setT **setp, void *elem);
+
+void qh_setcheck(setT *set, const char *tname, unsigned id);
+
+void qh_setcompact(setT *set);
+
 setT *qh_setcopy(setT *set, int extra);
+
 void *qh_setdel(setT *set, void *elem);
+
 void *qh_setdellast(setT *set);
+
 void *qh_setdelnth(setT *set, int nth);
+
 void *qh_setdelnthsorted(setT *set, int nth);
+
 void *qh_setdelsorted(setT *set, void *newelem);
-setT *qh_setduplicate( setT *set, int elemsize);
+
+setT *qh_setduplicate(setT *set, int elemsize);
+
 void **qh_setendpointer(setT *set);
-int   qh_setequal(setT *setA, setT *setB);
-int   qh_setequal_except(setT *setA, void *skipelemA, setT *setB, void *skipelemB);
-int   qh_setequal_skip(setT *setA, int skipA, setT *setB, int skipB);
-void  qh_setfree(setT **set);
-void  qh_setfree2( setT **setp, int elemsize);
-void  qh_setfreelong(setT **set);
-int   qh_setin(setT *set, void *setelem);
-int   qh_setindex(setT *set, void *setelem);
-void  qh_setlarger(setT **setp);
+
+int qh_setequal(setT *setA, setT *setB);
+
+int qh_setequal_except(setT *setA, void *skipelemA, setT *setB, void *skipelemB);
+
+int qh_setequal_skip(setT *setA, int skipA, setT *setB, int skipB);
+
+void qh_setfree(setT **set);
+
+void qh_setfree2(setT **setp, int elemsize);
+
+void qh_setfreelong(setT **set);
+
+int qh_setin(setT *set, void *setelem);
+
+int qh_setindex(setT *set, void *setelem);
+
+void qh_setlarger(setT **setp);
+
 void *qh_setlast(setT *set);
+
 setT *qh_setnew(int size);
+
 setT *qh_setnew_delnthsorted(setT *set, int size, int nth, int prepend);
-void  qh_setprint(FILE *fp, const char* string, setT *set);
-void  qh_setreplace(setT *set, void *oldelem, void *newelem);
-int   qh_setsize(setT *set);
+
+void qh_setprint(FILE *fp, const char *string, setT *set);
+
+void qh_setreplace(setT *set, void *oldelem, void *newelem);
+
+int qh_setsize(setT *set);
+
 setT *qh_settemp(int setsize);
-void  qh_settempfree(setT **set);
-void  qh_settempfree_all(void);
+
+void qh_settempfree(setT **set);
+
+void qh_settempfree_all(void);
+
 setT *qh_settemppop(void);
-void  qh_settemppush(setT *set);
-void  qh_settruncate(setT *set, int size);
-int   qh_setunique(setT **set, void *elem);
-void  qh_setzero(setT *set, int idx, int size);
+
+void qh_settemppush(setT *set);
+
+void qh_settruncate(setT *set, int size);
+
+int qh_setunique(setT **set, void *elem);
+
+void qh_setzero(setT *set, int idx, int size);
 
 
 #endif /* qhDEFset */
