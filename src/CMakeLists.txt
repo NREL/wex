@@ -175,7 +175,7 @@ if (MSVC)
             LINK_FLAGS /SUBSYSTEM:CONSOLE)
 endif ()
 
-target_include_directories(wex PRIVATE ../include freetype/include ${LKDIR}/include ${CURL_DIR}/include)
+target_include_directories(wex PRIVATE ../include freetype/include $ENV{LKDIR}/include ${CURL_DIR}/include)
 
 
 #####################################################################################################################

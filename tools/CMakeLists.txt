@@ -7,6 +7,8 @@
 set(wexsandbox_SRC
         sandbox/sandbox.cpp)
 
+file(TO_CMAKE_PATH "$ENV{LKDIR}" LKDIR)
+
 set(DVIEW_SRC
         dview/dview.cpp
         ${LKDIR}/src/sqlite3.c
