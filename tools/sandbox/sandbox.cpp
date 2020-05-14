@@ -1331,10 +1331,10 @@ public:
 //		TestPLBarPlot(0);
 //		TestStackedBarPlot(0);
 //		TestSAMStackedBarPlot(0);
-//		TestSectorPlot(0);
+		TestSectorPlot(0);
 //		TestTextLayout();
         //TestFreeTypeText();
-//		TestPlotAnnotations(0);
+		TestPlotAnnotations(0);
 //		TestWindPrufFigure2(0);
 //		TestWindPrufFigure5(0);
 
