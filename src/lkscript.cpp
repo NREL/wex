@@ -969,9 +969,6 @@ void fcall_contour(lk::invoke_t &cxt) {
 
         plot->SetSideWidget(cmap, wxPLPlot::Y_RIGHT);
 
-        plot->GetXAxis2()->SetReversed(reversexaxis);
-        plot->GetYAxis1()->SetReversed(reverseyaxis);
-
         for (size_t i = 0; i < plot->GetPlotCount(); i++)
             if (wxPLContourPlot *cp = dynamic_cast<wxPLContourPlot *>(plot->GetPlot(i)))
                 cp->SetColourMap(cmap);
@@ -988,6 +985,10 @@ void fcall_contour(lk::invoke_t &cxt) {
 
     wxPLContourPlot *contour = new wxPLContourPlot(x, y, z, filled, label, (int) levels, cmap);
     plot->AddPlot(contour);
+    if (plot->GetXAxis1() != NULL) plot->GetXAxis1()->SetReversed(reversexaxis);
+    if (plot->GetYAxis1() != NULL) plot->GetYAxis1()->SetReversed(reverseyaxis);
+    if (plot->GetXAxis2() != NULL) plot->GetXAxis2()->SetReversed(reversexaxis);
+    if (plot->GetYAxis2() != NULL) plot->GetYAxis2()->SetReversed(reverseyaxis);
 }
 
 #include <wx/anidecod.h>
