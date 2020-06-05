@@ -168,6 +168,7 @@ set_target_properties(wex
         PROPERTIES
         DEBUG_POSTFIX "d"
         PREFIX ""
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/../"
         )
 if (MSVC)
     set_target_properties(wex
