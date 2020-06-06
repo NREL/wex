@@ -79,14 +79,14 @@ else ()
         unset(LKD_LIB CACHE)
         find_library(LKD_LIB
                 NAMES lkd.a lkd.lib
-                PATHS $ENV{LKD_LIB} ../lk/build ../lk/build/Debug)
+                PATHS $ENV{LKD_LIB} $ENV{LKDIR}/build $ENV{LKDIR}/build/Debug)
         target_link_libraries(wexsandbox debug ${LKD_LIB})
     endif ()
     if (CMAKE_BUILD_TYPE STREQUAL "Release" OR MSVC)
         unset(LK_LIB CACHE)
         find_library(LK_LIB
                 NAMES lk.a lk.lib
-                PATHS $ENV{LK_LIB} ../lk/build ../lk/build/Release)
+                PATHS $ENV{LK_LIB} $ENV{LKDIR}/build $ENV{LKDIR}/build/Release)
         target_link_libraries(wexsandbox optimized ${LK_LIB})
     endif()
 endif ()
