@@ -179,6 +179,9 @@ endif ()
 file(GLOB DVIEW_SRC_FILES dview/*.cpp)
 file(GLOB QHULL_SRC_FILES plot/qhull/*.c)
 
+set_source_files_properties(freetype/src/base/ftbase.c
+  PROPERTIES COMPILE_FLAGS -Wno-unused-function)
+
 set_source_files_properties(${DVIEW_SRC_FILES} ${QHULL_SRC_FILES}
   PROPERTIES COMPILE_FLAGS -Wno-unused-but-set-variable)
 
