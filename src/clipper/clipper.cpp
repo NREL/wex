@@ -70,20 +70,20 @@ namespace ClipperLib {
         IntPoint Curr;
         IntPoint Top;
         IntPoint Delta;
-        double Dx;
-        PolyType PolyTyp;
-        EdgeSide Side;
-        int WindDelta; //1 or -1 depending on winding direction
-        int WindCnt;
-        int WindCnt2; //winding count of the opposite polytype
-        int OutIdx;
-        TEdge *Next;
-        TEdge *Prev;
-        TEdge *NextInLML;
-        TEdge *NextInAEL;
-        TEdge *PrevInAEL;
-        TEdge *NextInSEL;
-        TEdge *PrevInSEL;
+        double Dx = 0;
+        PolyType PolyTyp = static_cast<PolyType>(0);
+        EdgeSide Side = static_cast<EdgeSide>(0);
+        int WindDelta = 0; //1 or -1 depending on winding direction
+        int WindCnt = 0;
+        int WindCnt2 = 0; //winding count of the opposite polytype
+        int OutIdx = 0;
+        TEdge *Next = 0;
+        TEdge *Prev = 0;
+        TEdge *NextInLML = 0;
+        TEdge *NextInAEL = 0;
+        TEdge *PrevInAEL = 0;
+        TEdge *NextInSEL = 0;
+        TEdge *PrevInSEL = 0;
     };
 
     struct IntersectNode {
@@ -640,7 +640,6 @@ namespace ClipperLib {
 //------------------------------------------------------------------------------
 
     inline void InitEdge(TEdge *e, TEdge *eNext, TEdge *ePrev, const IntPoint &Pt) {
-        std::memset(e, 0, sizeof(TEdge));
         e->Next = eNext;
         e->Prev = ePrev;
         e->Curr = Pt;
@@ -937,7 +936,7 @@ namespace ClipperLib {
         if ((Closed && highI < 2) || (!Closed && highI < 1)) return false;
 
         //create a new edge array ...
-        TEdge *edges = new TEdge[highI + 1];
+        TEdge *edges = new TEdge[highI + 1]();
 
         bool IsFlat = true;
         //1. Basic (first) edge initialization ...
