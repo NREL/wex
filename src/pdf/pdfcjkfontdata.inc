@@ -82,6 +82,7 @@ static short cwUhc[] =
                 625, 625, 500, 583, 583, 583, 750
         };
 
+#if 0
 static short cwPGothic[] =
         {
                 305, 219, 500, 500, 500, 500, 594, 203,
@@ -129,6 +130,7 @@ static short cwPMincho[] =
                 500, 500, 367, 414, 352, 500, 477, 602,
                 469, 477, 453, 242, 219, 242, 500
         };
+#endif
 
 static const wxPdfCjkFontDesc gs_cjkFontTable[] =
         {
