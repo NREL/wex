@@ -10,9 +10,6 @@ os:
 compiler:
     - gcc
 
-env:
-  - CFLAGS=-Werror CXXFLAGS=-Werror
-
 before_script:
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update && sudo apt-get install libglu1-mesa-dev freeglut3-dev mesa-common-dev libgtk2.0-dev; fi
     - wget -q https://github.com/wxWidgets/wxWidgets/releases/download/v3.1.1/wxWidgets-3.1.1.tar.bz2
@@ -28,7 +25,7 @@ before_script:
 
 script:
     - export PATH=$PATH:$HOME/wx-3.1.1/bin
-    - mkdir ${LKDIR}/build && cd ${LKDIR}/build && cmake .. -DCMAKE_BUILD_TYPE=Release && cmake --build . --target lk -- -j2
+    - mkdir ${LKDIR}/build && cd ${LKDIR}/build && cmake -E env CFLAGS="-Werror" CXXFLAGS="-Werror" cmake .. -DCMAKE_BUILD_TYPE=Release && cmake --build . --target lk -- -j2
     - cd ${HOME}/build/NREL/wex && cmake . -DCMAKE_BUILD_TYPE=Release && make -j2
 
 install:
