@@ -1482,7 +1482,7 @@ void wxPLPlot::DrawGrid(wxPLOutputDevice &dc, wxPLAxis::TickData::TickSize size)
     if (m_x1.axis != 0) xgrid_axis = &m_x1;
     else if (m_x2.axis != 0) xgrid_axis = &m_x2;
 
-    if (xgrid_axis != 0) {
+    if (xgrid_axis != 0 && xgrid_axis->layout != 0) {
         std::vector<double> ticks = xgrid_axis->layout->ticks(size);
         for (size_t i = 0; i < ticks.size(); i++) {
             double xpos = xgrid_axis->axis->WorldToPhysical(ticks[i], m_plotRects[0].x,

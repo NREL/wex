@@ -187,6 +187,8 @@ void wxPLSectorPlot::Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map) {
 
     // draw sectors
     dc.NoPen();
+    // allow for pen colors and section border
+    dc.Pen(*wxWHITE, 1.5);
     for (size_t i = 0; i < m_sectors.size(); i++) {
         sector &S = m_sectors[i];
         dc.Brush(cl[i % cl.size()]);
