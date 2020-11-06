@@ -1,0 +1,34 @@
+extraction:
+  cpp:
+    prepare:
+      packages:
+        - g++
+        - libgtk2.0-dev
+        - libgl1-mesa-dev
+        - mesa-common-dev
+        - freeglut3-dev
+        - libcurl4-openssl-dev
+        - libc6
+
+    after_prepare:
+      - wget -q https://github.com/wxWidgets/wxWidgets/releases/download/v3.1.1/wxWidgets-3.1.1.tar.bz2 -O $LGTM_WORKSPACE/wxWidgets-3.1.1.tar.bz2
+      - cd $LGTM_WORKSPACE
+      - tar jxf wxWidgets-3.1.1.tar.bz2
+      - cd wxWidgets-3.1.1
+      - ./configure --prefix=$LGTM_WORKSPACE/wx-3.1.1 --enable-shared=no --enable-stl=yes --enable-debug=no --with-gtk=2 --with-libjpeg=builtin --with-libpng=builtin --with-regex=builtin --with-libtiff=builtin --with-zlib=builtin --with-expat=builtin --without-libjbig --without-liblzma --without-gtkprint --with-libnotify=no --with-libmspack=no --with-gnomevfs=no --with-opengl=yes --with-sdl=no --with-cxx=11
+      - make -j2 all install
+      - export WXMSW3=$LGTM_WORKSPACE/wx-3.1.1
+      - (cd ../ && pwd)
+      - export LKDIR=$LGTM_WORKSPACE/build/lk
+      - export WEXDIR=$LGTM_SRC
+      - git clone --depth=1 https://github.com/NREL/lk $LKDIR; 
+      - export PATH=$PATH:$HOME/wx-3.1.1/bin
+  
+    configure:
+      command:
+        - mkdir $LKDIR/build && cd $LKDIR/build && cmake .. -DCMAKE_BUILD_TYPE=Release && cmake --build . -j 4 --target lk
+        - mkdir $WEXDIR/build && cd $WEXDIR/build && cmake .. -DCMAKE_BUILD_TYPE=Release
+    index:    
+      build_command:
+        cd $WEXDIR/build && make -j 4
+        
