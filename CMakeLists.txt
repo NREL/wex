@@ -6,10 +6,10 @@
 
 cmake_minimum_required(VERSION 3.11)
 
-option(skip_tools "Skips the wex sandbox and Dview builds" OFF)
+option(SAM_SKIP_TOOLS "Skips the wex sandbox and Dview builds" OFF)
 
 #
-# If project isn't system_advisor_model and skip_tools=1,
+# If project isn't system_advisor_model and SAM_SKIP_TOOLS=1,
 #   environment vars LK_LIB and LKD_LIB can be used to specify where to find those libraries
 #
 
@@ -98,6 +98,6 @@ endif ()
 #####################################################################################################################
 
 add_subdirectory(src)
-if (NOT skip_tools)
+if (NOT SAM_SKIP_TOOLS)
     add_subdirectory(tools)
 endif()
