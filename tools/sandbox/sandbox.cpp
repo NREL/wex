@@ -50,8 +50,6 @@ public:
         wxInitAllImageHandlers();
         wxFrame *frm = new wxFrame(NULL, wxID_ANY, "SchedCtrl", wxDefaultPosition, wxSize(300, 200));
         frm->SetBackgroundColour(*wxWHITE);
-        wxStaticBitmap *bitmap = new wxStaticBitmap(frm, wxID_ANY, wxBITMAP_PNG_FROM_DATA(time));
-
         frm->Show();
         return true;
     }
@@ -762,6 +760,46 @@ void TestPlotAnnotations(wxWindow *parent) {
     frame->Show();
 }
 
+
+void TestMELCOESectorPlot(wxWindow* parent) {
+    wxFrame* frame = new wxFrame(parent, wxID_ANY, wxT("ME LCOE"),
+        wxDefaultPosition, wxSize(500, 400));
+    wxPLPlotCtrl* plot = new wxPLPlotCtrl(frame, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    //plot->SetBackgroundColour( *wxWHITE );
+    plot->SetTitle(wxT("Example of LCOE Contribution Pie Chart for ME SAM Results"));
+    plot->ShowGrid(false, false);
+
+    wxPLSectorPlot* sec = new wxPLSectorPlot();
+//    sec->AddSector(64.89, "Total device cost");
+//    sec->AddSector(17.27, "Total balance of system cost");
+//    sec->AddSector(6.79, "Total financial cost");
+//    sec->AddSector(11.05, "Total operating cost (annual)");
+    sec->AddSector(32, "Total device cost");
+    sec->AddSector(9, "Total balance of system cost");
+    sec->AddSector(4, "Total financial cost");
+    sec->AddSector(55, "Total operating cost (annual)");
+    sec->SetCenterHoleSize(0.0);
+//    sec->SetCalloutSize(65.9);
+//    sec->SetBorder(100.4);
+//    sec->ShowSegmentValues(true);
+ //   sec->SetTextSpace(20.0);
+    sec->SetAntiAliasing(true);
+    std::vector<wxColour> clr;
+    clr.push_back(wxColour(51,88,153));
+    clr.push_back(wxColour(363,160,183));
+    clr.push_back(wxColour(121,145,206));
+    clr.push_back(wxColour(84,130,53));
+    sec->SetColours(clr);
+
+    sec->SetFormat(wxNUMERIC_REAL, wxNUMERIC_GENERIC, false, wxEmptyString, " %");
+    plot->AddPlot(sec);
+    plot->ShowAxes(false);
+    plot->SetBorderWidth(0);
+    frame->Show();
+}
+
+
+
 void TestSectorPlot(wxWindow *parent) {
     wxFrame *frame = new wxFrame(parent, wxID_ANY, wxT("Sector plots in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"),
                                  wxDefaultPosition, wxSize(500, 400));
@@ -1323,8 +1361,8 @@ public:
         //	int nf = wxFreeTypeLoadAllFonts();
         //	wxMessageBox( wxString::Format("Loaded %d fonts in %d ms.", nf, (int)sw.Time()) );
 
-        TestContourPlot();
-        TestWaveAnnualEnergyPlot();
+//        TestContourPlot();
+//        TestWaveAnnualEnergyPlot();
 
 //		TestPLPlot(0);
 //		TestPLPolarPlot(0);
@@ -1332,9 +1370,10 @@ public:
 //		TestStackedBarPlot(0);
 //		TestSAMStackedBarPlot(0);
 		TestSectorPlot(0);
+        TestMELCOESectorPlot(0);
 //		TestTextLayout();
         //TestFreeTypeText();
-		TestPlotAnnotations(0);
+//		TestPlotAnnotations(0);
 //		TestWindPrufFigure2(0);
 //		TestWindPrufFigure5(0);
 
