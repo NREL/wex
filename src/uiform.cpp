@@ -48,6 +48,7 @@
 #include <wex/diurnal.h>
 #include <wex/exttextstream.h>
 
+
 static wxColour g_uiSelectColor(135, 135, 135);
 static wxChar g_text_delimeter('\n');
 
@@ -1293,6 +1294,102 @@ void wxUIProperty::Write_text(wxOutputStream &_o, wxString &ui_path) {
     }
 }
 
+rapidjson::Value wxUIProperty::Write_JSON(rapidjson::Document& doc, wxString& ui_path) {
+    rapidjson::Value json_val, json_child;
+    json_val.SetObject();
+    wxString s = wxEmptyString;
+    size_t n = 0;
+    int type = GetType();
+    //out.Write16((wxUint16)type);
+    //out.PutChar(g_text_delimeter);
+    // type name? enum
+    json_val.AddMember("Type", type, doc.GetAllocator());
+    switch (type) {
+    case DOUBLE: {
+//        out.WriteDouble(GetDouble());
+//        out.PutChar(g_text_delimeter);
+        json_val.AddMember("Double", GetDouble(), doc.GetAllocator());
+    }
+               break;
+    case BOOLEAN: {
+ //       out.Write8(GetBoolean() ? 1 : 0);
+ //       out.PutChar(g_text_delimeter);
+        json_val.AddMember("Boolean", GetBoolean(), doc.GetAllocator());
+    }
+                break;
+    case INTEGER: {
+//        out.Write32(GetInteger());
+//        out.PutChar(g_text_delimeter);
+        json_val.AddMember("Integer", GetInteger(), doc.GetAllocator());
+    }
+                break;
+    case STRING: {
+/*        s = GetString();
+        s.Replace("\r", "");
+        n = s.Len();
+        out.Write32((wxUint32)n);
+        if (n > 0) {
+            out.PutChar(g_text_delimeter);
+            for (size_t i = 0; i < n; i++) {
+                out.PutChar(s[i]);
+            }
+        }
+        out.PutChar(g_text_delimeter);
+        */
+        json_val.AddMember("String", rapidjson::Value(GetString().ToStdString().c_str(), doc.GetAllocator()).Move(), doc.GetAllocator());
+    }
+               break;
+    case COLOUR: {
+        wxColour c = GetColour();
+        /*
+        out.Write8(c.Red());
+        out.PutChar(g_text_delimeter);
+        out.Write8(c.Green());
+        out.PutChar(g_text_delimeter);
+        out.Write8(c.Blue());
+        out.PutChar(g_text_delimeter);
+        out.Write8(c.Alpha());
+        out.PutChar(g_text_delimeter);
+        */
+        json_child.SetObject();
+        json_child.AddMember("Red", c.Red(), doc.GetAllocator());
+        json_child.AddMember("Green", c.Green(), doc.GetAllocator());
+        json_child.AddMember("Blue", c.Blue(), doc.GetAllocator());
+        json_child.AddMember("Alpha", c.Alpha(), doc.GetAllocator());
+        json_val.AddMember("Color", json_child, doc.GetAllocator());
+        // testing as single value
+        //json_val.AddMember("Color", c.GetRGBA(), doc.GetAllocator());
+    }
+               break;
+    case STRINGLIST: {
+        wxArrayString list = GetStringList();
+        json_child.SetArray();
+//        out.Write32(list.Count());
+//        out.PutChar(g_text_delimeter);
+        for (size_t i = 0; i < list.Count(); i++) {
+            json_child.PushBack(rapidjson::Value(list[i].ToStdString().c_str(), doc.GetAllocator()).Move(), doc.GetAllocator());
+//            out.WriteString(list[i]);
+//            out.PutChar(g_text_delimeter);
+        }
+        json_val.AddMember("StringList", json_child, doc.GetAllocator());
+    }
+                   break;
+    case IMAGE: {
+        wxImage img = GetImage();
+        img.SaveFile(ui_path + ".png", wxBITMAP_TYPE_PNG);
+        wxString fn = wxFileName(ui_path + ".png").GetName();
+//        out.WriteString(fn + ".png");
+//        out.PutChar(g_text_delimeter);
+        // can change to encoding of image here - long byte array (see VV_BINARY persistence)
+        json_val.AddMember("Image", rapidjson::Value(fn.ToStdString().c_str(), doc.GetAllocator()).Move(), doc.GetAllocator());
+    }
+              break;
+    }
+    return json_val;
+}
+
+
+
 bool wxUIProperty::Read_text(wxInputStream &_i, wxString &ui_path) {
     wxExtTextInputStream in(_i, "\n", wxConvAuto(wxFONTENCODING_UTF8));
     wxUint16 type = in.Read16();
@@ -1624,6 +1721,50 @@ bool wxUIObject::Read_text(wxInputStream &_i, wxString &ui_path) {
 
     return ok;
 }
+
+
+rapidjson::Value wxUIObject::Write_JSON(rapidjson::Document& doc, wxString& ui_path) {
+    rapidjson::Value json_val, json_child;
+    json_val.SetObject();
+//    out.PutChar(g_text_delimeter);
+//    out.Write8(m_visible ? 1 : 0);
+//    out.PutChar(g_text_delimeter);
+    json_val.AddMember("Visible", m_visible, doc.GetAllocator());
+
+//    out.Write32(m_properties.size());
+//    out.PutChar(g_text_delimeter);
+    // make JSON array??
+ //   doc.AddMember("NumberProperties", m_properties.size(), doc.GetAllocator());
+    json_child.SetObject();
+    wxString obj_name = ui_path + "_" + GetName();
+    for (size_t i = 0; i < m_properties.size(); i++) {
+//        out.WriteString(m_properties[i].name);
+//        out.PutChar(g_text_delimeter);
+//        doc.AddMember("Name", m_properties[i].name.ToStdString(), doc.GetAllocator());
+//        m_properties[i].prop->Write_text(_o, obj_name);
+        json_child.AddMember(rapidjson::Value(m_properties[i].name.c_str(), m_properties[i].name.size(), doc.GetAllocator()).Move(), m_properties[i].prop->Write_JSON(doc, obj_name), doc.GetAllocator());
+    }
+    json_val.AddMember("Properties", json_child, doc.GetAllocator());
+    return json_val;
+}
+
+bool wxUIObject::Read_JSON(const rapidjson::Document& doc, wxString& ui_path) {
+//    wxExtTextInputStream in(_i, "\n");
+
+    m_visible = doc["Visible"].GetBool();
+
+    bool ok = true;
+
+//    size_t n = in.Read32();
+    /*
+    for (size_t i = 0; i < n; i++) {
+        wxString name = in.ReadWord();
+        ok = ok && Property(name).Read_text(_i, ui_path);
+    }
+    */
+    return ok;
+}
+
 
 void wxUIObject::AddProperty(const wxString &name, wxUIProperty *prop) {
     prop->AddUpdateInterface(name, this);
@@ -2165,6 +2306,67 @@ bool wxUIFormData::Read_text(wxInputStream &_I, wxString &ui_path) {
 
     return ok;
 }
+
+
+
+void wxUIFormData::Write_JSON(rapidjson::Document& doc, wxString& ui_path) {
+/*
+    out.WriteString(m_name);
+    out.PutChar(g_text_delimeter);
+    out.Write32(m_width);
+    out.PutChar(g_text_delimeter);
+    out.Write32(m_height);
+    out.PutChar(g_text_delimeter);
+*/
+    doc.AddMember("Name", rapidjson::Value(m_name.ToStdString().c_str(), doc.GetAllocator()).Move(), doc.GetAllocator());
+    doc.AddMember("Width", m_width, doc.GetAllocator());
+    doc.AddMember("Height", m_height, doc.GetAllocator());
+    doc.AddMember("NumberObjects", m_objects.size(), doc.GetAllocator());
+
+
+//    out.Write32(m_objects.size());
+//    out.PutChar(g_text_delimeter);
+    wxUIObject* o;
+    wxArrayString as = ListAll();
+    as.Sort();
+    for (size_t i = 0; i < as.Count(); i++) {
+        o = Find(as[i]);
+        if (o != NULL) {
+//            out.WriteString(o->GetTypeName());
+            doc.AddMember("TypeName", rapidjson::Value(o->GetTypeName().ToStdString().c_str(), doc.GetAllocator()).Move(), doc.GetAllocator());
+//            out.PutChar(g_text_delimeter);
+//            o->Write_text(_O, ui_path);
+            o->Write_JSON(doc, ui_path);
+        }
+    }
+
+}
+
+bool wxUIFormData::Read_JSON(const rapidjson::Document& doc, wxString& ui_path) {
+    DeleteAll();
+
+//    wxExtTextInputStream in(_I, "\n");
+    m_name = doc["Name"].GetString();
+    m_width = doc["Width"].GetInt();
+    m_height = doc["Height"].GetInt();
+
+    bool ok = true;
+    size_t n = doc["NumberObjects"].GetInt();
+    for (size_t i = 0; i < n; i++) {
+        /*
+        wxString type = in.ReadWord();
+        if (wxUIObject* obj = Create(type))
+            ok = ok && obj->Read_text(_I, ui_path);
+        else
+            ok = false;
+            */
+    }
+
+    return ok;
+}
+
+
+
 
 // methods to create/edit UI objects
 wxUIObject *wxUIFormData::Create(const wxString &type) {

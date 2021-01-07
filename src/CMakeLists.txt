@@ -8,6 +8,8 @@ if (NOT APPLE)
     set(CURL_DIR ../build_resources/libcurl_ssl_x64)
 endif ()
 
+include_directories($ENV{SSCDIR})
+
 set(WEX_SRC
         clipper/clipper.cpp
         codeedit.cpp

@@ -34,6 +34,10 @@
 
 #include <wx/overlay.h>
 
+// rapidJSON from ssc
+#include <rapidjson/document.h>
+
+
 class wxUIProperty;
 
 class wxUIPropertyUpdateInterface {
@@ -116,6 +120,11 @@ public:
     void Write_text(wxOutputStream &, wxString &);
 
     bool Read_text(wxInputStream &, wxString &);
+
+    rapidjson::Value Write_JSON(rapidjson::Document&, wxString&);
+
+    bool Read_JSON(const rapidjson::Document&, wxString&);
+
 
     void AddUpdateInterface(const wxString &name, wxUIPropertyUpdateInterface *pui);
 
@@ -217,6 +226,10 @@ public:
 
     virtual bool Read_text(wxInputStream &, wxString &);
 
+    virtual rapidjson::Value Write_JSON(rapidjson::Document&, wxString&);
+
+    virtual bool Read_JSON(const rapidjson::Document&, wxString&);
+
 protected:
     void AddProperty(const wxString &name, wxUIProperty *prop);
 
@@ -313,9 +326,13 @@ public:
 
     virtual bool Read(wxInputStream &);
 
-    virtual void Write_text(wxOutputStream &, wxString &);
+    virtual void Write_text(wxOutputStream&, wxString&);
 
-    virtual bool Read_text(wxInputStream &, wxString &);
+    virtual bool Read_text(wxInputStream&, wxString&);
+
+    virtual void Write_JSON(rapidjson::Document&, wxString&);
+
+    virtual bool Read_JSON(const rapidjson::Document&, wxString&);
 
     // methods to create/edit UI objects
     wxUIObject *Create(const wxString &type, const wxRect &geom, const wxString &name = wxEmptyString);
