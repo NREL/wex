@@ -1364,12 +1364,12 @@ public:
 //        TestContourPlot();
 //        TestWaveAnnualEnergyPlot();
 
-//		TestPLPlot(0);
+		TestPLPlot(0);
 //		TestPLPolarPlot(0);
 //		TestPLBarPlot(0);
 //		TestStackedBarPlot(0);
 //		TestSAMStackedBarPlot(0);
-		TestSectorPlot(0);
+//		TestSectorPlot(0);
         TestMELCOESectorPlot(0);
 //		TestTextLayout();
         //TestFreeTypeText();
