@@ -35,6 +35,8 @@
 #include <wx/gauge.h>
 #include <wx/thread.h>
 
+#include <wx/richmsgdlg.h>
+
 #include <curl/curl.h>
 
 #ifdef __WXMSW__
@@ -65,6 +67,26 @@ int easycurl_progress_func(void *ptr, double rDlTotal, double rDlNow,
                            double rUlTotal, double rUlNow);
 size_t easycurl_stream_write(void *ptr, size_t size, size_t nmemb, void *stream);
 }; // extern "C"
+
+
+// Dialog for reporting and testing
+class URLDialog : public wxDialog
+{
+public:
+
+    URLDialog(wxWindow* parent, wxWindowID id, const wxString& title, const wxString &msg,
+        const wxPoint& pos = wxDefaultPosition,
+        const wxSize& size = wxDefaultSize,
+        long style = wxDEFAULT_DIALOG_STYLE) : wxDialog(parent, id, title, pos, size, style)
+    {
+        m_dialogText = new wxTextCtrl(this, wxID_ANY, msg, wxDefaultPosition,
+            wxSize(800, 400), wxTE_MULTILINE);
+
+    }
+
+    wxTextCtrl* m_dialogText;
+};
+
 
 class wxEasyCurl::DLThread : public wxThread {
 public:
@@ -270,6 +292,10 @@ void wxEasyCurl::Start(const wxString &url) {
          it != gs_urlEscapes.end();
          ++it)
         escaped_url.Replace(it->first, it->second, true);
+
+    // checking keys
+    URLDialog dlg(NULL, wxID_ANY, "CURL", escaped_url, wxDefaultPosition, wxSize(1500, 1000));
+    dlg.ShowModal();
 
     m_thread = new DLThread(this, escaped_url, GetProxyForURL(escaped_url));
     m_thread->Create();
