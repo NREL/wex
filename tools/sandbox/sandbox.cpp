@@ -1361,16 +1361,16 @@ public:
         //	int nf = wxFreeTypeLoadAllFonts();
         //	wxMessageBox( wxString::Format("Loaded %d fonts in %d ms.", nf, (int)sw.Time()) );
 
-//        TestContourPlot();
-//        TestWaveAnnualEnergyPlot();
+        TestContourPlot();
+        TestWaveAnnualEnergyPlot();
 
-		TestPLPlot(0);
+//		TestPLPlot(0);
 //		TestPLPolarPlot(0);
 //		TestPLBarPlot(0);
 //		TestStackedBarPlot(0);
 //		TestSAMStackedBarPlot(0);
 //		TestSectorPlot(0);
-        TestMELCOESectorPlot(0);
+//        TestMELCOESectorPlot(0);
 //		TestTextLayout();
         //TestFreeTypeText();
 //		TestPlotAnnotations(0);
