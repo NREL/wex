@@ -183,7 +183,14 @@ wxRealPoint wxPLContourPlot::At(size_t i) const {
         return wxRealPoint(m_x.RawIndex(i), m_y.RawIndex(i));
     else
         return wxRealPoint(std::numeric_limits<double>::quiet_NaN(),
-                           std::numeric_limits<double>::quiet_NaN());
+            std::numeric_limits<double>::quiet_NaN());
+}
+
+double wxPLContourPlot::ZValueAt(size_t i) const {
+    if (i < m_z.Cells() )
+        return (m_z.RawIndex(i));
+    else
+        return std::numeric_limits<double>::quiet_NaN();
 }
 
 size_t wxPLContourPlot::Len() const {
