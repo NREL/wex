@@ -37,6 +37,7 @@
 #include "wex/pdf/pdffont.h"
 #include "wex/pdf/pdffontmanager.h"
 #include "wex/plot/plhistplot.h"
+#include "wex/plot/plcontourplot.h"
 #include "wex/plot/plplot.h"
 #include "wex/plot/ploutdev.h"
 #include "wex/plot/plannotation.h"
@@ -241,6 +242,8 @@ std::vector<wxString> wxPLPlottable::GetExportableDatasetHeaders(wxUniChar sep, 
 
     tt.push_back(xLabel);
     tt.push_back(yLabel);
+
+
 
     return tt;
 }
@@ -895,7 +898,8 @@ void wxPLPlot::WriteDataAsText(wxUniChar sep, wxOutputStream &os, bool visible_o
     wxPLPlottable *plot;
     double worldMin;
     double worldMax;
-    wxPLHistogramPlot *histPlot;
+    wxPLHistogramPlot* histPlot;
+    wxPLContourPlot* contourPlot;
     std::vector<bool> includeXForPlot(m_plots.size(), false);
     std::vector<wxString> Headers;
     std::vector<std::vector<wxRealPoint> > data;
@@ -916,7 +920,9 @@ void wxPLPlot::WriteDataAsText(wxUniChar sep, wxOutputStream &os, bool visible_o
             includeXForPlot[i] = true;
 
             //For CDF plots there is no X data label. The closest useful label is the Y label of the companion PDF histogram plot, so we need to store for use by the CDF plot.
-            if (xDataLabel.IsEmpty()) { xDataLabel = m_plots[i].plot->GetYDataLabel(this); }
+            if (xDataLabel.IsEmpty()) { 
+                xDataLabel = m_plots[i].plot->GetYDataLabel(this); 
+            }
         } else if ((histPlot = dynamic_cast<wxPLHistogramPlot *>(m_plots[i - 1].plot)) != 0) {
             includeXForPlot[i] = true;
         } else {
@@ -950,6 +956,13 @@ void wxPLPlot::WriteDataAsText(wxUniChar sep, wxOutputStream &os, bool visible_o
                 tt << Headers[j];
             }
         }
+
+        if ((contourPlot = dynamic_cast<wxPLContourPlot*>(m_plots[i].plot)) != 0) {
+            tt << sepstr;
+            tt << this->GetTitle();
+        }
+
+
         if (i < m_plots.size() - 1) { tt << sepstr; }
         if (data[i].size() > maxLength) { maxLength = data[i].size(); }
     }
@@ -972,6 +985,13 @@ void wxPLPlot::WriteDataAsText(wxUniChar sep, wxOutputStream &os, bool visible_o
                 }
 
                 tt << wxString::Format("%lg", data[PlotNum][RowNum].y);
+
+                if ((contourPlot = dynamic_cast<wxPLContourPlot*>(m_plots[PlotNum].plot)) != 0) {
+                    tt << sepstr;
+                    tt << wxString::Format("%lg", contourPlot->ZValueAt(RowNum));
+                }
+
+
             } else {
                 if (PlotNum > 0) tt << sepstr; //extra sep before to add blank column before new x values, as in header.
                 tt << sepstr;

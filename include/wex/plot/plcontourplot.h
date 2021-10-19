@@ -77,6 +77,8 @@ public:
 
     virtual wxRealPoint At(size_t i) const;
 
+    double ZValueAt(size_t i) const;
+
     virtual size_t Len() const;
 
     virtual void Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map);

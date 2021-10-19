@@ -185,9 +185,11 @@ if (NOT MSVC)
 	set_source_files_properties(freetype/src/base/ftbase.c
 	  PROPERTIES COMPILE_FLAGS -Wno-unused-function)
 
-	set_source_files_properties(${DVIEW_SRC_FILES} ${QHULL_SRC_FILES}
-	  PROPERTIES COMPILE_FLAGS -Wno-unused-but-set-variable)
-endif ()	  
+    if (NOT APPLE)
+        set_source_files_properties(${DVIEW_SRC_FILES} ${QHULL_SRC_FILES}
+          PROPERTIES COMPILE_FLAGS -Wno-unused-but-set-variable)
+    endif()
+endif ()
 
 target_include_directories(wex PRIVATE ../include freetype/include $ENV{LKDIR}/include ${CURL_DIR}/include)
 

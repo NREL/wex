@@ -92,7 +92,12 @@ else ()
         target_link_libraries(wexsandbox optimized ${LK_LIB})
     endif()
 endif ()
-target_link_libraries(wexsandbox wex ${wxWidgets_LIBRARIES})
+if (UNIX AND NOT APPLE)
+    target_link_libraries(wexsandbox wex ${wxWidgets_LIBRARIES} ${FONTCONFIG_LIBRARY})
+else ()
+    target_link_libraries(wexsandbox wex ${wxWidgets_LIBRARIES})
+endif ()
+
 
 if (UNIX)
     target_link_libraries(wexsandbox -ldl -lcurl)
