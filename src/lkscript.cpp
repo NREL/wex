@@ -1286,7 +1286,7 @@ static void fcall_browse(lk::invoke_t &cxt) {
 
 static void fcall_curl(lk::invoke_t &cxt) {
     LK_DOC("curl",
-           "Issue a synchronous HTTP/HTTPS request.  Option keys are: 'post', 'jsonpost', 'message', 'file'.  If 'file' is specified, data is downloaded to that file and true/false is returned. Otherwise, the retrieved data is returned as a string.",
+           "Issue a synchronous HTTP/HTTPS request.  Option keys are: 'post', 'jsonpost', 'message', 'file', 'headers'.  If 'file' is specified, data is downloaded to that file and true/false is returned. Otherwise, the retrieved data is returned as a string.",
            "(string:url, [table:options]):variant");
     wxEasyCurl curl;
 
@@ -1307,6 +1307,11 @@ static void fcall_curl(lk::invoke_t &cxt) {
             curl.AddHttpHeader("Accept: application/json");
             curl.AddHttpHeader("Content-Type: application/json");
             curl.SetPostData(x->as_string());
+        }
+
+        if (lk::vardata_t *x = opt.lookup("headers")) {
+            for (size_t i = 0; i < x->length(); i++)
+                curl.AddHttpHeader(x->index(i)->as_string());
         }
     }
 
