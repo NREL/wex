@@ -26,6 +26,7 @@
 #include <cmath>
 #include <wx/wx.h>
 #include <wx/valtext.h>
+#include <wx/numformatter.h>
 
 BEGIN_EVENT_TABLE(wxNumericCtrl, wxTextCtrl)
                 EVT_TEXT_ENTER(wxID_ANY, wxNumericCtrl::OnTextEnter)
@@ -69,6 +70,7 @@ void wxNumericCtrl::OnLoseFocus(wxFocusEvent &evt) {
         Translate();
         wxCommandEvent enterpress(wxEVT_COMMAND_TEXT_ENTER, this->GetId());
         enterpress.SetEventObject(this);
+        auto x = GetValue();
         enterpress.SetString(GetValue());
         GetEventHandler()->ProcessEvent(enterpress);
     }
@@ -127,8 +129,12 @@ void wxNumericCtrl::Translate() {
         char *pEnd = 0;
         unsigned long long xval = strtoull(buf.c_str(), &pEnd, 10);
         SetValue((size_t) xval);
-    } else
-        SetValue((double) wxAtof(buf));
+    }
+    else {
+        double dtmp = (double)wxAtof(buf);
+        SetValue((double)wxAtof(buf));
+
+    }
 }
 
 static void AddThousandsSeparators(wxString &s) {
@@ -177,7 +183,19 @@ format_number(T val, wxNumericMode mode, int deci, bool thousep, const wxString 
     } else {
         if (std::isnan((double) val)) return "NaN";
         if (std::isinf((double) val)) return "Inf";
-        if (deci == wxNUMERIC_GENERIC) buf.Printf("%lg", (double) val);
+        if (deci == wxNUMERIC_GENERIC) {
+            double tmp = (double)val;
+            buf.Printf("%lg", (double)val);
+            int i = 1;
+            double diff1 = fabs(atof(buf) - tmp);
+            while ((atof(buf) != tmp) && (i < 15))
+            {
+                buf = wxNumberFormatter::ToString((double)val, i);
+                i++;
+            }
+            double diff2 = fabs(atof(buf) - tmp);
+            if (diff1 < diff2) buf.Printf("%lg", (double)val);
+        }
         else if (deci == wxNUMERIC_EXPONENTIAL) buf.Printf("%le", (double) val);
         else {
             wxString fmt;
