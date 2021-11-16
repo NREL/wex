@@ -24,6 +24,7 @@
 
 #include "wex/numeric.h"
 #include <cmath>
+#include <cstdlib>
 #include <wx/wx.h>
 #include <wx/valtext.h>
 #include <wx/numformatter.h>
@@ -187,13 +188,13 @@ format_number(T val, wxNumericMode mode, int deci, bool thousep, const wxString 
             double tmp = (double)val;
             buf.Printf("%lg", (double)val);
             int i = 1;
-            double diff1 = fabs(atof(buf) - tmp);
-            while ((atof(buf) != tmp) && (i < 15))
+            double diff1 = fabs((double)wxAtof(buf) - tmp);
+            while (((double)wxAtof(buf) != tmp) && (i < 15))
             {
                 buf = wxNumberFormatter::ToString((double)val, i);
                 i++;
             }
-            double diff2 = fabs(atof(buf) - tmp);
+            double diff2 = fabs((double)wxAtof(buf) - tmp);
             if (diff1 < diff2) buf.Printf("%lg", (double)val);
         }
         else if (deci == wxNUMERIC_EXPONENTIAL) buf.Printf("%le", (double) val);
