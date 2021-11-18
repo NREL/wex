@@ -206,7 +206,7 @@ void wxPLSectorPlot::Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map) {
     if (m_labelValues) {
         // calculate and draw label inside sector with the value
         dc.TextPoints(-1);
-        dc.TextColour(wxColour(240, 240, 240));
+        dc.TextColour(wxColour(0, 0, 0));
         for (size_t i = 0; i < m_sectors.size(); i++) {
             double f = 0.5 * (1.0 + m_holeFraction);
             if (f < 0.75) f = 0.75;
