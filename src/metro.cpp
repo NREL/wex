@@ -77,8 +77,7 @@ wxMetroThemeProvider::~wxMetroThemeProvider() {
 }
 
 wxFont wxMetroThemeProvider::Font(int style, int size) {
-//    wxFont font(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
-    wxFont font(wxSystemSettings::GetFont(wxSYS_SYSTEM_FONT));
+    wxFont font(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
 
     if (size > 1)
         font.SetPointSize(size);
@@ -92,8 +91,6 @@ wxFont wxMetroThemeProvider::Font(int style, int size) {
     if (wxFontEnumerator::IsValidFacename(face))
         font.SetFaceName(face);
 #else
- //   font.SetFamily(wxFONTFAMILY_MODERN);
-
     if (style == wxMT_SEMIBOLD)
         font.SetWeight(wxFONTWEIGHT_BOLD);
 #endif
