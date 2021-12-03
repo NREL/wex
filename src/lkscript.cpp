@@ -969,9 +969,6 @@ void fcall_contour(lk::invoke_t &cxt) {
 
         plot->SetSideWidget(cmap, wxPLPlot::Y_RIGHT);
 
-        plot->GetXAxis2()->SetReversed(reversexaxis);
-        plot->GetYAxis1()->SetReversed(reverseyaxis);
-
         for (size_t i = 0; i < plot->GetPlotCount(); i++)
             if (wxPLContourPlot *cp = dynamic_cast<wxPLContourPlot *>(plot->GetPlot(i)))
                 cp->SetColourMap(cmap);
@@ -988,6 +985,10 @@ void fcall_contour(lk::invoke_t &cxt) {
 
     wxPLContourPlot *contour = new wxPLContourPlot(x, y, z, filled, label, (int) levels, cmap);
     plot->AddPlot(contour);
+    if (plot->GetXAxis1() != NULL) plot->GetXAxis1()->SetReversed(reversexaxis);
+    if (plot->GetYAxis1() != NULL) plot->GetYAxis1()->SetReversed(reverseyaxis);
+    if (plot->GetXAxis2() != NULL) plot->GetXAxis2()->SetReversed(reversexaxis);
+    if (plot->GetYAxis2() != NULL) plot->GetYAxis2()->SetReversed(reverseyaxis);
 }
 
 #include <wx/anidecod.h>
@@ -1285,7 +1286,7 @@ static void fcall_browse(lk::invoke_t &cxt) {
 
 static void fcall_curl(lk::invoke_t &cxt) {
     LK_DOC("curl",
-           "Issue a synchronous HTTP/HTTPS request.  Option keys are: 'post', 'jsonpost', 'message', 'file'.  If 'file' is specified, data is downloaded to that file and true/false is returned. Otherwise, the retrieved data is returned as a string.",
+           "Issue a synchronous HTTP/HTTPS request.  Option keys are: 'post', 'jsonpost', 'message', 'file', 'headers'.  If 'file' is specified, data is downloaded to that file and true/false is returned. Otherwise, the retrieved data is returned as a string.",
            "(string:url, [table:options]):variant");
     wxEasyCurl curl;
 
@@ -1306,6 +1307,11 @@ static void fcall_curl(lk::invoke_t &cxt) {
             curl.AddHttpHeader("Accept: application/json");
             curl.AddHttpHeader("Content-Type: application/json");
             curl.SetPostData(x->as_string());
+        }
+
+        if (lk::vardata_t *x = opt.lookup("headers")) {
+            for (size_t i = 0; i < x->length(); i++)
+                curl.AddHttpHeader(x->index(i)->as_string());
         }
     }
 

@@ -2,6 +2,10 @@
 
 #include "wex/pdf/pdfcjkfontdata.h"
 
+#ifndef WXPDFDOC_ENABLE_CJK_MS_FONTS
+#define WXPDFDOC_ENABLE_CJK_MS_FONTS 0
+#endif
+
 static short cwAllHw[] =
         {
                 500, 500, 500, 500, 500, 500, 500, 500,
@@ -82,6 +86,8 @@ static short cwUhc[] =
                 625, 625, 500, 583, 583, 583, 750
         };
 
+#if WXPDFDOC_ENABLE_CJK_MS_FONTS
+
 static short cwPGothic[] =
         {
                 305, 219, 500, 500, 500, 500, 594, 203,
@@ -130,6 +136,8 @@ static short cwPMincho[] =
                 469, 477, 453, 242, 219, 242, 500
         };
 
+#endif
+
 static const wxPdfCjkFontDesc gs_cjkFontTable[] =
         {
                 {wxT("big5"), wxT("MSungStd-Light-Acro"), wxT("cp-950"), wxT("CNS1"), wxT("0"), wxT("ETenms-B5-H"),
@@ -149,7 +157,7 @@ static const wxPdfCjkFontDesc gs_cjkFontTable[] =
                 {wxT("uhc-hw"), wxT("HYSMyeongJoStd-Medium-Acro--KSCms-UHC-HW-H"), wxT("cp-949"), wxT("Korea1"),
                  wxT("1"), wxT("KSCms-UHC-HW-H"), cwAllHw, wxT("[0 -200 1000 900]"), 800, -200, 800, 6, 0, 50, 1000,
                  616, -130, 40},
-#if 0
+#if WXPDFDOC_ENABLE_CJK_MS_FONTS
         // These M$ fonts don't work cross platform.
         // To make them available as Type0 fonts they should be registered via RegisterFontCJK.
           { wxT("gothic"),   wxT("MS-Gothic"),                                  wxT("cp-932"), wxT("Japan1"), wxT("2"), wxT("90msp-RKSJ-H"),   cwAllHw,    wxT("[0 0 1000 1000]"),   1000,    0, 1000, 6, 0, 10, 1000, 553,  -66, 74 },
@@ -158,6 +166,7 @@ static const wxPdfCjkFontDesc gs_cjkFontTable[] =
           { wxT("mincho"),   wxT("MS-Mincho"),                                  wxT("cp-932"), wxT("Japan1"), wxT("2"), wxT("90msp-RKSJ-H"),   cwAllHw,    wxT("[0 0 1000 1000]"),   1000,    0, 1000, 6, 0, 10, 1000, 450,  -94, 47 },
           { wxT("pmincho"),  wxT("MS-PMincho"),                                 wxT("cp-932"), wxT("Japan1"), wxT("2"), wxT("90msp-RKSJ-H"),   cwPMincho,  wxT("[0 0 1000 1000]"),   1000,    0, 1000, 6, 0, 10, 1000, 450,  -94, 47 },
 #endif
+
 // Last dummy entry
                 {wxEmptyString, wxEmptyString, wxEmptyString, wxEmptyString, wxEmptyString, wxEmptyString, NULL,
                  wxEmptyString, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}

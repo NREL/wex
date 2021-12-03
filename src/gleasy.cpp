@@ -76,6 +76,7 @@ static PFNGLWINDOWPOS2FPROC glWindowPos2f = NULL;
 #elif defined(__WXGTK__)
 
 static PFNGLWINDOWPOS2FPROC glWindowPos2f = NULL;
+#include <GL/glx.h>
 
 #endif
 

@@ -881,9 +881,6 @@ wxPdfDocument::Sector(double xc, double yc, double r, double astart, double afin
     afinish = afinish / 180. * pi;
     astart = astart / 180. * pi;
     d = afinish - astart;
-    if (d == 0) {
-        d = 2 * pi;
-    }
 
     wxString op;
     if ((style & wxPDF_STYLE_FILLDRAW) == wxPDF_STYLE_FILL) {
