@@ -30,12 +30,12 @@
 #include <wx/menu.h>
 #include <wx/stream.h>
 #include <wx/graphics.h>
-/*
+
 #ifdef __WXOSX__
 #define PL_USE_OVERLAY 1
 #include <wx/overlay.h>
 #endif
-*/
+
 #include "wex/plot/plplot.h"
 
 BEGIN_DECLARE_EVENT_TYPES()
