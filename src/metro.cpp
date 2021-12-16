@@ -297,12 +297,16 @@ void wxMetroButton::OnPaint(wxPaintEvent &) {
 
     int bit_x = cwidth / 2 - tw / 2;
     int text_x = bit_x + bit_width + bit_space;
-    int icon_x = cwidth / 2 + tw / 2 - icon.GetWidth();
-
+    int icon_x = cwidth / 2 + tw / 2;// - icon.GetWidth();
+    if (!icon.IsNull())
+        icon_x -= icon.GetWidth();
+    
     if (m_style & wxMB_ALIGNLEFT) {
         bit_x = 10;
         text_x = bit_x + bit_width + bit_space;
-        icon_x = 10 + tw - icon.GetWidth();
+        icon_x = 10 + tw;// - icon.GetWidth();
+        if (!icon.IsNull())
+            icon_x -= icon.GetWidth();
     }
 
     if (!m_bitmap.IsNull())

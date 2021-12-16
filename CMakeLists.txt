@@ -14,7 +14,7 @@ option(SAM_SKIP_TOOLS "Skips the wex sandbox and Dview builds" OFF)
 #
 
 if (APPLE)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10" CACHE STRING "Minimum OS X deployment version")
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
 endif ()
 
 if (UNIX AND NOT CMAKE_C_COMPILER)
