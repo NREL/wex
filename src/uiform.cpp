@@ -2653,7 +2653,7 @@ void wxUIFormEditor::OnLeftUp(wxMouseEvent &) {
         m_moveMode = false;
 
 #ifdef wxUI_USE_OVERLAY
-        m_overlay.Reset();
+//        m_overlay.Reset();
 #else
         if (m_moveModeErase)
             DrawMoveResizeOutlines();
@@ -2683,7 +2683,7 @@ void wxUIFormEditor::OnLeftUp(wxMouseEvent &) {
 
         m_multiSelMode = false;
 #ifdef wxUI_USE_OVERLAY
-        m_overlay.Reset();
+//        m_overlay.Reset();
 #else
         if (m_multiSelModeErase)
             DrawMultiSelBox();
@@ -2710,7 +2710,7 @@ void wxUIFormEditor::OnLeftUp(wxMouseEvent &) {
 
         m_resizeMode = false;
 #ifdef wxUI_USE_OVERLAY
-        m_overlay.Reset();
+//        m_overlay.Reset();
 #else
         if (m_resizeModeErase)
             DrawMoveResizeOutlines();

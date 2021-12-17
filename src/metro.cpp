@@ -1603,13 +1603,16 @@ public:
             if (sel >= 0) {
                 wxCommandEvent ee(wxEVT_MENU);
                 ee.SetId(m_items[sel].id);
-                AddPendingEvent(ee);
-//				Dismiss(); - Windows 10 1709 update fix.
+//                AddPendingEvent(ee);
+//                ProcessWindowEvent(ee);
+//				Dismiss(); //- Windows 10 1709 update fix.
                 if (HasCapture())
                     ReleaseMouse();
 
                 Hide();
 //
+                // macOS handler
+                GetParent()->GetEventHandler()->ProcessEvent(ee);
                 return;
             }
         }
