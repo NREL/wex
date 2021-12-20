@@ -4,7 +4,7 @@
 #
 #####################################################################################################################
 
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.19)
 
 option(SAM_SKIP_TOOLS "Skips the wex sandbox and Dview builds" OFF)
 
@@ -45,9 +45,9 @@ if (MSVC)
     endforeach ()
 else ()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-    if (APPLE)
-        add_compile_options(-arch x86_64)
-    endif ()
+#    if (APPLE)
+#        add_compile_options( -arch x86_64 -arch arm64 )
+#    endif ()
     add_compile_options(-Wall -Wno-unknown-pragmas -Wno-strict-aliasing)
     add_compile_options(-fno-common ${wxWidgets_CXX_FLAGS})
     add_definitions(-DLK_USE_WXWIDGETS -D_CRT_SECURE_NO_WARNINGS -D_MBCS -DFT2_BUILD_LIBRARY -DOPJ_STATIC -DFT_CONFIG_MODULES_H=\"slimftmodules.h\" -DFT_CONFIG_OPTIONS_H=\"slimftoptions.h\")
