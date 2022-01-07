@@ -743,11 +743,6 @@ public:
         UpdateBoundingBox();
     }
 
-    virtual void DoGetClippingBox(wxCoord *x, wxCoord *y, wxCoord *w, wxCoord *h) const {
-        m_dc.DoGetClippingBox(x, y, w, h);
-        UpdateBoundingBox();
-    }
-
     virtual void DestroyClippingRegion() {
         m_dc.DestroyClippingRegion();
         UpdateBoundingBox();

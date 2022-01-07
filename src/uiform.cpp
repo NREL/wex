@@ -2740,8 +2740,8 @@ void wxUIFormEditor::DrawMultiSelBox() {
     wxPen pen(wxColour(90, 90, 90));
 #else
     dc.SetLogicalFunction(wxINVERT);
-    wxBrush brush(*wxWHITE, wxTRANSPARENT);
-    wxPen pen(*wxBLACK, 2, wxSOLID);
+    wxBrush brush(*wxWHITE, wxBRUSHSTYLE_TRANSPARENT);
+    wxPen pen(*wxBLACK, 2, wxPENSTYLE_SOLID);
 #endif
 
     pen.SetCap(wxCAP_BUTT);
@@ -2774,7 +2774,7 @@ void wxUIFormEditor::DrawMoveResizeOutlines() {
 
 #else
     dc.SetLogicalFunction(wxINVERT);
-    wxBrush brush(*wxWHITE, wxTRANSPARENT);
+    wxBrush brush(*wxWHITE, wxBRUSHSTYLE_TRANSPARENT);
 #endif
 
     wxPen pen(wxColour(90, 90, 90), 1, wxPENSTYLE_SOLID);
