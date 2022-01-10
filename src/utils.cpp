@@ -985,12 +985,12 @@ double wxGetScreenHDScale() {
 #endif
 
 void wxDevicePPIToScale(const wxSize &ppi, double *xs, double *ys) {
-    // don't try to scale on linux...
-#ifdef __WXGTK__
-    *xs = *ys = 1.0;
-#else
+    // don't try to scale on linux... and wxWidgets 3.1.5 handles on macOS
+#ifdef __WXMSW__
     *xs = ppi.x / DPI_NOMINAL;
     *ys = ppi.y / DPI_NOMINAL;
+#else
+    *xs = *ys = 1.0;
 #endif
 }
 
@@ -1010,7 +1010,6 @@ void wxGetScreenHDScale(double *xs, double *ys) {
     if (dpi.x < 0 || dpi.y < 0) {
         dpi.x = DPI_NOMINAL;
         dpi.y = DPI_NOMINAL;
-
         if (wxWindowList::compatibility_iterator first = wxTopLevelWindows.GetFirst()) {
             dpi = wxClientDC(first->GetData()).GetPPI();
         } else {

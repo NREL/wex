@@ -597,7 +597,7 @@ void wxPLPlotCtrl::OnLeftUp(wxMouseEvent &evt) {
         wxClientDC dc(this);
         wxDCOverlay overlaydc(m_overlay, &dc);
         overlaydc.Clear();
-        m_overlay.Reset();
+//        m_overlay.Reset();
 #else
         if (m_moveLegendErase)
             DrawLegendOutline();
@@ -656,7 +656,7 @@ void wxPLPlotCtrl::OnLeftUp(wxMouseEvent &evt) {
         wxClientDC dc(this);
         wxDCOverlay overlaydc(m_overlay, &dc);
         overlaydc.Clear();
-        m_overlay.Reset();
+//        m_overlay.Reset();
 #else
         if (m_highlightErase)
             UpdateHighlightRegion();
