@@ -2653,7 +2653,7 @@ void wxUIFormEditor::OnLeftUp(wxMouseEvent &) {
         m_moveMode = false;
 
 #ifdef wxUI_USE_OVERLAY
-        m_overlay.Reset();
+//        m_overlay.Reset();
 #else
         if (m_moveModeErase)
             DrawMoveResizeOutlines();
@@ -2683,7 +2683,7 @@ void wxUIFormEditor::OnLeftUp(wxMouseEvent &) {
 
         m_multiSelMode = false;
 #ifdef wxUI_USE_OVERLAY
-        m_overlay.Reset();
+//        m_overlay.Reset();
 #else
         if (m_multiSelModeErase)
             DrawMultiSelBox();
@@ -2710,7 +2710,7 @@ void wxUIFormEditor::OnLeftUp(wxMouseEvent &) {
 
         m_resizeMode = false;
 #ifdef wxUI_USE_OVERLAY
-        m_overlay.Reset();
+//        m_overlay.Reset();
 #else
         if (m_resizeModeErase)
             DrawMoveResizeOutlines();
@@ -2740,8 +2740,8 @@ void wxUIFormEditor::DrawMultiSelBox() {
     wxPen pen(wxColour(90, 90, 90));
 #else
     dc.SetLogicalFunction(wxINVERT);
-    wxBrush brush(*wxWHITE, wxTRANSPARENT);
-    wxPen pen(*wxBLACK, 2, wxSOLID);
+    wxBrush brush(*wxWHITE, wxBRUSHSTYLE_TRANSPARENT);
+    wxPen pen(*wxBLACK, 2, wxPENSTYLE_SOLID);
 #endif
 
     pen.SetCap(wxCAP_BUTT);
@@ -2774,7 +2774,7 @@ void wxUIFormEditor::DrawMoveResizeOutlines() {
 
 #else
     dc.SetLogicalFunction(wxINVERT);
-    wxBrush brush(*wxWHITE, wxTRANSPARENT);
+    wxBrush brush(*wxWHITE, wxBRUSHSTYLE_TRANSPARENT);
 #endif
 
     wxPen pen(wxColour(90, 90, 90), 1, wxPENSTYLE_SOLID);
