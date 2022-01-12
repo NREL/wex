@@ -30,11 +30,12 @@
 #include <wx/wx.h>
 #include <wx/clrpicker.h>
 
+/*
 #ifndef __WXOSX__
 #define wxUI_USE_OVERLAY 1
 #include <wx/overlay.h>
 #endif
-
+*/
 class wxUIProperty;
 
 class wxUIPropertyUpdateInterface {
