@@ -30,12 +30,6 @@
 #include <wx/wx.h>
 #include <wx/clrpicker.h>
 
-/*
-#ifndef __WXOSX__
-#define wxUI_USE_OVERLAY 1
-#include <wx/overlay.h>
-#endif
-*/
 class wxUIProperty;
 
 class wxUIPropertyUpdateInterface {
@@ -467,10 +461,6 @@ private:
     int m_diffX, m_diffY;
     int m_diffW, m_diffH;
     int m_popupX, m_popupY;
-
-#ifdef wxUI_USE_OVERLAY
-    wxOverlay m_overlay;
-#endif
 
     void OnMouseMove(wxMouseEvent &evt);
 
