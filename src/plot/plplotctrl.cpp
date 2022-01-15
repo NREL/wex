@@ -396,7 +396,7 @@ void wxPLPlotCtrl::OnPaint(wxPaintEvent &) {
 
     wxGraphicsRenderer *renderer = 0;
 #ifdef __WXMSW__
-    //renderer = wxGraphicsRenderer::GetDirect2DRenderer();
+    renderer = wxGraphicsRenderer::GetDirect2DRenderer();
 #endif
     if (!renderer)
         renderer = wxGraphicsRenderer::GetDefaultRenderer();
