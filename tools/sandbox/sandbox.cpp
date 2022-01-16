@@ -361,7 +361,16 @@ void TestContourPlot() {
     plot->SetBackgroundColour(*wxWHITE);
     plot->SetHighlightMode(wxPLPlotCtrl::HIGHLIGHT_ZOOM);
 //	int np = 49;
-
+ //   plot->SetScaleTextSize(true);
+//    wxFont font(8, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Consolas");
+//    wxFont font(12, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Carlito");
+//    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Arial Black");
+//    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial Narrow");
+//    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Calibri");
+//    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial");
+//    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false);
+    //    wxFont font(12, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Calibri");
+//    plot->SetFont(font);
     double zmin = 1e99, zmax = -1e99;
     wxMatrix<double> XX, YY, ZZ;
 
@@ -445,6 +454,15 @@ void TestWaveAnnualEnergyPlot() {
     wxPLPlotCtrl *plot = new wxPLPlotCtrl(frame, wxID_ANY, wxDefaultPosition, wxDefaultSize);
     plot->SetBackgroundColour(*wxBLACK);
     plot->SetHighlightMode(wxPLPlotCtrl::HIGHLIGHT_ZOOM);
+    wxFont font(12, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Consolas");
+    //    wxFont font(12, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Carlito");
+    //    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Arial Black");
+    //    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial Narrow");
+    //    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Calibri");
+    //    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial");
+    //    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false);
+        //    wxFont font(12, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Calibri");
+    plot->SetFont(font);
 
     double zmin = 1e99, zmax = -1e99;
     wxMatrix<double> XX, YY, ZZ;
@@ -1337,7 +1355,7 @@ public:
 
 
 //		return true;
-
+/*
 #ifdef __WXMSW__
         typedef BOOL(WINAPI *SetProcessDPIAware_t)(void);
         wxDynamicLibrary dllUser32(wxT("user32.dll"));
@@ -1346,15 +1364,16 @@ public:
         if (pfnSetProcessDPIAware)
             pfnSetProcessDPIAware();
 #endif
-
+*/
         wxInitAllImageHandlers();
 
         wxString wexdir;
         if (wxGetEnv("WEXDIR", &wexdir)) {
             if (!wxPLPlot::AddPdfFontDir(wexdir + "/pdffonts"))
                 wxMessageBox("Could not add font dir: " + wexdir + "/pdffonts");
-            if (!wxPLPlot::SetPdfDefaultFont("ComputerModernUpright"))
-                wxMessageBox("Could not set default pdf font to Computer Modern Sans Serif");
+//            if (!wxPLPlot::SetPdfDefaultFont("Carlito"))
+//            if (!wxPLPlot::SetPdfDefaultFont("ComputerModernSansSerifBold"))
+//                wxMessageBox("Could not set default pdf font to Computer Modern Sans Serif");
         }
 
         //	wxStopWatch sw;
@@ -1372,7 +1391,7 @@ public:
 //		TestSectorPlot(0);
 //        TestMELCOESectorPlot(0);
 //		TestTextLayout();
-        //TestFreeTypeText();
+//        TestFreeTypeText();
 //		TestPlotAnnotations(0);
 //		TestWindPrufFigure2(0);
 //		TestWindPrufFigure5(0);

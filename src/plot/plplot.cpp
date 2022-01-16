@@ -1117,7 +1117,8 @@ void wxPLPlot::Render(wxPLOutputDevice &dc, wxPLRealRect geom) {
         if (m_titleLayout == 0)
             m_titleLayout = new wxPLTextLayout(dc, m_title, wxPLTextLayout::CENTER);
 
-        m_titleLayout->Render(dc, box.x + box.width / 2 - m_titleLayout->Width() / 2, box.y, 0, false);
+//        m_titleLayout->Render(dc, box.x + box.width / 2 - m_titleLayout->Width() / 2, box.y, 0, false);
+        m_titleLayout->Render(dc, box.x + box.width / 2 - m_titleLayout->Width() / 2, box.y, 0, true);
         box.y += m_titleLayout->Height() + text_space;
         box.height -= m_titleLayout->Height() + text_space;
     } else {
