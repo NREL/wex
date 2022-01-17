@@ -454,7 +454,7 @@ void TestWaveAnnualEnergyPlot() {
     wxPLPlotCtrl *plot = new wxPLPlotCtrl(frame, wxID_ANY, wxDefaultPosition, wxDefaultSize);
     plot->SetBackgroundColour(*wxBLACK);
     plot->SetHighlightMode(wxPLPlotCtrl::HIGHLIGHT_ZOOM);
-    wxFont font(12, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Consolas");
+   // wxFont font(12, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Consolas");
     //    wxFont font(12, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Carlito");
     //    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Arial Black");
     //    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial Narrow");
@@ -462,14 +462,14 @@ void TestWaveAnnualEnergyPlot() {
     //    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial");
     //    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false);
         //    wxFont font(12, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Calibri");
-    plot->SetFont(font);
+    //plot->SetFont(font);
 
     double zmin = 1e99, zmax = -1e99;
     wxMatrix<double> XX, YY, ZZ;
 
 
     wxCSVData csv;
-    csv.ReadFile("C:/Projects/SAM/Documentation/MHK/2019.8.9_Final/WaveAnnualOutput.csv");
+    csv.ReadFile("//XPS15-7590/JCOneDrive/Documents/Documentation/MHK/2019.8.9_Final/WaveAnnualOutput.csv");
     // Example 1
     size_t nx = csv.NumRows(), ny = csv.NumCols();
 
@@ -1355,7 +1355,7 @@ public:
 
 
 //		return true;
-/*
+
 #ifdef __WXMSW__
         typedef BOOL(WINAPI *SetProcessDPIAware_t)(void);
         wxDynamicLibrary dllUser32(wxT("user32.dll"));
@@ -1364,7 +1364,7 @@ public:
         if (pfnSetProcessDPIAware)
             pfnSetProcessDPIAware();
 #endif
-*/
+
         wxInitAllImageHandlers();
 
         wxString wexdir;
@@ -1380,7 +1380,7 @@ public:
         //	int nf = wxFreeTypeLoadAllFonts();
         //	wxMessageBox( wxString::Format("Loaded %d fonts in %d ms.", nf, (int)sw.Time()) );
 
-        TestContourPlot();
+//        TestContourPlot();
         TestWaveAnnualEnergyPlot();
 
 //		TestPLPlot(0);

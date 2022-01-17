@@ -90,9 +90,9 @@ END_EVENT_TABLE()
 wxPLPlotCtrl::wxPLPlotCtrl(wxWindow *parent, int id, const wxPoint &pos, const wxSize &size)
         : wxWindow(parent, id, pos, size), wxPLPlot() {
     SetBackgroundStyle(wxBG_STYLE_CUSTOM);
- //   SetFont(*wxNORMAL_FONT);
-    wxFont font(8, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Consolas");
-    SetFont(font);
+    SetFont(*wxNORMAL_FONT);
+ //   wxFont font(8, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Consolas");
+ //   SetFont(font);
 
 
     m_scaleTextSize = false;
@@ -405,17 +405,18 @@ void wxPLPlotCtrl::OnPaint(wxPaintEvent &) {
 // no exception but blurry
 //    renderer = wxGraphicsRenderer::GetGDIPlusRenderer();
 // use default rederer and update fonts
-    renderer = wxGraphicsRenderer::GetGDIPlusRenderer();
 #endif
     if (!renderer)
         renderer = wxGraphicsRenderer::GetDefaultRenderer();
 
-    if (wxGraphicsContext *gc = renderer->CreateContext(pdc)) {
+    if (wxGraphicsContext* gc = renderer->CreateContext(pdc)) {
 #ifdef SHOW_RENDERER_INFO
         wxStopWatch sw;
 #endif
         int width, height;
         GetClientSize(&width, &height);
+
+        gc->SetInterpolationQuality(wxINTERPOLATION_BEST);
 
         gc->SetFont(GetFont(), *wxBLACK); // initialze font and background
         gc->SetPen(*wxWHITE_PEN);
