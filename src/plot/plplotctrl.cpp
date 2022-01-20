@@ -309,7 +309,7 @@ wxBitmap wxPLPlotCtrl::GetBitmap(int width, int height) {
     wxGraphicsRenderer *renderer = 0;
 #ifdef __WXMSW__
     //renderer = wxGraphicsRenderer::GetDirect2DRenderer();
-    renderer = wxGraphicsRenderer::GetGDIPlusRenderer();
+   // renderer = wxGraphicsRenderer::GetGDIPlusRenderer();
 #endif
     if (!renderer)
         renderer = wxGraphicsRenderer::GetDefaultRenderer();

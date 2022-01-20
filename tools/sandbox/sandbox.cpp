@@ -469,7 +469,7 @@ void TestWaveAnnualEnergyPlot() {
 
 
     wxCSVData csv;
-    csv.ReadFile("//XPS15-7590/JCOneDrive/Documents/Documentation/MHK/2019.8.9_Final/WaveAnnualOutput.csv");
+    csv.ReadFile("c:/Projects/SAM/Documentation/MHK/2019.8.9_Final/WaveAnnualOutput.csv");
     // Example 1
     size_t nx = csv.NumRows(), ny = csv.NumCols();
 
