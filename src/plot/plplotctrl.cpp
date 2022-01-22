@@ -91,10 +91,7 @@ wxPLPlotCtrl::wxPLPlotCtrl(wxWindow *parent, int id, const wxPoint &pos, const w
         : wxWindow(parent, id, pos, size), wxPLPlot() {
     SetBackgroundStyle(wxBG_STYLE_CUSTOM);
     SetFont(*wxNORMAL_FONT);
- //   wxFont font(8, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Consolas");
- //   SetFont(font);
-
-
+ 
     m_scaleTextSize = false;
     m_includeLegendOnExport = false;
 
@@ -307,10 +304,6 @@ wxBitmap wxPLPlotCtrl::GetBitmap(int width, int height) {
     wxMemoryDC memdc(bitmap);
 
     wxGraphicsRenderer *renderer = 0;
-#ifdef __WXMSW__
-    //renderer = wxGraphicsRenderer::GetDirect2DRenderer();
-   // renderer = wxGraphicsRenderer::GetGDIPlusRenderer();
-#endif
     if (!renderer)
         renderer = wxGraphicsRenderer::GetDefaultRenderer();
 
@@ -399,13 +392,6 @@ void wxPLPlotCtrl::OnPaint(wxPaintEvent &) {
     wxAutoBufferedPaintDC pdc(this);
 
     wxGraphicsRenderer *renderer = 0;
-#ifdef __WXMSW__
-    // C++ exception
-//    renderer = wxGraphicsRenderer::GetDirect2DRenderer();
-// no exception but blurry
-//    renderer = wxGraphicsRenderer::GetGDIPlusRenderer();
-// use default rederer and update fonts
-#endif
     if (!renderer)
         renderer = wxGraphicsRenderer::GetDefaultRenderer();
 
@@ -415,7 +401,7 @@ void wxPLPlotCtrl::OnPaint(wxPaintEvent &) {
 #endif
         int width, height;
         GetClientSize(&width, &height);
-
+        // for wx 3.1.5
         gc->SetInterpolationQuality(wxINTERPOLATION_BEST);
 
         gc->SetFont(GetFont(), *wxBLACK); // initialze font and background
