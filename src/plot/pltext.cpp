@@ -213,7 +213,9 @@ void wxPLTextLayout::Render(wxPLOutputDevice &dc, double x, double y, double rot
     if (m_lines.size() == 0) return;
 
     bool aa = dc.GetAntiAliasing();
-    if (drawBounds) dc.SetAntiAliasing(false);
+    // wx 3.1.5
+    //    if (drawBounds) dc.SetAntiAliasing(false);
+    dc.SetAntiAliasing(true);
 
     double fontPoints = dc.TextPoints();
 
