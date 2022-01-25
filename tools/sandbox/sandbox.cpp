@@ -29,7 +29,7 @@
 #include <wx/statbmp.h>
 #include <wx/numformatter.h>
 #include <wx/grid.h>
-#include <wx/zstream.h>
+#include <wx/zstream.h>Fw
 #include <wx/dynlib.h>
 
 #include "wex/icons/time.cpng"
@@ -1031,6 +1031,41 @@ void TestSAMStackedBarPlot(wxWindow *parent) {
 }
 
 
+void TestPLWaterfallBarPlot(wxWindow* parent) {
+    wxFrame* frame = new wxFrame(parent, wxID_ANY,
+        wxT("wxPLBarPlotCtrl with different baselines"),
+        wxDefaultPosition, wxSize(500, 400));
+    wxPLPlotCtrl* plot = new wxPLPlotCtrl(frame, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    //plot->SetBackgroundColour( *wxWHITE );
+    plot->SetTitle(wxT("Demo Plot: waterfall"));
+
+    std::vector<wxRealPoint> bars1, bars2, bars3,bars4, bars5;
+ 
+    bars1.push_back(wxRealPoint(0, 10));
+    bars2.push_back(wxRealPoint(1, 2));
+    bars3.push_back(wxRealPoint(2, 4));
+    bars4.push_back(wxRealPoint(3, 3));
+    bars5.push_back(wxRealPoint(4, 1));
+
+
+    wxPLBarPlot* bar1 = new wxPLBarPlot(bars1, 0.0, "Bar1", *wxRED);
+    wxPLBarPlot* bar2 = new wxPLBarPlot(bars2, 8, "Bar2", *wxGREEN);
+    wxPLBarPlot* bar3 = new wxPLBarPlot(bars3, 4, "Bar3", *wxGREEN);
+    wxPLBarPlot* bar4 = new wxPLBarPlot(bars4, 1 , "Bar3", *wxGREEN);
+    wxPLBarPlot* bar5 = new wxPLBarPlot(bars5, 0.0, "Bar3", *wxBLUE);
+
+    plot->AddPlot(bar1);
+    plot->AddPlot(bar2);
+    plot->AddPlot(bar3);
+    plot->AddPlot(bar4);
+    plot->AddPlot(bar5);
+
+    plot->X1().SetWorld(-1, 5);
+
+ 
+    frame->Show();
+}
+
 void TestPLBarPlot(wxWindow *parent) {
     wxFrame *frame = new wxFrame(parent, wxID_ANY,
                                  wxT("wxPLPolarPlotCtrl in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"),
@@ -1381,17 +1416,18 @@ public:
         //	wxMessageBox( wxString::Format("Loaded %d fonts in %d ms.", nf, (int)sw.Time()) );
 
 //        TestContourPlot();
-        TestWaveAnnualEnergyPlot();
+//        TestWaveAnnualEnergyPlot();
 
 //		TestPLPlot(0);
 //		TestPLPolarPlot(0);
-//		TestPLBarPlot(0);
-//		TestStackedBarPlot(0);
-//		TestSAMStackedBarPlot(0);
+		TestPLBarPlot(0);
+		TestStackedBarPlot(0);
+		TestSAMStackedBarPlot(0);
+        TestPLWaterfallBarPlot(0);
 //		TestSectorPlot(0);
 //        TestMELCOESectorPlot(0);
 //		TestTextLayout();
-//        TestFreeTypeText();
+ //       TestFreeTypeText();
 //		TestPlotAnnotations(0);
 //		TestWindPrufFigure2(0);
 //		TestWindPrufFigure5(0);
