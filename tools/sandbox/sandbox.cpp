@@ -29,7 +29,7 @@
 #include <wx/statbmp.h>
 #include <wx/numformatter.h>
 #include <wx/grid.h>
-#include <wx/zstream.h>Fw
+#include <wx/zstream.h>
 #include <wx/dynlib.h>
 
 #include "wex/icons/time.cpng"
