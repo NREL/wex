@@ -262,7 +262,7 @@ bool dvStatisticsTreeModel::IsContainer(const wxDataViewItem &item) const {
 
 bool dvStatisticsTreeModel::GetAttr(const wxDataViewItem& item, unsigned int col, wxDataViewItemAttr& attr)	const
 {
-    attr.SetColour(*wxRED); // fails
+    //attr.SetColour(*wxRED); // fails
     attr.SetBold(true); // works
     //attr.SetBackgroundColour(clr); // works
    // attr.SetStrikethrough(true); // works
@@ -416,17 +416,10 @@ END_EVENT_TABLE()
 wxDVStatisticsTableCtrl::wxDVStatisticsTableCtrl(wxWindow *parent, wxWindowID id)
         : wxPanel(parent, id) {
     m_showMonths = false;
- //   SetForegroundColour(*wxBLACK);
 
     m_ctrl = new wxDataViewCtrl(this, ID_STATISTICS_CTRL, wxDefaultPosition, wxSize(1040, 720),
         wxDV_MULTIPLE | wxDV_ROW_LINES | wxDV_VERT_RULES | wxDV_HORIZ_RULES);// | wxBORDER_NONE);
 
- /*   m_ctrl->SetForegroundColour(*wxBLACK); // supposed to set text color
-    auto fn = m_ctrl->GetFont();
-    fn.set
-    fn.SetWeight(wxFONTWEIGHT_MEDIUM);
-    m_ctrl->SetFont(fn);
-*/
     m_ctrl->Bind(wxEVT_COMMAND_DATAVIEW_ITEM_CONTEXT_MENU, &wxDVStatisticsTableCtrl::OnContextMenu, this);
 
     m_StatisticsModel = new dvStatisticsTreeModel();
@@ -497,7 +490,7 @@ void wxDVStatisticsTableCtrl::RebuildDataViewCtrl() {
     m_ctrl->ClearColumns();
     m_ctrl->AssociateModel(m_StatisticsModel.get());
 
-    //TODO:  Is there a way to highlight "Total" nodes (i.e. bold, background color, etc...)?
+    //TODO:  Is there a way to highlight "Total" nodes (i.e. bold, background color, etc...)? Use GetAttr in underlying model - howwever SetColour does not work in 3.1.5
 
     tr = new wxDataViewTextRenderer("string", wxDATAVIEW_CELL_INERT, wxALIGN_LEFT);
     wxDataViewColumn *column0 = new wxDataViewColumn("", tr, 0, 350, wxALIGN_LEFT, wxDATAVIEW_COL_RESIZABLE);

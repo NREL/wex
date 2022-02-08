@@ -167,7 +167,7 @@ public:
 
     virtual unsigned int GetChildren(const wxDataViewItem &parent, wxDataViewItemArray &array) const;
 
-    virtual bool GetAttr(const wxDataViewItem& item, unsigned int 	col, wxDataViewItemAttr& attr)	const wxOVERRIDE;
+    virtual bool GetAttr(const wxDataViewItem& item, unsigned int 	col, wxDataViewItemAttr& attr)	const;
 
 private:
 
