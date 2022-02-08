@@ -260,6 +260,17 @@ bool dvStatisticsTreeModel::IsContainer(const wxDataViewItem &item) const {
     return node->IsContainer();
 }
 
+bool dvStatisticsTreeModel::GetAttr(const wxDataViewItem& item, unsigned int col, wxDataViewItemAttr& attr)	const
+{
+    attr.SetColour(*wxRED); // fails
+    attr.SetBold(true); // works
+    //attr.SetBackgroundColour(clr); // works
+   // attr.SetStrikethrough(true); // works
+    return true;
+}
+
+
+
 unsigned int dvStatisticsTreeModel::GetChildren(const wxDataViewItem &parent, wxDataViewItemArray &array) const {
     dvStatisticsTreeModelNode *node = (dvStatisticsTreeModelNode *) parent.GetID();
 
@@ -405,9 +416,17 @@ END_EVENT_TABLE()
 wxDVStatisticsTableCtrl::wxDVStatisticsTableCtrl(wxWindow *parent, wxWindowID id)
         : wxPanel(parent, id) {
     m_showMonths = false;
+ //   SetForegroundColour(*wxBLACK);
 
     m_ctrl = new wxDataViewCtrl(this, ID_STATISTICS_CTRL, wxDefaultPosition, wxSize(1040, 720),
-                                wxDV_MULTIPLE | wxDV_ROW_LINES | wxDV_VERT_RULES | wxDV_HORIZ_RULES | wxBORDER_NONE);
+        wxDV_MULTIPLE | wxDV_ROW_LINES | wxDV_VERT_RULES | wxDV_HORIZ_RULES);// | wxBORDER_NONE);
+
+ /*   m_ctrl->SetForegroundColour(*wxBLACK); // supposed to set text color
+    auto fn = m_ctrl->GetFont();
+    fn.set
+    fn.SetWeight(wxFONTWEIGHT_MEDIUM);
+    m_ctrl->SetFont(fn);
+*/
     m_ctrl->Bind(wxEVT_COMMAND_DATAVIEW_ITEM_CONTEXT_MENU, &wxDVStatisticsTableCtrl::OnContextMenu, this);
 
     m_StatisticsModel = new dvStatisticsTreeModel();
@@ -496,11 +515,11 @@ void wxDVStatisticsTableCtrl::RebuildDataViewCtrl() {
     wxDataViewColumn *column3 = new wxDataViewColumn("Max", tr, 3, 110, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
     m_ctrl->AppendColumn(column3);
 
-    tr = new wxDataViewTextRenderer("double", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
+    tr = new wxDataViewTextRenderer("double", wxDATAVIEW_CELL_ACTIVATABLE, wxALIGN_RIGHT);
     wxDataViewColumn *column4 = new wxDataViewColumn("Sum", tr, 4, 110, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
     m_ctrl->AppendColumn(column4);
 
-    tr = new wxDataViewTextRenderer("double", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
+    tr = new wxDataViewTextRenderer("double", wxDATAVIEW_CELL_EDITABLE, wxALIGN_RIGHT);
     wxDataViewColumn *column5 = new wxDataViewColumn("Std Dev", tr, 5, 110, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
     m_ctrl->AppendColumn(column5);
 

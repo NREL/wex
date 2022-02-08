@@ -88,7 +88,7 @@ public:
     ~dvStatisticsTreeModelNode();
 
     bool IsContainer() const;
-
+     
     dvStatisticsTreeModelNode *GetParent();
 
     std::vector<dvStatisticsTreeModelNode *> GetChildren();
@@ -166,6 +166,8 @@ public:
     virtual bool IsContainer(const wxDataViewItem &item) const;
 
     virtual unsigned int GetChildren(const wxDataViewItem &parent, wxDataViewItemArray &array) const;
+
+    virtual bool GetAttr(const wxDataViewItem& item, unsigned int 	col, wxDataViewItemAttr& attr)	const wxOVERRIDE;
 
 private:
 
