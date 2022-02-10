@@ -194,6 +194,8 @@ wxExtGridCtrl::wxExtGridCtrl(wxWindow *parent, int id,
     m_lastSelBottomRow = -1;
     m_lastSelLeftCol = -1;
     m_lastSelRightCol = -1;
+
+    SetGridLineColour(wxColor(99, 102, 106));  // darker cell lines for wx3.1.5
 }
 
 void wxExtGridCtrl::EnablePasteEvent(bool b) {
