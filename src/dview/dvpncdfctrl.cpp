@@ -112,6 +112,7 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow *parent, wxWindowID id, const wxPoint &pos
     optionsSizer->Add(binsLabel, 0, wxALIGN_CENTER, 0);
     m_binsCombo = new wxComboBox(this, wxID_BIN_COMBO);
     m_binsCombo->SetWindowStyle(wxTE_PROCESS_ENTER);
+    m_binsCombo->Append(wxT("Freedman-Diaconis Formula"));
     m_binsCombo->Append(wxT("Sturge's Formula"));
     m_binsCombo->Append(wxT("SQRT (Excel)"));
     m_binsCombo->Append(wxT("20"));
@@ -395,9 +396,11 @@ void wxDVPnCdfCtrl::RebuildPlotSurface(double maxYPercent) {
 
 void wxDVPnCdfCtrl::ChangePlotDataTo(wxDVTimeSeriesDataSet *d, bool forceDataRefresh) {
     if (d) {
-        if (m_binsCombo->GetSelection() == 0) //Sturge's
+        if (m_binsCombo->GetSelection() == 0) //Freedman-Diaconis with simplified interquantile range
+            m_pdfPlot->SetNumberOfBins(m_pdfPlot->GetFreedmanDiaconisBinsFor(d->Length()));
+        else if (m_binsCombo->GetSelection() == 1) //Sturge's
             m_pdfPlot->SetNumberOfBins(m_pdfPlot->GetSturgesBinsFor(d->Length()));
-        else if (m_binsCombo->GetSelection() == 1) //SQRT
+        else if (m_binsCombo->GetSelection() == 2) //SQRT
             m_pdfPlot->SetNumberOfBins(m_pdfPlot->GetSqrtBinsFor(d->Length()));
 
         m_pdfPlot->SetData(d->GetDataVector()); //inefficient?
@@ -523,22 +526,27 @@ void wxDVPnCdfCtrl::BinComboSelection() {
         return;
 
     switch (m_binsCombo->GetSelection()) {
-        case 0:
-            SetNumberOfBins(ceil(log10(double(m_dataSets[m_selectedDataSetIndex]->Length())) / log10(2.0) +
-                                 1)); //Sturges formula.
-            break;
-        case 1:
-            SetNumberOfBins(sqrt(double(m_dataSets[m_selectedDataSetIndex]->Length()))); //Sqrt-choice.  Used by excel.
-            break;
-        case 2:
-            SetNumberOfBins(20);
-            break;
-        case 3:
-            SetNumberOfBins(50);
-            break;
-        case 4:
-            SetNumberOfBins(100);
-            break;
+    case 0:
+        // quantile width - assume interquantile range = 1/2 of data range to simplify to n^1/3
+        // bin width
+        // number of bins
+        SetNumberOfBins(ceil(pow(double(m_dataSets[m_selectedDataSetIndex]->Length()), 1.0/3.0))); //Freedman-Diaconis with simplified assumption on interquantile range.
+        break;
+    case 1:
+        SetNumberOfBins(ceil(log10(double(m_dataSets[m_selectedDataSetIndex]->Length())) / log10(2.0) + 1)); //Sturges formula.
+        break;
+    case 2:
+        SetNumberOfBins(sqrt(double(m_dataSets[m_selectedDataSetIndex]->Length()))); //Sqrt-choice.  Used by excel.
+        break;
+    case 3:
+        SetNumberOfBins(20);
+        break;
+    case 4:
+        SetNumberOfBins(50);
+        break;
+    case 5:
+        SetNumberOfBins(100);
+        break;
     }
     InvalidatePlot();
 }

@@ -295,3 +295,7 @@ int wxPLHistogramPlot::GetSturgesBinsFor(int nDataPoints) {
 int wxPLHistogramPlot::GetSqrtBinsFor(int nDataPoints) {
     return (int) sqrt(double(nDataPoints));
 }
+
+int wxPLHistogramPlot::GetFreedmanDiaconisBinsFor(int nDataPoints) {
+    return (int) ceil(pow(double(nDataPoints), 1.0 / 3.0)); //Freedman-Diaconis with simplified assumption on interquantile range.
+}
