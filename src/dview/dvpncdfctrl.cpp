@@ -59,7 +59,7 @@ BEGIN_EVENT_TABLE(wxDVPnCdfCtrl, wxPanel)
 END_EVENT_TABLE()
 
 wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow *parent, wxWindowID id, const wxPoint &pos,
-                             const wxSize &size, long style, const wxString &name)
+                             const wxSize &size, long style, const wxString &name, const bool &bshowsearch, const bool &bshowselector)
         : wxPanel(parent, id, pos, size, style, name) {
     m_srchCtrl = NULL;
     m_plotSurface = new wxPLPlotCtrl(this, wxID_ANY);
@@ -81,6 +81,11 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow *parent, wxWindowID id, const wxPoint &pos
     wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(m_srchCtrl, 0, wxALL | wxEXPAND, 0);
     sizer->Add(m_selector, 0, wxALL | wxALIGN_CENTER, 0);
+            
+    if (!bshowsearch)
+        m_srchCtrl->Hide();
+    if (!bshowselector)
+        m_selector->Hide();
 
     m_hideZeros = new wxCheckBox(this, wxID_ANY, "Exclude Zero Values", wxDefaultPosition, wxDefaultSize,
                                  wxALIGN_RIGHT);

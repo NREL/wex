@@ -51,7 +51,7 @@ class wxTextCtrl;
 class wxDVPnCdfCtrl : public wxPanel {
 public:
     wxDVPnCdfCtrl(wxWindow *parent, wxWindowID id = wxID_ANY, const wxPoint &pos = wxDefaultPosition,
-                  const wxSize &size = wxDefaultSize, long style = wxTAB_TRAVERSAL, const wxString &name = "panel");
+                  const wxSize &size = wxDefaultSize, long style = wxTAB_TRAVERSAL, const wxString &name = "panel", const bool &bshowsearch = true, const bool &bshowselector = true);
 
     virtual ~wxDVPnCdfCtrl();
 
