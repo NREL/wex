@@ -82,9 +82,12 @@ public:
 
     void SetNormalizeType(wxPLHistogramPlot::NormalizeType t);
 
-    double GetYMax();
-
-    void SetYMax(double max);
+    double GetY1Max();
+    void SetY1Max(double max);
+    double GetY2Max();
+    void SetY2Max(double max);
+    double GetPValue();
+    void SetPValue(double max);
 
     void ReadCdfFrom(wxDVTimeSeriesDataSet &d, std::vector<wxRealPoint> *cdfArray);
 
@@ -101,7 +104,9 @@ public:
 
     void OnSearch(wxCommandEvent &e);
 
-    void OnEnterYMax(wxCommandEvent &);
+    void OnEnterY1Max(wxCommandEvent&);
+    void OnEnterY2Max(wxCommandEvent&);
+    void OnEnterPValue(wxCommandEvent&);
 
     void OnBinComboSelection(wxCommandEvent &);
 
@@ -118,7 +123,10 @@ private:
     int m_selectedDataSetIndex;
     std::vector<std::vector<wxRealPoint> *> m_cdfPlotData; //We track cdf plots since they take long to calculate.
 
-    wxTextCtrl *m_maxTextBox;
+    wxTextCtrl* m_y1MaxTextBox;
+    wxTextCtrl* m_y2MaxTextBox;
+    wxTextCtrl* m_pValueTextBox;
+
 
     wxDVSelectionListCtrl *m_selector;
     wxSearchCtrl *m_srchCtrl;
@@ -135,7 +143,9 @@ private:
 
     void InvalidatePlot();
 
-    void EnterYMax();
+    void EnterY1Max();
+    void EnterY2Max();
+    void EnterPValue();
 
     void ShowZerosClick();
 
