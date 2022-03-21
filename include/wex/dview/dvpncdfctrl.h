@@ -126,6 +126,7 @@ private:
     wxTextCtrl* m_y1MaxTextBox;
     wxTextCtrl* m_y2MaxTextBox;
     wxTextCtrl* m_pValueTextBox;
+    wxTextCtrl* m_pValueResultTextBox;
 
 
     wxDVSelectionListCtrl *m_selector;

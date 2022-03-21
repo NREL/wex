@@ -79,6 +79,7 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow *parent, wxWindowID id, const wxPoint &pos
     m_y1MaxTextBox = new wxTextCtrl(this, wxID_Y1_MAX_TB, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
     m_y2MaxTextBox = new wxTextCtrl(this, wxID_Y2_MAX_TB, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
     m_pValueTextBox = new wxTextCtrl(this, wxID_PVALUE_TB, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+    m_pValueResultTextBox = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
 
     m_srchCtrl = new wxSearchCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxSize(150, -1), 0);
     m_selector = new wxDVSelectionListCtrl(this, ID_DATA_SELECTOR, 1, wxDefaultPosition, wxDefaultSize,
@@ -101,25 +102,22 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow *parent, wxWindowID id, const wxPoint &pos
     m_PlotTypeDisplayed->Append(wxT("CDF Only"));
     m_PlotTypeDisplayed->SetSelection(0);
 
-    wxBoxSizer *optionsSizer = new wxBoxSizer(wxHORIZONTAL);
+    wxBoxSizer *options1Sizer = new wxBoxSizer(wxHORIZONTAL);
 
-    optionsSizer->Add(new wxStaticText(this, wxID_ANY, wxT("max:")), 0,
-                      wxALIGN_CENTER | wxALL | wxALIGN_CENTER_VERTICAL, 2);
-    optionsSizer->Add(m_y1MaxTextBox, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
-    optionsSizer->Add(m_hideZeros, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
-    optionsSizer->AddStretchSpacer();
+    options1Sizer->Add(m_hideZeros, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
+    options1Sizer->AddStretchSpacer();
 
-    optionsSizer->Add(m_PlotTypeDisplayed, 0, wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL | wxALL, 2);
+    options1Sizer->Add(m_PlotTypeDisplayed, 0, wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL | wxALL, 2);
     m_normalizeChoice = new wxChoice(this, wxID_NORMALIZE_CHOICE);
     m_normalizeChoice->Append(wxT("Histogram"));
     m_normalizeChoice->Append(wxT("Scaled Histogram"));
     m_normalizeChoice->Append(wxT("Scale by Bin Width (Match PDF)"));
     m_normalizeChoice->SetSelection(1);
-    optionsSizer->Add(m_normalizeChoice, 0, wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL | wxALL, 2);
-    optionsSizer->AddSpacer(5);
+    options1Sizer->Add(m_normalizeChoice, 0, wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL | wxALL, 2);
+    options1Sizer->AddSpacer(5);
 
     wxStaticText *binsLabel = new wxStaticText(this, wxID_ANY, wxT("# Bins:"));
-    optionsSizer->Add(binsLabel, 0, wxALIGN_CENTER, 0);
+    options1Sizer->Add(binsLabel, 0, wxALIGN_CENTER, 0);
     m_binsCombo = new wxComboBox(this, wxID_BIN_COMBO);
     m_binsCombo->SetWindowStyle(wxTE_PROCESS_ENTER);
     m_binsCombo->Append(wxT("Freedman-Diaconis Formula"));
@@ -129,15 +127,33 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow *parent, wxWindowID id, const wxPoint &pos
     m_binsCombo->Append(wxT("50"));
     m_binsCombo->Append(wxT("100"));
     m_binsCombo->SetSelection(0);
-    optionsSizer->Add(m_binsCombo, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
+    options1Sizer->Add(m_binsCombo, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
 
-    optionsSizer->Add(new wxStaticText(this, wxID_ANY, wxT("max:")), 0,
+ 
+            
+    wxBoxSizer *options2Sizer = new wxBoxSizer(wxHORIZONTAL);
+
+    options2Sizer->Add(new wxStaticText(this, wxID_ANY, wxT("max:")), 0,
+                      wxALIGN_CENTER | wxALL | wxALIGN_CENTER_VERTICAL, 2);
+    options2Sizer->Add(m_y1MaxTextBox, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
+            
+    options2Sizer->AddStretchSpacer();
+ 
+    options2Sizer->Add(new wxStaticText(this, wxID_ANY, wxT("p-value:")), 0,
+                      wxALIGN_CENTER | wxALL | wxALIGN_CENTER_VERTICAL, 2);
+    options2Sizer->Add(m_pValueTextBox, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
+    options2Sizer->Add(m_pValueResultTextBox, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
+          
+    options2Sizer->AddStretchSpacer();
+         
+    options2Sizer->Add(new wxStaticText(this, wxID_ANY, wxT("max:")), 0,
         wxALIGN_CENTER | wxALL | wxALIGN_CENTER_VERTICAL, 2);
-    optionsSizer->Add(m_y2MaxTextBox, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
+    options2Sizer->Add(m_y2MaxTextBox, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
 
 
     wxBoxSizer *leftSizer = new wxBoxSizer(wxVERTICAL);
-    leftSizer->Add(optionsSizer, 0, wxEXPAND, 0);
+    leftSizer->Add(options1Sizer, 0, wxEXPAND, 0);
+    leftSizer->Add(options2Sizer, 0, wxEXPAND, 0);
     leftSizer->Add(m_plotSurface, 1, wxEXPAND | wxALL, 10);
 
     wxBoxSizer *mainSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -423,8 +439,11 @@ void wxDVPnCdfCtrl::SetY2Max(double max) {
 }
 
 double wxDVPnCdfCtrl::GetPValue() {
-    // TODO - get current pvalue
-    return -1;
+    double retVal;
+    if (m_pValueResultTextBox->GetValue().ToDouble(&retVal))
+        return retVal;
+    else
+        return -1;
 }
 
 void wxDVPnCdfCtrl::SetPValue(double max) {
@@ -580,7 +599,7 @@ void wxDVPnCdfCtrl::OnEnterY2Max(wxCommandEvent&) {
 
 void wxDVPnCdfCtrl::EnterY2Max() {
     double val;
-    if (m_y1MaxTextBox->GetValue().ToDouble(&val)) {
+    if (m_y2MaxTextBox->GetValue().ToDouble(&val)) {
         m_plotSurface->GetYAxis2()->SetWorldMax(val);
         InvalidatePlot();
     }
@@ -591,8 +610,23 @@ void wxDVPnCdfCtrl::OnEnterPValue(wxCommandEvent&) {
 }
 
 void wxDVPnCdfCtrl::EnterPValue() {
-    double val;
     // TODO - set annotation based on x value of cdf of p value
+    double pVal;
+    double xVal=-1; // not found return value
+    if (m_pValueTextBox->GetValue().ToDouble(&pVal)) {
+        // get selected cdfData x value for specified pVal
+        if (m_selectedDataSetIndex > -1) {
+            // search m_cdfData[m_selectedDataSetIndex] for y <= pVal
+            // TODO - add find for std::vector <wxRealPoint>
+            auto it =m_cdfPlotData[m_selectedDataSetIndex]->begin();
+            xVal = it->x;
+            while ((it != m_cdfPlotData[m_selectedDataSetIndex]->end()) && (it->y <= pVal)) {
+                xVal = it->x;
+                it++;
+            }
+        }
+    }
+    m_pValueResultTextBox->SetValue(wxString::Format("%g", xVal));
 }
 
 
