@@ -80,6 +80,7 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow *parent, wxWindowID id, const wxPoint &pos
     m_y2MaxTextBox = new wxTextCtrl(this, wxID_Y2_MAX_TB, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
     m_pValueTextBox = new wxTextCtrl(this, wxID_PVALUE_TB, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
     m_pValueResultTextBox = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
+    m_pValueResultUnitsTextBox = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
 
     m_srchCtrl = new wxSearchCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxSize(150, -1), 0);
     m_selector = new wxDVSelectionListCtrl(this, ID_DATA_SELECTOR, 1, wxDefaultPosition, wxDefaultSize,
@@ -143,7 +144,8 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow *parent, wxWindowID id, const wxPoint &pos
                       wxALIGN_CENTER | wxALL | wxALIGN_CENTER_VERTICAL, 2);
     options2Sizer->Add(m_pValueTextBox, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
     options2Sizer->Add(m_pValueResultTextBox, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
-          
+    options2Sizer->Add(m_pValueResultUnitsTextBox, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
+
     options2Sizer->AddStretchSpacer();
          
     options2Sizer->Add(new wxStaticText(this, wxID_ANY, wxT("max:")), 0,
@@ -446,8 +448,33 @@ double wxDVPnCdfCtrl::GetPValue() {
         return -1;
 }
 
-void wxDVPnCdfCtrl::SetPValue(double max) {
-    // TODO - set annotation
+void wxDVPnCdfCtrl::SetPValue(double pValue) {
+    // clear previous p value annotation
+    m_plotSurface->DeleteAllAnnotations();
+    
+    if (pValue >=0) {
+        // get selected cdfData x value for specified pVal
+        if (m_selectedDataSetIndex > -1) {
+            // search m_cdfData[m_selectedDataSetIndex] for y <= pVal
+            // TODO - add find for std::vector <wxRealPoint>
+            auto it =m_cdfPlotData[m_selectedDataSetIndex]->begin();
+            m_pValue_x = it->x;
+            while ((it != m_cdfPlotData[m_selectedDataSetIndex]->end()) && (it->y <= pValue)) {
+                m_pValue_x = it->x;
+                it++;
+            }
+            // set annotation
+            std::vector<wxRealPoint> pValueLine;
+            pValueLine.push_back(wxRealPoint(m_pValue_x, pValue));
+            pValueLine.push_back(wxRealPoint(m_pValue_x, 0));
+            m_plotSurface->AddAnnotation(new wxPLLineAnnotation(pValueLine, 2, *wxBLUE, wxPLOutputDevice::DASH), wxPLAnnotation::AXIS, wxPLPlot::AxisPos::X_BOTTOM, wxPLPlot::AxisPos::Y_RIGHT);
+        }
+    }
+    else
+        m_pValue_x = -1;
+    InvalidatePlot();
+    m_pValueTextBox->SetValue(wxString::Format("%lg", pValue));
+    m_pValueResultTextBox->SetValue(wxString::Format("%lg", m_pValue_x));
 }
 
 void wxDVPnCdfCtrl::RebuildPlotSurface(double maxYPercent) {
@@ -513,8 +540,14 @@ void wxDVPnCdfCtrl::ChangePlotDataTo(wxDVTimeSeriesDataSet *d, bool forceDataRef
         m_cdfPlot->SetYDataLabel(m_cdfPlot->GetLabel());
     }
 
-    if (d)
+    if (d) {
         RebuildPlotSurface(m_pdfPlot->GetNiceYMax());
+        m_pValueResultUnitsTextBox->SetValue(d->GetUnits());
+        m_y2MaxTextBox->SetValue("100"); // default - show entire cdf
+        // initialize pvalue to 50 (default)
+        SetPValue(50);
+        
+    }
 }
 
 void wxDVPnCdfCtrl::ReadCdfFrom(wxDVTimeSeriesDataSet &d, std::vector<wxRealPoint> *cdfArray) {
@@ -610,23 +643,11 @@ void wxDVPnCdfCtrl::OnEnterPValue(wxCommandEvent&) {
 }
 
 void wxDVPnCdfCtrl::EnterPValue() {
-    // TODO - set annotation based on x value of cdf of p value
     double pVal;
-    double xVal=-1; // not found return value
-    if (m_pValueTextBox->GetValue().ToDouble(&pVal)) {
-        // get selected cdfData x value for specified pVal
-        if (m_selectedDataSetIndex > -1) {
-            // search m_cdfData[m_selectedDataSetIndex] for y <= pVal
-            // TODO - add find for std::vector <wxRealPoint>
-            auto it =m_cdfPlotData[m_selectedDataSetIndex]->begin();
-            xVal = it->x;
-            while ((it != m_cdfPlotData[m_selectedDataSetIndex]->end()) && (it->y <= pVal)) {
-                xVal = it->x;
-                it++;
-            }
-        }
+    if (!m_pValueTextBox->GetValue().ToDouble(&pVal)) {
+        pVal = -1;
     }
-    m_pValueResultTextBox->SetValue(wxString::Format("%g", xVal));
+    SetPValue(pVal);
 }
 
 

@@ -87,7 +87,7 @@ public:
     double GetY2Max();
     void SetY2Max(double max);
     double GetPValue();
-    void SetPValue(double max);
+    void SetPValue(double pValue);
 
     void ReadCdfFrom(wxDVTimeSeriesDataSet &d, std::vector<wxRealPoint> *cdfArray);
 
@@ -121,12 +121,14 @@ public:
 private:
     std::vector<wxDVTimeSeriesDataSet *> m_dataSets;
     int m_selectedDataSetIndex;
+    double m_pValue_x; // x coordinant of user specified p Value
     std::vector<std::vector<wxRealPoint> *> m_cdfPlotData; //We track cdf plots since they take long to calculate.
 
     wxTextCtrl* m_y1MaxTextBox;
     wxTextCtrl* m_y2MaxTextBox;
     wxTextCtrl* m_pValueTextBox;
     wxTextCtrl* m_pValueResultTextBox;
+    wxTextCtrl* m_pValueResultUnitsTextBox;
 
 
     wxDVSelectionListCtrl *m_selector;
