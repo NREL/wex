@@ -459,14 +459,15 @@ void wxDVPnCdfCtrl::SetPValue(double pValue) {
             // TODO - add find for std::vector <wxRealPoint>
             auto it =m_cdfPlotData[m_selectedDataSetIndex]->begin();
             m_pValue_x = it->x;
-            while ((it != m_cdfPlotData[m_selectedDataSetIndex]->end()) && (it->y <= pValue)) {
+            // probability of exceedance (100-pvalue)
+            while ((it != m_cdfPlotData[m_selectedDataSetIndex]->end()) && (it->y <= (100.0 - pValue))) { 
                 m_pValue_x = it->x;
                 it++;
             }
             // set annotation
             std::vector<wxRealPoint> pValueLine;
-            pValueLine.push_back(wxRealPoint(m_pValue_x, pValue));
-            pValueLine.push_back(wxRealPoint(m_pValue_x, 0));
+            pValueLine.push_back(wxRealPoint(m_pValue_x,100.0- pValue));
+            pValueLine.push_back(wxRealPoint(m_pValue_x, 0.0));
             m_plotSurface->AddAnnotation(new wxPLLineAnnotation(pValueLine, 2, *wxBLUE, wxPLOutputDevice::DASH), wxPLAnnotation::AXIS, wxPLPlot::AxisPos::X_BOTTOM, wxPLPlot::AxisPos::Y_RIGHT);
         }
     }
