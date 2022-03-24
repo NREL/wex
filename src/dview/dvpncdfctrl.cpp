@@ -455,7 +455,7 @@ void wxDVPnCdfCtrl::SetPValue(double pValue) {
     if (pValue >=0) {
         // get selected cdfData x value for specified pVal
         if (m_selectedDataSetIndex > -1) {
-            // search m_cdfData[m_selectedDataSetIndex] for y <= pVal
+            // search m_cdfData[m_selectedDataSetIndex] for y <= 100 -pVal
             // TODO - add find for std::vector <wxRealPoint>
             auto it =m_cdfPlotData[m_selectedDataSetIndex]->begin();
             m_pValue_x = it->x;
