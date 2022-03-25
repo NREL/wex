@@ -116,7 +116,7 @@ public:
 
     void OnShowZerosClick(wxCommandEvent &);
 
-    void OnPlotTypeSelection(wxCommandEvent &);
+ //   void OnPlotTypeSelection(wxCommandEvent &);
 
 private:
     std::vector<wxDVTimeSeriesDataSet *> m_dataSets;
@@ -136,7 +136,7 @@ private:
     wxComboBox *m_binsCombo;
     wxChoice *m_normalizeChoice;
     wxCheckBox *m_hideZeros;
-    wxChoice *m_PlotTypeDisplayed;
+  //  wxChoice *m_PlotTypeDisplayed;
 
     wxPLPlotCtrl *m_plotSurface;
     wxPLHistogramPlot *m_pdfPlot;
@@ -152,7 +152,7 @@ private:
 
     void ShowZerosClick();
 
-    void PlotTypeSelection();
+ //   void PlotTypeSelection();
 
     void NormalizeChoice();
 

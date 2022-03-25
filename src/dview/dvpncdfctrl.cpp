@@ -45,8 +45,8 @@ enum {
     wxID_NORMALIZE_CHOICE,
     wxID_Y1_MAX_TB,
     wxID_Y2_MAX_TB,
-    wxID_PVALUE_TB,
-    wxID_PLOT_TYPE
+    wxID_PVALUE_TB//,
+//    wxID_PLOT_TYPE
 };
 
 BEGIN_EVENT_TABLE(wxDVPnCdfCtrl, wxPanel)
@@ -58,7 +58,7 @@ BEGIN_EVENT_TABLE(wxDVPnCdfCtrl, wxPanel)
     EVT_COMBOBOX(wxID_BIN_COMBO, wxDVPnCdfCtrl::OnBinComboSelection)
     EVT_TEXT_ENTER(wxID_BIN_COMBO, wxDVPnCdfCtrl::OnBinTextEnter)
     EVT_CHECKBOX(wxID_ANY, wxDVPnCdfCtrl::OnShowZerosClick)
-    EVT_CHOICE(wxID_PLOT_TYPE, wxDVPnCdfCtrl::OnPlotTypeSelection)
+//    EVT_CHOICE(wxID_PLOT_TYPE, wxDVPnCdfCtrl::OnPlotTypeSelection)
     EVT_TEXT(wxID_ANY, wxDVPnCdfCtrl::OnSearch)
 END_EVENT_TABLE()
 
@@ -96,23 +96,23 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow *parent, wxWindowID id, const wxPoint &pos
 
     m_hideZeros = new wxCheckBox(this, wxID_ANY, "Exclude Zero Values", wxDefaultPosition, wxDefaultSize,
                                  wxALIGN_RIGHT);
-
+    /*
     m_PlotTypeDisplayed = new wxChoice(this, wxID_PLOT_TYPE);
     m_PlotTypeDisplayed->Append(wxT("PDF and CDF"));
     m_PlotTypeDisplayed->Append(wxT("PDF Only"));
     m_PlotTypeDisplayed->Append(wxT("CDF Only"));
     m_PlotTypeDisplayed->SetSelection(0);
-
+    */
     wxBoxSizer *options1Sizer = new wxBoxSizer(wxHORIZONTAL);
 
     options1Sizer->Add(m_hideZeros, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
     options1Sizer->AddStretchSpacer();
 
-    options1Sizer->Add(m_PlotTypeDisplayed, 0, wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL | wxALL, 2);
+ //   options1Sizer->Add(m_PlotTypeDisplayed, 0, wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL | wxALL, 2);
     m_normalizeChoice = new wxChoice(this, wxID_NORMALIZE_CHOICE);
     m_normalizeChoice->Append(wxT("Histogram"));
     m_normalizeChoice->Append(wxT("Scaled Histogram"));
-    m_normalizeChoice->Append(wxT("Scale by Bin Width (Match PDF)"));
+ //   m_normalizeChoice->Append(wxT("Scale by Bin Width (Match PDF)"));
     m_normalizeChoice->SetSelection(1);
     options1Sizer->Add(m_normalizeChoice, 0, wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL | wxALL, 2);
     options1Sizer->AddSpacer(5);
@@ -193,13 +193,13 @@ void wxDVPnCdfCtrl::ReadState(std::string filename) {
     if (debugging) assert(success);
     m_hideZeros->SetValue((s == "false") ? false : true);
     ShowZerosClick();
-
+    /*
     key = prefix + "PlotType";
     success = cfg.Read(key, &s);
     if (debugging) assert(success);
     m_PlotTypeDisplayed->SetSelection(wxAtoi(s));
     PlotTypeSelection();
-
+    */
     key = prefix + "Normalize";
     success = cfg.Read(key, &s);
     if (debugging) assert(success);
@@ -278,12 +278,12 @@ void wxDVPnCdfCtrl::WriteState(std::string filename) {
     s = (m_hideZeros->GetValue()) ? "true" : "false";
     success = cfg.Write(key, s.c_str());
     if (debugging) assert(success);
-
+    /*
     key = prefix + "PlotType";
     s = wxString::Format(wxT("%d"), (int) m_PlotTypeDisplayed->GetSelection());
     success = cfg.Write(key, s.c_str());
     if (debugging) assert(success);
-
+    */
     key = prefix + "Normalize";
     s = wxString::Format(wxT("%d"), (int) m_normalizeChoice->GetSelection());
     success = cfg.Write(key, s.c_str());
@@ -728,7 +728,7 @@ void wxDVPnCdfCtrl::ShowZerosClick() {
         InvalidatePlot();
     }
 }
-
+/*
 void wxDVPnCdfCtrl::OnPlotTypeSelection(wxCommandEvent &) {
     PlotTypeSelection();
 }
@@ -751,6 +751,7 @@ void wxDVPnCdfCtrl::PlotTypeSelection() {
 
     InvalidatePlot();
 }
+*/
 
 void wxDVPnCdfCtrl::InvalidatePlot() {
     m_plotSurface->Invalidate();
