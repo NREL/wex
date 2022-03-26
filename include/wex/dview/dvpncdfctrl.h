@@ -48,6 +48,8 @@ class wxSearchCtrl;
 
 class wxTextCtrl;
 
+class wxStaticText;
+
 class wxDVPnCdfCtrl : public wxPanel {
 public:
     wxDVPnCdfCtrl(wxWindow *parent, wxWindowID id = wxID_ANY, const wxPoint &pos = wxDefaultPosition,
@@ -104,8 +106,8 @@ public:
 
     void OnSearch(wxCommandEvent &e);
 
-    void OnEnterY1Max(wxCommandEvent&);
-    void OnEnterY2Max(wxCommandEvent&);
+//    void OnEnterY1Max(wxCommandEvent&);
+//    void OnEnterY2Max(wxCommandEvent&);
     void OnEnterPValue(wxCommandEvent&);
 
     void OnBinComboSelection(wxCommandEvent &);
@@ -124,11 +126,15 @@ private:
     double m_pValue_x; // x coordinant of user specified p Value
     std::vector<std::vector<wxRealPoint> *> m_cdfPlotData; //We track cdf plots since they take long to calculate.
 
-    wxTextCtrl* m_y1MaxTextBox;
-    wxTextCtrl* m_y2MaxTextBox;
-    wxTextCtrl* m_pValueTextBox;
+ //   wxTextCtrl* m_y1MaxTextBox;
+ //   wxTextCtrl* m_y2MaxTextBox;
+    
+    wxTextCtrl* m_pValueTextBox; // input
+
+    // resultant pvalue
+    wxStaticText* m_pValueResultLabel;
     wxTextCtrl* m_pValueResultTextBox;
-    wxTextCtrl* m_pValueResultUnitsTextBox;
+    wxStaticText* m_pValueResultUnits;
 
 
     wxDVSelectionListCtrl *m_selector;
@@ -146,8 +152,8 @@ private:
 
     void InvalidatePlot();
 
-    void EnterY1Max();
-    void EnterY2Max();
+ //   void EnterY1Max();
+ //   void EnterY2Max();
     void EnterPValue();
 
     void ShowZerosClick();
