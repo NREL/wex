@@ -53,7 +53,7 @@ class wxStaticText;
 class wxDVPnCdfCtrl : public wxPanel {
 public:
     wxDVPnCdfCtrl(wxWindow *parent, wxWindowID id = wxID_ANY, const wxPoint &pos = wxDefaultPosition,
-                  const wxSize &size = wxDefaultSize, long style = wxTAB_TRAVERSAL, const wxString &name = "panel", const bool &bshowsearch = true, const bool &bshowselector = true);
+                  const wxSize &size = wxDefaultSize, long style = wxTAB_TRAVERSAL, const wxString &name = "panel", const bool& bshowsearch = true, const bool& bshowselector = true, const bool& bshowpvalue = true, const bool& bshowhidezeros = true);
 
     virtual ~wxDVPnCdfCtrl();
 
@@ -123,9 +123,12 @@ public:
 private:
     std::vector<wxDVTimeSeriesDataSet *> m_dataSets;
     int m_selectedDataSetIndex;
+    double m_pValue; // user entered or set programmatically
     double m_pValue_x; // x coordinant of user specified p Value
     std::vector<std::vector<wxRealPoint> *> m_cdfPlotData; //We track cdf plots since they take long to calculate.
 
+    bool m_bshowpvalue;
+    bool m_bshowhidezeros;
  //   wxTextCtrl* m_y1MaxTextBox;
  //   wxTextCtrl* m_y2MaxTextBox;
     

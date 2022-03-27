@@ -65,8 +65,10 @@ BEGIN_EVENT_TABLE(wxDVPnCdfCtrl, wxPanel)
 END_EVENT_TABLE()
 
 wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow *parent, wxWindowID id, const wxPoint &pos,
-                             const wxSize &size, long style, const wxString &name, const bool &bshowsearch, const bool &bshowselector)
+                             const wxSize &size, long style, const wxString &name, const bool &bshowsearch, const bool &bshowselector, const bool& bshowpvalue, const bool& bshowhidezeros)
         : wxPanel(parent, id, pos, size, style, name) {
+    m_bshowpvalue = bshowpvalue;
+    m_bshowhidezeros = bshowhidezeros;
     m_srchCtrl = NULL;
     m_plotSurface = new wxPLPlotCtrl(this, wxID_ANY);
     m_plotSurface->SetBackgroundColour(*wxWHITE);
@@ -80,7 +82,8 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow *parent, wxWindowID id, const wxPoint &pos
 
  //   m_y1MaxTextBox = new wxTextCtrl(this, wxID_Y1_MAX_TB, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
  //   m_y2MaxTextBox = new wxTextCtrl(this, wxID_Y2_MAX_TB, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-    m_pValueTextBox = new wxTextCtrl(this, wxID_PVALUE_TB, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+
+    if (m_bshowpvalue) m_pValueTextBox = new wxTextCtrl(this, wxID_PVALUE_TB, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
     
     m_pValueResultLabel = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
     m_pValueResultTextBox = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT | wxTE_READONLY);
@@ -100,8 +103,7 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow *parent, wxWindowID id, const wxPoint &pos
     if (!bshowselector)
         m_selector->Hide();
 
-    m_hideZeros = new wxCheckBox(this, wxID_ANY, "Exclude Zero Values", wxDefaultPosition, wxDefaultSize,
-                                 wxALIGN_RIGHT);
+    if (m_bshowhidezeros) m_hideZeros = new wxCheckBox(this, wxID_ANY, "Exclude Zero Values", wxDefaultPosition, wxDefaultSize,  wxALIGN_RIGHT);
     /*
     m_PlotTypeDisplayed = new wxChoice(this, wxID_PLOT_TYPE);
     m_PlotTypeDisplayed->Append(wxT("PDF and CDF"));
@@ -110,14 +112,16 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow *parent, wxWindowID id, const wxPoint &pos
     m_PlotTypeDisplayed->SetSelection(0);
     */
     wxBoxSizer *options1Sizer = new wxBoxSizer(wxHORIZONTAL);
-
-    options1Sizer->Add(m_hideZeros, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
-    options1Sizer->AddStretchSpacer();
-
-    options1Sizer->Add(new wxStaticText(this, wxID_ANY, wxT("p-value:")), 0,
-        wxALIGN_CENTER | wxALL | wxALIGN_CENTER_VERTICAL, 2);
-    options1Sizer->Add(m_pValueTextBox, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
-    options1Sizer->AddStretchSpacer();
+    if (m_bshowhidezeros) {
+        options1Sizer->Add(m_hideZeros, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
+        options1Sizer->AddStretchSpacer();
+    }
+    if (m_bshowpvalue) {
+        options1Sizer->Add(new wxStaticText(this, wxID_ANY, wxT("p-value:")), 0,
+            wxALIGN_CENTER | wxALL | wxALIGN_CENTER_VERTICAL, 2);
+        options1Sizer->Add(m_pValueTextBox, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
+        options1Sizer->AddStretchSpacer();
+    }
 
  //   options1Sizer->Add(m_PlotTypeDisplayed, 0, wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL | wxALL, 2);
     m_normalizeChoice = new wxChoice(this, wxID_NORMALIZE_CHOICE);
@@ -201,7 +205,8 @@ void wxDVPnCdfCtrl::ReadState(std::string filename) {
     key = prefix + "ExcludeZeros";
     success = cfg.Read(key, &s);
     if (debugging) assert(success);
-    m_hideZeros->SetValue((s == "false") ? false : true);
+    m_bshowhidezeros = (s == "false") ? false : true;
+    if (m_bshowhidezeros) m_hideZeros->SetValue(m_bshowhidezeros);
     ShowZerosClick();
     /*
     key = prefix + "PlotType";
@@ -252,7 +257,8 @@ void wxDVPnCdfCtrl::ReadState(std::string filename) {
     key = prefix + "PValue";
     success = cfg.Read(key, &s);
     if (debugging) assert(success);
-    m_pValueTextBox->SetValue(s);
+    s.ToDouble(&m_pValue);
+    if (m_bshowpvalue) m_pValueTextBox->SetValue(s);
     EnterPValue();
 
 }
@@ -280,12 +286,14 @@ void wxDVPnCdfCtrl::WriteState(std::string filename) {
     if (debugging) assert(success);
     */
     key = prefix + "PValue";
-    s = m_pValueTextBox->GetValue();
+ //   s = m_pValueTextBox->GetValue();
+    s = wxString::Format("%lg", m_pValue);
     success = cfg.Write(key, s.c_str());
     if (debugging) assert(success);
 
     key = prefix + "ExcludeZeros";
-    s = (m_hideZeros->GetValue()) ? "true" : "false";
+//    s = (m_hideZeros->GetValue()) ? "true" : "false";
+    s = m_bshowhidezeros ? "true" : "false";
     success = cfg.Write(key, s.c_str());
     if (debugging) assert(success);
     /*
@@ -484,8 +492,9 @@ void wxDVPnCdfCtrl::SetPValue(double pValue) {
     else
         m_pValue_x = -1;
     InvalidatePlot();
-    m_pValueTextBox->SetValue(wxString::Format("%lg", pValue));
-    m_pValueResultLabel->SetLabel(wxString::Format("P%lg", pValue));
+    m_pValue = pValue;
+    if (m_bshowpvalue) m_pValueTextBox->SetValue(wxString::Format("%lg", m_pValue));
+    m_pValueResultLabel->SetLabel(wxString::Format("P%lg", m_pValue));
     m_pValueResultTextBox->SetValue(wxString::Format("%lg", m_pValue_x));
  }
 
