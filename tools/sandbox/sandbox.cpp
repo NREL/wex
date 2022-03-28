@@ -1381,11 +1381,11 @@ public:
         //	wxMessageBox( wxString::Format("Loaded %d fonts in %d ms.", nf, (int)sw.Time()) );
 
 //        TestContourPlot();
-        TestWaveAnnualEnergyPlot();
+//        TestWaveAnnualEnergyPlot();
 
 //		TestPLPlot(0);
 //		TestPLPolarPlot(0);
-//		TestPLBarPlot(0);
+		TestPLBarPlot(0);
 //		TestStackedBarPlot(0);
 //		TestSAMStackedBarPlot(0);
 //		TestSectorPlot(0);

@@ -90,6 +90,7 @@ public:
     void SetY2Max(double max);
     double GetPValue();
     void SetPValue(double pValue);
+    double GetPValueX() { return m_pValue_x; };
 
     void ReadCdfFrom(wxDVTimeSeriesDataSet &d, std::vector<wxRealPoint> *cdfArray);
 
