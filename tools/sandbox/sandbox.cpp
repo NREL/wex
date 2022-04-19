@@ -1385,7 +1385,9 @@ public:
 
 //		TestPLPlot(0);
 //		TestPLPolarPlot(0);
-		TestPLBarPlot(0);
+	//	TestPLBarPlot(0);
+
+        TestContourPlot();
 //		TestStackedBarPlot(0);
 //		TestSAMStackedBarPlot(0);
 //		TestSectorPlot(0);
