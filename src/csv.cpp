@@ -122,7 +122,7 @@ bool wxCSVData::Read(wxInputStream &in) {
 
     */
     Clear(); // erase the csv data first
-    wxTextInputStream txt(in, "\n", wxConvAuto(wxFONTENCODING_UTF8));
+    wxTextInputStream txt(in, "\n"); // , wxConvAuto(wxFONTENCODING_UTF8));
 
 //	wxTextInputStream txt(in);
 
