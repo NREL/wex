@@ -67,6 +67,8 @@ public:
 
     static int GetSturgesBinsFor(int nDataPoints);
 
+    static int GetFreedmanDiaconisBinsFor(int nDataPoints);
+
     static int GetSqrtBinsFor(int nDataPoints);
 
     virtual wxRealPoint At(size_t i) const;
