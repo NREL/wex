@@ -32,6 +32,8 @@
 #include <wx/tokenzr.h>
 #include <wx/config.h>
 
+#include "wex/metro.h"
+
 #include "wex/plot/plplotctrl.h"
 #include "wex/plot/plhistplot.h"
 #include "wex/plot/pllineplot.h"
@@ -43,24 +45,30 @@ enum {
     ID_DATA_SELECTOR = wxID_HIGHEST + 1,
     wxID_BIN_COMBO,
     wxID_NORMALIZE_CHOICE,
-    wxID_Y_MAX_TB,
-    wxID_PLOT_TYPE
+  //  wxID_Y1_MAX_TB,
+  //  wxID_Y2_MAX_TB,
+    wxID_PVALUE_TB//,
+//    wxID_PLOT_TYPE
 };
 
 BEGIN_EVENT_TABLE(wxDVPnCdfCtrl, wxPanel)
-                EVT_DVSELECTIONLIST(ID_DATA_SELECTOR, wxDVPnCdfCtrl::OnDataChannelSelection)
-                EVT_TEXT_ENTER(wxID_Y_MAX_TB, wxDVPnCdfCtrl::OnEnterYMax)
-                EVT_CHOICE(wxID_NORMALIZE_CHOICE, wxDVPnCdfCtrl::OnNormalizeChoice)
-                EVT_COMBOBOX(wxID_BIN_COMBO, wxDVPnCdfCtrl::OnBinComboSelection)
-                EVT_TEXT_ENTER(wxID_BIN_COMBO, wxDVPnCdfCtrl::OnBinTextEnter)
-                EVT_CHECKBOX(wxID_ANY, wxDVPnCdfCtrl::OnShowZerosClick)
-                EVT_CHOICE(wxID_PLOT_TYPE, wxDVPnCdfCtrl::OnPlotTypeSelection)
-                EVT_TEXT(wxID_ANY, wxDVPnCdfCtrl::OnSearch)
+    EVT_DVSELECTIONLIST(ID_DATA_SELECTOR, wxDVPnCdfCtrl::OnDataChannelSelection)
+//    EVT_TEXT_ENTER(wxID_Y1_MAX_TB, wxDVPnCdfCtrl::OnEnterY1Max)
+//    EVT_TEXT_ENTER(wxID_Y2_MAX_TB, wxDVPnCdfCtrl::OnEnterY2Max)
+    EVT_TEXT_ENTER(wxID_PVALUE_TB, wxDVPnCdfCtrl::OnEnterPValue)
+    EVT_CHOICE(wxID_NORMALIZE_CHOICE, wxDVPnCdfCtrl::OnNormalizeChoice)
+    EVT_COMBOBOX(wxID_BIN_COMBO, wxDVPnCdfCtrl::OnBinComboSelection)
+    EVT_TEXT_ENTER(wxID_BIN_COMBO, wxDVPnCdfCtrl::OnBinTextEnter)
+    EVT_CHECKBOX(wxID_ANY, wxDVPnCdfCtrl::OnShowZerosClick)
+//    EVT_CHOICE(wxID_PLOT_TYPE, wxDVPnCdfCtrl::OnPlotTypeSelection)
+    EVT_TEXT(wxID_ANY, wxDVPnCdfCtrl::OnSearch)
 END_EVENT_TABLE()
 
 wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow *parent, wxWindowID id, const wxPoint &pos,
-                             const wxSize &size, long style, const wxString &name)
+                             const wxSize &size, long style, const wxString &name, const bool &bshowsearch, const bool &bshowselector, const bool& bshowpvalue, const bool& bshowhidezeros)
         : wxPanel(parent, id, pos, size, style, name) {
+    m_bshowpvalue = bshowpvalue;
+    m_bshowhidezeros = bshowhidezeros;
     m_srchCtrl = NULL;
     m_plotSurface = new wxPLPlotCtrl(this, wxID_ANY);
     m_plotSurface->SetBackgroundColour(*wxWHITE);
@@ -72,8 +80,16 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow *parent, wxWindowID id, const wxPoint &pos
     m_plotSurface->AddPlot(m_cdfPlot, wxPLPlotCtrl::X_BOTTOM, wxPLPlotCtrl::Y_RIGHT);
     m_plotSurface->ShowTitle(false);
 
-    m_maxTextBox = new wxTextCtrl(this, wxID_Y_MAX_TB, wxEmptyString, wxDefaultPosition, wxDefaultSize,
-                                  wxTE_PROCESS_ENTER);
+ //   m_y1MaxTextBox = new wxTextCtrl(this, wxID_Y1_MAX_TB, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+ //   m_y2MaxTextBox = new wxTextCtrl(this, wxID_Y2_MAX_TB, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+
+    if (m_bshowpvalue) m_pValueTextBox = new wxTextCtrl(this, wxID_PVALUE_TB, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+    
+    m_pValueResultLabel = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
+    m_pValueResultTextBox = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT | wxTE_READONLY);
+    m_pValueResultTextBox->SetForegroundColour(UIColorCalculatedFore);
+    m_pValueResultTextBox->SetBackgroundColour(UIColorCalculatedBack);
+    m_pValueResultUnits = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
 
     m_srchCtrl = new wxSearchCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxSize(150, -1), 0);
     m_selector = new wxDVSelectionListCtrl(this, ID_DATA_SELECTOR, 1, wxDefaultPosition, wxDefaultSize,
@@ -81,48 +97,80 @@ wxDVPnCdfCtrl::wxDVPnCdfCtrl(wxWindow *parent, wxWindowID id, const wxPoint &pos
     wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(m_srchCtrl, 0, wxALL | wxEXPAND, 0);
     sizer->Add(m_selector, 0, wxALL | wxALIGN_CENTER, 0);
+            
+    if (!bshowsearch)
+        m_srchCtrl->Hide();
+    if (!bshowselector)
+        m_selector->Hide();
 
-    m_hideZeros = new wxCheckBox(this, wxID_ANY, "Exclude Zero Values", wxDefaultPosition, wxDefaultSize,
-                                 wxALIGN_RIGHT);
-
+    if (m_bshowhidezeros) m_hideZeros = new wxCheckBox(this, wxID_ANY, "Exclude Zero Values", wxDefaultPosition, wxDefaultSize,  wxALIGN_RIGHT);
+    /*
     m_PlotTypeDisplayed = new wxChoice(this, wxID_PLOT_TYPE);
     m_PlotTypeDisplayed->Append(wxT("PDF and CDF"));
     m_PlotTypeDisplayed->Append(wxT("PDF Only"));
     m_PlotTypeDisplayed->Append(wxT("CDF Only"));
     m_PlotTypeDisplayed->SetSelection(0);
+    */
+    wxBoxSizer *options1Sizer = new wxBoxSizer(wxHORIZONTAL);
+    if (m_bshowhidezeros) {
+        options1Sizer->Add(m_hideZeros, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
+        options1Sizer->AddStretchSpacer();
+    }
+    if (m_bshowpvalue) {
+        options1Sizer->Add(new wxStaticText(this, wxID_ANY, wxT("p-value:")), 0,
+            wxALIGN_CENTER | wxALL | wxALIGN_CENTER_VERTICAL, 2);
+        options1Sizer->Add(m_pValueTextBox, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
+        options1Sizer->AddStretchSpacer();
+    }
 
-    wxBoxSizer *optionsSizer = new wxBoxSizer(wxHORIZONTAL);
-
-    optionsSizer->Add(new wxStaticText(this, wxID_ANY, wxT("  Y max:")), 0,
-                      wxALIGN_CENTER | wxALL | wxALIGN_CENTER_VERTICAL, 2);
-    optionsSizer->Add(m_maxTextBox, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
-    optionsSizer->Add(m_hideZeros, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
-    optionsSizer->AddStretchSpacer();
-
-    optionsSizer->Add(m_PlotTypeDisplayed, 0, wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL | wxALL, 2);
+ //   options1Sizer->Add(m_PlotTypeDisplayed, 0, wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL | wxALL, 2);
     m_normalizeChoice = new wxChoice(this, wxID_NORMALIZE_CHOICE);
     m_normalizeChoice->Append(wxT("Histogram"));
     m_normalizeChoice->Append(wxT("Scaled Histogram"));
-    m_normalizeChoice->Append(wxT("Scale by Bin Width (Match PDF)"));
+ //   m_normalizeChoice->Append(wxT("Scale by Bin Width (Match PDF)"));
     m_normalizeChoice->SetSelection(1);
-    optionsSizer->Add(m_normalizeChoice, 0, wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL | wxALL, 2);
-    optionsSizer->AddSpacer(5);
+    options1Sizer->Add(m_normalizeChoice, 0, wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL | wxALL, 2);
+//    options1Sizer->AddSpacer(5);
+    options1Sizer->AddStretchSpacer();
 
     wxStaticText *binsLabel = new wxStaticText(this, wxID_ANY, wxT("# Bins:"));
-    optionsSizer->Add(binsLabel, 0, wxALIGN_CENTER, 0);
+    options1Sizer->Add(binsLabel, 0, wxALIGN_CENTER, 0);
     m_binsCombo = new wxComboBox(this, wxID_BIN_COMBO);
     m_binsCombo->SetWindowStyle(wxTE_PROCESS_ENTER);
+    m_binsCombo->Append(wxT("Freedman-Diaconis Formula"));
     m_binsCombo->Append(wxT("Sturge's Formula"));
     m_binsCombo->Append(wxT("SQRT (Excel)"));
     m_binsCombo->Append(wxT("20"));
     m_binsCombo->Append(wxT("50"));
     m_binsCombo->Append(wxT("100"));
     m_binsCombo->SetSelection(0);
-    optionsSizer->Add(m_binsCombo, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
+    options1Sizer->Add(m_binsCombo, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
+
+ 
+            
+    wxBoxSizer *options2Sizer = new wxBoxSizer(wxHORIZONTAL);
+
+ //   options2Sizer->Add(new wxStaticText(this, wxID_ANY, wxT("max:")), 0,
+ //                     wxALIGN_CENTER | wxALL | wxALIGN_CENTER_VERTICAL, 2);
+ //   options2Sizer->Add(m_y1MaxTextBox, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
+            
+    options2Sizer->AddStretchSpacer();
+ 
+    options2Sizer->Add(m_pValueResultLabel, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
+    options2Sizer->Add(m_pValueResultTextBox, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
+    options2Sizer->Add(m_pValueResultUnits, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
+
+    options2Sizer->AddStretchSpacer();
+         
+ //   options2Sizer->Add(new wxStaticText(this, wxID_ANY, wxT("max:")), 0,
+ //       wxALIGN_CENTER | wxALL | wxALIGN_CENTER_VERTICAL, 2);
+ //   options2Sizer->Add(m_y2MaxTextBox, 0, wxALL | wxALIGN_CENTER_VERTICAL, 2);
+
 
     wxBoxSizer *leftSizer = new wxBoxSizer(wxVERTICAL);
-    leftSizer->Add(optionsSizer, 0, wxEXPAND, 0);
+    leftSizer->Add(options1Sizer, 0, wxEXPAND, 0);
     leftSizer->Add(m_plotSurface, 1, wxEXPAND | wxALL, 10);
+    leftSizer->Add(options2Sizer, 0, wxEXPAND, 0);
 
     wxBoxSizer *mainSizer = new wxBoxSizer(wxHORIZONTAL);
     mainSizer->Add(leftSizer, 1, wxALL | wxEXPAND, 0);
@@ -157,15 +205,16 @@ void wxDVPnCdfCtrl::ReadState(std::string filename) {
     key = prefix + "ExcludeZeros";
     success = cfg.Read(key, &s);
     if (debugging) assert(success);
-    m_hideZeros->SetValue((s == "false") ? false : true);
+    m_bshowhidezeros = (s == "false") ? false : true;
+    if (m_bshowhidezeros) m_hideZeros->SetValue(m_bshowhidezeros);
     ShowZerosClick();
-
+    /*
     key = prefix + "PlotType";
     success = cfg.Read(key, &s);
     if (debugging) assert(success);
     m_PlotTypeDisplayed->SetSelection(wxAtoi(s));
     PlotTypeSelection();
-
+    */
     key = prefix + "Normalize";
     success = cfg.Read(key, &s);
     if (debugging) assert(success);
@@ -191,13 +240,27 @@ void wxDVPnCdfCtrl::ReadState(std::string filename) {
     if (m_selector->GetSelectedNamesInCol().size() == 0) {
         SelectDataSetAtIndex(0);
     }
-
+    /*
     // Set this value after settings selections, so they don't get stepped on
-    key = prefix + "YMax";
+    key = prefix + "Y1Max";
     success = cfg.Read(key, &s);
     if (debugging) assert(success);
-    m_maxTextBox->SetValue(s);
-    EnterYMax();
+    m_y1MaxTextBox->SetValue(s);
+    EnterY1Max();
+
+    key = prefix + "Y2Max";
+    success = cfg.Read(key, &s);
+    if (debugging) assert(success);
+    m_y2MaxTextBox->SetValue(s);
+    EnterY2Max();
+    */
+    key = prefix + "PValue";
+    success = cfg.Read(key, &s);
+    if (debugging) assert(success);
+    s.ToDouble(&m_pValue);
+    if (m_bshowpvalue) m_pValueTextBox->SetValue(s);
+    EnterPValue();
+
 }
 
 void wxDVPnCdfCtrl::WriteState(std::string filename) {
@@ -211,22 +274,34 @@ void wxDVPnCdfCtrl::WriteState(std::string filename) {
     std::string prefix = "/AppState/" + filename + "/PDFCDF/";
 
     std::string key("");
+    /*
+    key = prefix + "Y1Max";
+    s = m_y1MaxTextBox->GetValue();
+    success = cfg.Write(key, s.c_str());
+    if (debugging) assert(success);
 
-    key = prefix + "YMax";
-    s = m_maxTextBox->GetValue();
+    key = prefix + "Y2Max";
+    s = m_y2MaxTextBox->GetValue();
+    success = cfg.Write(key, s.c_str());
+    if (debugging) assert(success);
+    */
+    key = prefix + "PValue";
+ //   s = m_pValueTextBox->GetValue();
+    s = wxString::Format("%lg", m_pValue);
     success = cfg.Write(key, s.c_str());
     if (debugging) assert(success);
 
     key = prefix + "ExcludeZeros";
-    s = (m_hideZeros->GetValue()) ? "true" : "false";
+//    s = (m_hideZeros->GetValue()) ? "true" : "false";
+    s = m_bshowhidezeros ? "true" : "false";
     success = cfg.Write(key, s.c_str());
     if (debugging) assert(success);
-
+    /*
     key = prefix + "PlotType";
     s = wxString::Format(wxT("%d"), (int) m_PlotTypeDisplayed->GetSelection());
     success = cfg.Write(key, s.c_str());
     if (debugging) assert(success);
-
+    */
     key = prefix + "Normalize";
     s = wxString::Format(wxT("%d"), (int) m_normalizeChoice->GetSelection());
     success = cfg.Write(key, s.c_str());
@@ -336,7 +411,7 @@ void wxDVPnCdfCtrl::SetNumberOfBins(int n) {
 
     m_pdfPlot->SetNumberOfBins(n);
     m_plotSurface->GetYAxis1()->SetWorldMax(m_pdfPlot->GetNiceYMax());
-    m_maxTextBox->SetValue(wxString::Format("%lg", m_pdfPlot->GetNiceYMax()));
+ //   m_y1MaxTextBox->SetValue(wxString::Format("%lg", m_pdfPlot->GetNiceYMax()));
 }
 
 int wxDVPnCdfCtrl::GetNumberOfBins() {
@@ -363,15 +438,65 @@ void wxDVPnCdfCtrl::SetNormalizeType(wxPLHistogramPlot::NormalizeType t) {
     UpdateYAxisLabel();
 }
 
-double wxDVPnCdfCtrl::GetYMax() {
+double wxDVPnCdfCtrl::GetY1Max() {
     return m_plotSurface->GetYAxis1()->GetWorldMax();
 }
 
-void wxDVPnCdfCtrl::SetYMax(double max) {
+void wxDVPnCdfCtrl::SetY1Max(double max) {
     m_plotSurface->GetYAxis1()->SetWorldMax(max);
     InvalidatePlot();
-    m_maxTextBox->SetValue(wxString::Format("%lg", max));
+//    m_y1MaxTextBox->SetValue(wxString::Format("%lg", max));
 }
+
+double wxDVPnCdfCtrl::GetY2Max() {
+    return m_plotSurface->GetYAxis2()->GetWorldMax();
+}
+
+void wxDVPnCdfCtrl::SetY2Max(double max) {
+    m_plotSurface->GetYAxis2()->SetWorldMax(max);
+    InvalidatePlot();
+//    m_y2MaxTextBox->SetValue(wxString::Format("%lg", max));
+}
+
+double wxDVPnCdfCtrl::GetPValue() {
+    double retVal;
+    if (m_pValueResultTextBox->GetValue().ToDouble(&retVal))
+        return retVal;
+    else
+        return -1;
+}
+
+void wxDVPnCdfCtrl::SetPValue(double pValue) {
+    // clear previous p value annotation
+    m_plotSurface->DeleteAllAnnotations();
+    
+    if (pValue >=0) {
+        // get selected cdfData x value for specified pVal
+        if (m_selectedDataSetIndex > -1) {
+            // search m_cdfData[m_selectedDataSetIndex] for y <= 100 -pVal
+            // TODO - add find for std::vector <wxRealPoint>
+            auto it =m_cdfPlotData[m_selectedDataSetIndex]->begin();
+            m_pValue_x = it->x;
+            // probability of exceedance (100-pvalue)
+            while ((it != m_cdfPlotData[m_selectedDataSetIndex]->end()) && (it->y <= (100.0 - pValue))) { 
+                m_pValue_x = it->x;
+                it++;
+            }
+            // set annotation
+            std::vector<wxRealPoint> pValueLine;
+            pValueLine.push_back(wxRealPoint(m_pValue_x,100.0- pValue));
+            pValueLine.push_back(wxRealPoint(m_pValue_x, 0.0));
+            m_plotSurface->AddAnnotation(new wxPLLineAnnotation(pValueLine, 2, *wxBLUE, wxPLOutputDevice::DASH), wxPLAnnotation::AXIS, wxPLPlot::AxisPos::X_BOTTOM, wxPLPlot::AxisPos::Y_RIGHT);
+        }
+    }
+    else
+        m_pValue_x = -1;
+    InvalidatePlot();
+    m_pValue = pValue;
+    if (m_bshowpvalue) m_pValueTextBox->SetValue(wxString::Format("%lg", m_pValue));
+    m_pValueResultLabel->SetLabel(wxString::Format("P%lg", m_pValue));
+    m_pValueResultTextBox->SetValue(wxString::Format("%lg", m_pValue_x));
+ }
 
 void wxDVPnCdfCtrl::RebuildPlotSurface(double maxYPercent) {
     if (m_selectedDataSetIndex < 0
@@ -381,7 +506,7 @@ void wxDVPnCdfCtrl::RebuildPlotSurface(double maxYPercent) {
     wxDVTimeSeriesDataSet *ds = m_dataSets[m_selectedDataSetIndex];
 
     m_plotSurface->GetYAxis1()->SetWorld(0, maxYPercent);
-    m_maxTextBox->SetValue(wxString::Format("%lg", maxYPercent));
+ //   m_y1MaxTextBox->SetValue(wxString::Format("%lg", maxYPercent));
 
     double xMin, xMax;
     ds->GetDataMinAndMax(&xMin, &xMax);
@@ -395,9 +520,11 @@ void wxDVPnCdfCtrl::RebuildPlotSurface(double maxYPercent) {
 
 void wxDVPnCdfCtrl::ChangePlotDataTo(wxDVTimeSeriesDataSet *d, bool forceDataRefresh) {
     if (d) {
-        if (m_binsCombo->GetSelection() == 0) //Sturge's
+        if (m_binsCombo->GetSelection() == 0) //Freedman-Diaconis with simplified interquantile range
+            m_pdfPlot->SetNumberOfBins(m_pdfPlot->GetFreedmanDiaconisBinsFor(d->Length()));
+        else if (m_binsCombo->GetSelection() == 1) //Sturge's
             m_pdfPlot->SetNumberOfBins(m_pdfPlot->GetSturgesBinsFor(d->Length()));
-        else if (m_binsCombo->GetSelection() == 1) //SQRT
+        else if (m_binsCombo->GetSelection() == 2) //SQRT
             m_pdfPlot->SetNumberOfBins(m_pdfPlot->GetSqrtBinsFor(d->Length()));
 
         m_pdfPlot->SetData(d->GetDataVector()); //inefficient?
@@ -434,8 +561,14 @@ void wxDVPnCdfCtrl::ChangePlotDataTo(wxDVTimeSeriesDataSet *d, bool forceDataRef
         m_cdfPlot->SetYDataLabel(m_cdfPlot->GetLabel());
     }
 
-    if (d)
+    if (d) {
         RebuildPlotSurface(m_pdfPlot->GetNiceYMax());
+        m_pValueResultUnits->SetLabel(d->GetUnits());
+        //m_y2MaxTextBox->SetValue("100"); // default - show entire cdf
+        // initialize pvalue to 50 (default)
+        SetPValue(50);
+        
+    }
 }
 
 void wxDVPnCdfCtrl::ReadCdfFrom(wxDVTimeSeriesDataSet &d, std::vector<wxRealPoint> *cdfArray) {
@@ -501,18 +634,43 @@ void wxDVPnCdfCtrl::OnDataChannelSelection(wxCommandEvent &) {
 void wxDVPnCdfCtrl::OnSearch(wxCommandEvent &) {
     m_selector->Filter(m_srchCtrl->GetValue().Lower());
 }
-
-void wxDVPnCdfCtrl::OnEnterYMax(wxCommandEvent &) {
-    EnterYMax();
+/*
+void wxDVPnCdfCtrl::OnEnterY1Max(wxCommandEvent&) {
+    EnterY1Max();
 }
 
-void wxDVPnCdfCtrl::EnterYMax() {
+void wxDVPnCdfCtrl::EnterY1Max() {
     double val;
-    if (m_maxTextBox->GetValue().ToDouble(&val)) {
+    if (m_y1MaxTextBox->GetValue().ToDouble(&val)) {
         m_plotSurface->GetYAxis1()->SetWorldMax(val);
         InvalidatePlot();
     }
 }
+
+void wxDVPnCdfCtrl::OnEnterY2Max(wxCommandEvent&) {
+    EnterY2Max();
+}
+
+void wxDVPnCdfCtrl::EnterY2Max() {
+    double val;
+    if (m_y2MaxTextBox->GetValue().ToDouble(&val)) {
+        m_plotSurface->GetYAxis2()->SetWorldMax(val);
+        InvalidatePlot();
+    }
+}
+*/
+void wxDVPnCdfCtrl::OnEnterPValue(wxCommandEvent&) {
+    EnterPValue();
+}
+
+void wxDVPnCdfCtrl::EnterPValue() {
+    double pVal;
+    if (!m_pValueTextBox->GetValue().ToDouble(&pVal)) {
+        pVal = -1;
+    }
+    SetPValue(pVal);
+}
+
 
 void wxDVPnCdfCtrl::OnBinComboSelection(wxCommandEvent &) {
     BinComboSelection();
@@ -523,22 +681,27 @@ void wxDVPnCdfCtrl::BinComboSelection() {
         return;
 
     switch (m_binsCombo->GetSelection()) {
-        case 0:
-            SetNumberOfBins(ceil(log10(double(m_dataSets[m_selectedDataSetIndex]->Length())) / log10(2.0) +
-                                 1)); //Sturges formula.
-            break;
-        case 1:
-            SetNumberOfBins(sqrt(double(m_dataSets[m_selectedDataSetIndex]->Length()))); //Sqrt-choice.  Used by excel.
-            break;
-        case 2:
-            SetNumberOfBins(20);
-            break;
-        case 3:
-            SetNumberOfBins(50);
-            break;
-        case 4:
-            SetNumberOfBins(100);
-            break;
+    case 0:
+        // quantile width - assume interquantile range = 1/2 of data range to simplify to n^1/3
+        // bin width
+        // number of bins
+        SetNumberOfBins(ceil(pow(double(m_dataSets[m_selectedDataSetIndex]->Length()), 1.0/3.0))); //Freedman-Diaconis with simplified assumption on interquantile range.
+        break;
+    case 1:
+        SetNumberOfBins(ceil(log10(double(m_dataSets[m_selectedDataSetIndex]->Length())) / log10(2.0) + 1)); //Sturges formula.
+        break;
+    case 2:
+        SetNumberOfBins(sqrt(double(m_dataSets[m_selectedDataSetIndex]->Length()))); //Sqrt-choice.  Used by excel.
+        break;
+    case 3:
+        SetNumberOfBins(20);
+        break;
+    case 4:
+        SetNumberOfBins(50);
+        break;
+    case 5:
+        SetNumberOfBins(100);
+        break;
     }
     InvalidatePlot();
 }
@@ -560,7 +723,7 @@ void wxDVPnCdfCtrl::OnNormalizeChoice(wxCommandEvent &) {
 void wxDVPnCdfCtrl::NormalizeChoice() {
     SetNormalizeType(wxPLHistogramPlot::NormalizeType(m_normalizeChoice->GetSelection()));
     m_plotSurface->GetYAxis1()->SetWorldMax(m_pdfPlot->GetNiceYMax());
-    m_maxTextBox->SetValue(wxString::Format("%lg", m_pdfPlot->GetNiceYMax()));
+//    m_y1MaxTextBox->SetValue(wxString::Format("%lg", m_pdfPlot->GetNiceYMax()));
     InvalidatePlot();
 }
 
@@ -581,11 +744,11 @@ void wxDVPnCdfCtrl::ShowZerosClick() {
         m_cdfPlot->SetData(*m_cdfPlotData[m_selectedDataSetIndex]);
 
         m_plotSurface->GetYAxis1()->SetWorldMax(m_pdfPlot->GetNiceYMax());
-        m_maxTextBox->SetValue(wxString::Format("%lg", m_pdfPlot->GetNiceYMax()));
+//        m_y1MaxTextBox->SetValue(wxString::Format("%lg", m_pdfPlot->GetNiceYMax()));
         InvalidatePlot();
     }
 }
-
+/*
 void wxDVPnCdfCtrl::OnPlotTypeSelection(wxCommandEvent &) {
     PlotTypeSelection();
 }
@@ -608,6 +771,7 @@ void wxDVPnCdfCtrl::PlotTypeSelection() {
 
     InvalidatePlot();
 }
+*/
 
 void wxDVPnCdfCtrl::InvalidatePlot() {
     m_plotSurface->Invalidate();

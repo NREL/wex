@@ -317,7 +317,7 @@ wxDVPlotCtrlSettings wxDVPlotCtrl::GetPerspective() {
     settings.SetProperty(wxT("pnCdfNormalize"), int(m_pnCdf->GetNormalizeType()));
     settings.SetProperty(wxT("pnCdfBinSelectionIndex"), m_pnCdf->GetBinSelectionIndex());
     settings.SetProperty(wxT("pnCdfBins"), m_pnCdf->GetNumberOfBins());
-    settings.SetProperty(wxT("pnCdfYMax"), m_pnCdf->GetYMax());
+    settings.SetProperty(wxT("pnCdfYMax"), m_pnCdf->GetY1Max());
 
     //*** DURATION CURVE PROPERTIES***
     settings.SetProperty(wxT("dcSelectedNames"), m_durationCurve->GetDataSelectionList()->GetSelectedNamesInCol(0));
@@ -412,7 +412,7 @@ void wxDVPlotCtrl::SetPerspective(wxDVPlotCtrlSettings &settings) {
     m_pnCdf->SetCurrentDataName(settings.GetProperty(wxT("pnCdfCurrentName")), true);
     double yMax;
     settings.GetProperty(wxT("pnCdfYMax")).ToDouble(&yMax);
-    m_pnCdf->SetYMax(yMax);
+    m_pnCdf->SetY1Max(yMax);
 
     //*** DURATION CURVE PROPERTIES ***
     m_durationCurve->SetSelectedNames(settings.GetProperty(wxT("dcSelectedNames")), true);

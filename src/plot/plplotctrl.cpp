@@ -91,7 +91,7 @@ wxPLPlotCtrl::wxPLPlotCtrl(wxWindow *parent, int id, const wxPoint &pos, const w
         : wxWindow(parent, id, pos, size), wxPLPlot() {
     SetBackgroundStyle(wxBG_STYLE_CUSTOM);
     SetFont(*wxNORMAL_FONT);
-
+ 
     m_scaleTextSize = false;
     m_includeLegendOnExport = false;
 
@@ -304,9 +304,6 @@ wxBitmap wxPLPlotCtrl::GetBitmap(int width, int height) {
     wxMemoryDC memdc(bitmap);
 
     wxGraphicsRenderer *renderer = 0;
-#ifdef __WXMSW__
-    //renderer = wxGraphicsRenderer::GetDirect2DRenderer();
-#endif
     if (!renderer)
         renderer = wxGraphicsRenderer::GetDefaultRenderer();
 
@@ -395,18 +392,17 @@ void wxPLPlotCtrl::OnPaint(wxPaintEvent &) {
     wxAutoBufferedPaintDC pdc(this);
 
     wxGraphicsRenderer *renderer = 0;
-#ifdef __WXMSW__
-    //renderer = wxGraphicsRenderer::GetDirect2DRenderer();
-#endif
     if (!renderer)
         renderer = wxGraphicsRenderer::GetDefaultRenderer();
 
-    if (wxGraphicsContext *gc = renderer->CreateContext(pdc)) {
+    if (wxGraphicsContext* gc = renderer->CreateContext(pdc)) {
 #ifdef SHOW_RENDERER_INFO
         wxStopWatch sw;
 #endif
         int width, height;
         GetClientSize(&width, &height);
+        // for wx 3.1.5
+        gc->SetInterpolationQuality(wxINTERPOLATION_BEST);
 
         gc->SetFont(GetFont(), *wxBLACK); // initialze font and background
         gc->SetPen(*wxWHITE_PEN);
@@ -597,7 +593,7 @@ void wxPLPlotCtrl::OnLeftUp(wxMouseEvent &evt) {
         wxClientDC dc(this);
         wxDCOverlay overlaydc(m_overlay, &dc);
         overlaydc.Clear();
-        m_overlay.Reset();
+//        m_overlay.Reset();
 #else
         if (m_moveLegendErase)
             DrawLegendOutline();
@@ -656,7 +652,7 @@ void wxPLPlotCtrl::OnLeftUp(wxMouseEvent &evt) {
         wxClientDC dc(this);
         wxDCOverlay overlaydc(m_overlay, &dc);
         overlaydc.Clear();
-        m_overlay.Reset();
+//        m_overlay.Reset();
 #else
         if (m_highlightErase)
             UpdateHighlightRegion();

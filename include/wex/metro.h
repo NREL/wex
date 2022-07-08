@@ -37,6 +37,13 @@
 #include <wx/bookctrl.h>
 #include <wx/dataview.h>
 
+
+static wxColour UIColorIndicatorFore(60, 60, 60);
+static wxColour UIColorIndicatorBack(230, 230, 230);
+static wxColour UIColorCalculatedFore(29, 80, 173);
+static wxColour UIColorCalculatedBack(222, 233, 244);
+
+
 class wxMetroThemeProvider {
 public:
     virtual ~wxMetroThemeProvider();

@@ -483,10 +483,6 @@ private:
     int m_diffW, m_diffH;
     int m_popupX, m_popupY;
 
-#ifdef wxUI_USE_OVERLAY
-    wxOverlay m_overlay;
-#endif
-
     void OnMouseMove(wxMouseEvent &evt);
 
     void OnLeftUp(wxMouseEvent &evt);

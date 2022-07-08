@@ -48,10 +48,12 @@ class wxSearchCtrl;
 
 class wxTextCtrl;
 
+class wxStaticText;
+
 class wxDVPnCdfCtrl : public wxPanel {
 public:
     wxDVPnCdfCtrl(wxWindow *parent, wxWindowID id = wxID_ANY, const wxPoint &pos = wxDefaultPosition,
-                  const wxSize &size = wxDefaultSize, long style = wxTAB_TRAVERSAL, const wxString &name = "panel");
+                  const wxSize &size = wxDefaultSize, long style = wxTAB_TRAVERSAL, const wxString &name = "panel", const bool& bshowsearch = true, const bool& bshowselector = true, const bool& bshowpvalue = true, const bool& bshowhidezeros = true);
 
     virtual ~wxDVPnCdfCtrl();
 
@@ -82,9 +84,13 @@ public:
 
     void SetNormalizeType(wxPLHistogramPlot::NormalizeType t);
 
-    double GetYMax();
-
-    void SetYMax(double max);
+    double GetY1Max();
+    void SetY1Max(double max);
+    double GetY2Max();
+    void SetY2Max(double max);
+    double GetPValue();
+    void SetPValue(double pValue);
+    double GetPValueX() { return m_pValue_x; };
 
     void ReadCdfFrom(wxDVTimeSeriesDataSet &d, std::vector<wxRealPoint> *cdfArray);
 
@@ -101,7 +107,9 @@ public:
 
     void OnSearch(wxCommandEvent &e);
 
-    void OnEnterYMax(wxCommandEvent &);
+//    void OnEnterY1Max(wxCommandEvent&);
+//    void OnEnterY2Max(wxCommandEvent&);
+    void OnEnterPValue(wxCommandEvent&);
 
     void OnBinComboSelection(wxCommandEvent &);
 
@@ -111,21 +119,34 @@ public:
 
     void OnShowZerosClick(wxCommandEvent &);
 
-    void OnPlotTypeSelection(wxCommandEvent &);
+ //   void OnPlotTypeSelection(wxCommandEvent &);
 
 private:
     std::vector<wxDVTimeSeriesDataSet *> m_dataSets;
     int m_selectedDataSetIndex;
+    double m_pValue; // user entered or set programmatically
+    double m_pValue_x; // x coordinant of user specified p Value
     std::vector<std::vector<wxRealPoint> *> m_cdfPlotData; //We track cdf plots since they take long to calculate.
 
-    wxTextCtrl *m_maxTextBox;
+    bool m_bshowpvalue;
+    bool m_bshowhidezeros;
+ //   wxTextCtrl* m_y1MaxTextBox;
+ //   wxTextCtrl* m_y2MaxTextBox;
+    
+    wxTextCtrl* m_pValueTextBox; // input
+
+    // resultant pvalue
+    wxStaticText* m_pValueResultLabel;
+    wxTextCtrl* m_pValueResultTextBox;
+    wxStaticText* m_pValueResultUnits;
+
 
     wxDVSelectionListCtrl *m_selector;
     wxSearchCtrl *m_srchCtrl;
     wxComboBox *m_binsCombo;
     wxChoice *m_normalizeChoice;
     wxCheckBox *m_hideZeros;
-    wxChoice *m_PlotTypeDisplayed;
+  //  wxChoice *m_PlotTypeDisplayed;
 
     wxPLPlotCtrl *m_plotSurface;
     wxPLHistogramPlot *m_pdfPlot;
@@ -135,11 +156,13 @@ private:
 
     void InvalidatePlot();
 
-    void EnterYMax();
+ //   void EnterY1Max();
+ //   void EnterY2Max();
+    void EnterPValue();
 
     void ShowZerosClick();
 
-    void PlotTypeSelection();
+ //   void PlotTypeSelection();
 
     void NormalizeChoice();
 

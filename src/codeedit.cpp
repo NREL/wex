@@ -303,7 +303,6 @@ void wxCodeEditCtrl::SetLanguage(Language lang) {
     // first, revert to standard style
     m_lang = NONE;
 
-    SetStyleBits(8);
     SetLayoutCache(wxSTC_CACHE_PAGE);
     SetLexer(wxSTC_LEX_NULL);
 

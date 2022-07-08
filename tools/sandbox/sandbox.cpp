@@ -361,7 +361,16 @@ void TestContourPlot() {
     plot->SetBackgroundColour(*wxWHITE);
     plot->SetHighlightMode(wxPLPlotCtrl::HIGHLIGHT_ZOOM);
 //	int np = 49;
-
+ //   plot->SetScaleTextSize(true);
+//    wxFont font(8, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Consolas");
+//    wxFont font(12, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Carlito");
+//    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Arial Black");
+//    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial Narrow");
+//    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Calibri");
+//    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial");
+//    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false);
+    //    wxFont font(12, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Calibri");
+//    plot->SetFont(font);
     double zmin = 1e99, zmax = -1e99;
     wxMatrix<double> XX, YY, ZZ;
 
@@ -445,13 +454,22 @@ void TestWaveAnnualEnergyPlot() {
     wxPLPlotCtrl *plot = new wxPLPlotCtrl(frame, wxID_ANY, wxDefaultPosition, wxDefaultSize);
     plot->SetBackgroundColour(*wxBLACK);
     plot->SetHighlightMode(wxPLPlotCtrl::HIGHLIGHT_ZOOM);
+   // wxFont font(12, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Consolas");
+    //    wxFont font(12, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Carlito");
+    //    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Arial Black");
+    //    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial Narrow");
+    //    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Calibri");
+    //    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Arial");
+    //    wxFont font(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false);
+        //    wxFont font(12, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, "Calibri");
+    //plot->SetFont(font);
 
     double zmin = 1e99, zmax = -1e99;
     wxMatrix<double> XX, YY, ZZ;
 
 
     wxCSVData csv;
-    csv.ReadFile("C:/Projects/SAM/Documentation/MHK/2019.8.9_Final/WaveAnnualOutput.csv");
+    csv.ReadFile("c:/Projects/SAM/Documentation/MHK/2019.8.9_Final/WaveAnnualOutput.csv");
     // Example 1
     size_t nx = csv.NumRows(), ny = csv.NumCols();
 
@@ -1353,26 +1371,29 @@ public:
         if (wxGetEnv("WEXDIR", &wexdir)) {
             if (!wxPLPlot::AddPdfFontDir(wexdir + "/pdffonts"))
                 wxMessageBox("Could not add font dir: " + wexdir + "/pdffonts");
-            if (!wxPLPlot::SetPdfDefaultFont("ComputerModernUpright"))
-                wxMessageBox("Could not set default pdf font to Computer Modern Sans Serif");
+//            if (!wxPLPlot::SetPdfDefaultFont("Carlito"))
+//            if (!wxPLPlot::SetPdfDefaultFont("ComputerModernSansSerifBold"))
+//                wxMessageBox("Could not set default pdf font to Computer Modern Sans Serif");
         }
 
         //	wxStopWatch sw;
         //	int nf = wxFreeTypeLoadAllFonts();
         //	wxMessageBox( wxString::Format("Loaded %d fonts in %d ms.", nf, (int)sw.Time()) );
 
-        TestContourPlot();
-        TestWaveAnnualEnergyPlot();
+//        TestContourPlot();
+//        TestWaveAnnualEnergyPlot();
 
 //		TestPLPlot(0);
 //		TestPLPolarPlot(0);
-//		TestPLBarPlot(0);
+	//	TestPLBarPlot(0);
+
+        TestContourPlot();
 //		TestStackedBarPlot(0);
 //		TestSAMStackedBarPlot(0);
 //		TestSectorPlot(0);
 //        TestMELCOESectorPlot(0);
 //		TestTextLayout();
-        //TestFreeTypeText();
+//        TestFreeTypeText();
 //		TestPlotAnnotations(0);
 //		TestWindPrufFigure2(0);
 //		TestWindPrufFigure5(0);
@@ -1381,7 +1402,7 @@ public:
         //new wxGLEasyCanvasTest( frmgl );
         //frmgl->Show();
 
-        return true;
+ //       return true;
 
         ////TestFormDesigner();
         ////return true;
@@ -1433,58 +1454,58 @@ public:
         //frame->Show();
         //*/
 
-        //wxFrame *frm = new wxFrame(NULL, wxID_ANY, "SchedCtrl", wxDefaultPosition, wxSize(1100, 700));
-        //frm->SetBackgroundColour(*wxWHITE);
+        wxFrame *frm = new wxFrame(NULL, wxID_ANY, "SchedCtrl", wxDefaultPosition, wxSize(1100, 700));
+        frm->SetBackgroundColour(*wxWHITE);
 
-        //wxBoxSizer *tools = new wxBoxSizer(wxHORIZONTAL);
-        //tools->Add(new wxMetroButton(frm, wxID_ANY, wxEmptyString, wxBITMAP_PNG_FROM_DATA(demo_bitmap), wxDefaultPosition, wxDefaultSize), 0, wxALL | wxEXPAND, 0);
-        //tools->Add(new wxMetroButton(frm, wxID_ANY, "New", wxBITMAP_PNG_FROM_DATA(cirplus), wxDefaultPosition, wxDefaultSize), 0, wxALL | wxEXPAND, 0);
-        //wxMetroTabList *tabs = new wxMetroTabList(frm, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxMT_MENUBUTTONS);
-        //tabs->Append("photovoltaic #1");
-        //tabs->Append("solar water");
-        //tabs->Append("power tower steam");
-        //tools->Add(tabs, 1, wxALL | wxEXPAND, 0);
-        //tools->Add(new wxMetroButton(frm, wxID_ANY, wxEmptyString, wxBITMAP_PNG_FROM_DATA(qmark), wxDefaultPosition, wxDefaultSize), 0, wxALL | wxEXPAND, 0);
-        ////tools->Add( new wxMetroButton( frm, wxID_ANY, wxEmptyString, wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_DOWNARROW), 0, wxALL|wxEXPAND, 0 );
+        wxBoxSizer *tools = new wxBoxSizer(wxHORIZONTAL);
+        tools->Add(new wxMetroButton(frm, wxID_ANY, wxEmptyString, wxBITMAP_PNG_FROM_DATA(demo_bitmap), wxDefaultPosition, wxDefaultSize), 0, wxALL | wxEXPAND, 0);
+        tools->Add(new wxMetroButton(frm, wxID_ANY, "New", wxBITMAP_PNG_FROM_DATA(cirplus), wxDefaultPosition, wxDefaultSize), 0, wxALL | wxEXPAND, 0);
+        wxMetroTabList *tabs = new wxMetroTabList(frm, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxMT_MENUBUTTONS);
+        tabs->Append("photovoltaic #1");
+        tabs->Append("solar water");
+        tabs->Append("power tower steam");
+        tools->Add(tabs, 1, wxALL | wxEXPAND, 0);
+        tools->Add(new wxMetroButton(frm, wxID_ANY, wxEmptyString, wxBITMAP_PNG_FROM_DATA(qmark), wxDefaultPosition, wxDefaultSize), 0, wxALL | wxEXPAND, 0);
+        //tools->Add( new wxMetroButton( frm, wxID_ANY, wxEmptyString, wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_DOWNARROW), 0, wxALL|wxEXPAND, 0 );
 
-        //wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-        //sizer->Add(tools, 0, wxALL | wxEXPAND, 0);
-        //sizer->Add(new wxMetroButton(frm, wxID_ANY, "Start", wxBITMAP_PNG_FROM_DATA(demo_bitmap), wxDefaultPosition, wxDefaultSize, wxMB_RIGHTARROW), 0, wxALL, 3);
-        //sizer->Add(new wxMetroButton(frm, wxID_ANY, "Stretched Start", wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_RIGHTARROW), 0, wxALL | wxEXPAND, 3);
-        //sizer->Add(new wxMetroButton(frm, wxID_ANY, "Test button"), 0, wxALL, 3);
-        //sizer->Add(new wxMetroButton(frm, wxID_ANY, "Popup menu", wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_DOWNARROW), 0, wxALL, 3);
-        //sizer->Add(new wxMetroButton(frm, wxID_ANY, "Left align label", wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_ALIGNLEFT), 0, wxEXPAND | wxALL, 3);
-        //sizer->Add(new wxMetroButton(frm, wxID_ANY, "Left align arrow", wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_ALIGNLEFT | wxMB_RIGHTARROW), 0, wxEXPAND | wxALL, 3);
-        //sizer->Add(new wxMetroButton(frm, wxID_ANY, wxEmptyString, wxBITMAP_PNG_FROM_DATA(demo_bitmap), wxDefaultPosition, wxDefaultSize), 0, wxALL, 3);
+        wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+        sizer->Add(tools, 0, wxALL | wxEXPAND, 0);
+        sizer->Add(new wxMetroButton(frm, wxID_ANY, "Start", wxBITMAP_PNG_FROM_DATA(demo_bitmap), wxDefaultPosition, wxDefaultSize, wxMB_RIGHTARROW), 0, wxALL, 3);
+        sizer->Add(new wxMetroButton(frm, wxID_ANY, "Stretched Start", wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_RIGHTARROW), 0, wxALL | wxEXPAND, 3);
+        sizer->Add(new wxMetroButton(frm, wxID_ANY, "Test button"), 0, wxALL, 3);
+        sizer->Add(new wxMetroButton(frm, wxID_ANY, "Popup menu", wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_DOWNARROW), 0, wxALL, 3);
+        sizer->Add(new wxMetroButton(frm, wxID_ANY, "Left align label", wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_ALIGNLEFT), 0, wxEXPAND | wxALL, 3);
+        sizer->Add(new wxMetroButton(frm, wxID_ANY, "Left align arrow", wxNullBitmap, wxDefaultPosition, wxDefaultSize, wxMB_ALIGNLEFT | wxMB_RIGHTARROW), 0, wxEXPAND | wxALL, 3);
+        sizer->Add(new wxMetroButton(frm, wxID_ANY, wxEmptyString, wxBITMAP_PNG_FROM_DATA(demo_bitmap), wxDefaultPosition, wxDefaultSize), 0, wxALL, 3);
 
-        //MyNoteTest *nb = new MyNoteTest(frm);
+        MyNoteTest *nb = new MyNoteTest(frm);
 
-        ///*wxPanel *p = new wxPanel( nb );
-        //p->SetBackgroundColour(*wxRED);
-        //nb->AddPage( p, "Case 2: PV+debt" );
+        /*wxPanel *p = new wxPanel( nb );
+        p->SetBackgroundColour(*wxRED);
+        nb->AddPage( p, "Case 2: PV+debt" );
 
-        //p = new wxPanel( nb );
-        //p->SetBackgroundColour(*wxBLUE);
-        //nb->AddPage( p, "Case 1: PV" );
+        p = new wxPanel( nb );
+        p->SetBackgroundColour(*wxBLUE);
+        nb->AddPage( p, "Case 1: PV" );
 
-        //nb->AddPage( new wxPanel( nb ), "Wind system" );
-        //nb->AddPage( new wxPanel( nb ), "solar water heat" );*/
-        //sizer->Add(nb, 1, wxALL | wxEXPAND, 0);
+        nb->AddPage( new wxPanel( nb ), "Wind system" );
+        nb->AddPage( new wxPanel( nb ), "solar water heat" );*/
+        sizer->Add(nb, 1, wxALL | wxEXPAND, 0);
 
-        //wxMetroNotebook *nb2 = new wxMetroNotebook(frm, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxMT_LIGHTTHEME);
-        //nb2->AddPage(new wxPanel(nb), "Base Case");
-        //nb2->AddPage(new wxPanel(nb), "Parametrics");
-        //nb2->AddPage(new wxPanel(nb), "Sensitivities");
-        //nb2->AddPage(new wxPanel(nb), "Statistics");
-        //nb2->AddPage(new wxPanel(nb), "Scripting");
-        //sizer->Add(nb2, 1, wxALL | wxEXPAND, 0);
+        wxMetroNotebook *nb2 = new wxMetroNotebook(frm, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxMT_LIGHTTHEME);
+        nb2->AddPage(new wxPanel(nb), "Base Case");
+        nb2->AddPage(new wxPanel(nb), "Parametrics");
+        nb2->AddPage(new wxPanel(nb), "Sensitivities");
+        nb2->AddPage(new wxPanel(nb), "Statistics");
+        nb2->AddPage(new wxPanel(nb), "Scripting");
+        sizer->Add(nb2, 1, wxALL | wxEXPAND, 0);
 
-        ////wxDiurnalPeriodCtrl *sch = new wxDiurnalPeriodCtrl( frm, wxID_ANY );
-        ////sch->SetupTOUGrid();
-        ////sizer->Add( sch, 1, wxALL|wxEXPAND, 5 );
+        //wxDiurnalPeriodCtrl *sch = new wxDiurnalPeriodCtrl( frm, wxID_ANY );
+        //sch->SetupTOUGrid();
+        //sizer->Add( sch, 1, wxALL|wxEXPAND, 5 );
 
-        //frm->SetSizer(sizer);
-        //frm->Show();
+        frm->SetSizer(sizer);
+        frm->Show();
 
         ///*
 

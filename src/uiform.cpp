@@ -2854,12 +2854,8 @@ void wxUIFormEditor::OnLeftUp(wxMouseEvent &) {
 
         m_moveMode = false;
 
-#ifdef wxUI_USE_OVERLAY
-        m_overlay.Reset();
-#else
         if (m_moveModeErase)
             DrawMoveResizeOutlines();
-#endif
         m_moveModeErase = false;
 
         Refresh();
@@ -2884,12 +2880,8 @@ void wxUIFormEditor::OnLeftUp(wxMouseEvent &) {
         }
 
         m_multiSelMode = false;
-#ifdef wxUI_USE_OVERLAY
-        m_overlay.Reset();
-#else
         if (m_multiSelModeErase)
             DrawMultiSelBox();
-#endif
         m_multiSelModeErase = false;
 
         Refresh();
@@ -2911,12 +2903,8 @@ void wxUIFormEditor::OnLeftUp(wxMouseEvent &) {
             m_propEditor->UpdatePropertyValues();
 
         m_resizeMode = false;
-#ifdef wxUI_USE_OVERLAY
-        m_overlay.Reset();
-#else
         if (m_resizeModeErase)
             DrawMoveResizeOutlines();
-#endif
         m_resizeModeErase = false;
 
         Refresh();
@@ -2931,20 +2919,9 @@ void wxUIFormEditor::DrawMultiSelBox() {
 
     wxClientDC dc(this);
 
-#ifdef wxUI_USE_OVERLAY
-    wxDCOverlay overlaydc(m_overlay, &dc);
-    overlaydc.Clear();
-#ifdef __WXOSX__
-    wxBrush brush(wxColour(240, 240, 240, 130));
-#else
-    wxBrush brush(*wxWHITE, wxBRUSHSTYLE_TRANSPARENT);
-#endif
-    wxPen pen(wxColour(90, 90, 90));
-#else
     dc.SetLogicalFunction(wxINVERT);
-    wxBrush brush(*wxWHITE, wxTRANSPARENT);
-    wxPen pen(*wxBLACK, 2, wxSOLID);
-#endif
+    wxBrush brush(*wxWHITE, wxBRUSHSTYLE_TRANSPARENT);
+    wxPen pen(*wxBLACK, 2, wxPENSTYLE_SOLID);
 
     pen.SetCap(wxCAP_BUTT);
     pen.SetJoin(wxJOIN_MITER);
@@ -2965,19 +2942,8 @@ void wxUIFormEditor::DrawMultiSelBox() {
 void wxUIFormEditor::DrawMoveResizeOutlines() {
     wxClientDC dc(this);
 
-#ifdef wxUI_USE_OVERLAY
-    wxDCOverlay overlaydc(m_overlay, &dc);
-    overlaydc.Clear();
-#ifdef __WXOSX__
-    wxBrush brush(wxColour(240, 240, 240, 130));
-#else
-    wxBrush brush(*wxWHITE, wxBRUSHSTYLE_TRANSPARENT);
-#endif
-
-#else
     dc.SetLogicalFunction(wxINVERT);
-    wxBrush brush(*wxWHITE, wxTRANSPARENT);
-#endif
+    wxBrush brush(*wxWHITE, wxBRUSHSTYLE_TRANSPARENT);
 
     wxPen pen(wxColour(90, 90, 90), 1, wxPENSTYLE_SOLID);
     pen.SetCap(wxCAP_BUTT);
@@ -3037,10 +3003,8 @@ void wxUIFormEditor::OnMouseMove(wxMouseEvent &evt) {
     ClientToScreen(&xroot, &yroot);
 
     if (m_moveMode) {
-#ifndef wxUI_USE_OVERLAY
         if (m_moveModeErase)
             DrawMoveResizeOutlines();
-#endif
 
         m_diffX = xroot - m_origX;
         m_diffY = yroot - m_origY;
@@ -3052,10 +3016,8 @@ void wxUIFormEditor::OnMouseMove(wxMouseEvent &evt) {
     } else if (m_resizeMode) {
         SetResizeCursor();
 
-#ifndef wxUI_USE_OVERLAY
         if (m_resizeModeErase)
             DrawMoveResizeOutlines();
-#endif
         int diffx = xroot - m_origX;
         int diffy = yroot - m_origY;
 
@@ -3118,10 +3080,8 @@ void wxUIFormEditor::OnMouseMove(wxMouseEvent &evt) {
         DrawMoveResizeOutlines();
         m_resizeModeErase = true;
     } else if (m_multiSelMode) {
-#ifndef wxUI_USE_OVERLAY
         if (m_multiSelModeErase)
             DrawMultiSelBox();
-#endif
 
         m_diffX = xroot - m_origX;
         m_diffY = yroot - m_origY;
