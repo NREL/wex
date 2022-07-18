@@ -11,12 +11,17 @@ jobs:
       RUNS_ON: ubuntu1804
       GH_WORKSPACE: /home/runner/work/wex/wex #= $GITHUB_WORKSPACE
     steps:
+    - name: Setup cmake
+      uses: jwlawson/actions-setup-cmake@v1.12
+      with:
+        cmake-version: '3.24.x'
+    - name: Test cmake version
+      run: cmake --version
     - name: Install OS dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y \
           build-essential \
-          cmake \
           freeglut3-dev \
           g++ \
           libcurl4-openssl-dev \
@@ -88,12 +93,17 @@ jobs:
       RUNS_ON: ubuntu2004
       GH_WORKSPACE: /home/runner/work/wex/wex #= $GITHUB_WORKSPACE
     steps:
+    - name: Setup cmake
+      uses: jwlawson/actions-setup-cmake@v1.12
+      with:
+        cmake-version: '3.24.x'
+    - name: Test cmake version
+      run: cmake --version
     - name: Install OS dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y \
           build-essential \
-          cmake \
           freeglut3-dev \
           g++ \
           libcurl4-openssl-dev \
