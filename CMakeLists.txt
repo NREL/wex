@@ -4,7 +4,7 @@
 #
 #####################################################################################################################
 
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.24)
 
 option(SAM_SKIP_TOOLS "Skips the wex sandbox and Dview builds" OFF)
 
