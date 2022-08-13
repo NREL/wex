@@ -1105,7 +1105,7 @@ void TestPLPolarPlot(wxWindow *parent) {
     for (double x = 0; x < 361; x += 1) {
         //sine_data.push_back(wxRealPoint(x, 8 + 0.5*cos(pi * x/10)));
         //sine_data.push_back(wxRealPoint(x, 3 * sin(x/12)*sin(x/12)));
-        sine_data.push_back(wxRealPoint(x+M_PI, 8+M_PI + cos(x / 6) *x / 30));
+        sine_data.push_back(wxRealPoint(x, 8 + cos(x / 6) *x / 30));
     }
 
     //sine_data.push_back(wxRealPoint(0, 0));
@@ -1149,10 +1149,12 @@ void TestWindRose(wxWindow *parent) {
     //	data.push_back(wxRealPoint(i * 10.0, 5+sin(i/6.0)*2.0) );
     //}
 
-    for (double x = 0; x < 360; x += 10) {
+//    for (double x = 0; x < 360; x += 10) {
+        for (double x = 0; x < 360; x += 15) {
         //sine_data.push_back(wxRealPoint(x, 8 + 0.5*cos(pi * x/10)));
         //sine_data.push_back(wxRealPoint(x, 3 * sin(x/12)*sin(x/12)));
-        data.push_back(wxRealPoint(x, 8.0 + cos(x / 6.0) * x / 30.0));
+    //    data.push_back(wxRealPoint(x, 8.0 + cos(x / 6.0) * x / 30.0));
+        data.push_back(wxRealPoint(x, 8.0 ));
     }
 
     wxPLWindRose *wr = new wxPLWindRose(data, "Test data", *wxBLUE);
