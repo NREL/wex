@@ -101,6 +101,7 @@ void wxPLWindRose::Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map) {
     double centerOfSlice = width / 2.0;
     wxRealPoint pts[3];
     pts[0] = map.ToDevice(0, 0);
+//    pts[0] = map.ToDevice(-100, 0);
 
     for (size_t i = 0; i < Len(); i++) {
         wxRealPoint pt = At(i);

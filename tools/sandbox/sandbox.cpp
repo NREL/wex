@@ -1095,8 +1095,7 @@ void TestPLPolarPlot(wxWindow *parent) {
     // setting X axis 1 to a wxPLPolarAngularAxis will tell the control to plot a polar graph
     //plot->SetXAxis1(new wxPLPolarAngularAxis("Angular Axis"));
     //plot->SetXAxis1(new wxPLPolarAngularAxis("Angular Axis", wxPLPolarAngularAxis::GRADIANS, wxPLPolarAngularAxis::UP));
-    plot->SetXAxis1(
-            new wxPLPolarAngularAxis("Angular Axis", wxPLPolarAngularAxis::GRADIANS, wxPLPolarAngularAxis::DOWN));
+    plot->SetXAxis1(new wxPLPolarAngularAxis("Angular Axis", wxPLPolarAngularAxis::GRADIANS, wxPLPolarAngularAxis::DOWN));
     //plot->SetScaleTextSize( true );
 
     plot->ShowGrid(true, true);
@@ -1106,7 +1105,7 @@ void TestPLPolarPlot(wxWindow *parent) {
     for (double x = 0; x < 361; x += 1) {
         //sine_data.push_back(wxRealPoint(x, 8 + 0.5*cos(pi * x/10)));
         //sine_data.push_back(wxRealPoint(x, 3 * sin(x/12)*sin(x/12)));
-        sine_data.push_back(wxRealPoint(x, 8 + cos(x / 6) * x / 30));
+        sine_data.push_back(wxRealPoint(x+M_PI, 8+M_PI + cos(x / 6) *x / 30));
     }
 
     //sine_data.push_back(wxRealPoint(0, 0));
@@ -1383,11 +1382,12 @@ public:
 //        TestContourPlot();
 //        TestWaveAnnualEnergyPlot();
 
+        TestWindRose(0);
 //		TestPLPlot(0);
 //		TestPLPolarPlot(0);
-	//	TestPLBarPlot(0);
+//		TestPLBarPlot(0);
 
-        TestContourPlot();
+//        TestContourPlot();
 //		TestStackedBarPlot(0);
 //		TestSAMStackedBarPlot(0);
 //		TestSectorPlot(0);
@@ -1402,7 +1402,7 @@ public:
         //new wxGLEasyCanvasTest( frmgl );
         //frmgl->Show();
 
- //       return true;
+        return true;
 
         ////TestFormDesigner();
         ////return true;
