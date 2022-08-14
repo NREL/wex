@@ -852,7 +852,6 @@ wxPLPolarAngularAxis::wxPLPolarAngularAxis(const wxString &label, PolarAngularUn
 
         default:
             m_offset = -M_PI / 2.0;
-//            m_offset = 0.0;
             break;
     }
 }

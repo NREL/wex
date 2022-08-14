@@ -1159,6 +1159,7 @@ void TestWindRose(wxWindow *parent) {
 
     wxPLWindRose *wr = new wxPLWindRose(data, "Test data", *wxBLUE);
     wr->SetIgnoreAngle(false);
+    wr->ShowInLegend(true);
     plot->AddPlot(wr); // adding a wxPLWindRose plot will automatically set the x-axis to a wxPLPolarAngularAxis
 
     frame->Show();
@@ -1381,12 +1382,12 @@ public:
         //	int nf = wxFreeTypeLoadAllFonts();
         //	wxMessageBox( wxString::Format("Loaded %d fonts in %d ms.", nf, (int)sw.Time()) );
 
-//        TestContourPlot();
+        TestContourPlot();
 //        TestWaveAnnualEnergyPlot();
 
         TestWindRose(0);
 //		TestPLPlot(0);
-//		TestPLPolarPlot(0);
+		TestPLPolarPlot(0);
 //		TestPLBarPlot(0);
 
 //        TestContourPlot();
@@ -1397,7 +1398,7 @@ public:
 //		TestTextLayout();
 //        TestFreeTypeText();
 //		TestPlotAnnotations(0);
-//		TestWindPrufFigure2(0);
+		TestWindPrufFigure2(0);
 //		TestWindPrufFigure5(0);
 
         //wxFrame *frmgl = new wxFrame( NULL, wxID_ANY, "GL Easy Test", wxDefaultPosition, wxSize(700,700) );

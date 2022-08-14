@@ -74,9 +74,7 @@ public:
         m_ptCenter = wxRealPoint(0.5 * (pos.x + size.x) , 0.5 * (pos.y + size.y) );
         m_physicalConstraint = (size.x < size.y) ? size.x : size.y;
         if (wxPLPolarAngularAxis *pa = dynamic_cast<wxPLPolarAngularAxis *>(m_xAxis)) {
-            m_ptCenter +=  wxRealPoint(5*M_PI,5*M_PI);
-            m_physicalConstraint = size.x + pos.x;
-  //          m_physicalConstraint = (size.x < size.y) ? size.y : size.x;
+            m_ptCenter = wxRealPoint(pos.x + 0.5 * (size.x) , pos.y + 0.5 * (size.y) );
         }
     }
 
