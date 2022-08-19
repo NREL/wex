@@ -1095,8 +1095,7 @@ void TestPLPolarPlot(wxWindow *parent) {
     // setting X axis 1 to a wxPLPolarAngularAxis will tell the control to plot a polar graph
     //plot->SetXAxis1(new wxPLPolarAngularAxis("Angular Axis"));
     //plot->SetXAxis1(new wxPLPolarAngularAxis("Angular Axis", wxPLPolarAngularAxis::GRADIANS, wxPLPolarAngularAxis::UP));
-    plot->SetXAxis1(
-            new wxPLPolarAngularAxis("Angular Axis", wxPLPolarAngularAxis::GRADIANS, wxPLPolarAngularAxis::DOWN));
+    plot->SetXAxis1(new wxPLPolarAngularAxis("Angular Axis", wxPLPolarAngularAxis::GRADIANS, wxPLPolarAngularAxis::DOWN));
     //plot->SetScaleTextSize( true );
 
     plot->ShowGrid(true, true);
@@ -1106,7 +1105,7 @@ void TestPLPolarPlot(wxWindow *parent) {
     for (double x = 0; x < 361; x += 1) {
         //sine_data.push_back(wxRealPoint(x, 8 + 0.5*cos(pi * x/10)));
         //sine_data.push_back(wxRealPoint(x, 3 * sin(x/12)*sin(x/12)));
-        sine_data.push_back(wxRealPoint(x, 8 + cos(x / 6) * x / 30));
+        sine_data.push_back(wxRealPoint(x, 8 + cos(x / 6) *x / 30));
     }
 
     //sine_data.push_back(wxRealPoint(0, 0));
@@ -1150,14 +1149,17 @@ void TestWindRose(wxWindow *parent) {
     //	data.push_back(wxRealPoint(i * 10.0, 5+sin(i/6.0)*2.0) );
     //}
 
-    for (double x = 0; x < 360; x += 10) {
+//    for (double x = 0; x < 360; x += 10) {
+        for (double x = 0; x < 360; x += 15) {
         //sine_data.push_back(wxRealPoint(x, 8 + 0.5*cos(pi * x/10)));
         //sine_data.push_back(wxRealPoint(x, 3 * sin(x/12)*sin(x/12)));
-        data.push_back(wxRealPoint(x, 8.0 + cos(x / 6.0) * x / 30.0));
+    //    data.push_back(wxRealPoint(x, 8.0 + cos(x / 6.0) * x / 30.0));
+        data.push_back(wxRealPoint(x, 8.0 ));
     }
 
     wxPLWindRose *wr = new wxPLWindRose(data, "Test data", *wxBLUE);
     wr->SetIgnoreAngle(false);
+    wr->ShowInLegend(true);
     plot->AddPlot(wr); // adding a wxPLWindRose plot will automatically set the x-axis to a wxPLPolarAngularAxis
 
     frame->Show();
@@ -1380,14 +1382,15 @@ public:
         //	int nf = wxFreeTypeLoadAllFonts();
         //	wxMessageBox( wxString::Format("Loaded %d fonts in %d ms.", nf, (int)sw.Time()) );
 
-//        TestContourPlot();
+        TestContourPlot();
 //        TestWaveAnnualEnergyPlot();
 
+        TestWindRose(0);
 //		TestPLPlot(0);
-//		TestPLPolarPlot(0);
-	//	TestPLBarPlot(0);
+		TestPLPolarPlot(0);
+//		TestPLBarPlot(0);
 
-        TestContourPlot();
+//        TestContourPlot();
 //		TestStackedBarPlot(0);
 //		TestSAMStackedBarPlot(0);
 //		TestSectorPlot(0);
@@ -1395,14 +1398,14 @@ public:
 //		TestTextLayout();
 //        TestFreeTypeText();
 //		TestPlotAnnotations(0);
-//		TestWindPrufFigure2(0);
+		TestWindPrufFigure2(0);
 //		TestWindPrufFigure5(0);
 
         //wxFrame *frmgl = new wxFrame( NULL, wxID_ANY, "GL Easy Test", wxDefaultPosition, wxSize(700,700) );
         //new wxGLEasyCanvasTest( frmgl );
         //frmgl->Show();
 
- //       return true;
+        return true;
 
         ////TestFormDesigner();
         ////return true;

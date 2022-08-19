@@ -71,8 +71,11 @@ public:
               m_primaryX(primaryx) {
         wxRealPoint pos, size;
         GetDeviceExtents(&pos, &size);
-        m_ptCenter = wxRealPoint(0.5 * (pos.x + size.x), 0.5 * (pos.y + size.y));
+        m_ptCenter = wxRealPoint(0.5 * (pos.x + size.x) , 0.5 * (pos.y + size.y) );
         m_physicalConstraint = (size.x < size.y) ? size.x : size.y;
+        if (wxPLPolarAngularAxis *pa = dynamic_cast<wxPLPolarAngularAxis *>(m_xAxis)) {
+            m_ptCenter = wxRealPoint(pos.x + 0.5 * (size.x) , pos.y + 0.5 * (size.y) );
+        }
     }
 
     virtual wxRealPoint ToDevice(double x, double y) const {
@@ -83,15 +86,14 @@ public:
             double angle_in_rad = pa->AngleInRadians(x);
 
             // get radius in physical units
-            double radius0 = m_yAxis->WorldToPhysical(y, 0, m_physicalConstraint /
-                                                            2.0); // max radius has to be 1/2 of physical constraint
+            double radius0 = m_yAxis->WorldToPhysical(y, 0, m_physicalConstraint / 2.0); // max radius has to be 1/2 of physical constraint
 
             // locate point relative to center of polar plot
             wxRealPoint pt(radius0 * cos(angle_in_rad), radius0 * sin(angle_in_rad));
 
             // return point on physical device
             return (m_ptCenter + pt);
-        } else // Cartesian plot
+  } else // Cartesian plot
             return wxRealPoint(m_xAxis->WorldToPhysical(x, m_xPhysMin, m_xPhysMax),
                                m_yAxis->WorldToPhysical(y, m_yPhysMin, m_yPhysMax));
     }
