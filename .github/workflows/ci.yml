@@ -42,6 +42,7 @@ jobs:
         wx-config-3 --cflags | grep I
 
     - name: Get git ref of sibling dependency LK
+      if: ${{ !env.ACT }}
       run: |
         ref=$(git ls-remote --exit-code git://github.com/NREL/lk.git refs/heads/develop | awk '{print $1}')
         echo "ref_of_lk=$ref" | tee --append $GITHUB_ENV
@@ -124,6 +125,7 @@ jobs:
         wx-config-3 --cflags | grep I
 
     - name: Get git ref of sibling dependency LK
+      if: ${{ !env.ACT }}
       run: |
         ref=$(git ls-remote --exit-code git://github.com/NREL/lk.git refs/heads/develop | awk '{print $1}')
         echo "ref_of_lk=$ref" | tee --append $GITHUB_ENV
