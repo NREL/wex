@@ -910,6 +910,69 @@ public:
     }
 };
 
+class wxUISpatialAlbedoObject : public wxUIObject {
+public:
+    wxUISpatialAlbedoObject() {
+        AddProperty("TabOrder", new wxUIProperty((int)-1));
+        AddProperty("Schedule", new wxUIProperty(wxString("")));
+        AddProperty("Max", new wxUIProperty((int)9));
+        AddProperty("Min", new wxUIProperty((int)0));
+
+        Property("Width").Set(514);
+        Property("Height").Set(272);
+    }
+
+    std::vector<wxColour> colours{
+        wxColour(0, 51, 0),         // 0
+        wxColour(81, 60, 0),        // 1
+        wxColour(106, 0, 28),       // 2
+        wxColour(38, 0, 126),       // 3
+        wxColour(0, 111, 142),      // 4
+        wxColour(0, 153, 0),        // 5
+        wxColour(118, 177, 63),     // 6
+        wxColour(200, 202, 125),    // 7
+        wxColour(226, 208, 186),    // 8
+        wxColour(252, 248, 248)     // 9
+    };
+
+    virtual wxString GetTypeName() { return "SpatialAlbedo"; }
+
+    virtual wxUIObject* Duplicate() {
+        wxUIObject* o = new wxUISpatialAlbedoObject;
+        o->Copy(this);
+        return o;
+    }
+
+    virtual bool IsNativeObject() { return true; }
+
+    virtual wxWindow* CreateNative(wxWindow* parent) {
+        wxDiurnalPeriodCtrl* dp = new wxDiurnalPeriodCtrl(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, 12, 10, 30, 19);
+        dp->SetupTOUGrid();
+        dp->SetColours(colours);
+        dp->ClearColLabels();
+        dp->Schedule(Property("Schedule").GetString());
+        dp->SetMinMax(Property("Min").GetInteger(), Property("Max").GetInteger());
+        return AssignNative(dp);
+    }
+
+    virtual void OnPropertyChanged(const wxString& id, wxUIProperty* p) {
+        if (wxDiurnalPeriodCtrl* dp = GetNative<wxDiurnalPeriodCtrl>()) {
+            if (id == "Schedule") dp->Schedule(p->GetString());
+            if (id == "Min") dp->SetMin(p->GetInteger());
+            if (id == "Max") dp->SetMax(p->GetInteger());
+        }
+    }
+
+    virtual void Draw(wxWindow*, wxDC& dc, const wxRect& geom) {
+        dc.SetPen(*wxBLACK_PEN);
+        dc.SetBrush(*wxLIGHT_GREY_BRUSH);
+        dc.DrawRectangle(geom);
+        dc.SetFont(*wxNORMAL_FONT);
+        dc.SetTextForeground(*wxBLUE);
+        dc.DrawText("Spatial Albedo", geom.x + 2, geom.y + 2);
+    }
+};
+
 wxUIProperty::wxUIProperty() {
     Init();
 }
@@ -1988,6 +2051,7 @@ void wxUIObjectTypeProvider::RegisterBuiltinTypes() {
     wxUIObjectTypeProvider::Register(new wxUISliderObject);
     wxUIObjectTypeProvider::Register(new wxUIHyperlinkObject);
     wxUIObjectTypeProvider::Register(new wxUIDiurnalPeriodObject);
+    wxUIObjectTypeProvider::Register(new wxUISpatialAlbedoObject);
 }
 
 wxUIFormData::wxUIFormData() {

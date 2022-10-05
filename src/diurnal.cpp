@@ -59,9 +59,10 @@ DEFINE_EVENT_TYPE(wxEVT_DIURNALPERIODCTRL_CHANGE)
 
 #define SCHED_FONT wxFont(8, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD)
 
-#define VALUE(r, c) m_data[m_ncols*(r)+(c)]
+#define VALUE(r, c) m_data.at(m_ncols*(r)+(c))
 
-wxDiurnalPeriodCtrl::wxDiurnalPeriodCtrl(wxWindow *parent, int id, const wxPoint &pos, const wxSize &sz)
+wxDiurnalPeriodCtrl::wxDiurnalPeriodCtrl(wxWindow *parent, int id, const wxPoint &pos, const wxSize &sz,
+    size_t nrows, size_t ncols, size_t cellWidth, size_t cellHeight)
         : wxWindow(parent, id, pos, sz, wxWANTS_CHARS) {
     SetBackgroundColour(*wxWHITE);
     SetBackgroundStyle(wxBG_STYLE_CUSTOM);
@@ -69,11 +70,14 @@ wxDiurnalPeriodCtrl::wxDiurnalPeriodCtrl(wxWindow *parent, int id, const wxPoint
     m_mouseDown = false;
     m_rowHeaderSize = 30;
     m_colHeaderSize = 21;
-    m_cellSize = 17;
-    m_cols = 24;
+    m_cellWidth = m_cellWidthNom = cellWidth;
+    m_cellHeight = m_cellHeightNom = cellHeight;
+    m_nrows = nrows;
+    m_ncols = ncols;
     m_selStartR = m_selStartC = m_selEndR = m_selEndC = -1;
     m_min = 0;
     m_max = 9; // can be set to higher value in SetMinMax
+    m_data.resize(nrows * ncols);
 
     SetupTOUGrid();
 }
@@ -98,6 +102,15 @@ bool wxDiurnalPeriodCtrl::GetColour(int i, wxColour &c) {
         return true;
     } else
         return false;
+}
+
+void wxDiurnalPeriodCtrl::SetColours(const std::vector<wxColour>& colors) {
+    SetMinMax(0, colors.size() - 1, true);
+
+    m_colours.clear();
+    for (std::vector<int>::size_type i = 0; i != colors.size(); i++) {
+        AddColour(colors[i]);
+    }
 }
 
 void wxDiurnalPeriodCtrl::Set(size_t r, size_t c, int val) {
@@ -191,8 +204,8 @@ void wxDiurnalPeriodCtrl::OnPaint(wxPaintEvent &) {
     dc.SetPen(*wxTRANSPARENT_PEN);
     for (r = 0; r < rows; r++) {
         for (c = 0; c < cols; c++) {
-            int x = m_rowHeaderSize + c * m_cellSize;
-            int y = m_colHeaderSize + r * m_cellSize;
+            int x = m_rowHeaderSize + c * m_cellWidth;
+            int y = m_colHeaderSize + r * m_cellHeight;
 
             int selrs = MIN(m_selStartR, m_selEndR);
             int selcs = MIN(m_selStartC, m_selEndC);
@@ -205,23 +218,34 @@ void wxDiurnalPeriodCtrl::OnPaint(wxPaintEvent &) {
                 break;
 
             int val = VALUE(r, c);
-            if ((val >= 1 && val - 1 < (int) m_colours.size()) || sel) {
+            if ((val >= 0 && val - 1 < (int) m_colours.size()) || sel) {
                 if (IsThisEnabled())
-                    dc.SetBrush(wxBrush(sel ? wxColour(0, 114, 198) : m_colours[val - 1]));
+                    dc.SetBrush(wxBrush(sel ? wxColour(0, 114, 198) : m_colours[val]));
                 else
                     dc.SetBrush(wxBrush(*wxLIGHT_GREY));
 
-                dc.DrawRectangle(geom.x + x, geom.y + y, m_cellSize, m_cellSize);
+                dc.DrawRectangle(geom.x + x, geom.y + y, m_cellWidth, m_cellHeight);
             }
 
             wxString buf;
             buf << val;
             int textW, textH;
             dc.GetTextExtent(buf, &textW, &textH);
-            x += m_cellSize / 2 - textW / 2;
-            y += m_cellSize / 2 - textH / 2;
+            x += m_cellWidth / 2 - textW / 2;
+            y += m_cellHeight / 2 - textH / 2;
 
-            dc.SetTextForeground(sel ? *wxWHITE : *wxBLACK);
+            wxColour unselColour;
+            if (m_colours[val] == wxColour(0, 51, 0)
+             || m_colours[val] == wxColour(81, 60, 0)
+             || m_colours[val] == wxColour(106, 0, 28)
+             || m_colours[val] == wxColour(38, 0, 126)
+             || m_colours[val] == wxColour(0, 111, 142)) {
+                unselColour = *wxWHITE;
+            }
+            else {
+                unselColour = *wxBLACK;
+            }
+            dc.SetTextForeground(sel ? *wxWHITE : unselColour);
             dc.DrawText(buf, geom.x + x, geom.y + y);
         }
     }
@@ -230,22 +254,22 @@ void wxDiurnalPeriodCtrl::OnPaint(wxPaintEvent &) {
     dc.SetTextForeground(wxColour(160, 160, 160));
 
     for (r = 0; r <= rows; r++) {
-        dc.DrawLine(geom.x, geom.y + m_colHeaderSize + r * m_cellSize,
-                    geom.x + m_rowHeaderSize + cols * m_cellSize, geom.y + m_colHeaderSize + r * m_cellSize);
+        dc.DrawLine(geom.x, geom.y + m_colHeaderSize + r * m_cellHeight,
+                    geom.x + m_rowHeaderSize + cols * m_cellWidth, geom.y + m_colHeaderSize + r * m_cellHeight);
 
         if (r < (int) m_rowLabels.Count() && r < rows) {
-            int yoff = m_cellSize / 2 - dc.GetCharHeight() / 2;
-            dc.DrawText(m_rowLabels[r], geom.x + 2, geom.y + m_colHeaderSize + r * m_cellSize + yoff);
+            int yoff = m_cellHeight / 2 - dc.GetCharHeight() / 2;
+            dc.DrawText(m_rowLabels[r], geom.x + 2, geom.y + m_colHeaderSize + r * m_cellHeight + yoff);
         }
     }
 
     for (c = 0; c <= cols; c++) {
-        dc.DrawLine(geom.x + m_rowHeaderSize + c * m_cellSize, geom.y,
-                    geom.x + m_rowHeaderSize + c * m_cellSize, geom.y + m_colHeaderSize + rows * m_cellSize);
+        dc.DrawLine(geom.x + m_rowHeaderSize + c * m_cellWidth, geom.y,
+                    geom.x + m_rowHeaderSize + c * m_cellWidth, geom.y + m_colHeaderSize + rows * m_cellHeight);
 
         if (c < (int) m_colLabels.Count() && c < cols) {
-            int xoff = m_cellSize / 2 - dc.GetCharHeight() / 2;
-            dc.DrawRotatedText(m_colLabels[c], geom.x + m_rowHeaderSize + c * m_cellSize + xoff,
+            int xoff = m_cellWidth / 2 - dc.GetCharHeight() / 2;
+            dc.DrawRotatedText(m_colLabels[c], geom.x + m_rowHeaderSize + c * m_cellWidth + xoff,
                                geom.y + m_colHeaderSize - 2, 90);
         }
     }
@@ -280,20 +304,24 @@ void wxDiurnalPeriodCtrl::UpdateLayout() {
     double xScale, yScale;
     wxDevicePPIToScale(dc.GetPPI(), &xScale, &yScale);
 
-    m_cellSize = (int) (19 * std::max(xScale, yScale));
+    m_cellWidth = (int)(m_cellWidthNom * xScale);
+    m_cellHeight = (int)(m_cellHeightNom * yScale);
     m_rowHeaderSize += (int) (6 * yScale);
     m_colHeaderSize += (int) (6 * xScale);
 }
 
 wxSize wxDiurnalPeriodCtrl::DoGetBestSize() const {
     const_cast<wxDiurnalPeriodCtrl *>(this)->UpdateLayout();
-    return wxSize(m_rowHeaderSize + m_ncols * m_cellSize,
-                  m_colHeaderSize + m_nrows * m_cellSize);
+    return wxSize(m_rowHeaderSize + m_ncols * m_cellWidth,
+                  m_colHeaderSize + m_nrows * m_cellHeight);
 }
 
 int wxDiurnalPeriodCtrl::ScheduleCharToInt(char c) {
     int ret = 0;
     switch (c) {
+        case '0':
+            ret = 0;
+            break;
         case '1':
             ret = 1;
             break;
@@ -343,6 +371,9 @@ int wxDiurnalPeriodCtrl::ScheduleCharToInt(char c) {
 char wxDiurnalPeriodCtrl::ScheduleIntToChar(int d) {
     char ret = '0';
     switch (d) {
+        case 0:
+            ret = '0';
+            break;
         case 1:
             ret = '1';
             break;
@@ -525,8 +556,8 @@ void wxDiurnalPeriodCtrl::OnChar(wxKeyEvent &evt) {
 }
 
 void wxDiurnalPeriodCtrl::OnMouseDown(wxMouseEvent &evt) {
-    m_selStartC = (evt.GetX() - m_rowHeaderSize) / m_cellSize;
-    m_selStartR = (evt.GetY() - m_colHeaderSize) / m_cellSize;
+    m_selStartC = (evt.GetX() - m_rowHeaderSize) / m_cellWidth;
+    m_selStartR = (evt.GetY() - m_colHeaderSize) / m_cellHeight;
 
     if (m_selStartC < 0 || m_selStartC >= static_cast<int>(m_ncols) ||
         m_selStartR < 0 || m_selStartR >= static_cast<int>(m_nrows) ||
@@ -549,8 +580,8 @@ void wxDiurnalPeriodCtrl::OnMouseMove(wxMouseEvent &evt) {
     if (!m_mouseDown)
         return;
 
-    int c = (evt.GetX() - m_rowHeaderSize) / m_cellSize;
-    int r = (evt.GetY() - m_colHeaderSize) / m_cellSize;
+    int c = (evt.GetX() - m_rowHeaderSize) / m_cellWidth;
+    int r = (evt.GetY() - m_colHeaderSize) / m_cellHeight;
 
     if (r >= 0 && r < static_cast<int>(m_nrows) &&
         c >= 0 && c < static_cast<int>(m_ncols)) {
@@ -568,7 +599,7 @@ void wxDiurnalPeriodCtrl::OnLostFocus(wxFocusEvent &) {
 
 void wxDiurnalPeriodCtrl::SetData(double *data, size_t nr, size_t nc) {
     if (nr == m_nrows && nc == m_ncols) {
-        memcpy(m_data, data, sizeof(double) * nr * nc);
+        m_data.assign(data, data + nr * nc);
         Refresh();
     }
 }
@@ -576,25 +607,26 @@ void wxDiurnalPeriodCtrl::SetData(double *data, size_t nr, size_t nc) {
 double *wxDiurnalPeriodCtrl::GetData(size_t *nr, size_t *nc) {
     *nr = m_nrows;
     *nc = m_ncols;
-    return m_data;
+    return &m_data[0];
 }
 
 void wxDiurnalPeriodCtrl::SetupTOUGrid() {
-    SetMinMax(1, 9, true);
+    SetMinMax(0, 9, true);
 
     m_colours.clear();
-    AddColour(wxColour(143, 226, 170));
-    AddColour(wxColour(128, 179, 179));
-    AddColour(wxColour(196, 148, 49));
-    AddColour(wxColour(44, 175, 133));
-    AddColour(wxColour(219, 219, 112));
-    AddColour(wxColour(206, 57, 57));
-    AddColour(wxColour(94, 136, 81));
-    AddColour(wxColour(225, 136, 225));
-    AddColour(wxColour(255, 60, 157));
-    AddColour(wxColour(86, 172, 214));
-    AddColour(wxColour(226, 169, 141));
-    AddColour(wxColour(254, 235, 97));
+    AddColour(wxColour(226, 169, 141));     // 0
+    AddColour(wxColour(143, 226, 170));     // 1
+    AddColour(wxColour(128, 179, 179));     // 2
+    AddColour(wxColour(196, 148, 49));      // 3
+    AddColour(wxColour(44, 175, 133));      // 4
+    AddColour(wxColour(219, 219, 112));     // 5
+    AddColour(wxColour(206, 57, 57));       // 6
+    AddColour(wxColour(94, 136, 81));       // 7
+    AddColour(wxColour(225, 136, 225));     // 8
+    AddColour(wxColour(255, 60, 157));      // 9
+    AddColour(wxColour(86, 172, 214));      // 10
+    AddColour(wxColour(254, 235, 97));      // 11
+    AddColour(wxColour(91, 83, 252));       // 12
 
     m_rowLabels.clear();
     AddRowLabel("Jan");

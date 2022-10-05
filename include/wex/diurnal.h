@@ -38,8 +38,8 @@ END_DECLARE_EVENT_TYPES()
 
 class wxDiurnalPeriodCtrl : public wxWindow {
 public:
-    wxDiurnalPeriodCtrl(wxWindow *parent, int id, const wxPoint &pos = wxDefaultPosition,
-                        const wxSize &sz = wxDefaultSize);
+    wxDiurnalPeriodCtrl(wxWindow *parent, int id, const wxPoint &pos = wxDefaultPosition, const wxSize &sz = wxDefaultSize,
+        size_t nrows = 12, size_t ncols = 24, size_t cellWidth = 19, size_t cellHeight = 19);
 
     virtual ~wxDiurnalPeriodCtrl();
 
@@ -52,6 +52,8 @@ public:
     void AddColour(const wxColour &c);
 
     bool GetColour(int i, wxColour &c);
+
+    void SetColours(const std::vector<wxColour>& colors);
 
     void SetMinMax(int min, int max, bool clamp = false);
 
@@ -121,14 +123,14 @@ private:
 
     void Paste();
 
-    static const size_t m_nrows = 12;
-    static const size_t m_ncols = 24;
+    size_t m_nrows;
+    size_t m_ncols;
 
-    double m_data[m_nrows * m_ncols];
-    int m_cols;
+    std::vector<double> m_data;
 
     bool m_hasFocus, m_mouseDown;
     int m_rowHeaderSize, m_colHeaderSize, m_cellSize;
+    int m_cellWidth, m_cellWidthNom, m_cellHeight, m_cellHeightNom;
 
     std::vector<wxColour> m_colours;
     int m_selStartR, m_selStartC, m_selEndR, m_selEndC;
