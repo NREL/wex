@@ -612,9 +612,8 @@ bool wxEasyCurl::GeoCodeDeveloper(const wxString &address, double *lat, double *
     plusaddr.Replace("  ", " ");
     plusaddr.Replace(" ", "+");
 
-
     wxString url("https://developer.nrel.gov/api/mapquest/geocoding/v1/address?location=" + plusaddr +
-                 "&_app_id=sam&outFormat=csv&api_key=" + DEVELOPER_API_KEY);
+                 "&_app_id=sam&outFormat=json&api_key=" + DEVELOPER_API_KEY);
 
     wxEasyCurl curl;
     wxBusyCursor curs;
@@ -626,36 +625,23 @@ bool wxEasyCurl::GeoCodeDeveloper(const wxString &address, double *lat, double *
             return false;
     }
 
-    wxCSVData csv;
-    wxString slat, slng;
-    if (csv.ReadString(curl.GetDataAsString())) {
-        slat = csv.Get(1, 14);
-        slng = csv.Get(1, 15);
-        if (!slat.ToDouble(lat))
+    wxJSONReader reader;
+    wxJSONValue root;
+    if (reader.Parse(curl.GetDataAsString(), &root) == 0)
+    {
+        wxJSONValue loc = root.Item("results").Item(0).Item("locations").Item(0).Item("displayLatLng");
+        if (!loc.IsValid()) return false;
+        *lat = loc.Item("lat").AsDouble();
+        *lon = loc.Item("lng").AsDouble();
+
+        if (root.Item("info").Item("statuscode").AsInt() != 0)
             return false;
-        if (!slng.ToDouble(lon))
-            return false;
-    } else
+     }
+     else
         return false;
-
-    /* JSON reader fails with UTF-8 issues
-        wxJSONReader reader;
-        wxJSONValue root;
-        if (reader.Parse(curl.GetDataAsString(), &root) == 0)
-        {
-            wxJSONValue loc = root.Item("results").Item(0).Item("locations").Item(0).Item("displayLatLng");
-            if (!loc.IsValid()) return false;
-            *lat = loc.Item("lat").AsDouble();
-            *lon = loc.Item("lng").AsDouble();
-
-            if (root.Item("status").AsString() != "OK")
-                return false;
-        }
-        else
-            return false;
-    */
-    if (tz != 0) {
-        url = "https://dev.virtualearth.net/REST/v1/TimeZone/" + slat + "," + slng + "?key=" + BING_API_KEY;
+    
+     if (tz != 0) {
+        url = wxString::Format("https://dev.virtualearth.net/REST/v1/TimeZone/%.14lf,%.14lf?key=%s", *lat, *lon, BING_API_KEY);
 
         wxEasyCurl curl;
         wxBusyCursor curs;
@@ -670,10 +656,9 @@ bool wxEasyCurl::GeoCodeDeveloper(const wxString &address, double *lat, double *
         wxJSONReader reader;
         wxJSONValue root;
         if (reader.Parse(curl.GetDataAsString(), &root) == 0) {
-            wxJSONValue loc = root.Item("resourceSets").Item(0).Item("resources").Item(0).Item("timeZone").Item(
-                    "convertedTime");
+            wxJSONValue loc = root.Item("resourceSets").Item(0).Item("resources").Item(0).Item("timeZone");
             if (!loc.IsValid()) return false;
-            wxString stz = loc.Item("utcOffsetWithDst").AsString();
+            wxString stz = loc.Item("utcOffset").AsString();
             wxArrayString as = wxSplit(stz, ':');
             if (as.Count() != 2) return false;
             if (!as[0].ToDouble(tz)) return false;
