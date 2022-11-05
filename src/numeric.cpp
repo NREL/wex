@@ -49,6 +49,7 @@ wxNumericCtrl::wxNumericCtrl(wxWindow *parent, int id,
     SetupValidator();
 
     SetValue(value);
+    SetSizeHints(50,24); // SAM 1112
 }
 
 void wxNumericCtrl::OnTextEnter(wxCommandEvent &evt) {
@@ -106,7 +107,7 @@ static bool is_valid_char(wxNumericMode mode, wxUniChar c, bool additional, wxUn
 void wxNumericCtrl::Translate() {
     wxString buf;
     wxString strval = GetValue();
-    int len = strval.Len();
+    int len = (int)strval.Len();
     int i;
 
     wxUniChar decimsep('.');
