@@ -403,6 +403,10 @@ void wxExtGridCtrl::Paste(PasteMode mode) {
             || mode == PASTE_ALL_RESIZE_ROWS)
             currow = curcol = 0;
 
+#ifdef __WXOSX__
+        data.Replace("\n\n", "\n");
+#endif
+        
         wxCSVData csv;
         csv.SetSeparator(wxUniChar('\t'));
         csv.ReadString(data);
