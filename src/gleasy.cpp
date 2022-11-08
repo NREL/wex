@@ -393,7 +393,7 @@ void wxGLEasyCanvas::Axes(const wxGLPoint3D &min, const wxGLPoint3D &max,
                      wxGLPoint3D(list[i].world, sz, 0));
             }
 
-            if (!list[i].label.IsEmpty() && fabs(list[i].world) > 1.0e-14)
+            if (!list[i].label.IsEmpty() && std::abs(list[i].world) > 1.0e-14)
                 Text(wxGLPoint3D(list[i].world, ticksize, 0), list[i].label, xcolor, *wxTRANSPARENT_BRUSH, font);
         }
     }
@@ -417,7 +417,7 @@ void wxGLEasyCanvas::Axes(const wxGLPoint3D &min, const wxGLPoint3D &max,
                      wxGLPoint3D(sz, list[i].world, 0));
             }
 
-            if (!list[i].label.IsEmpty() && fabs(list[i].world) > 1.0e-14)
+            if (!list[i].label.IsEmpty() && std::abs(list[i].world) > 1.0e-14)
                 Text(wxGLPoint3D(ticksize, list[i].world, 0), list[i].label, ycolor, *wxTRANSPARENT_BRUSH, font);
         }
     }
@@ -441,7 +441,7 @@ void wxGLEasyCanvas::Axes(const wxGLPoint3D &min, const wxGLPoint3D &max,
                      wxGLPoint3D(0, sz, list[i].world));
             }
 
-            if (!list[i].label.IsEmpty() && fabs(list[i].world) > 1.0e-14)
+            if (!list[i].label.IsEmpty() && std::abs(list[i].world) > 1.0e-14)
                 Text(wxGLPoint3D(0, ticksize, list[i].world), list[i].label, zcolor, *wxTRANSPARENT_BRUSH, font);
         }
     }

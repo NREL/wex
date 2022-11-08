@@ -153,11 +153,11 @@ void wxPLAxis::ExtendBoundsToNiceNumber(double *upper, double *lower) {
     double U(*upper);
 
     int rangeExp = 1;
-    double range = fabs(U - L);
+    double range = std::abs(U - L);
 
     // If the range is too narrow we must base calculations on the upper bound instead
-    if (range < fabs(U) / 10.0)
-        rangeExp = (int) (floor(log10(fabs(U))));
+    if (range < std::abs(U) / 10.0)
+        rangeExp = (int) (floor(log10(std::abs(U))));
     else
         rangeExp = (int) (floor(log10(range)));
 
@@ -217,7 +217,7 @@ void wxPLLinearAxis::GetAxisTicks(double phys_min, double phys_max, std::vector<
     for (size_t i = 0; i < largeticks.size(); i++) {
         // TODO: Find out why zero is sometimes significantly not zero [seen as high as 10^-16].
         double labelNumber = largeticks[i];
-        if (fabs(labelNumber) < 0.000000000000001)
+        if (std::abs(labelNumber) < 0.000000000000001)
             labelNumber = 0.0;
         list.push_back(TickData(labelNumber, wxString::Format("%lg", labelNumber), TickData::LARGE));
     }
@@ -236,7 +236,7 @@ void wxPLLinearAxis::CalcTicksFirstPass(double phys_min, double phys_max,
 
     // (2) determine distance between large ticks.
     bool should_cull_middle;
-    double tickDist = DetermineLargeTickStep(fabs(phys_min - phys_max), should_cull_middle);
+    double tickDist = DetermineLargeTickStep(std::abs(phys_min - phys_max), should_cull_middle);
 
     // (3) determine starting position.
     double first = 0.0;
@@ -289,7 +289,7 @@ void wxPLLinearAxis::CalcTicksSecondPass(double phys_min, double phys_max,
     if (smallticks.size() > 0)
         return;
 
-    double physicalAxisLength = fabs(phys_min - phys_max);
+    double physicalAxisLength = std::abs(phys_min - phys_max);
 
     double adjustedMax = AdjustedWorldValue(m_max);
     double adjustedMin = AdjustedWorldValue(m_min);
@@ -329,7 +329,7 @@ double wxPLLinearAxis::AdjustedWorldValue(double world) {
 double wxPLLinearAxis::DetermineLargeTickStep(double physical_len, bool &should_cull_middle) {
     should_cull_middle = false;
 
-    if (fabs(m_max - m_min) < AXIS_EPS)
+    if (std::abs(m_max - m_min) < AXIS_EPS)
         return 1.0;
 
     // adjust world max and min for offset and scale properties of axis.
@@ -338,7 +338,7 @@ double wxPLLinearAxis::DetermineLargeTickStep(double physical_len, bool &should_
     double range = adjustedMax - adjustedMin;
 
     // if axis has zero world length, then return arbitrary number.
-    if (fabs(adjustedMax - adjustedMin) < AXIS_EPS)
+    if (std::abs(adjustedMax - adjustedMin) < AXIS_EPS)
         return 1.0;
 
     int minPhysLargeTickStep = 40;
@@ -393,7 +393,7 @@ size_t wxPLLinearAxis::DetermineNumberSmallTicks(double big_tick_dist) {
         double mantissa = pow(10.0, log10(big_tick_dist) - exponent);
 
         for (size_t i = 0; i < m_mantissas.size(); ++i)
-            if (fabs(mantissa - m_mantissas[i]) < 0.001)
+            if (std::abs(mantissa - m_mantissas[i]) < 0.001)
                 return m_smallTickCounts[i] + 1;
     }
 
@@ -469,7 +469,7 @@ void wxPLLogAxis::GetAxisTicks(double, double, std::vector<TickData> &list) {
     for (size_t i = 0; i < largeticks.size(); i++) {
         // TODO: Find out why zero is sometimes significantly not zero [seen as high as 10^-16].
         double labelNumber = largeticks[i];
-        if (fabs(labelNumber) < 0.000000000000001)
+        if (std::abs(labelNumber) < 0.000000000000001)
             labelNumber = 0.0;
         list.push_back(TickData(labelNumber, wxString::Format("%lg", labelNumber), TickData::LARGE));
     }
@@ -861,7 +861,7 @@ wxPLPolarAngularAxis::wxPLPolarAngularAxis(const wxPLPolarAngularAxis &rhs)
 }
 
 void wxPLPolarAngularAxis::GetAxisTicks(double phys_min, double phys_max, std::vector<TickData> &list) {
-    double physical_size = fabs(phys_min - phys_max);
+    double physical_size = std::abs(phys_min - phys_max);
     double divisions = 4;
     int skip = (m_pau == GRADIANS) ? 5 : 3;
 

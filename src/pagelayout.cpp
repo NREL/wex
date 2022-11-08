@@ -1775,8 +1775,8 @@ void wxPageLayoutCtrl::Snap(float *x, float *y) {
 
 float wxPageLayoutCtrl::Snap(float v) {
     int multiples = (int) (v / m_snapSpacing);
-    float dist1 = (float) fabs(m_snapSpacing * multiples - v);
-    float dist2 = (float) fabs(m_snapSpacing * (multiples + 1) - v);
+    float dist1 = (float) std::abs(m_snapSpacing * multiples - v);
+    float dist2 = (float) std::abs(m_snapSpacing * (multiples + 1) - v);
     if (dist1 < dist2) return m_snapSpacing * multiples;
     else return m_snapSpacing * (multiples + 1);
 }

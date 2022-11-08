@@ -203,13 +203,13 @@ void wxPLPdfOutputDevice::TextColour(const wxColour &c) {
 
 void wxPLPdfOutputDevice::Text(const wxString &text, double x, double y, double angle) {
     double points = m_pdf.GetFontSize();
-    double asc = (double) abs(m_pdf.GetFontDescription().GetAscent());
-    double des = (double) abs(m_pdf.GetFontDescription().GetDescent());
+    double asc = (double)std::abs(m_pdf.GetFontDescription().GetAscent());
+    double des = (double)std::abs(m_pdf.GetFontDescription().GetDescent());
     double em = asc + des;
     double ascfrac = asc / em;
     double ybase = points * ascfrac;
 
-    if (fabs(angle) < 0.5) {
+    if (std::abs(angle) < 0.5) {
         m_pdf.Text(x, y + ybase, text);
     } else {
         double xx = x + ybase * sin(angle * M_PI / 180);

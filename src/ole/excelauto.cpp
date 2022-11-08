@@ -412,7 +412,7 @@ bool wxExcelAutomation::SetRowColBold(int rowcol, bool bold) {
     if (!m_pdispWorksheet) return false;
 
     ClearArgs();
-    m_argList[0] = (long) abs(rowcol);
+    m_argList[0] = (long) std::abs(rowcol);
 
     wxString objname = rowcol < 0 ? "Columns" : "Rows";
     wxAutomationObject rowobj;

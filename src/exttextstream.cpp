@@ -27,7 +27,7 @@
 
 void wxExtTextOutputStream::WriteDouble(double d) {
     wxString str;
-    if (std::fabs(d) > 1e9)
+    if (std::abs(d) > 1e9)
         str.Printf(wxT("%g"), d);
     else {
         if (std::fmod(d, 1.0) == 0.0)

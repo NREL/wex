@@ -424,7 +424,7 @@ bool wxWebHttpDownload(const wxString &url, const wxString &local_file,
             wxProgressDialog *prog = NULL;
 
             if (with_progress_dialog) {
-                prog = new wxProgressDialog("HTTP Download", url, abs(ntotal));
+                prog = new wxProgressDialog("HTTP Download", url, std::abs(ntotal));
                 prog->Show();
                 wxSafeYield(prog, true);
             }

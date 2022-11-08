@@ -106,7 +106,7 @@ public:
 
         if (size) {
             size->x = m_xPhysMax - m_xPhysMin;
-            size->y = fabs(m_yPhysMax - m_yPhysMin);
+            size->y = std::abs(m_yPhysMax - m_yPhysMin);
         }
     }
 
@@ -442,7 +442,7 @@ public:
 
                     // recalculate bound height to rotated text
                     m_bounds.y = labeledTicks[index]->text.Height()
-                                 + fabs(labeledTicks[index]->text.Width() * sin(M_PI / 180 * textAngle));
+                                 + std::abs(labeledTicks[index]->text.Width() * sin(M_PI / 180 * textAngle));
                 }
             }
         } else { // ap = Y_LEFT || Y_RIGHT
