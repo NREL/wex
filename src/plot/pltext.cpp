@@ -882,7 +882,7 @@ wxFreeTypeDraw(wxRealPoint *offset, int ifnt, double points, unsigned int dpi, c
     }
 
     // create image surface of appropriate size
-    wxSize bounds(fabs(max.x - min.x), fabs(max.y - min.y));
+    wxSize bounds(std::abs(max.x - min.x), fabs(max.y - min.y));
     wxImage img(bounds, false);
 
     // find offset coordinate for top-left placement
@@ -1040,7 +1040,7 @@ wxSize wxFreeTypeMeasure(int fnt, double points, unsigned int dpi, const wxStrin
         previous = glyph_index;
     }
 
-    return wxSize(abs(pen_x),
+    return wxSize(std::abs(pen_x),
                   ((double) (face->ascender - face->descender)) / ((double) face->units_per_EM) * points * dpi / 72.0);
 }
 

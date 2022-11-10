@@ -211,7 +211,7 @@ void wxPLBarPlot::Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map) {
         ptop = map.ToDevice(0, pt.y + y_start).y;
 
         prct.y = pbottom < ptop ? pbottom : ptop;
-        prct.height = fabs(pbottom - ptop);
+        prct.height = std::abs(pbottom - ptop);
 
         dc.Rect(prct.x, prct.y, prct.width, prct.height);
     }
@@ -261,7 +261,7 @@ void wxPLHBarPlot::Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map) {
 
         prct.y = map.ToDevice(0, pt.y).y - bar_width / 2;
         prct.height = bar_width;
-        prct.width = fabs(pleft - pright);
+        prct.width = std::abs(pleft - pright);
         if (prct.width > 0 && prct.height > 0)
             dc.Rect(prct.x, prct.y, prct.width, prct.height);
     }

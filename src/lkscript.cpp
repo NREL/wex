@@ -35,6 +35,7 @@
 #include <wx/simplebook.h>
 
 #include <memory>
+#include <cmath>
 
 #include "wex/lkscript.h" // defines LK_USE_WXWIDGETS
 #include "wex/mtrand.h"
@@ -1906,12 +1907,12 @@ void wxLKScriptCtrl::OnMarginClick(wxStyledTextEvent &evt) {
         wxCriticalSectionLocker lock(m_syntaxCheckCS);
 
         while (i < m_syntaxErrorLines.size()) {
-            if (line == abs(m_syntaxErrorLines[i]) - 1) {
+            if (line == std::abs(m_syntaxErrorLines[i]) - 1) {
                 int ifirst = i;
 
                 wxString text;
                 while (i < m_syntaxErrorLines.size()
-                       && line == abs(m_syntaxErrorLines[i]) - 1)
+                       && line == std::abs(m_syntaxErrorLines[i]) - 1)
                     text += m_syntaxErrorMessages[i++] + "\n";
 
                 text.Trim();

@@ -484,10 +484,10 @@ void wxPLPlotCtrl::UpdateHighlightRegion() {
     double scale = wxGetScreenHDScale();
 
     wxCoord highlight_x = m_currentPoint.x < m_anchorPoint.x ? m_currentPoint.x : m_anchorPoint.x;
-    wxCoord highlight_width = abs(m_currentPoint.x - m_anchorPoint.x);
+    wxCoord highlight_width = std::abs(m_currentPoint.x - m_anchorPoint.x);
 
     wxCoord highlight_y = m_currentPoint.y < m_anchorPoint.y ? m_currentPoint.y : m_anchorPoint.y;
-    wxCoord highlight_height = abs(m_currentPoint.y - m_anchorPoint.y);
+    wxCoord highlight_height = std::abs(m_currentPoint.y - m_anchorPoint.y);
 
     int irect = 0;
     const std::vector<wxPLRealRect> &Rl(GetPlotRects());
@@ -660,8 +660,8 @@ void wxPLPlotCtrl::OnLeftUp(wxMouseEvent &evt) {
 
         m_highlightMode = false;
 
-        wxCoord diffx = abs(ClientToScreen(evt.GetPosition()).x - ClientToScreen(m_anchorPoint).x);
-        wxCoord diffy = abs(ClientToScreen(evt.GetPosition()).y - ClientToScreen(m_anchorPoint).y);
+        wxCoord diffx = std::abs(ClientToScreen(evt.GetPosition()).x - ClientToScreen(m_anchorPoint).x);
+        wxCoord diffy = std::abs(ClientToScreen(evt.GetPosition()).y - ClientToScreen(m_anchorPoint).y);
         if ((m_highlighting == HIGHLIGHT_SPAN && diffx > 10)
             || (m_highlighting == HIGHLIGHT_RECT && diffx > 1 && diffy > 1)) {
             wxCommandEvent e(wxEVT_PLOT_HIGHLIGHT, GetId());

@@ -73,7 +73,7 @@ wxPdfUtility::Double2String(double value, int precision) {
     }
 
     // Use absolute value locally
-    double localValue = fabs(value);
+    double localValue = std::abs(value);
     double localFraction = (localValue - floor(localValue)) + (5. * pow(10.0, -precision - 1));
     if (localFraction >= 1) {
         localValue += 1.0;

@@ -22,6 +22,8 @@
 *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
+#include <cmath>
+
 #include <wx/clipbrd.h>
 #include <wx/dcbuffer.h>
 #include <wx/tokenzr.h>
@@ -217,8 +219,8 @@ void wxExtGridCtrl::GetLastSelRange(int *top, int *bottom, int *left, int *right
 }
 
 size_t wxExtGridCtrl::NumCellsSelected() const {
-    int nr = abs(m_selBottomRow - m_selTopRow + 1);
-    int nc = abs(m_selRightCol - m_selLeftCol + 1);
+    int nr = std::abs(m_selBottomRow - m_selTopRow + 1);
+    int nc = std::abs(m_selRightCol - m_selLeftCol + 1);
     if (nr < 0) nr = 0;
     if (nc < 0) nc = 0;
     return (size_t) (nr * nc);

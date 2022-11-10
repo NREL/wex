@@ -2517,8 +2517,8 @@ int wxUIFormEditor::Snap(int v, int spacing) {
     int incr = (v < 0) ? -1 : 1;
 
     int multiples = (int) (((double) v) / ((double) spacing));
-    double dist1 = fabs(spacing * multiples - (double) v);
-    double dist2 = fabs(spacing * (multiples + incr) - (double) v);
+    double dist1 = std::abs(spacing * multiples - (double) v);
+    double dist2 = std::abs(spacing * (multiples + incr) - (double) v);
 
     if (dist1 < dist2) return (int) spacing * multiples;
     else return (int) (spacing * (multiples + incr));
