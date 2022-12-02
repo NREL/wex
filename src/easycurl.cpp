@@ -1,26 +1,34 @@
-/***********************************************************************************************************************
-*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
-*
-*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
-*  following conditions are met:
-*
-*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
-*  disclaimer.
-*
-*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
-*  following disclaimer in the documentation and/or other materials provided with the distribution.
-*
-*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
-*  products derived from this software without specific prior written permission from the respective party.
-*
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
-*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
-*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
-*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-**********************************************************************************************************************/
+/*
+BSD 3-Clause License
+
+Copyright (c) Alliance for Sustainable Energy, LLC. See also https://github.com/NREL/wex/blob/develop/LICENSE
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
 #include <string>
 
@@ -612,9 +620,8 @@ bool wxEasyCurl::GeoCodeDeveloper(const wxString &address, double *lat, double *
     plusaddr.Replace("  ", " ");
     plusaddr.Replace(" ", "+");
 
-
     wxString url("https://developer.nrel.gov/api/mapquest/geocoding/v1/address?location=" + plusaddr +
-                 "&_app_id=sam&outFormat=csv&api_key=" + DEVELOPER_API_KEY);
+                 "&_app_id=sam&outFormat=json&api_key=" + DEVELOPER_API_KEY);
 
     wxEasyCurl curl;
     wxBusyCursor curs;
@@ -626,36 +633,23 @@ bool wxEasyCurl::GeoCodeDeveloper(const wxString &address, double *lat, double *
             return false;
     }
 
-    wxCSVData csv;
-    wxString slat, slng;
-    if (csv.ReadString(curl.GetDataAsString())) {
-        slat = csv.Get(1, 14);
-        slng = csv.Get(1, 15);
-        if (!slat.ToDouble(lat))
+    wxJSONReader reader;
+    wxJSONValue root;
+    if (reader.Parse(curl.GetDataAsString(), &root) == 0)
+    {
+        wxJSONValue loc = root.Item("results").Item(0).Item("locations").Item(0).Item("displayLatLng");
+        if (!loc.IsValid()) return false;
+        *lat = loc.Item("lat").AsDouble();
+        *lon = loc.Item("lng").AsDouble();
+
+        if (root.Item("info").Item("statuscode").AsInt() != 0)
             return false;
-        if (!slng.ToDouble(lon))
-            return false;
-    } else
+     }
+     else
         return false;
-
-    /* JSON reader fails with UTF-8 issues
-        wxJSONReader reader;
-        wxJSONValue root;
-        if (reader.Parse(curl.GetDataAsString(), &root) == 0)
-        {
-            wxJSONValue loc = root.Item("results").Item(0).Item("locations").Item(0).Item("displayLatLng");
-            if (!loc.IsValid()) return false;
-            *lat = loc.Item("lat").AsDouble();
-            *lon = loc.Item("lng").AsDouble();
-
-            if (root.Item("status").AsString() != "OK")
-                return false;
-        }
-        else
-            return false;
-    */
-    if (tz != 0) {
-        url = "https://dev.virtualearth.net/REST/v1/TimeZone/" + slat + "," + slng + "?key=" + BING_API_KEY;
+    
+     if (tz != 0) {
+        url = wxString::Format("https://dev.virtualearth.net/REST/v1/TimeZone/%.14lf,%.14lf?key=%s", *lat, *lon, BING_API_KEY);
 
         wxEasyCurl curl;
         wxBusyCursor curs;
@@ -670,10 +664,9 @@ bool wxEasyCurl::GeoCodeDeveloper(const wxString &address, double *lat, double *
         wxJSONReader reader;
         wxJSONValue root;
         if (reader.Parse(curl.GetDataAsString(), &root) == 0) {
-            wxJSONValue loc = root.Item("resourceSets").Item(0).Item("resources").Item(0).Item("timeZone").Item(
-                    "convertedTime");
+            wxJSONValue loc = root.Item("resourceSets").Item(0).Item("resources").Item(0).Item("timeZone");
             if (!loc.IsValid()) return false;
-            wxString stz = loc.Item("utcOffsetWithDst").AsString();
+            wxString stz = loc.Item("utcOffset").AsString();
             wxArrayString as = wxSplit(stz, ':');
             if (as.Count() != 2) return false;
             if (!as[0].ToDouble(tz)) return false;

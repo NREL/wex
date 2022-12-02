@@ -1,26 +1,34 @@
-/***********************************************************************************************************************
-*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
-*
-*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
-*  following conditions are met:
-*
-*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
-*  disclaimer.
-*
-*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
-*  following disclaimer in the documentation and/or other materials provided with the distribution.
-*
-*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
-*  products derived from this software without specific prior written permission from the respective party.
-*
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
-*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
-*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
-*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-**********************************************************************************************************************/
+/*
+BSD 3-Clause License
+
+Copyright (c) Alliance for Sustainable Energy, LLC. See also https://github.com/NREL/wex/blob/develop/LICENSE
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
 #ifndef __DVPnCdfCtrl_h
 #define __DVPnCdfCtrl_h
@@ -48,10 +56,12 @@ class wxSearchCtrl;
 
 class wxTextCtrl;
 
+class wxStaticText;
+
 class wxDVPnCdfCtrl : public wxPanel {
 public:
     wxDVPnCdfCtrl(wxWindow *parent, wxWindowID id = wxID_ANY, const wxPoint &pos = wxDefaultPosition,
-                  const wxSize &size = wxDefaultSize, long style = wxTAB_TRAVERSAL, const wxString &name = "panel");
+                  const wxSize &size = wxDefaultSize, long style = wxTAB_TRAVERSAL, const wxString &name = "panel", const bool& bshowsearch = true, const bool& bshowselector = true, const bool& bshowpvalue = true, const bool& bshowhidezeros = true);
 
     virtual ~wxDVPnCdfCtrl();
 
@@ -82,9 +92,13 @@ public:
 
     void SetNormalizeType(wxPLHistogramPlot::NormalizeType t);
 
-    double GetYMax();
-
-    void SetYMax(double max);
+    double GetY1Max();
+    void SetY1Max(double max);
+    double GetY2Max();
+    void SetY2Max(double max);
+    double GetPValue();
+    void SetPValue(double pValue);
+    double GetPValueX() { return m_pValue_x; };
 
     void ReadCdfFrom(wxDVTimeSeriesDataSet &d, std::vector<wxRealPoint> *cdfArray);
 
@@ -101,7 +115,9 @@ public:
 
     void OnSearch(wxCommandEvent &e);
 
-    void OnEnterYMax(wxCommandEvent &);
+//    void OnEnterY1Max(wxCommandEvent&);
+//    void OnEnterY2Max(wxCommandEvent&);
+    void OnEnterPValue(wxCommandEvent&);
 
     void OnBinComboSelection(wxCommandEvent &);
 
@@ -111,21 +127,34 @@ public:
 
     void OnShowZerosClick(wxCommandEvent &);
 
-    void OnPlotTypeSelection(wxCommandEvent &);
+ //   void OnPlotTypeSelection(wxCommandEvent &);
 
 private:
     std::vector<wxDVTimeSeriesDataSet *> m_dataSets;
     int m_selectedDataSetIndex;
+    double m_pValue; // user entered or set programmatically
+    double m_pValue_x; // x coordinant of user specified p Value
     std::vector<std::vector<wxRealPoint> *> m_cdfPlotData; //We track cdf plots since they take long to calculate.
 
-    wxTextCtrl *m_maxTextBox;
+    bool m_bshowpvalue;
+    bool m_bshowhidezeros;
+ //   wxTextCtrl* m_y1MaxTextBox;
+ //   wxTextCtrl* m_y2MaxTextBox;
+    
+    wxTextCtrl* m_pValueTextBox; // input
+
+    // resultant pvalue
+    wxStaticText* m_pValueResultLabel;
+    wxTextCtrl* m_pValueResultTextBox;
+    wxStaticText* m_pValueResultUnits;
+
 
     wxDVSelectionListCtrl *m_selector;
     wxSearchCtrl *m_srchCtrl;
     wxComboBox *m_binsCombo;
     wxChoice *m_normalizeChoice;
     wxCheckBox *m_hideZeros;
-    wxChoice *m_PlotTypeDisplayed;
+  //  wxChoice *m_PlotTypeDisplayed;
 
     wxPLPlotCtrl *m_plotSurface;
     wxPLHistogramPlot *m_pdfPlot;
@@ -135,11 +164,13 @@ private:
 
     void InvalidatePlot();
 
-    void EnterYMax();
+ //   void EnterY1Max();
+ //   void EnterY2Max();
+    void EnterPValue();
 
     void ShowZerosClick();
 
-    void PlotTypeSelection();
+ //   void PlotTypeSelection();
 
     void NormalizeChoice();
 

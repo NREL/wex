@@ -1,26 +1,34 @@
-/***********************************************************************************************************************
-*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
-*
-*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
-*  following conditions are met:
-*
-*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
-*  disclaimer.
-*
-*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
-*  following disclaimer in the documentation and/or other materials provided with the distribution.
-*
-*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
-*  products derived from this software without specific prior written permission from the respective party.
-*
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
-*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
-*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
-*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-**********************************************************************************************************************/
+/*
+BSD 3-Clause License
+
+Copyright (c) Alliance for Sustainable Energy, LLC. See also https://github.com/NREL/wex/blob/develop/LICENSE
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
 #include <numeric>
 #include <limits>
@@ -91,7 +99,7 @@ wxPLPlotCtrl::wxPLPlotCtrl(wxWindow *parent, int id, const wxPoint &pos, const w
         : wxWindow(parent, id, pos, size), wxPLPlot() {
     SetBackgroundStyle(wxBG_STYLE_CUSTOM);
     SetFont(*wxNORMAL_FONT);
-
+ 
     m_scaleTextSize = false;
     m_includeLegendOnExport = false;
 
@@ -304,9 +312,6 @@ wxBitmap wxPLPlotCtrl::GetBitmap(int width, int height) {
     wxMemoryDC memdc(bitmap);
 
     wxGraphicsRenderer *renderer = 0;
-#ifdef __WXMSW__
-    //renderer = wxGraphicsRenderer::GetDirect2DRenderer();
-#endif
     if (!renderer)
         renderer = wxGraphicsRenderer::GetDefaultRenderer();
 
@@ -395,18 +400,17 @@ void wxPLPlotCtrl::OnPaint(wxPaintEvent &) {
     wxAutoBufferedPaintDC pdc(this);
 
     wxGraphicsRenderer *renderer = 0;
-#ifdef __WXMSW__
-    //renderer = wxGraphicsRenderer::GetDirect2DRenderer();
-#endif
     if (!renderer)
         renderer = wxGraphicsRenderer::GetDefaultRenderer();
 
-    if (wxGraphicsContext *gc = renderer->CreateContext(pdc)) {
+    if (wxGraphicsContext* gc = renderer->CreateContext(pdc)) {
 #ifdef SHOW_RENDERER_INFO
         wxStopWatch sw;
 #endif
         int width, height;
         GetClientSize(&width, &height);
+        // for wx 3.1.5
+        gc->SetInterpolationQuality(wxINTERPOLATION_BEST);
 
         gc->SetFont(GetFont(), *wxBLACK); // initialze font and background
         gc->SetPen(*wxWHITE_PEN);
@@ -488,10 +492,10 @@ void wxPLPlotCtrl::UpdateHighlightRegion() {
     double scale = wxGetScreenHDScale();
 
     wxCoord highlight_x = m_currentPoint.x < m_anchorPoint.x ? m_currentPoint.x : m_anchorPoint.x;
-    wxCoord highlight_width = abs(m_currentPoint.x - m_anchorPoint.x);
+    wxCoord highlight_width = std::abs(m_currentPoint.x - m_anchorPoint.x);
 
     wxCoord highlight_y = m_currentPoint.y < m_anchorPoint.y ? m_currentPoint.y : m_anchorPoint.y;
-    wxCoord highlight_height = abs(m_currentPoint.y - m_anchorPoint.y);
+    wxCoord highlight_height = std::abs(m_currentPoint.y - m_anchorPoint.y);
 
     int irect = 0;
     const std::vector<wxPLRealRect> &Rl(GetPlotRects());
@@ -597,7 +601,7 @@ void wxPLPlotCtrl::OnLeftUp(wxMouseEvent &evt) {
         wxClientDC dc(this);
         wxDCOverlay overlaydc(m_overlay, &dc);
         overlaydc.Clear();
-        m_overlay.Reset();
+//        m_overlay.Reset();
 #else
         if (m_moveLegendErase)
             DrawLegendOutline();
@@ -656,7 +660,7 @@ void wxPLPlotCtrl::OnLeftUp(wxMouseEvent &evt) {
         wxClientDC dc(this);
         wxDCOverlay overlaydc(m_overlay, &dc);
         overlaydc.Clear();
-        m_overlay.Reset();
+//        m_overlay.Reset();
 #else
         if (m_highlightErase)
             UpdateHighlightRegion();
@@ -664,8 +668,8 @@ void wxPLPlotCtrl::OnLeftUp(wxMouseEvent &evt) {
 
         m_highlightMode = false;
 
-        wxCoord diffx = abs(ClientToScreen(evt.GetPosition()).x - ClientToScreen(m_anchorPoint).x);
-        wxCoord diffy = abs(ClientToScreen(evt.GetPosition()).y - ClientToScreen(m_anchorPoint).y);
+        wxCoord diffx = std::abs(ClientToScreen(evt.GetPosition()).x - ClientToScreen(m_anchorPoint).x);
+        wxCoord diffy = std::abs(ClientToScreen(evt.GetPosition()).y - ClientToScreen(m_anchorPoint).y);
         if ((m_highlighting == HIGHLIGHT_SPAN && diffx > 10)
             || (m_highlighting == HIGHLIGHT_RECT && diffx > 1 && diffy > 1)) {
             wxCommandEvent e(wxEVT_PLOT_HIGHLIGHT, GetId());

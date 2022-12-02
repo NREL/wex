@@ -1,26 +1,34 @@
-/***********************************************************************************************************************
-*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
-*
-*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
-*  following conditions are met:
-*
-*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
-*  disclaimer.
-*
-*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
-*  following disclaimer in the documentation and/or other materials provided with the distribution.
-*
-*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
-*  products derived from this software without specific prior written permission from the respective party.
-*
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
-*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
-*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
-*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-**********************************************************************************************************************/
+/*
+BSD 3-Clause License
+
+Copyright (c) Alliance for Sustainable Energy, LLC. See also https://github.com/NREL/wex/blob/develop/LICENSE
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
 #include <algorithm>
 
@@ -907,6 +915,69 @@ public:
         dc.SetFont(*wxNORMAL_FONT);
         dc.SetTextForeground(*wxBLUE);
         dc.DrawText("Diurnal Period", geom.x + 2, geom.y + 2);
+    }
+};
+
+class wxUISpatialAlbedoObject : public wxUIObject {
+public:
+    wxUISpatialAlbedoObject() {
+        AddProperty("TabOrder", new wxUIProperty((int)-1));
+        AddProperty("Schedule", new wxUIProperty(wxString("")));
+        AddProperty("Max", new wxUIProperty((int)9));
+        AddProperty("Min", new wxUIProperty((int)0));
+
+        Property("Width").Set(514);
+        Property("Height").Set(272);
+    }
+
+    std::vector<wxColour> colours{
+        wxColour(0, 51, 0),         // 0
+        wxColour(81, 60, 0),        // 1
+        wxColour(106, 0, 28),       // 2
+        wxColour(38, 0, 126),       // 3
+        wxColour(0, 111, 142),      // 4
+        wxColour(0, 153, 0),        // 5
+        wxColour(118, 177, 63),     // 6
+        wxColour(200, 202, 125),    // 7
+        wxColour(226, 208, 186),    // 8
+        wxColour(252, 248, 248)     // 9
+    };
+
+    virtual wxString GetTypeName() { return "SpatialAlbedo"; }
+
+    virtual wxUIObject* Duplicate() {
+        wxUIObject* o = new wxUISpatialAlbedoObject;
+        o->Copy(this);
+        return o;
+    }
+
+    virtual bool IsNativeObject() { return true; }
+
+    virtual wxWindow* CreateNative(wxWindow* parent) {
+        wxDiurnalPeriodCtrl* dp = new wxDiurnalPeriodCtrl(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, 12, 10, 30, 19);
+        dp->SetupTOUGrid();
+        dp->SetColours(colours);
+        dp->ClearColLabels();
+        dp->Schedule(Property("Schedule").GetString());
+        dp->SetMinMax(Property("Min").GetInteger(), Property("Max").GetInteger());
+        return AssignNative(dp);
+    }
+
+    virtual void OnPropertyChanged(const wxString& id, wxUIProperty* p) {
+        if (wxDiurnalPeriodCtrl* dp = GetNative<wxDiurnalPeriodCtrl>()) {
+            if (id == "Schedule") dp->Schedule(p->GetString());
+            if (id == "Min") dp->SetMin(p->GetInteger());
+            if (id == "Max") dp->SetMax(p->GetInteger());
+        }
+    }
+
+    virtual void Draw(wxWindow*, wxDC& dc, const wxRect& geom) {
+        dc.SetPen(*wxBLACK_PEN);
+        dc.SetBrush(*wxLIGHT_GREY_BRUSH);
+        dc.DrawRectangle(geom);
+        dc.SetFont(*wxNORMAL_FONT);
+        dc.SetTextForeground(*wxBLUE);
+        dc.DrawText("Spatial Albedo", geom.x + 2, geom.y + 2);
     }
 };
 
@@ -1988,6 +2059,7 @@ void wxUIObjectTypeProvider::RegisterBuiltinTypes() {
     wxUIObjectTypeProvider::Register(new wxUISliderObject);
     wxUIObjectTypeProvider::Register(new wxUIHyperlinkObject);
     wxUIObjectTypeProvider::Register(new wxUIDiurnalPeriodObject);
+    wxUIObjectTypeProvider::Register(new wxUISpatialAlbedoObject);
 }
 
 wxUIFormData::wxUIFormData() {
@@ -2453,8 +2525,8 @@ int wxUIFormEditor::Snap(int v, int spacing) {
     int incr = (v < 0) ? -1 : 1;
 
     int multiples = (int) (((double) v) / ((double) spacing));
-    double dist1 = fabs(spacing * multiples - (double) v);
-    double dist2 = fabs(spacing * (multiples + incr) - (double) v);
+    double dist1 = std::abs(spacing * multiples - (double) v);
+    double dist2 = std::abs(spacing * (multiples + incr) - (double) v);
 
     if (dist1 < dist2) return (int) spacing * multiples;
     else return (int) (spacing * (multiples + incr));
@@ -2652,12 +2724,8 @@ void wxUIFormEditor::OnLeftUp(wxMouseEvent &) {
 
         m_moveMode = false;
 
-#ifdef wxUI_USE_OVERLAY
-        m_overlay.Reset();
-#else
         if (m_moveModeErase)
             DrawMoveResizeOutlines();
-#endif
         m_moveModeErase = false;
 
         Refresh();
@@ -2682,12 +2750,8 @@ void wxUIFormEditor::OnLeftUp(wxMouseEvent &) {
         }
 
         m_multiSelMode = false;
-#ifdef wxUI_USE_OVERLAY
-        m_overlay.Reset();
-#else
         if (m_multiSelModeErase)
             DrawMultiSelBox();
-#endif
         m_multiSelModeErase = false;
 
         Refresh();
@@ -2709,12 +2773,8 @@ void wxUIFormEditor::OnLeftUp(wxMouseEvent &) {
             m_propEditor->UpdatePropertyValues();
 
         m_resizeMode = false;
-#ifdef wxUI_USE_OVERLAY
-        m_overlay.Reset();
-#else
         if (m_resizeModeErase)
             DrawMoveResizeOutlines();
-#endif
         m_resizeModeErase = false;
 
         Refresh();
@@ -2729,20 +2789,9 @@ void wxUIFormEditor::DrawMultiSelBox() {
 
     wxClientDC dc(this);
 
-#ifdef wxUI_USE_OVERLAY
-    wxDCOverlay overlaydc(m_overlay, &dc);
-    overlaydc.Clear();
-#ifdef __WXOSX__
-    wxBrush brush(wxColour(240, 240, 240, 130));
-#else
-    wxBrush brush(*wxWHITE, wxBRUSHSTYLE_TRANSPARENT);
-#endif
-    wxPen pen(wxColour(90, 90, 90));
-#else
     dc.SetLogicalFunction(wxINVERT);
-    wxBrush brush(*wxWHITE, wxTRANSPARENT);
-    wxPen pen(*wxBLACK, 2, wxSOLID);
-#endif
+    wxBrush brush(*wxWHITE, wxBRUSHSTYLE_TRANSPARENT);
+    wxPen pen(*wxBLACK, 2, wxPENSTYLE_SOLID);
 
     pen.SetCap(wxCAP_BUTT);
     pen.SetJoin(wxJOIN_MITER);
@@ -2763,19 +2812,8 @@ void wxUIFormEditor::DrawMultiSelBox() {
 void wxUIFormEditor::DrawMoveResizeOutlines() {
     wxClientDC dc(this);
 
-#ifdef wxUI_USE_OVERLAY
-    wxDCOverlay overlaydc(m_overlay, &dc);
-    overlaydc.Clear();
-#ifdef __WXOSX__
-    wxBrush brush(wxColour(240, 240, 240, 130));
-#else
-    wxBrush brush(*wxWHITE, wxBRUSHSTYLE_TRANSPARENT);
-#endif
-
-#else
     dc.SetLogicalFunction(wxINVERT);
-    wxBrush brush(*wxWHITE, wxTRANSPARENT);
-#endif
+    wxBrush brush(*wxWHITE, wxBRUSHSTYLE_TRANSPARENT);
 
     wxPen pen(wxColour(90, 90, 90), 1, wxPENSTYLE_SOLID);
     pen.SetCap(wxCAP_BUTT);
@@ -2835,10 +2873,8 @@ void wxUIFormEditor::OnMouseMove(wxMouseEvent &evt) {
     ClientToScreen(&xroot, &yroot);
 
     if (m_moveMode) {
-#ifndef wxUI_USE_OVERLAY
         if (m_moveModeErase)
             DrawMoveResizeOutlines();
-#endif
 
         m_diffX = xroot - m_origX;
         m_diffY = yroot - m_origY;
@@ -2850,10 +2886,8 @@ void wxUIFormEditor::OnMouseMove(wxMouseEvent &evt) {
     } else if (m_resizeMode) {
         SetResizeCursor();
 
-#ifndef wxUI_USE_OVERLAY
         if (m_resizeModeErase)
             DrawMoveResizeOutlines();
-#endif
         int diffx = xroot - m_origX;
         int diffy = yroot - m_origY;
 
@@ -2916,10 +2950,8 @@ void wxUIFormEditor::OnMouseMove(wxMouseEvent &evt) {
         DrawMoveResizeOutlines();
         m_resizeModeErase = true;
     } else if (m_multiSelMode) {
-#ifndef wxUI_USE_OVERLAY
         if (m_multiSelModeErase)
             DrawMultiSelBox();
-#endif
 
         m_diffX = xroot - m_origX;
         m_diffY = yroot - m_origY;

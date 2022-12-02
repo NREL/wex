@@ -1832,28 +1832,28 @@ wxPdfPageSetupDialog::TransferControlsToMargins() {
     }
 
     if (m_marginLeftText->GetValue().ToDouble(&strDbl)) {
-        m_marginLeft = abs(wxRound(strDbl * marginScaleToMM));
+        m_marginLeft = std::abs(wxRound(strDbl * marginScaleToMM));
         if (m_marginLeft > maxX) {
             m_marginLeft = maxX;
         }
     }
 
     if (m_marginTopText->GetValue().ToDouble(&strDbl)) {
-        m_marginTop = abs(wxRound(strDbl * marginScaleToMM));
+        m_marginTop = std::abs(wxRound(strDbl * marginScaleToMM));
         if (m_marginTop > maxY) {
             m_marginTop = maxY;
         }
     }
 
     if (m_marginRightText->GetValue().ToDouble(&strDbl)) {
-        m_marginRight = abs(wxRound(strDbl * marginScaleToMM));
+        m_marginRight = std::abs(wxRound(strDbl * marginScaleToMM));
         if (m_marginRight > maxX) {
             m_marginRight = maxX;
         }
     }
 
     if (m_marginBottomText->GetValue().ToDouble(&strDbl)) {
-        m_marginBottom = abs(wxRound(strDbl * marginScaleToMM));
+        m_marginBottom = std::abs(wxRound(strDbl * marginScaleToMM));
         if (m_marginBottom > maxY) {
             m_marginBottom = maxY;
         }

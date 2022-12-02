@@ -1,26 +1,34 @@
-/***********************************************************************************************************************
-*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
-*
-*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
-*  following conditions are met:
-*
-*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
-*  disclaimer.
-*
-*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
-*  following disclaimer in the documentation and/or other materials provided with the distribution.
-*
-*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
-*  products derived from this software without specific prior written permission from the respective party.
-*
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
-*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
-*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
-*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-**********************************************************************************************************************/
+/*
+BSD 3-Clause License
+
+Copyright (c) Alliance for Sustainable Energy, LLC. See also https://github.com/NREL/wex/blob/develop/LICENSE
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
 /*
 * wxDVVariableStatistics.cpp
@@ -260,6 +268,17 @@ bool dvStatisticsTreeModel::IsContainer(const wxDataViewItem &item) const {
     return node->IsContainer();
 }
 
+bool dvStatisticsTreeModel::GetAttr(const wxDataViewItem& item, unsigned int col, wxDataViewItemAttr& attr)	const
+{
+    //attr.SetColour(*wxRED); // fails
+    attr.SetBold(true); // works
+    //attr.SetBackgroundColour(clr); // works
+   // attr.SetStrikethrough(true); // works
+    return true;
+}
+
+
+
 unsigned int dvStatisticsTreeModel::GetChildren(const wxDataViewItem &parent, wxDataViewItemArray &array) const {
     dvStatisticsTreeModelNode *node = (dvStatisticsTreeModelNode *) parent.GetID();
 
@@ -407,7 +426,8 @@ wxDVStatisticsTableCtrl::wxDVStatisticsTableCtrl(wxWindow *parent, wxWindowID id
     m_showMonths = false;
 
     m_ctrl = new wxDataViewCtrl(this, ID_STATISTICS_CTRL, wxDefaultPosition, wxSize(1040, 720),
-                                wxDV_MULTIPLE | wxDV_ROW_LINES | wxDV_VERT_RULES | wxDV_HORIZ_RULES | wxBORDER_NONE);
+        wxDV_MULTIPLE | wxDV_ROW_LINES | wxDV_VERT_RULES | wxDV_HORIZ_RULES);// | wxBORDER_NONE);
+
     m_ctrl->Bind(wxEVT_COMMAND_DATAVIEW_ITEM_CONTEXT_MENU, &wxDVStatisticsTableCtrl::OnContextMenu, this);
 
     m_StatisticsModel = new dvStatisticsTreeModel();
@@ -478,7 +498,7 @@ void wxDVStatisticsTableCtrl::RebuildDataViewCtrl() {
     m_ctrl->ClearColumns();
     m_ctrl->AssociateModel(m_StatisticsModel.get());
 
-    //TODO:  Is there a way to highlight "Total" nodes (i.e. bold, background color, etc...)?
+    //TODO:  Is there a way to highlight "Total" nodes (i.e. bold, background color, etc...)? Use GetAttr in underlying model - howwever SetColour does not work in 3.1.5
 
     tr = new wxDataViewTextRenderer("string", wxDATAVIEW_CELL_INERT, wxALIGN_LEFT);
     wxDataViewColumn *column0 = new wxDataViewColumn("", tr, 0, 350, wxALIGN_LEFT, wxDATAVIEW_COL_RESIZABLE);
@@ -496,11 +516,11 @@ void wxDVStatisticsTableCtrl::RebuildDataViewCtrl() {
     wxDataViewColumn *column3 = new wxDataViewColumn("Max", tr, 3, 110, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
     m_ctrl->AppendColumn(column3);
 
-    tr = new wxDataViewTextRenderer("double", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
+    tr = new wxDataViewTextRenderer("double", wxDATAVIEW_CELL_ACTIVATABLE, wxALIGN_RIGHT);
     wxDataViewColumn *column4 = new wxDataViewColumn("Sum", tr, 4, 110, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
     m_ctrl->AppendColumn(column4);
 
-    tr = new wxDataViewTextRenderer("double", wxDATAVIEW_CELL_INERT, wxALIGN_RIGHT);
+    tr = new wxDataViewTextRenderer("double", wxDATAVIEW_CELL_EDITABLE, wxALIGN_RIGHT);
     wxDataViewColumn *column5 = new wxDataViewColumn("Std Dev", tr, 5, 110, wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE);
     m_ctrl->AppendColumn(column5);
 

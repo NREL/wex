@@ -1,26 +1,34 @@
-/***********************************************************************************************************************
-*  WEX, Copyright (c) 2008-2017, Alliance for Sustainable Energy, LLC. All rights reserved.
-*
-*  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
-*  following conditions are met:
-*
-*  (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following
-*  disclaimer.
-*
-*  (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
-*  following disclaimer in the documentation and/or other materials provided with the distribution.
-*
-*  (3) Neither the name of the copyright holder nor the names of any contributors may be used to endorse or promote
-*  products derived from this software without specific prior written permission from the respective party.
-*
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
-*  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-*  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER, THE UNITED STATES GOVERNMENT, OR ANY CONTRIBUTORS BE LIABLE FOR
-*  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-*  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
-*  AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-*  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-**********************************************************************************************************************/
+/*
+BSD 3-Clause License
+
+Copyright (c) Alliance for Sustainable Energy, LLC. See also https://github.com/NREL/wex/blob/develop/LICENSE
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
 #include <numeric>
 #include <limits>
@@ -71,8 +79,11 @@ public:
               m_primaryX(primaryx) {
         wxRealPoint pos, size;
         GetDeviceExtents(&pos, &size);
-        m_ptCenter = wxRealPoint(0.5 * (pos.x + size.x), 0.5 * (pos.y + size.y));
+        m_ptCenter = wxRealPoint(0.5 * (pos.x + size.x) , 0.5 * (pos.y + size.y) );
         m_physicalConstraint = (size.x < size.y) ? size.x : size.y;
+        if (wxPLPolarAngularAxis *pa = dynamic_cast<wxPLPolarAngularAxis *>(m_xAxis)) {
+            m_ptCenter = wxRealPoint(pos.x + 0.5 * (size.x) , pos.y + 0.5 * (size.y) );
+        }
     }
 
     virtual wxRealPoint ToDevice(double x, double y) const {
@@ -83,15 +94,14 @@ public:
             double angle_in_rad = pa->AngleInRadians(x);
 
             // get radius in physical units
-            double radius0 = m_yAxis->WorldToPhysical(y, 0, m_physicalConstraint /
-                                                            2.0); // max radius has to be 1/2 of physical constraint
+            double radius0 = m_yAxis->WorldToPhysical(y, 0, m_physicalConstraint / 2.0); // max radius has to be 1/2 of physical constraint
 
             // locate point relative to center of polar plot
             wxRealPoint pt(radius0 * cos(angle_in_rad), radius0 * sin(angle_in_rad));
 
             // return point on physical device
             return (m_ptCenter + pt);
-        } else // Cartesian plot
+  } else // Cartesian plot
             return wxRealPoint(m_xAxis->WorldToPhysical(x, m_xPhysMin, m_xPhysMax),
                                m_yAxis->WorldToPhysical(y, m_yPhysMin, m_yPhysMax));
     }
@@ -104,7 +114,7 @@ public:
 
         if (size) {
             size->x = m_xPhysMax - m_xPhysMin;
-            size->y = fabs(m_yPhysMax - m_yPhysMin);
+            size->y = std::abs(m_yPhysMax - m_yPhysMin);
         }
     }
 
@@ -440,7 +450,7 @@ public:
 
                     // recalculate bound height to rotated text
                     m_bounds.y = labeledTicks[index]->text.Height()
-                                 + fabs(labeledTicks[index]->text.Width() * sin(M_PI / 180 * textAngle));
+                                 + std::abs(labeledTicks[index]->text.Width() * sin(M_PI / 180 * textAngle));
                 }
             }
         } else { // ap = Y_LEFT || Y_RIGHT
