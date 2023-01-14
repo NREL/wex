@@ -1293,6 +1293,7 @@ bool wxUIProperty::Read(wxInputStream &_i) {
     return (code == in.Read8());
 }
 
+// Write JSON using RapidJSON in ssc
 
 void wxUIProperty::Write_text(wxOutputStream &_o, wxString &ui_path) {
     wxExtTextOutputStream out(_o, wxEOL_UNIX);
