@@ -37,8 +37,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <wx/string.h>
 #include <wx/arrstr.h>
 #include <wx/dc.h>
+#include <rapidjson/document.h>
 
 std::vector<int> wxCommaDashListToIndices(const wxString &value);
+
+void Write_JSON_value(rapidjson::Document& doc, wxString name, double value);
+
+void Write_JSON_value(rapidjson::Document& doc, wxString name, wxString value);
+
+void Write_JSON_value(rapidjson::Document& doc, wxString name, wxArrayString value);
+
 
 wxString wxLimitTextColumns(const wxString &str, size_t numcols);
 

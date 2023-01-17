@@ -64,6 +64,35 @@ return !(buf.Len() == 0 && c == EOF);
 }
 */
 
+
+void Write_JSON_value(rapidjson::Document& doc, wxString name, double value)
+{
+    rapidjson::Value json_val;
+    json_val = value;
+    doc.AddMember(rapidjson::Value(name.c_str(), name.size(), doc.GetAllocator()).Move(), json_val.Move(), doc.GetAllocator());
+}
+
+void Write_JSON_value(rapidjson::Document& doc, wxString name, wxString value)
+{
+    // may need to add blank for empty strings
+    rapidjson::Value json_val;
+    json_val.SetString(value.c_str(), doc.GetAllocator());
+    doc.AddMember(rapidjson::Value(name.c_str(), name.size(), doc.GetAllocator()).Move(), json_val.Move(), doc.GetAllocator());
+}
+
+void Write_JSON_value(rapidjson::Document& doc, wxString name, wxArrayString value)
+{
+    // may need to add blank for empty strings
+    rapidjson::Value json_val;
+    wxString x = "";
+    if (value.Count() > 0)
+        x = wxJoin(value, '|');
+    json_val.SetString(x.c_str(), doc.GetAllocator());
+    doc.AddMember(rapidjson::Value(name.c_str(), name.size(), doc.GetAllocator()).Move(), json_val.Move(), doc.GetAllocator());
+}
+
+
+
 wxString wxLimitTextColumns(const wxString &str, size_t numcols) {
     wxString buf;
     size_t len = (int) str.Len();
