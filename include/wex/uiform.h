@@ -37,6 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <wx/wx.h>
 #include <wx/clrpicker.h>
+#include <rapidjson/document.h>
 
 class wxUIProperty;
 
@@ -314,12 +315,13 @@ public:
 
     // load/save form definition
     virtual void Write(wxOutputStream &);
-
     virtual bool Read(wxInputStream &);
 
     virtual void Write_text(wxOutputStream &, wxString &);
-
     virtual bool Read_text(wxInputStream &, wxString &);
+
+    void Write_JSON(rapidjson::Document&, wxString &);
+    bool Read_JSON(const rapidjson::Document&, wxString&);
 
     // methods to create/edit UI objects
     wxUIObject *Create(const wxString &type, const wxRect &geom, const wxString &name = wxEmptyString);

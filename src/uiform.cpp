@@ -2214,8 +2214,52 @@ void wxUIFormData::Write_text(wxOutputStream &_O, wxString &ui_path) {
             o->Write_text(_O, ui_path);
         }
     }
-
 }
+
+void wxUIFormData::Write_JSON(rapidjson::Document& doc, wxString &ui_path)
+{
+    Write_JSON_value(doc, "Name", m_name);
+    Write_JSON_value(doc, "Width", m_width);
+    Write_JSON_value(doc, "Height", m_height);
+    rapidjson::Document json_formobjects(&doc.GetAllocator()); // for table inside of json document.
+    wxUIObject *o;
+    wxArrayString as = ListAll();
+    as.Sort();
+    for (size_t i = 0; i < as.Count(); i++)    {
+        o = Find(as[i]);
+        if (o != NULL)    {
+            rapidjson::Document json_uiobject(&json_formobjects.GetAllocator()); // for table inside of json document.
+   //         o->Write_JSON(json_uiobject, ui_path);// TODO wxUIObject::Write_JSON
+            json_formobjects.AddMember(rapidjson::Value(o->GetTypeName().c_str(), (unsigned int)o->GetTypeName().size(), json_formobjects.GetAllocator()).Move(), json_uiobject.Move(), json_formobjects.GetAllocator());
+        }
+    }
+    wxString name="FormObjects";
+    doc.AddMember(rapidjson::Value(name.c_str(), (unsigned int)name.size(), doc.GetAllocator()).Move(), json_formobjects.Move(), doc.GetAllocator());
+}
+
+bool wxUIFormData::Read_JSON(const rapidjson::Document& doc, wxString& ui_path)
+{
+    bool ok = true;
+    DeleteAll();
+    
+    m_name = doc["Name"].GetString();
+    m_width = doc["Width"].GetInt();
+    m_height = doc["Height"].GetInt();
+    
+    
+    auto json_formobjects = doc["FormObjects"].GetObject();
+
+    for (rapidjson::Value::ConstMemberIterator itr = json_formobjects.MemberBegin(); itr != json_formobjects.MemberEnd() && ok; ++itr) {
+        wxString type = itr->name.GetString();
+        if (wxUIObject *obj = Create(type))
+            ok = ok; //&& obj->Read_JSON(doc, ui_path); // TODO wxUIObject::Read_JSON
+        else
+            ok = false;
+    }
+    return ok;
+}
+
+
 
 bool wxUIFormData::Read_text(wxInputStream &_I, wxString &ui_path) {
     DeleteAll();
