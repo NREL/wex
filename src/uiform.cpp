@@ -1293,8 +1293,6 @@ bool wxUIProperty::Read(wxInputStream &_i) {
     return (code == in.Read8());
 }
 
-// Write JSON using RapidJSON in ssc
-
 void wxUIProperty::Write_text(wxOutputStream &_o, wxString &ui_path) {
     wxExtTextOutputStream out(_o, wxEOL_UNIX);
     wxString s = wxEmptyString;
@@ -1364,6 +1362,122 @@ void wxUIProperty::Write_text(wxOutputStream &_o, wxString &ui_path) {
             break;
     }
 }
+
+
+void wxUIProperty::Write_JSON(rapidjson::Document& doc, wxString &ui_path)
+{
+    wxString s = wxEmptyString;
+    wxString name;
+    rapidjson::Document json_table(&doc.GetAllocator()); // for table inside of json document.
+  
+    int type = GetType();
+    Write_JSON_value(doc, "Type", type);
+    switch (type) {
+        case DOUBLE: {
+            Write_JSON_value(doc, "Double", GetDouble());
+        }
+            break;
+        case BOOLEAN: {
+            if (GetBoolean())
+                Write_JSON_value(doc, "Boolean", 1);
+            else
+                Write_JSON_value(doc, "Boolean", 0);
+        }
+            break;
+        case INTEGER: {
+            Write_JSON_value(doc, "Integer", GetInteger());
+        }
+            break;
+        case STRING: {
+            Write_JSON_value(doc, "String", GetString());
+            
+        }
+            break;
+        case COLOUR: {
+            wxColour c = GetColour();
+            Write_JSON_value(json_table, "Red", c.Red());
+            Write_JSON_value(json_table, "Green", c.Green());
+            Write_JSON_value(json_table, "Blue", c.Blue());
+            Write_JSON_value(json_table, "Alpha", c.Alpha());
+            name = "Color";
+            doc.AddMember(rapidjson::Value(name.c_str(), (unsigned int)name.size(), doc.GetAllocator()).Move(), json_table.Move(), doc.GetAllocator());
+
+        }
+            break;
+        case STRINGLIST: {
+            Write_JSON_value(doc, "StringList", GetStringList());
+        }
+            break;
+        case IMAGE: {
+            wxImage img = GetImage();
+            img.SaveFile(ui_path + ".png", wxBITMAP_TYPE_PNG);
+            wxString fn = wxFileName(ui_path + ".png").GetName();
+            Write_JSON_value(doc, "Image", fn + ".png");
+        }
+            break;
+    }
+
+}
+
+bool wxUIProperty::Read_JSON(const rapidjson::Value& doc, wxString& ui_path)
+{
+    wxUint8 r, g, b, a;
+    rapidjson::Value  json_value;
+    bool ok = true;
+    int type = doc["Type"].GetInt();
+    if (m_pReference)
+        m_pReference->m_type = type;
+    else
+        m_type = type;
+    
+    switch (type) {
+        case DOUBLE:
+            Set(doc["Double"].GetDouble());
+            break;
+        case BOOLEAN: {
+            if (doc["Booleam"].GetInt() == 1)
+                Set(true);
+            else
+                Set(false);
+        }
+            break;
+        case INTEGER:
+            Set(doc["Integer"].GetInt());
+            break;
+        case STRING:
+            Set(doc["String"].GetString());
+            break;
+        case COLOUR:
+            json_value = doc["Color"].GetObject();
+            r = json_value["Red"].GetInt();
+            g = json_value["Green"].GetInt();
+            b = json_value["Blue"].GetInt();
+            a = json_value["Alpha"].GetInt();
+            Set(wxColour(r, g, b, a));
+            break;
+        case STRINGLIST: {
+            wxArrayString list;
+            json_value = doc["StringList"].GetObject();
+            for (rapidjson::Value::ConstMemberIterator itr = json_value.MemberBegin(); itr != json_value.MemberEnd() && ok; ++itr) {
+                list.Add(itr->value.GetString());
+            }
+            Set(list);
+        }
+            break;
+        case IMAGE: {
+            wxImage img;
+            wxString img_filename = doc["Image"].GetString();
+            img_filename = ui_path + img_filename;
+            img.LoadFile(img_filename, wxBITMAP_TYPE_PNG);
+            Set(img);
+        }
+            break;
+    }
+
+    return ok;
+}
+
+
 
 bool wxUIProperty::Read_text(wxInputStream &_i, wxString &ui_path) {
     wxExtTextInputStream in(_i, "\n", wxConvAuto(wxFONTENCODING_UTF8));
@@ -1680,6 +1794,42 @@ void wxUIObject::Write_text(wxOutputStream &_o, wxString &ui_path) {
     }
 
 }
+
+
+void wxUIObject::Write_JSON(rapidjson::Document &doc, wxString &ui_path)
+{
+    if (m_visible)
+        Write_JSON_value(doc, "Visible", 1);
+    else
+        Write_JSON_value(doc, "Visible", 0);
+    rapidjson::Document json_objectproperties(&doc.GetAllocator()); // for table inside of json document.
+    for (size_t i = 0; i < m_properties.size(); i++)    {
+        rapidjson::Document json_uiproperty(&json_objectproperties.GetAllocator()); // for table inside of json document.
+        m_properties[i].prop->Write_JSON(json_uiproperty, ui_path);
+        json_objectproperties.AddMember(rapidjson::Value(m_properties[i].name.c_str(), (unsigned int)m_properties[i].name.size(), json_objectproperties.GetAllocator()).Move(), json_uiproperty.Move(), json_objectproperties.GetAllocator());
+    }
+    wxString name="ObjectProperties";
+    doc.AddMember(rapidjson::Value(name.c_str(), (unsigned int)name.size(), doc.GetAllocator()).Move(), json_objectproperties.Move(), doc.GetAllocator());
+}
+
+
+bool wxUIObject::Read_JSON(const rapidjson::Value &doc, wxString &ui_path)
+{
+    bool ok = true;
+    if (doc["Visible"].GetInt() == 1)
+        m_visible = true;
+    else
+        m_visible = false;
+ 
+    auto json_objectproperties = doc["ObjectProperties"].GetObject();
+    for (rapidjson::Value::ConstMemberIterator itr = json_objectproperties.MemberBegin(); itr != json_objectproperties.MemberEnd() && ok; ++itr) {
+        wxString name = itr->name.GetString();
+//        ok = ok && Property(name).Read_JSON(itr->value, ui_path);
+    }
+    return ok;
+
+}
+
 
 bool wxUIObject::Read_text(wxInputStream &_i, wxString &ui_path) {
     wxExtTextInputStream in(_i, "\n");
@@ -2229,7 +2379,7 @@ void wxUIFormData::Write_JSON(rapidjson::Document& doc, wxString &ui_path)
         o = Find(as[i]);
         if (o != NULL)    {
             rapidjson::Document json_uiobject(&json_formobjects.GetAllocator()); // for table inside of json document.
-   //         o->Write_JSON(json_uiobject, ui_path);// TODO wxUIObject::Write_JSON
+            o->Write_JSON(json_uiobject, ui_path);
             json_formobjects.AddMember(rapidjson::Value(o->GetTypeName().c_str(), (unsigned int)o->GetTypeName().size(), json_formobjects.GetAllocator()).Move(), json_uiobject.Move(), json_formobjects.GetAllocator());
         }
     }
@@ -2252,7 +2402,7 @@ bool wxUIFormData::Read_JSON(const rapidjson::Document& doc, wxString& ui_path)
     for (rapidjson::Value::ConstMemberIterator itr = json_formobjects.MemberBegin(); itr != json_formobjects.MemberEnd() && ok; ++itr) {
         wxString type = itr->name.GetString();
         if (wxUIObject *obj = Create(type))
-            ok = ok; //&& obj->Read_JSON(doc, ui_path); // TODO wxUIObject::Read_JSON
+            ok = true;//ok && obj->Read_JSON(itr->value, ui_path);
         else
             ok = false;
     }

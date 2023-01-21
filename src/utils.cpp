@@ -69,7 +69,7 @@ void Write_JSON_value(rapidjson::Document& doc, wxString name, double value)
 {
     rapidjson::Value json_val;
     json_val = value;
-    doc.AddMember(rapidjson::Value(name.c_str(), name.size(), doc.GetAllocator()).Move(), json_val.Move(), doc.GetAllocator());
+    doc.AddMember(rapidjson::Value(name.c_str(), (unsigned int)name.size(), doc.GetAllocator()).Move(), json_val.Move(), doc.GetAllocator());
 }
 
 void Write_JSON_value(rapidjson::Document& doc, wxString name, wxString value)
@@ -77,7 +77,7 @@ void Write_JSON_value(rapidjson::Document& doc, wxString name, wxString value)
     // may need to add blank for empty strings
     rapidjson::Value json_val;
     json_val.SetString(value.c_str(), doc.GetAllocator());
-    doc.AddMember(rapidjson::Value(name.c_str(), name.size(), doc.GetAllocator()).Move(), json_val.Move(), doc.GetAllocator());
+    doc.AddMember(rapidjson::Value(name.c_str(), (unsigned int)name.size(), doc.GetAllocator()).Move(), json_val.Move(), doc.GetAllocator());
 }
 
 void Write_JSON_value(rapidjson::Document& doc, wxString name, wxArrayString value)
@@ -88,9 +88,8 @@ void Write_JSON_value(rapidjson::Document& doc, wxString name, wxArrayString val
     if (value.Count() > 0)
         x = wxJoin(value, '|');
     json_val.SetString(x.c_str(), doc.GetAllocator());
-    doc.AddMember(rapidjson::Value(name.c_str(), name.size(), doc.GetAllocator()).Move(), json_val.Move(), doc.GetAllocator());
+    doc.AddMember(rapidjson::Value(name.c_str(), (unsigned int)name.size(), doc.GetAllocator()).Move(), json_val.Move(), doc.GetAllocator());
 }
-
 
 
 wxString wxLimitTextColumns(const wxString &str, size_t numcols) {
@@ -442,7 +441,7 @@ bool wxWebHttpDownload(const wxString &url, const wxString &local_file,
     wxInputStream *httpStream = get.GetInputStream(file);
     bool ok = false;
     if (get.GetError() == wxPROTO_NOERR) {
-        int ntotal = httpStream->GetSize();
+        int ntotal = (int)httpStream->GetSize();
 
         if (ntotal < 1) ntotal = -1000;
 
@@ -463,7 +462,7 @@ bool wxWebHttpDownload(const wxString &url, const wxString &local_file,
             while (!httpStream->Eof()) {
                 int nread;
                 httpStream->Read(rwbuf, NRWBUFBYTES);
-                nread = httpStream->LastRead();
+                nread = (int)httpStream->LastRead();
                 fout.Write(rwbuf, nread);
 
                 if (nread > 0) ndown += nread;
@@ -608,13 +607,13 @@ std::vector<int> wxCommaDashListToIndices(const wxString &value) {
         if (hpos < 0) {
             long num = 0;
             if (s.ToLong(&num))
-                list.push_back(num);
+                list.push_back((int)num);
         } else {
             long start = 0, end = 0;
             if (s.Mid(0, hpos).ToLong(&start)
                 && s.Mid(hpos + 1).ToLong(&end)
                 && end >= start) {
-                for (int j = start; j <= end; j++)
+                for (int j = (int)start; j <= end; j++)
                     list.push_back(j);
             }
         }
@@ -1382,7 +1381,7 @@ wxString wxGetMD5(const wxString &string) {
     char *buf = strdup((const char *) string.c_str());
 
     MD5Init(&ctx);
-    MD5Update(&ctx, (unsigned char *) buf, strlen(buf));
+    MD5Update(&ctx, (unsigned char *) buf, (unsigned int)strlen(buf));
     MD5End(&ctx, tmp);
 
     free(buf);
@@ -1404,7 +1403,7 @@ wxString wxGetFileMD5(wxInputStream &stream) {
         if (stream.Read(buffer, sizeof(buffer)).LastRead() <= 0)
             return wxEmptyString;
 
-        MD5Update(&ctx, buffer, stream.LastRead());
+        MD5Update(&ctx, buffer, (unsigned int)stream.LastRead());
     } while (!stream.Eof());
 
     MD5End(&ctx, tmp);
