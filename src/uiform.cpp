@@ -1422,7 +1422,6 @@ void wxUIProperty::Write_JSON(rapidjson::Document& doc, wxString &ui_path)
 bool wxUIProperty::Read_JSON(const rapidjson::Value& doc, wxString& ui_path)
 {
     wxUint8 r, g, b, a;
-    rapidjson::Value  json_value;
     bool ok = true;
     int type = doc["Type"].GetInt();
     if (m_pReference)
@@ -1448,17 +1447,22 @@ bool wxUIProperty::Read_JSON(const rapidjson::Value& doc, wxString& ui_path)
             Set(doc["String"].GetString());
             break;
         case COLOUR:
-            json_value = doc["Color"].GetObject();
-            r = json_value["Red"].GetInt();
-            g = json_value["Green"].GetInt();
-            b = json_value["Blue"].GetInt();
-            a = json_value["Alpha"].GetInt();
+            for (rapidjson::Value::ConstMemberIterator itr = doc["Color"].GetObject().MemberBegin(); itr != doc["Color"].GetObject().MemberEnd(); ++itr) {
+                wxString name = wxString(itr->name.GetString());
+                if (name == "Red")
+                    r = itr->value.GetInt();
+                else if (name == "Green")
+                    g = itr->value.GetInt();
+                else if (name == "Blue")
+                    b = itr->value.GetInt();
+                else if (name == "Alpha")
+                    a = itr->value.GetInt();
+            }
             Set(wxColour(r, g, b, a));
             break;
         case STRINGLIST: {
             wxArrayString list;
-            json_value = doc["StringList"].GetObject();
-            for (rapidjson::Value::ConstMemberIterator itr = json_value.MemberBegin(); itr != json_value.MemberEnd() && ok; ++itr) {
+            for (rapidjson::Value::ConstMemberIterator itr = doc["StringList"].GetObject().MemberBegin(); itr != doc["StringList"].GetObject().MemberEnd() && ok; ++itr) {
                 list.Add(itr->value.GetString());
             }
             Set(list);
