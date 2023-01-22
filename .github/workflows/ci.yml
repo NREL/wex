@@ -43,7 +43,7 @@ jobs:
 
     - name: Get git ref of sibling dependency LK
       run: |
-        ref=$(git ls-remote --exit-code git://github.com/NREL/lk.git refs/heads/develop | awk '{print $1}')
+        ref=$(git ls-remote --exit-code git://github.com/NREL/lk.git refs/heads/patch | awk '{print $1}')
         echo "ref_of_lk=$ref" | tee --append $GITHUB_ENV
     - name: Get cached build data of sibling dependency LK
       uses: actions/cache@v2
@@ -64,10 +64,26 @@ jobs:
         cd $GITHUB_WORKSPACE/lk
         cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Debug
         cmake --build build_linux -- -j
-    - name: Set LKDIR and LKD_LIB envs
+    - name: Set SSCDIR
       run: |
-        echo "LKDIR=$GITHUB_WORKSPACE/lk" >>$GITHUB_ENV
-        echo "LKD_LIB=$GITHUB_WORKSPACE/lk/build_linux" >>$GITHUB_ENV # iff CMAKE_BUILD_TYPE=Debug
+        echo "SSCDIR=$GITHUB_WORKSPACE/lk" >>$GITHUB_ENV
+    - name: Get git ref of sibling dependency SSC
+      run: |
+        ref=$(git ls-remote --exit-code git://github.com/NREL/ssc.git refs/heads/patch | awk '{print $1}')
+        echo "ref_of_ssc=$ref" | tee --append $GITHUB_ENV
+    - name: Get cached build data of sibling dependency SSC
+      uses: actions/cache@v2
+      id: cachedssc
+      with:
+        path: ${{ env.GH_WORKSPACE }}/ssc
+        key: ${{ env.RUNS_ON }}-${{ env.ref_of_ssc }}-SSC
+    - name: Clone sibling dependency SSC
+      if: steps.cachedssc.outputs.cache-hit != 'true'
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ env.ref_of_ssc }}
+        path: ssc
+        repository: NREL/ssc
 
     - name: Checkout
       uses: actions/checkout@v2
@@ -125,7 +141,7 @@ jobs:
 
     - name: Get git ref of sibling dependency LK
       run: |
-        ref=$(git ls-remote --exit-code git://github.com/NREL/lk.git refs/heads/develop | awk '{print $1}')
+        ref=$(git ls-remote --exit-code git://github.com/NREL/lk.git refs/heads/patch | awk '{print $1}')
         echo "ref_of_lk=$ref" | tee --append $GITHUB_ENV
     - name: Get cached build data of sibling dependency LK
       uses: actions/cache@v2
@@ -150,6 +166,26 @@ jobs:
       run: |
         echo "LKDIR=$GITHUB_WORKSPACE/lk" >>$GITHUB_ENV
         echo "LKD_LIB=$GITHUB_WORKSPACE/lk/build_linux" >>$GITHUB_ENV # iff CMAKE_BUILD_TYPE=Debug
+    - name: Set SSCDIR
+      run: |
+        echo "SSCDIR=$GITHUB_WORKSPACE/lk" >>$GITHUB_ENV
+    - name: Get git ref of sibling dependency SSC
+      run: |
+        ref=$(git ls-remote --exit-code git://github.com/NREL/ssc.git refs/heads/patch | awk '{print $1}')
+        echo "ref_of_ssc=$ref" | tee --append $GITHUB_ENV
+    - name: Get cached build data of sibling dependency SSC
+      uses: actions/cache@v2
+      id: cachedssc
+      with:
+        path: ${{ env.GH_WORKSPACE }}/ssc
+        key: ${{ env.RUNS_ON }}-${{ env.ref_of_ssc }}-SSC
+    - name: Clone sibling dependency SSC
+      if: steps.cachedssc.outputs.cache-hit != 'true'
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ env.ref_of_ssc }}
+        path: ssc
+        repository: NREL/ssc
 
     - name: Checkout
       uses: actions/checkout@v2
