@@ -1369,7 +1369,7 @@ void wxUIProperty::Write_JSON(rapidjson::Document& doc, wxString &ui_path)
     wxString s = wxEmptyString;
     wxString name;
     rapidjson::Document json_table(&doc.GetAllocator()); // for table inside of json document.
-  
+    json_table.SetObject();
     int type = GetType();
     Write_JSON_value(doc, "Type", type);
     switch (type) {
@@ -1807,8 +1807,10 @@ void wxUIObject::Write_JSON(rapidjson::Document &doc, wxString &ui_path)
     else
         Write_JSON_value(doc, "Visible", 0);
     rapidjson::Document json_objectproperties(&doc.GetAllocator()); // for table inside of json document.
+    json_objectproperties.SetObject();
     for (size_t i = 0; i < m_properties.size(); i++)    {
         rapidjson::Document json_uiproperty(&json_objectproperties.GetAllocator()); // for table inside of json document.
+        json_uiproperty.SetObject();
         m_properties[i].prop->Write_JSON(json_uiproperty, ui_path);
         json_objectproperties.AddMember(rapidjson::Value(m_properties[i].name.c_str(), (unsigned int)m_properties[i].name.size(), json_objectproperties.GetAllocator()).Move(), json_uiproperty.Move(), json_objectproperties.GetAllocator());
     }
@@ -2376,6 +2378,7 @@ void wxUIFormData::Write_JSON(rapidjson::Document& doc, wxString &ui_path)
     Write_JSON_value(doc, "Width", m_width);
     Write_JSON_value(doc, "Height", m_height);
     rapidjson::Document json_formobjects(&doc.GetAllocator()); // for table inside of json document.
+    json_formobjects.SetObject();
     wxUIObject *o;
     wxArrayString as = ListAll();
     as.Sort();
@@ -2383,6 +2386,7 @@ void wxUIFormData::Write_JSON(rapidjson::Document& doc, wxString &ui_path)
         o = Find(as[i]);
         if (o != NULL)    {
             rapidjson::Document json_uiobject(&json_formobjects.GetAllocator()); // for table inside of json document.
+            json_uiobject.SetObject();
             o->Write_JSON(json_uiobject, ui_path);
             json_formobjects.AddMember(rapidjson::Value(o->GetTypeName().c_str(), (unsigned int)o->GetTypeName().size(), json_formobjects.GetAllocator()).Move(), json_uiobject.Move(), json_formobjects.GetAllocator());
         }
