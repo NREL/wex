@@ -1423,7 +1423,7 @@ bool wxUIProperty::Read_JSON(const rapidjson::Value& doc, wxString& ui_path)
 {
     wxUint8 r, g, b, a;
     bool ok = true;
-    int type = doc["Type"].GetInt();
+    int type = (int)doc["Type"].GetDouble();
     if (m_pReference)
         m_pReference->m_type = type;
     else
@@ -1434,37 +1434,34 @@ bool wxUIProperty::Read_JSON(const rapidjson::Value& doc, wxString& ui_path)
             Set(doc["Double"].GetDouble());
             break;
         case BOOLEAN: {
-            if (doc["Booleam"].GetInt() == 1)
+            if ((int)doc["Boolean"].GetDouble() == 1)
                 Set(true);
             else
                 Set(false);
         }
             break;
         case INTEGER:
-            Set(doc["Integer"].GetInt());
+            Set((int)doc["Integer"].GetDouble());
             break;
         case STRING:
-            Set(doc["String"].GetString());
+            Set(wxString(doc["String"].GetString()));
             break;
         case COLOUR:
             for (rapidjson::Value::ConstMemberIterator itr = doc["Color"].GetObject().MemberBegin(); itr != doc["Color"].GetObject().MemberEnd(); ++itr) {
                 wxString name = wxString(itr->name.GetString());
                 if (name == "Red")
-                    r = itr->value.GetInt();
+                    r = (int)itr->value.GetDouble();
                 else if (name == "Green")
-                    g = itr->value.GetInt();
+                    g = (int)itr->value.GetDouble();
                 else if (name == "Blue")
-                    b = itr->value.GetInt();
+                    b = (int)itr->value.GetDouble();
                 else if (name == "Alpha")
-                    a = itr->value.GetInt();
+                    a = (int)itr->value.GetDouble();
             }
             Set(wxColour(r, g, b, a));
             break;
         case STRINGLIST: {
-            wxArrayString list;
-            for (rapidjson::Value::ConstMemberIterator itr = doc["StringList"].GetObject().MemberBegin(); itr != doc["StringList"].GetObject().MemberEnd() && ok; ++itr) {
-                list.Add(itr->value.GetString());
-            }
+            wxArrayString list = wxSplit(doc["StringList"].GetString(), '|');
             Set(list);
         }
             break;
@@ -1822,7 +1819,7 @@ void wxUIObject::Write_JSON(rapidjson::Document &doc, wxString &ui_path)
 bool wxUIObject::Read_JSON(const rapidjson::Value &doc, wxString &ui_path)
 {
     bool ok = true;
-    if (doc["Visible"].GetInt() == 1)
+    if ((int)doc["Visible"].GetDouble() == 1)
         m_visible = true;
     else
         m_visible = false;
@@ -1830,7 +1827,7 @@ bool wxUIObject::Read_JSON(const rapidjson::Value &doc, wxString &ui_path)
     auto json_objectproperties = doc["ObjectProperties"].GetObject();
     for (rapidjson::Value::ConstMemberIterator itr = json_objectproperties.MemberBegin(); itr != json_objectproperties.MemberEnd() && ok; ++itr) {
         wxString name = itr->name.GetString();
-//        ok = ok && Property(name).Read_JSON(itr->value, ui_path);
+        ok = ok && Property(name).Read_JSON(itr->value, ui_path);
     }
     return ok;
 
@@ -2401,8 +2398,8 @@ bool wxUIFormData::Read_JSON(const rapidjson::Document& doc, wxString& ui_path)
     DeleteAll();
     
     m_name = doc["Name"].GetString();
-    m_width = doc["Width"].GetInt();
-    m_height = doc["Height"].GetInt();
+    m_width = (int)doc["Width"].GetDouble();
+    m_height = (int)doc["Height"].GetDouble();
     
     
     auto json_formobjects = doc["FormObjects"].GetObject();
@@ -2410,7 +2407,7 @@ bool wxUIFormData::Read_JSON(const rapidjson::Document& doc, wxString& ui_path)
     for (rapidjson::Value::ConstMemberIterator itr = json_formobjects.MemberBegin(); itr != json_formobjects.MemberEnd() && ok; ++itr) {
         wxString type = itr->name.GetString();
         if (wxUIObject *obj = Create(type))
-            ok = true;//ok && obj->Read_JSON(itr->value, ui_path);
+            ok = ok && obj->Read_JSON(itr->value, ui_path);
         else
             ok = false;
     }
