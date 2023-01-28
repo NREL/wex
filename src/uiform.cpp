@@ -1379,9 +1379,9 @@ void wxUIProperty::Write_JSON(rapidjson::Document& doc, wxString &ui_path)
             break;
         case BOOLEAN: {
             if (GetBoolean())
-                Write_JSON_value(doc, "Boolean", 1);
+                Write_JSON_value(doc, "Boolean", 1.0);
             else
-                Write_JSON_value(doc, "Boolean", 0);
+                Write_JSON_value(doc, "Boolean", 0.0);
         }
             break;
         case INTEGER: {
@@ -1401,7 +1401,6 @@ void wxUIProperty::Write_JSON(rapidjson::Document& doc, wxString &ui_path)
             Write_JSON_value(json_table, "Alpha", c.Alpha());
             name = "Color";
             doc.AddMember(rapidjson::Value(name.c_str(), (unsigned int)name.size(), doc.GetAllocator()).Move(), json_table.Move(), doc.GetAllocator());
-
         }
             break;
         case STRINGLIST: {
