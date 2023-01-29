@@ -46,6 +46,9 @@ void Write_JSON_value(rapidjson::Document& doc, wxString name, double value);
 void Write_JSON_value(rapidjson::Document& doc, wxString name, wxString value);
 
 void Write_JSON_value(rapidjson::Document& doc, wxString name, wxArrayString value);
+
+wxString Read_JSON_value(const rapidjson::Value& doc, wxString name);
+
 wxString wxLimitTextColumns(const wxString &str, size_t numcols);
 
 wxString wxConvertToBase26(unsigned int val);

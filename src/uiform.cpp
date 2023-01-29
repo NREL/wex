@@ -1443,7 +1443,7 @@ bool wxUIProperty::Read_JSON(const rapidjson::Value& doc, wxString& ui_path)
             Set((int)doc["Integer"].GetDouble());
             break;
         case STRING:
-            Set(wxString(doc["String"].GetString()));
+            Set(Read_JSON_value(doc, "String"));
             break;
         case COLOUR:
             for (rapidjson::Value::ConstMemberIterator itr = doc["Color"].GetObject().MemberBegin(); itr != doc["Color"].GetObject().MemberEnd(); ++itr) {
@@ -1460,7 +1460,7 @@ bool wxUIProperty::Read_JSON(const rapidjson::Value& doc, wxString& ui_path)
             Set(wxColour(r, g, b, a));
             break;
         case STRINGLIST: {
-            wxArrayString list = wxSplit(doc["StringList"].GetString(), '|');
+            wxArrayString list = wxSplit(Read_JSON_value(doc, "StringList"), '|');
             Set(list);
         }
             break;

@@ -74,20 +74,23 @@ void Write_JSON_value(rapidjson::Document& doc, wxString name, double value)
 
 void Write_JSON_value(rapidjson::Document& doc, wxString name, wxString value)
 {
-    // may need to add blank for empty strings
     rapidjson::Value json_val;
-    json_val.SetString(value.c_str(), doc.GetAllocator());
+    json_val.SetString(value.utf8_str(), doc.GetAllocator()); // normal and any string with Unicode
     doc.AddMember(rapidjson::Value(name.c_str(), (unsigned int)name.size(), doc.GetAllocator()).Move(), json_val.Move(), doc.GetAllocator());
+}
+
+wxString Read_JSON_value(const rapidjson::Value& doc, wxString name)
+{
+    return wxString::FromUTF8(doc[(const char*)name.mb_str()].GetString());
 }
 
 void Write_JSON_value(rapidjson::Document& doc, wxString name, wxArrayString value)
 {
-    // may need to add blank for empty strings
     rapidjson::Value json_val;
     wxString x = "";
     if (value.Count() > 0)
         x = wxJoin(value, '|');
-    json_val.SetString(x.c_str(), doc.GetAllocator());
+    json_val.SetString(x.utf8_str(), doc.GetAllocator());
     doc.AddMember(rapidjson::Value(name.c_str(), (unsigned int)name.size(), doc.GetAllocator()).Move(), json_val.Move(), doc.GetAllocator());
 }
 
