@@ -97,8 +97,8 @@ endif ()
 #
 #####################################################################################################################
 
-# for rapidjson folder in ssc
-include_directories($ENV{SSCDIR})
+# for rapidjson folder
+include_directories($ENV{RAPIDJSONDIR})
 
 add_subdirectory(src)
 if (NOT SAM_SKIP_TOOLS)
