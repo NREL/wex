@@ -68,9 +68,9 @@ jobs:
       run: |
         echo "LKDIR=$GITHUB_WORKSPACE/lk" >>$GITHUB_ENV
         echo "LKD_LIB=$GITHUB_WORKSPACE/lk/build_linux" >>$GITHUB_ENV # iff CMAKE_BUILD_TYPE=Debug
-    - name: Set SSCDIR
+    - name: Set RAPIDJSONDIR
       run: |
-        echo "SSCDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
+        echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
     - name: Get git ref of sibling dependency SSC
       run: |
         ref=$(git ls-remote --exit-code git://github.com/NREL/ssc.git refs/heads/patch | awk '{print $1}')
@@ -170,9 +170,9 @@ jobs:
       run: |
         echo "LKDIR=$GITHUB_WORKSPACE/lk" >>$GITHUB_ENV
         echo "LKD_LIB=$GITHUB_WORKSPACE/lk/build_linux" >>$GITHUB_ENV # iff CMAKE_BUILD_TYPE=Debug
-    - name: Set SSCDIR
+    - name: Set RAPIDJSONDIR
       run: |
-        echo "SSCDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
+        echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
     - name: Get git ref of sibling dependency SSC
       run: |
         ref=$(git ls-remote --exit-code git://github.com/NREL/ssc.git refs/heads/patch | awk '{print $1}')
