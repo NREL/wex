@@ -45,6 +45,11 @@ void Write_JSON_value(rapidjson::Document& doc, wxString name, double value);
 
 void Write_JSON_value(rapidjson::Document& doc, wxString name, wxString value);
 
+void Write_JSON_multiline_value(rapidjson::Document& doc, wxString name, wxString value);
+
+wxString Read_JSON_multiline_value(const rapidjson::Value& doc, wxString name);
+
+
 void Write_JSON_value(rapidjson::Document& doc, wxString name, wxArrayString value);
 
 wxString Read_JSON_value(const rapidjson::Value& doc, wxString name);

@@ -84,6 +84,33 @@ wxString Read_JSON_value(const rapidjson::Value& doc, wxString name)
     return wxString::FromUTF8(doc[(const char*)name.mb_str()].GetString());
 }
 
+void Write_JSON_multiline_value(rapidjson::Document& doc, wxString name, wxString value) // unicode fails in arraystring writing "\\" does not goe to "\\\\"
+{
+    rapidjson::Value json_val;
+    // break into array value for json
+    json_val.SetArray();
+    wxArrayString as = wxSplit(value, '\n');
+    for (size_t i = 0; i < as.Count(); i++) {
+//        rapidjson::Value jv;
+//        jv.SetString(as[i].utf8_str(), doc.GetAllocator());
+//        json_val.PushBack(jv, doc.GetAllocator());
+        json_val.PushBack(rapidjson::Value(as[i].utf8_str(), doc.GetAllocator()).Move(), doc.GetAllocator());
+    }
+    doc.AddMember(rapidjson::Value(name.c_str(), (unsigned int)name.size(), doc.GetAllocator()).Move(), json_val.Move(), doc.GetAllocator());
+}
+
+wxString Read_JSON_multiline_value(const rapidjson::Value& doc, wxString name)
+{
+    wxArrayString as;
+    auto& json_val = doc[(const char*)name.mb_str()];
+    for (rapidjson::SizeType i = 0; i < json_val.Size(); i++) {
+//        as.push_back(wxString::FromUTF8(json_val[i].GetString()));
+        as.push_back((json_val[i].GetString()));
+    }
+    wxString str =  wxJoin(as,'\n');
+    return str;
+}
+
 void Write_JSON_value(rapidjson::Document& doc, wxString name, wxArrayString value)
 {
     rapidjson::Value json_val;
