@@ -91,6 +91,7 @@ void Write_JSON_multiline_value(rapidjson::Document& doc, wxString name, wxStrin
     wxArrayString as = wxSplit(value, '\n');
     for (size_t i = 0; i < as.Count(); i++) {
         wxString linename = wxString::Format("%d",(int)i+1);
+        // these two replace statements were not necessary when the JSON was stored as a single string
         as[i].Replace("'\\'", "'\\\\'"); // 		file = replace(file, '\\', '/');
         as[i].Replace("^\\", "^\\\\");  // 	plotopt({"title"=sprintf('IV curves at %g ^\\deg  C',Tc),"popup"=true,"backcolor"=[255,255,255],"legend"=true, 'legendpos'='bottom'});
         Write_JSON_value(json_multiline, linename, as[i]);
