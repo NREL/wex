@@ -87,14 +87,16 @@ wxString Read_JSON_value(const rapidjson::Value& doc, wxString name)
 void Write_JSON_multiline_value(rapidjson::Document& doc, wxString name, wxString value) // json array fails in arraystring writing "\\" does not go to "\\\\"
 {
     rapidjson::Document json_multiline(&doc.GetAllocator()); // for table inside of json document.
-    json_multiline.SetObject();
+//    json_multiline.SetObject();
+    json_multiline.SetArray();
     wxArrayString as = wxSplit(value, '\n');
     for (size_t i = 0; i < as.Count(); i++) {
         wxString linename = wxString::Format("%d",(int)i+1);
         // these two replace statements were not necessary when the JSON was stored as a single string
         as[i].Replace("'\\'", "'\\\\'"); // 		file = replace(file, '\\', '/');
         as[i].Replace("^\\", "^\\\\");  // 	plotopt({"title"=sprintf('IV curves at %g ^\\deg  C',Tc),"popup"=true,"backcolor"=[255,255,255],"legend"=true, 'legendpos'='bottom'});
-        Write_JSON_value(json_multiline, linename, as[i]);
+//        Write_JSON_value(json_multiline, linename, as[i]);
+        json_multiline.PushBack(rapidjson::Value(as[i].utf8_str(), doc.GetAllocator()).Move(), doc.GetAllocator());
     }
     doc.AddMember(rapidjson::Value(name.c_str(), (unsigned int)name.size(), doc.GetAllocator()).Move(), json_multiline.Move(), doc.GetAllocator());
 }
@@ -103,11 +105,16 @@ wxString Read_JSON_multiline_value(const rapidjson::Value& doc, wxString name)
 {
     wxArrayString as;
     auto& json_multiline = doc[(const char*)name.mb_str()];
-
+/*
     for (rapidjson::Value::ConstMemberIterator itr = json_multiline.MemberBegin(); itr != json_multiline.MemberEnd(); ++itr) {
         wxString linename = itr->name.GetString();
         as.push_back(Read_JSON_value(json_multiline, linename));
     }
+*/
+    for (rapidjson::SizeType i = 0; i < json_multiline.Size(); i++) {
+        as.push_back(wxString::FromUTF8(json_multiline[i].GetString()));
+    }
+
     wxString str =  wxJoin(as,'\n');
     return str;
 }
