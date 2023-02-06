@@ -12,7 +12,7 @@ jobs:
       GH_WORKSPACE: /home/runner/work/wex/wex #= $GITHUB_WORKSPACE
     steps:
     - name: Setup cmake
-      uses: jwlawson/actions-setup-cmake@v1.12
+      uses: jwlawson/actions-setup-cmake@v1.16
       with:
         cmake-version: '3.24.x'
     - name: Test cmake version
@@ -114,7 +114,7 @@ jobs:
       GH_WORKSPACE: /home/runner/work/wex/wex #= $GITHUB_WORKSPACE
     steps:
     - name: Setup cmake
-      uses: jwlawson/actions-setup-cmake@v1.12
+      uses: jwlawson/actions-setup-cmake@v1.16
       with:
         cmake-version: '3.24.x'
     - name: Test cmake version
