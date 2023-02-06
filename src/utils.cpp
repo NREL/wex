@@ -64,6 +64,64 @@ return !(buf.Len() == 0 && c == EOF);
 }
 */
 
+
+void Write_JSON_value(rapidjson::Document& doc, wxString name, double value)
+{
+    rapidjson::Value json_val;
+    json_val = value;
+    doc.AddMember(rapidjson::Value(name.c_str(), (unsigned int)name.size(), doc.GetAllocator()).Move(), json_val.Move(), doc.GetAllocator());
+}
+
+void Write_JSON_value(rapidjson::Document& doc, wxString name, wxString value)
+{
+    rapidjson::Value json_val;
+    json_val.SetString(value.utf8_str(), doc.GetAllocator()); // normal and any string with Unicode
+    doc.AddMember(rapidjson::Value(name.c_str(), (unsigned int)name.size(), doc.GetAllocator()).Move(), json_val.Move(), doc.GetAllocator());
+}
+
+wxString Read_JSON_value(const rapidjson::Value& doc, wxString name)
+{
+    return wxString::FromUTF8(doc[(const char*)name.mb_str()].GetString());
+}
+
+void Write_JSON_multiline_value(rapidjson::Document& doc, wxString name, wxString value) // json array fails in arraystring writing "\\" does not go to "\\\\"
+{
+    rapidjson::Document json_multiline(&doc.GetAllocator()); // for table inside of json document.
+    json_multiline.SetArray();
+    wxArrayString as = wxSplit(value, '\n');
+    for (size_t i = 0; i < as.Count(); i++) {
+        wxString linename = wxString::Format("%d",(int)i+1);
+        // these two replace statements were not necessary when the JSON was stored as a single string
+        as[i].Replace("'\\'", "'\\\\'"); // 		file = replace(file, '\\', '/');
+        as[i].Replace("^\\", "^\\\\");  // 	plotopt({"title"=sprintf('IV curves at %g ^\\deg  C',Tc),"popup"=true,"backcolor"=[255,255,255],"legend"=true, 'legendpos'='bottom'});
+        json_multiline.PushBack(rapidjson::Value(as[i].utf8_str(), doc.GetAllocator()).Move(), doc.GetAllocator());
+    }
+    doc.AddMember(rapidjson::Value(name.c_str(), (unsigned int)name.size(), doc.GetAllocator()).Move(), json_multiline.Move(), doc.GetAllocator());
+}
+
+wxString Read_JSON_multiline_value(const rapidjson::Value& doc, wxString name)
+{
+    wxArrayString as;
+    auto& json_multiline = doc[(const char*)name.mb_str()];
+    for (rapidjson::SizeType i = 0; i < json_multiline.Size(); i++) {
+        as.push_back(wxString::FromUTF8(json_multiline[i].GetString()));
+    }
+
+    wxString str =  wxJoin(as,'\n');
+    return str;
+}
+
+void Write_JSON_value(rapidjson::Document& doc, wxString name, wxArrayString value)
+{
+    rapidjson::Value json_val;
+    wxString x = "";
+    if (value.Count() > 0)
+        x = wxJoin(value, '|');
+    json_val.SetString(x.utf8_str(), doc.GetAllocator());
+    doc.AddMember(rapidjson::Value(name.c_str(), (unsigned int)name.size(), doc.GetAllocator()).Move(), json_val.Move(), doc.GetAllocator());
+}
+
+
 wxString wxLimitTextColumns(const wxString &str, size_t numcols) {
     wxString buf;
     size_t len = (int) str.Len();
@@ -413,7 +471,7 @@ bool wxWebHttpDownload(const wxString &url, const wxString &local_file,
     wxInputStream *httpStream = get.GetInputStream(file);
     bool ok = false;
     if (get.GetError() == wxPROTO_NOERR) {
-        int ntotal = httpStream->GetSize();
+        int ntotal = (int)httpStream->GetSize();
 
         if (ntotal < 1) ntotal = -1000;
 
@@ -434,7 +492,7 @@ bool wxWebHttpDownload(const wxString &url, const wxString &local_file,
             while (!httpStream->Eof()) {
                 int nread;
                 httpStream->Read(rwbuf, NRWBUFBYTES);
-                nread = httpStream->LastRead();
+                nread = (int)httpStream->LastRead();
                 fout.Write(rwbuf, nread);
 
                 if (nread > 0) ndown += nread;
@@ -579,13 +637,13 @@ std::vector<int> wxCommaDashListToIndices(const wxString &value) {
         if (hpos < 0) {
             long num = 0;
             if (s.ToLong(&num))
-                list.push_back(num);
+                list.push_back((int)num);
         } else {
             long start = 0, end = 0;
             if (s.Mid(0, hpos).ToLong(&start)
                 && s.Mid(hpos + 1).ToLong(&end)
                 && end >= start) {
-                for (int j = start; j <= end; j++)
+                for (int j = (int)start; j <= end; j++)
                     list.push_back(j);
             }
         }
@@ -1353,7 +1411,7 @@ wxString wxGetMD5(const wxString &string) {
     char *buf = strdup((const char *) string.c_str());
 
     MD5Init(&ctx);
-    MD5Update(&ctx, (unsigned char *) buf, strlen(buf));
+    MD5Update(&ctx, (unsigned char *) buf, (unsigned int)strlen(buf));
     MD5End(&ctx, tmp);
 
     free(buf);
@@ -1375,7 +1433,7 @@ wxString wxGetFileMD5(wxInputStream &stream) {
         if (stream.Read(buffer, sizeof(buffer)).LastRead() <= 0)
             return wxEmptyString;
 
-        MD5Update(&ctx, buffer, stream.LastRead());
+        MD5Update(&ctx, buffer, (unsigned int)stream.LastRead());
     } while (!stream.Eof());
 
     MD5End(&ctx, tmp);
