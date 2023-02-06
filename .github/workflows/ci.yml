@@ -68,6 +68,26 @@ jobs:
       run: |
         echo "LKDIR=$GITHUB_WORKSPACE/lk" >>$GITHUB_ENV
         echo "LKD_LIB=$GITHUB_WORKSPACE/lk/build_linux" >>$GITHUB_ENV # iff CMAKE_BUILD_TYPE=Debug
+    - name: Set RAPIDJSONDIR
+      run: |
+        echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
+    - name: Get git ref of sibling dependency SSC
+      run: |
+        ref=$(git ls-remote --exit-code git://github.com/NREL/ssc.git refs/heads/develop | awk '{print $1}')
+        echo "ref_of_ssc=$ref" | tee --append $GITHUB_ENV
+    - name: Get cached build data of sibling dependency SSC
+      uses: actions/cache@v2
+      id: cachedssc
+      with:
+        path: ${{ env.GH_WORKSPACE }}/ssc
+        key: ${{ env.RUNS_ON }}-${{ env.ref_of_ssc }}-SSC
+    - name: Clone sibling dependency SSC
+      if: steps.cachedssc.outputs.cache-hit != 'true'
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ env.ref_of_ssc }}
+        path: ssc
+        repository: NREL/ssc
 
     - name: Checkout
       uses: actions/checkout@v2
@@ -150,6 +170,26 @@ jobs:
       run: |
         echo "LKDIR=$GITHUB_WORKSPACE/lk" >>$GITHUB_ENV
         echo "LKD_LIB=$GITHUB_WORKSPACE/lk/build_linux" >>$GITHUB_ENV # iff CMAKE_BUILD_TYPE=Debug
+    - name: Set RAPIDJSONDIR
+      run: |
+        echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
+    - name: Get git ref of sibling dependency SSC
+      run: |
+        ref=$(git ls-remote --exit-code git://github.com/NREL/ssc.git refs/heads/develop | awk '{print $1}')
+        echo "ref_of_ssc=$ref" | tee --append $GITHUB_ENV
+    - name: Get cached build data of sibling dependency SSC
+      uses: actions/cache@v2
+      id: cachedssc
+      with:
+        path: ${{ env.GH_WORKSPACE }}/ssc
+        key: ${{ env.RUNS_ON }}-${{ env.ref_of_ssc }}-SSC
+    - name: Clone sibling dependency SSC
+      if: steps.cachedssc.outputs.cache-hit != 'true'
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ env.ref_of_ssc }}
+        path: ssc
+        repository: NREL/ssc
 
     - name: Checkout
       uses: actions/checkout@v2
