@@ -227,7 +227,7 @@ void wxDiurnalPeriodCtrl::OnPaint(wxPaintEvent &) {
 
             int val = VALUE(r, c);
             if ((val >= 0 && val - 1 < (int) m_colours.size()) || sel) {
-                if (IsThisEnabled())
+                if (IsThisEnabled() && val < (int)m_colours.size())
                     dc.SetBrush(wxBrush(sel ? wxColour(0, 114, 198) : m_colours[val]));
                 else
                     dc.SetBrush(wxBrush(*wxLIGHT_GREY));
@@ -635,6 +635,18 @@ void wxDiurnalPeriodCtrl::SetupTOUGrid() {
     AddColour(wxColour(86, 172, 214));      // 10
     AddColour(wxColour(254, 235, 97));      // 11
     AddColour(wxColour(91, 83, 252));       // 12
+    AddColour(wxColour(19, 148, 49));      // 13
+    AddColour(wxColour(144, 175, 133));      // 14
+    AddColour(wxColour(19, 219, 112));     // 15
+    AddColour(wxColour(106, 57, 57));       // 16
+    AddColour(wxColour(4, 136, 81));       // 17
+    AddColour(wxColour(25, 136, 225));     // 18
+    AddColour(wxColour(55, 60, 157));      // 19
+    AddColour(wxColour(186, 172, 214));      // 20
+    AddColour(wxColour(54, 235, 97));      // 21
+    AddColour(wxColour(191, 83, 252));       // 22
+    AddColour(wxColour(54, 235, 97));      // 23
+    AddColour(wxColour(191, 83, 252));       // 24
 
     m_rowLabels.clear();
     AddRowLabel("Jan");
