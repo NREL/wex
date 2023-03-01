@@ -1409,6 +1409,7 @@ bool wxDVFileReader::IsDate(wxString stringToCheck) {
 // Conversion factors from Energy+.idd
 void wxDVFileReader::InitUnitConversions() {
     // NOTE: tuple format (SI unit string, IP unit string, SI to IP conversion factor)
+    // See SetupUnitConversions method in https://github.com/NREL/EnergyPlus/blob/develop/src/EnergyPlus/OutputReportTabular.cc
     m_unitConversions.emplace_back("$/(m3/s)", "$/(ft3/min)", 0.000472000059660808);
     m_unitConversions.emplace_back("$/(W/K)", "$/(Btu/h-F)", 0.52667614683731);
     m_unitConversions.emplace_back("$/kW", "$/(kBtuh/h)", 0.293083235638921);
@@ -1506,6 +1507,7 @@ void wxDVFileReader::InitUnitConversions() {
     m_unitConversions.emplace_back("W/m-K2", "Btu/h-F2-ft", 0.321418310071648);
     m_unitConversions.emplace_back("W/m-K3", "Btu/h-F3-ft", 0.178565727817582);
     m_unitConversions.emplace_back("W/person", "Btu/h-person", 3.4121412858518);
+    m_unitConversions.emplace_back("W/W", "Btuh/Btuh", 1);
     m_unitConversions.emplace_back("kPa", "inHg", 0.29523);
     m_unitConversions.emplace_back("m", "in", 39.3700787401575);
     m_unitConversions.emplace_back("m3/hr", "gal/hr", 264.172037284185);
@@ -1530,6 +1532,7 @@ void wxDVFileReader::InitUnitConversions() {
     m_unitConversions.emplace_back("ACH", "ACH", 1);
     m_unitConversions.emplace_back("hr", "hr", 1);
     m_unitConversions.emplace_back("kgWater/kgDryAir", "lbWater/lbDryAir", 2.20462247603796);
+    m_unitConversions.emplace_back("lum/W", "lum/W", 1);
 }
 
 bool wxDVFileReader::ConvertUnits(std::string &units, std::vector<double> &values, bool convertSIToIP) {
