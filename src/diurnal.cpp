@@ -227,7 +227,7 @@ void wxDiurnalPeriodCtrl::OnPaint(wxPaintEvent &) {
 
             int val = VALUE(r, c);
             if ((val >= 0 && val - 1 < (int) m_colours.size()) || sel) {
-                if (IsThisEnabled())
+                if (IsThisEnabled() && val < (int)m_colours.size())
                     dc.SetBrush(wxBrush(sel ? wxColour(0, 114, 198) : m_colours[val]));
                 else
                     dc.SetBrush(wxBrush(*wxLIGHT_GREY));
@@ -327,9 +327,6 @@ wxSize wxDiurnalPeriodCtrl::DoGetBestSize() const {
 int wxDiurnalPeriodCtrl::ScheduleCharToInt(char c) {
     int ret = 0;
     switch (c) {
-        case '0':
-            ret = 0;
-            break;
         case '1':
             ret = 1;
             break;
@@ -357,20 +354,113 @@ int wxDiurnalPeriodCtrl::ScheduleCharToInt(char c) {
         case '9':
             ret = 9;
             break;
+        case '0':
+            ret = 10;
+            break;
         case 'A':
         case 'a':
         case ':':
-            ret = 10;
+            ret = 11;
             break;
         case 'B':
         case 'b':
-        case '=':
-            ret = 11;
+            ret = 12;
             break;
         case 'C':
         case 'c':
-        case '<':
-            ret = 12;
+            ret = 13;
+            break;
+        case 'D':
+        case 'd':
+            ret = 14;
+            break;
+        case 'E':
+        case 'e':
+            ret = 15;
+            break;
+        case 'F':
+        case 'f':
+            ret = 16;
+            break;
+        case 'G':
+        case 'g':
+            ret = 17;
+            break;
+        case 'H':
+        case 'h':
+            ret = 18;
+            break;
+        case 'I':
+        case 'i':
+            ret = 19;
+            break;
+        case 'J':
+        case 'j':
+            ret = 20;
+            break;
+        case 'K':
+        case 'k':
+            ret = 21;
+            break;
+        case 'L':
+        case 'l':
+            ret = 22;
+            break;
+        case 'M':
+        case 'm':
+            ret = 23;
+            break;
+        case 'N':
+        case 'n':
+            ret = 24;
+            break;
+        case 'O':
+        case 'o':
+            ret = 25;
+            break;
+        case 'P':
+        case 'p':
+            ret = 26;
+            break;
+        case 'Q':
+        case 'q':
+            ret = 27;
+            break;
+        case 'R':
+        case 'r':
+            ret = 28;
+            break;
+        case 'S':
+        case 's':
+            ret = 29;
+            break;
+        case 'T':
+        case 't':
+            ret = 30;
+            break;
+        case 'U':
+        case 'u':
+            ret = 31;
+            break;
+        case 'V':
+        case 'v':
+            ret = 32;
+            break;
+        case 'W':
+        case 'w':
+            ret = 33;
+            break;
+        case 'X':
+        case 'x':
+            ret = 34;
+            break;
+        case 'Y':
+        case 'y':
+            ret = 35;
+            break;
+        case 'Z':
+        case 'z':
+            ret = 36;
             break;
     }
     return ret;
@@ -379,9 +469,6 @@ int wxDiurnalPeriodCtrl::ScheduleCharToInt(char c) {
 char wxDiurnalPeriodCtrl::ScheduleIntToChar(int d) {
     char ret = '0';
     switch (d) {
-        case 0:
-            ret = '0';
-            break;
         case 1:
             ret = '1';
             break;
@@ -410,13 +497,85 @@ char wxDiurnalPeriodCtrl::ScheduleIntToChar(int d) {
             ret = '9';
             break;
         case 10:
-            ret = 'A';
+            ret = '0';
             break;
         case 11:
-            ret = 'B';
+            ret = 'A';
             break;
         case 12:
+            ret = 'B';
+            break;
+        case 13:
             ret = 'C';
+            break;
+        case 14:
+            ret = 'D';
+            break;
+        case 15:
+            ret = 'E';
+            break;
+        case 16:
+            ret = 'F';
+            break;
+        case 17:
+            ret = 'G';
+            break;
+        case 18:
+            ret = 'H';
+            break;
+        case 19:
+            ret = 'I';
+            break;
+        case 20:
+            ret = 'J';
+            break;
+        case 21:
+            ret = 'K';
+            break;
+        case 22:
+            ret = 'L';
+            break;
+        case 23:
+            ret = 'M';
+            break;
+        case 24:
+            ret = 'N';
+            break;
+        case 25:
+            ret = 'O';
+            break;
+        case 26:
+            ret = 'P';
+            break;
+        case 27:
+            ret = 'Q';
+            break;
+        case 28:
+            ret = 'R';
+            break;
+        case 29:
+            ret = 'S';
+            break;
+        case 30:
+            ret = 'T';
+            break;
+        case 31:
+            ret = 'U';
+            break;
+        case 32:
+            ret = 'V';
+            break;
+        case 33:
+            ret = 'W';
+            break;
+        case 34:
+            ret = 'X';
+            break;
+        case 35:
+            ret = 'Y';
+            break;
+        case 36:
+            ret = 'Z';
             break;
     }
     return ret;
@@ -635,6 +794,30 @@ void wxDiurnalPeriodCtrl::SetupTOUGrid() {
     AddColour(wxColour(86, 172, 214));      // 10
     AddColour(wxColour(254, 235, 97));      // 11
     AddColour(wxColour(91, 83, 252));       // 12
+    AddColour(wxColour(19, 148, 49));      // 13
+    AddColour(wxColour(144, 175, 133));      // 14
+    AddColour(wxColour(19, 219, 112));     // 15
+    AddColour(wxColour(106, 57, 57));       // 16
+    AddColour(wxColour(4, 136, 81));       // 17
+    AddColour(wxColour(25, 136, 225));     // 18
+    AddColour(wxColour(55, 60, 157));      // 19
+    AddColour(wxColour(186, 172, 214));      // 20
+    AddColour(wxColour(54, 235, 97));      // 21
+    AddColour(wxColour(191, 83, 252));       // 22
+    AddColour(wxColour(54, 235, 97));      // 23
+    AddColour(wxColour(191, 83, 252));       // 24
+    AddColour(wxColour(19, 19, 112));     // 25
+    AddColour(wxColour(106, 157, 57));       // 26
+    AddColour(wxColour(4, 16, 81));       // 27
+    AddColour(wxColour(25, 136, 225));     // 28
+    AddColour(wxColour(55, 160, 157));      // 29
+    AddColour(wxColour(186, 72, 214));      // 30
+    AddColour(wxColour(54, 235, 97));      // 31
+    AddColour(wxColour(191, 3, 252));       // 32
+    AddColour(wxColour(54, 35, 97));      // 23
+    AddColour(wxColour(191, 183, 252));       // 34
+    AddColour(wxColour(191, 13, 252));       // 35
+    AddColour(wxColour(191, 13, 52));       // 36
 
     m_rowLabels.clear();
     AddRowLabel("Jan");
