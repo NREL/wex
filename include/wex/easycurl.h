@@ -105,7 +105,7 @@ public:
 
     static void Shutdown();
 
-    static void SetApiKeys(const wxString &google_key, const wxString &bing_key, const wxString &developer);
+    //static void SetApiKeys(const wxString &google_key, const wxString &bing_key, const wxString &developer);
 
     static void SetUrlEscape(const wxString &key, const wxString &value);
 
@@ -114,21 +114,6 @@ public:
     static wxString GetProxyForURL(const wxString &url);
 
     static wxArrayString GetProxyAutodetectMessages();
-
-    // geocoding function using google APIs.
-    // call is synchronous.  Optionally determine time
-    // zone from lat/lon using second service call
-    static bool GeoCodeGoogle(const wxString &address,
-                              double *lat, double *lon, double *tz = 0, bool showprogress = true);
-
-    static bool GeoCodeDeveloper(const wxString &address,
-                                 double *lat, double *lon, double *tz = 0, bool showprogress = true);
-
-    enum MapProvider {
-        GOOGLE_MAPS, BING_MAPS
-    };
-
-    static wxBitmap StaticMap(double lat, double lon, int zoom, MapProvider service = BING_MAPS);
 
     wxEasyCurl(wxEvtHandler *handler = 0, int id = wxID_ANY);
 
