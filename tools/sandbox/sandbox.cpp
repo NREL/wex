@@ -91,15 +91,6 @@ public:
 #include "wex/uiform.h"
 #include "wex/snaplay.h"
 
-/*
-void TestGeoCode(wxString address)
-{
-//	wxEasyCurl curl;
-	double lat, lon, tz = 0;
-	wxEasyCurl::GeoCodeDeveloper(address, &lat, &lon, &tz);
-	wxMessageBox(wxString::Format("address %s : lat %g, lon %g", (const char*)address.c_str(), lat, lon));
-}
-*/
 void TestDVSelectionCtrl() {
     wxFrame *frame = new wxFrame(0, wxID_ANY, wxT("wxDVSelectionCtrl in \x01dc\x03AE\x03AA\x00C7\x00D6\x018C\x01dd"),
                                  wxDefaultPosition, wxSize(250, 510));
