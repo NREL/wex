@@ -139,7 +139,7 @@ private:
         wxColour color;
         wxString label;
         wxString group;
-        wxString hybrid_bin;
+        wxString hybrid_bin = "";
         bool value[NMAXCOLS];
         bool enable[NMAXCOLS];
         wxRect geom[NMAXCOLS]; // filled in by renderer
