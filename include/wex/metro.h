@@ -429,7 +429,7 @@ class wxMetroDataViewTreeCtrl : public wxDataViewTreeCtrl {
 public:
     wxMetroDataViewTreeCtrl(wxWindow *parent, int id,
                             const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize)
-            : wxDataViewTreeCtrl(parent, id, pos, size, wxDV_NO_HEADER) {
+            : wxDataViewTreeCtrl(parent, id, pos, size, wxDV_NO_HEADER|wxDV_VARIABLE_LINE_HEIGHT) {
         SetBackgroundStyle(wxBG_STYLE_CUSTOM);
         SetBackgroundColour(*wxWHITE);
         SetFont(wxMetroTheme::Font(wxMT_LIGHT, 15));
