@@ -63,8 +63,8 @@ jobs:
         cmake --build build_linux -- -j
     - name: Set LKDIR and LKD_LIB envs
       run: |
+        echo "LKD_LIB=$GITHUB_WORKSPACE/lk/build_linux" >>$GITHUB_ENV
         echo "LKDIR=$GITHUB_WORKSPACE/lk" >>$GITHUB_ENV
-        echo "LKD_LIB=$GITHUB_WORKSPACE/lk/build_linux" >>$GITHUB_ENV # iff CMAKE_BUILD_TYPE=Debug
     - name: Set RAPIDJSONDIR
       run: |
         echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
