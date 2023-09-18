@@ -138,6 +138,23 @@ int wxDVSelectionListCtrl::AppendNoUpdate(const wxString &name, const wxString &
     return m_itemList.size() - 1;
 }
 
+int wxDVSelectionListCtrl::AppendNoUpdate(const wxString& name, const wxString& group, const wxString& hybrid_bin) {
+    row_item* x = new row_item;
+    x->label = name;
+    x->group = group;
+    x->hybrid_bin = hybrid_bin;
+    for (int i = 0; i < NMAXCOLS; i++) {
+        x->value[i] = false;
+        x->enable[i] = true;
+    }
+    x->shown = true;
+
+    m_itemList.push_back(x);
+    x->row_index = m_itemList.size() - 1;
+
+    return m_itemList.size() - 1;
+}
+
 int wxDVSelectionListCtrl::Append(const wxString &name, const wxString &group) {
     int idx = AppendNoUpdate(name, group);
 

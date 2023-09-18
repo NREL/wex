@@ -69,6 +69,7 @@ public:
 
     int Append(const wxString &name, const wxString &group = wxEmptyString); // returns row index
     int AppendNoUpdate(const wxString &name, const wxString &group);
+    int AppendNoUpdate(const wxString& name, const wxString& group, const wxString& hybrid_bin);
 
     void
     Append(const wxArrayString &names, const wxString &group = wxEmptyString);  // add a whole list with the same group
@@ -138,6 +139,7 @@ private:
         wxColour color;
         wxString label;
         wxString group;
+        wxString hybrid_bin = "";
         bool value[NMAXCOLS];
         bool enable[NMAXCOLS];
         wxRect geom[NMAXCOLS]; // filled in by renderer
