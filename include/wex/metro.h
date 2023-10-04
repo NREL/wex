@@ -425,16 +425,143 @@ private:
 DECLARE_EVENT_TABLE();
 };
 
-class wxMetroDataViewTreeCtrl : public wxDataViewTreeCtrl {
+
+class wxMetroDataViewModelNode;
+WX_DEFINE_ARRAY_PTR(wxMetroDataViewModelNode*, wxMetroDataViewModelNodePtrArray);
+
+class wxMetroDataViewModelNode
+{
 public:
-    wxMetroDataViewTreeCtrl(wxWindow *parent, int id,
-                            const wxPoint &pos = wxDefaultPosition, const wxSize &size = wxDefaultSize)
-            : wxDataViewTreeCtrl(parent, id, pos, size, wxDV_NO_HEADER) {
+    wxMetroDataViewModelNode(wxMetroDataViewModelNode* parent,
+        const wxString& name, const bool& is_container)
+    {
+        m_parent = parent;
+        m_name = name;
+        m_container = is_container;
+    }
+
+    
+    ~wxMetroDataViewModelNode()
+    {
+        // free all our children nodes
+        size_t count = m_children.GetCount();
+        for (size_t i = 0; i < count; i++)
+        {
+            wxMetroDataViewModelNode* child = m_children[i];
+            delete child;
+        }
+    }
+
+    bool IsContainer() const
+    {
+        return m_container;
+    }
+
+    wxMetroDataViewModelNode* GetParent()
+    {
+        return m_parent;
+    }
+    wxMetroDataViewModelNodePtrArray& GetChildren()
+    {
+        return m_children;
+    }
+    wxMetroDataViewModelNode* GetNthChild(unsigned int n)
+    {
+        return m_children.Item(n);
+    }
+    void Insert(wxMetroDataViewModelNode* child, unsigned int n)
+    {
+        m_children.Insert(child, n);
+    }
+    void Append(wxMetroDataViewModelNode* child)
+    {
+        m_children.Add(child);
+    }
+    unsigned int GetChildCount() const
+    {
+        return m_children.GetCount();
+    }
+
+public:     // public to avoid getters/setters
+    wxString  m_name;
+
+    bool m_container;
+
+private:
+    wxMetroDataViewModelNode* m_parent;
+    wxMetroDataViewModelNodePtrArray   m_children;
+};
+
+
+class wxMetroDataViewModel : public wxDataViewModel {
+public:
+    wxMetroDataViewModel();
+    ~wxMetroDataViewModel()
+    {
+        delete m_root;
+    }
+
+     // override sorting to always sort branches ascendingly
+
+    int Compare(const wxDataViewItem& item1, const wxDataViewItem& item2,
+        unsigned int column, bool ascending) const wxOVERRIDE;
+
+    // implementation of base class virtuals to define model
+
+    virtual void GetValue(wxVariant& variant,
+        const wxDataViewItem& item, unsigned int col) const wxOVERRIDE;
+    virtual bool SetValue(const wxVariant& variant,
+        const wxDataViewItem& item, unsigned int col) wxOVERRIDE;
+
+    virtual bool IsEnabled(const wxDataViewItem& item,
+        unsigned int col) const wxOVERRIDE;
+
+    virtual wxDataViewItem GetParent(const wxDataViewItem& item) const wxOVERRIDE;
+    virtual bool IsContainer(const wxDataViewItem& item) const wxOVERRIDE;
+    virtual unsigned int GetChildren(const wxDataViewItem& parent,
+        wxDataViewItemArray& array) const wxOVERRIDE;
+
+    wxString GetItemtext(const wxDataViewItem& item) const
+    {
+        wxMetroDataViewModelNode* node = (wxMetroDataViewModelNode*)item.GetID();
+        if (!node)      // happens if item.IsOk()==false
+            return wxEmptyString;
+
+        return node->m_name;
+    }
+
+
+private:
+    wxMetroDataViewModelNode* m_root;
+ 
+};
+
+class wxMetroDataViewCtrl : public wxDataViewCtrl {
+public:
+    wxMetroDataViewCtrl(wxWindow* parent, int id,
+        const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize)
+        : wxDataViewCtrl(parent, id, pos, size, wxDV_NO_HEADER) {
         SetBackgroundStyle(wxBG_STYLE_CUSTOM);
         SetBackgroundColour(*wxWHITE);
         SetFont(wxMetroTheme::Font(wxMT_LIGHT, 15));
+
+        m_model = new wxMetroDataViewModel;
+        AssociateModel(m_model);
+
+        wxDataViewTextRenderer* tr =
+            new wxDataViewTextRenderer("string", wxDATAVIEW_CELL_INERT);
+        wxDataViewColumn* column0 =
+            new wxDataViewColumn("title", tr, 0, FromDIP(200), wxALIGN_LEFT,
+                wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_RESIZABLE);
+        AppendColumn(column0);
     }
+    bool IsContainer(const wxDataViewItem& item) { return m_model->IsContainer(item); }
+    wxString GetItemText(const wxDataViewItem& item) { return m_model->m_name; }
+private:
+    wxMetroDataViewModel* m_model;
 };
+
+
 
 
 class wxMetroPopupMenu {
