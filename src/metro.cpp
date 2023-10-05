@@ -1723,3 +1723,174 @@ void wxMetroPopupMenu::Popup(wxWindow *parent, const wxPoint &pos, int origin) {
         menu->Append(m_items[i].id, m_items[i].label, m_items[i].is_checkItem, m_items[i].checked);
     menu->Popup(pos, origin);
 }
+
+
+wxString wxMetroDataViewModel::GetItemtext(const wxDataViewItem& item) const
+{
+    wxMetroDataViewModelNode* node = (wxMetroDataViewModelNode*)item.GetID();
+    if (!node)      // happens if item.IsOk()==false
+        return wxEmptyString;
+
+    return node->m_name;
+}
+
+void wxMetroDataViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, unsigned int col) const
+{
+//    if (item) {
+        wxMetroDataViewModelNode* node = (wxMetroDataViewModelNode*)item.GetID();
+        switch (col)
+        {
+        case 0:
+            if (node)
+                variant = node->m_name;
+            else
+                variant = wxEmptyString;
+            break;
+        default:
+            wxLogError("wxMetroDataViewModel::GetValue: wrong column %d", col);
+        }
+  //  }
+ //   else
+ //       variant = wxEmptyString;
+}
+
+bool wxMetroDataViewModel::SetValue(const wxVariant& variant, const wxDataViewItem& item, unsigned int col)
+{
+//    wxASSERT(item.IsOk());
+    if (!item) {
+        return false;
+    }
+    else {
+        wxMetroDataViewModelNode* node = (wxMetroDataViewModelNode*)item.GetID();
+        switch (col)
+        {
+        case 0:
+            node->m_name = variant.GetString();
+            return true;
+        default:
+            wxLogError("wxMetroDataViewModel::SetValue: wrong column");
+        }
+        return false;
+    }
+}
+
+bool wxMetroDataViewModel::IsEnabled(const wxDataViewItem& item,
+    unsigned int col) const
+{
+ //   wxASSERT(item.IsOk());
+    // do not allow editing
+    return true;
+}
+
+wxDataViewItem wxMetroDataViewModel::GetParent(const wxDataViewItem& item) const
+{
+    // the invisible root node has no parent
+    if (!item.IsOk())
+        return wxDataViewItem(0);
+
+    wxMetroDataViewModelNode* node = (wxMetroDataViewModelNode*)item.GetID();
+
+    return wxDataViewItem((void*)node->GetParent());
+}
+
+bool wxMetroDataViewModel::IsContainer(const wxDataViewItem& item) const
+{
+    // the invisible root node can have children
+    if (!item.IsOk())
+        return true;
+
+    wxMetroDataViewModelNode* node = (wxMetroDataViewModelNode*)item.GetID();
+    return node->IsContainer();
+}
+
+unsigned int wxMetroDataViewModel::GetChildren(const wxDataViewItem& parent,
+    wxDataViewItemArray& array) const
+{
+    wxMetroDataViewModelNode* node = (wxMetroDataViewModelNode*)parent.GetID();
+    if (!node)    {
+        array.Add(wxDataViewItem(0));
+        return 1;
+    }
+
+    if (node->GetChildCount() == 0)    {
+        return 0;
+    }
+
+    unsigned int count = node->GetChildren().GetCount();
+    for (unsigned int pos = 0; pos < count; pos++)   {
+        wxMetroDataViewModelNode* child = node->GetChildren().Item(pos);
+        array.Add(wxDataViewItem((void*)child));
+    }
+
+    return count;
+}
+
+void wxMetroDataViewModel::DeleteAllItems()
+{
+/*
+//    wxMetroDataViewModelNode* root = (wxMetroDataViewModelNode*)wxDataViewItem(0).GetID();
+//    if (root) {
+        while (!m_root->GetChildren().IsEmpty())
+        {
+            wxMetroDataViewModelNode* node = m_root->GetNthChild(0);
+            m_root->GetChildren().Remove(node);
+            delete node;
+        }
+//    }
+    Cleared();
+    */
+}
+
+wxMetroDataViewModel::wxMetroDataViewModel()
+{
+    m_root = new wxMetroDataViewModelNode(NULL, wxEmptyString, true);
+}
+
+int wxMetroDataViewModel::Compare(const wxDataViewItem& item1, const wxDataViewItem& item2,
+    unsigned int column, bool ascending) const
+{
+    wxASSERT(item1.IsOk() && item2.IsOk());
+    // should never happen
+
+    if (IsContainer(item1) && IsContainer(item2))
+    {
+        wxVariant value1, value2;
+        GetValue(value1, item1, 0);
+        GetValue(value2, item2, 0);
+
+        wxString str1 = value1.GetString();
+        wxString str2 = value2.GetString();
+        int res = str1.Cmp(str2);
+        if (res) return res;
+
+        // items must be different
+        wxUIntPtr litem1 = (wxUIntPtr)item1.GetID();
+        wxUIntPtr litem2 = (wxUIntPtr)item2.GetID();
+
+        return litem1 - litem2;
+    }
+
+    return wxDataViewModel::Compare(item1, item2, column, ascending);
+}
+
+
+wxDataViewItem wxMetroDataViewModel::AppendItem(const wxDataViewItem& parent, const wxString& text)
+{
+    wxMetroDataViewModelNode* nodeparent = (wxMetroDataViewModelNode*)parent.GetID();
+    if (!nodeparent) nodeparent = m_root;
+
+    wxMetroDataViewModelNode* node = new wxMetroDataViewModelNode(nodeparent, text, false);
+    nodeparent->GetChildren().push_back(node);
+
+    return wxDataViewItem((void*)node);
+}
+
+wxDataViewItem wxMetroDataViewModel::AppendContainer(const wxDataViewItem& parent, const wxString& text)
+{
+    wxMetroDataViewModelNode* nodeparent = (wxMetroDataViewModelNode*)parent.GetID();
+    if (!nodeparent) nodeparent =m_root;
+    wxMetroDataViewModelNode* node = new wxMetroDataViewModelNode(nodeparent, text, true);
+    nodeparent->GetChildren().push_back(node);
+    return wxDataViewItem((void*)node->GetParent());
+}
+

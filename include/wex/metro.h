@@ -445,8 +445,7 @@ public:
     {
         // free all our children nodes
         size_t count = m_children.GetCount();
-        for (size_t i = 0; i < count; i++)
-        {
+        for (size_t i = 0; i < count; i++) {
             wxMetroDataViewModelNode* child = m_children[i];
             delete child;
         }
@@ -498,7 +497,7 @@ public:
     wxMetroDataViewModel();
     ~wxMetroDataViewModel()
     {
-        delete m_root;
+        DeleteAllItems();
     }
 
      // override sorting to always sort branches ascendingly
@@ -521,15 +520,13 @@ public:
     virtual unsigned int GetChildren(const wxDataViewItem& parent,
         wxDataViewItemArray& array) const wxOVERRIDE;
 
-    wxString GetItemtext(const wxDataViewItem& item) const
-    {
-        wxMetroDataViewModelNode* node = (wxMetroDataViewModelNode*)item.GetID();
-        if (!node)      // happens if item.IsOk()==false
-            return wxEmptyString;
+    wxString GetItemtext(const wxDataViewItem& item) const;
 
-        return node->m_name;
-    }
+    void DeleteAllItems();
 
+    wxDataViewItem AppendItem(const wxDataViewItem& parent, const wxString& text);
+
+    wxDataViewItem AppendContainer(const wxDataViewItem& parent, const wxString& text);
 
 private:
     wxMetroDataViewModelNode* m_root;
@@ -540,25 +537,30 @@ class wxMetroDataViewCtrl : public wxDataViewCtrl {
 public:
     wxMetroDataViewCtrl(wxWindow* parent, int id,
         const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize)
-        : wxDataViewCtrl(parent, id, pos, size, wxDV_NO_HEADER) {
+        : wxDataViewCtrl(parent, id, pos, size) {
         SetBackgroundStyle(wxBG_STYLE_CUSTOM);
         SetBackgroundColour(*wxWHITE);
         SetFont(wxMetroTheme::Font(wxMT_LIGHT, 15));
 
         m_model = new wxMetroDataViewModel;
-        AssociateModel(m_model);
+        AssociateModel(m_model.get());
 
-        wxDataViewTextRenderer* tr =
-            new wxDataViewTextRenderer("string", wxDATAVIEW_CELL_INERT);
-        wxDataViewColumn* column0 =
-            new wxDataViewColumn("title", tr, 0, FromDIP(200), wxALIGN_LEFT,
-                wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_RESIZABLE);
+        wxDataViewTextRenderer* tr = new wxDataViewTextRenderer("string", wxDATAVIEW_CELL_INERT);
+        wxDataViewColumn* column0 = new wxDataViewColumn("title", tr, 0, FromDIP(200), wxALIGN_LEFT,  wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_RESIZABLE);
         AppendColumn(column0);
     }
+
     bool IsContainer(const wxDataViewItem& item) { return m_model->IsContainer(item); }
-    wxString GetItemText(const wxDataViewItem& item) { return m_model->m_name; }
+    wxString GetItemText(const wxDataViewItem& item) { return m_model->GetItemtext(item); }
+
+    void DeleteAllItems() { m_model->DeleteAllItems(); }
+
+    wxDataViewItem AppendItem(const wxDataViewItem& parent, const wxString& text) { return m_model->AppendItem(parent, text); }
+
+    wxDataViewItem AppendContainer(const wxDataViewItem& parent, const wxString& text) { return m_model->AppendContainer(parent, text); }
+
 private:
-    wxMetroDataViewModel* m_model;
+    wxObjectDataPtr<wxMetroDataViewModel> m_model;
 };
 
 
