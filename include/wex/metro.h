@@ -425,142 +425,249 @@ private:
 DECLARE_EVENT_TABLE();
 };
 
-
-class wxMetroDataViewModelNode;
-WX_DEFINE_ARRAY_PTR(wxMetroDataViewModelNode*, wxMetroDataViewModelNodePtrArray);
-
-class wxMetroDataViewModelNode
+//--------------------------------------------------------------------
+class wxMetroDataViewTreeStoreNode
 {
 public:
-    wxMetroDataViewModelNode(wxMetroDataViewModelNode* parent,
-        const wxString& name, const bool& is_container)
+    wxMetroDataViewTreeStoreNode(wxMetroDataViewTreeStoreNode* parent,
+        const wxString& text,
+        wxClientData* data = NULL);
+    virtual ~wxMetroDataViewTreeStoreNode();
+
+    void SetText(const wxString& text)
     {
-        m_parent = parent;
-        m_name = name;
-        m_container = is_container;
+        m_text = text;
+    }
+    wxString GetText() const
+    {
+        return m_text;
+    }
+    void SetData(wxClientData* data)
+    {
+        delete m_data; m_data = data;
+    }
+    wxClientData* GetData() const
+    {
+        return m_data;
     }
 
-    
-    ~wxMetroDataViewModelNode()
+    wxDataViewItem GetItem() const
     {
-        // free all our children nodes
-        size_t count = m_children.GetCount();
-        for (size_t i = 0; i < count; i++) {
-            wxMetroDataViewModelNode* child = m_children[i];
-            delete child;
-        }
+        return wxDataViewItem(const_cast<void*>(static_cast<const void*>(this)));
     }
 
-    bool IsContainer() const
+    virtual bool IsContainer()
     {
-        return m_container;
+        return false;
     }
 
-    wxMetroDataViewModelNode* GetParent()
+    wxMetroDataViewTreeStoreNode* GetParent()
     {
         return m_parent;
     }
-    wxMetroDataViewModelNodePtrArray& GetChildren()
+
+private:
+    wxMetroDataViewTreeStoreNode* m_parent;
+    wxString                  m_text;
+    wxClientData* m_data;
+};
+
+typedef wxVector<wxMetroDataViewTreeStoreNode*> wxMetroDataViewTreeStoreNodes;
+
+class wxMetroDataViewTreeStoreContainerNode : public wxMetroDataViewTreeStoreNode
+{
+public:
+    wxMetroDataViewTreeStoreContainerNode(wxMetroDataViewTreeStoreNode* parent,
+        const wxString& text,
+        wxClientData* data = NULL);
+    virtual ~wxMetroDataViewTreeStoreContainerNode();
+
+    const wxMetroDataViewTreeStoreNodes& GetChildren() const
     {
         return m_children;
     }
-    wxMetroDataViewModelNode* GetNthChild(unsigned int n)
+    wxMetroDataViewTreeStoreNodes& GetChildren()
     {
-        return m_children.Item(n);
-    }
-    void Insert(wxMetroDataViewModelNode* child, unsigned int n)
-    {
-        m_children.Insert(child, n);
-    }
-    void Append(wxMetroDataViewModelNode* child)
-    {
-        m_children.Add(child);
-    }
-    unsigned int GetChildCount() const
-    {
-        return m_children.GetCount();
+        return m_children;
     }
 
-public:     // public to avoid getters/setters
-    wxString  m_name;
+    wxMetroDataViewTreeStoreNodes::iterator FindChild(wxMetroDataViewTreeStoreNode* node);
 
-    bool m_container;
+    void SetExpanded(bool expanded = true)
+    {
+        m_isExpanded = expanded;
+    }
+    bool IsExpanded() const
+    {
+        return m_isExpanded;
+    }
+
+    virtual bool IsContainer() wxOVERRIDE
+    {
+        return true;
+    }
+
+    void DestroyChildren();
 
 private:
-    wxMetroDataViewModelNode* m_parent;
-    wxMetroDataViewModelNodePtrArray   m_children;
+    wxMetroDataViewTreeStoreNodes     m_children;
+    bool                         m_isExpanded;
 };
 
+//-----------------------------------------------------------------------------
 
-class wxMetroDataViewModel : public wxDataViewModel {
+class wxMetroDataViewTreeStore : public wxDataViewModel
+{
 public:
-    wxMetroDataViewModel();
-    ~wxMetroDataViewModel()
-    {
-        DeleteAllItems();
-    }
+    wxMetroDataViewTreeStore();
+    ~wxMetroDataViewTreeStore();
 
-     // override sorting to always sort branches ascendingly
+    wxDataViewItem AppendItem(const wxDataViewItem& parent,
+        const wxString& text,
+        wxClientData* data = NULL);
+    wxDataViewItem PrependItem(const wxDataViewItem& parent,
+        const wxString& text,
+        wxClientData* data = NULL);
+    wxDataViewItem InsertItem(const wxDataViewItem& parent, const wxDataViewItem& previous,
+        const wxString& text,
+        wxClientData* data = NULL);
 
-    int Compare(const wxDataViewItem& item1, const wxDataViewItem& item2,
-        unsigned int column, bool ascending) const wxOVERRIDE;
+    wxDataViewItem PrependContainer(const wxDataViewItem& parent,
+        const wxString& text,
+        wxClientData* data = NULL);
+    wxDataViewItem AppendContainer(const wxDataViewItem& parent,
+        const wxString& text,
+        wxClientData* data = NULL);
+    wxDataViewItem InsertContainer(const wxDataViewItem& parent, const wxDataViewItem& previous,
+        const wxString& text,
+        wxClientData* data = NULL);
 
-    // implementation of base class virtuals to define model
+    wxDataViewItem GetNthChild(const wxDataViewItem& parent, unsigned int pos) const;
+    int GetChildCount(const wxDataViewItem& parent) const;
+
+    void SetItemText(const wxDataViewItem& item, const wxString& text);
+    wxString GetItemText(const wxDataViewItem& item) const;
+    void SetItemData(const wxDataViewItem& item, wxClientData* data);
+    wxClientData* GetItemData(const wxDataViewItem& item) const;
+
+    void DeleteItem(const wxDataViewItem& item);
+    void DeleteChildren(const wxDataViewItem& item);
+    void DeleteAllItems();
+
+    // implement base methods
 
     virtual void GetValue(wxVariant& variant,
         const wxDataViewItem& item, unsigned int col) const wxOVERRIDE;
     virtual bool SetValue(const wxVariant& variant,
         const wxDataViewItem& item, unsigned int col) wxOVERRIDE;
-
-    virtual bool IsEnabled(const wxDataViewItem& item,
-        unsigned int col) const wxOVERRIDE;
-
     virtual wxDataViewItem GetParent(const wxDataViewItem& item) const wxOVERRIDE;
     virtual bool IsContainer(const wxDataViewItem& item) const wxOVERRIDE;
-    virtual unsigned int GetChildren(const wxDataViewItem& parent,
-        wxDataViewItemArray& array) const wxOVERRIDE;
+    virtual unsigned int GetChildren(const wxDataViewItem& item, wxDataViewItemArray& children) const wxOVERRIDE;
 
-    wxString GetItemtext(const wxDataViewItem& item) const;
+    virtual int Compare(const wxDataViewItem& item1, const wxDataViewItem& item2,
+        unsigned int column, bool ascending) const wxOVERRIDE;
 
-    void DeleteAllItems();
-
-    wxDataViewItem AppendItem(const wxDataViewItem& parent, const wxString& text);
-
-    wxDataViewItem AppendContainer(const wxDataViewItem& parent, const wxString& text);
-
-private:
-    wxMetroDataViewModelNode* m_root;
- 
-};
-
-class wxMetroDataViewCtrl : public wxDataViewCtrl {
-public:
-    wxMetroDataViewCtrl(wxWindow* parent, int id,
-        const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize)
-        : wxDataViewCtrl(parent, id, pos, size) {
-        SetBackgroundStyle(wxBG_STYLE_CUSTOM);
-        SetBackgroundColour(*wxWHITE);
-        SetFont(wxMetroTheme::Font(wxMT_LIGHT, 15));
-
-        m_model = new wxMetroDataViewModel;
-        AssociateModel(m_model.get());
-
-        wxDataViewTextRenderer* tr = new wxDataViewTextRenderer("string", wxDATAVIEW_CELL_INERT);
-        wxDataViewColumn* column0 = new wxDataViewColumn("title", tr, 0, FromDIP(200), wxALIGN_LEFT,  wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_RESIZABLE);
-        AppendColumn(column0);
+    virtual bool HasDefaultCompare() const wxOVERRIDE
+    {
+        return true;
     }
 
-    bool IsContainer(const wxDataViewItem& item) { return m_model->IsContainer(item); }
-    wxString GetItemText(const wxDataViewItem& item) { return m_model->GetItemtext(item); }
+    wxMetroDataViewTreeStoreNode* FindNode(const wxDataViewItem& item) const;
+    wxMetroDataViewTreeStoreContainerNode* FindContainerNode(const wxDataViewItem& item) const;
+    wxMetroDataViewTreeStoreNode* GetRoot() const { return m_root; }
 
-    void DeleteAllItems() { m_model->DeleteAllItems(); }
+public:
+    wxMetroDataViewTreeStoreNode* m_root;
+};
 
-    wxDataViewItem AppendItem(const wxDataViewItem& parent, const wxString& text) { return m_model->AppendItem(parent, text); }
 
-    wxDataViewItem AppendContainer(const wxDataViewItem& parent, const wxString& text) { return m_model->AppendContainer(parent, text); }
+class wxMetroDataViewTreeCtrl : public wxDataViewCtrl
+{
+public:
+    wxMetroDataViewTreeCtrl() { }
+    wxMetroDataViewTreeCtrl(wxWindow* parent,
+        wxWindowID id,
+        const wxPoint& pos = wxDefaultPosition,
+        const wxSize& size = wxDefaultSize,
+        long style = wxDV_NO_HEADER,
+        const wxValidator& validator = wxDefaultValidator)
+    {
+        Create(parent, id, pos, size, style, validator);
+    }
+
+    bool Create(wxWindow* parent,
+        wxWindowID id,
+        const wxPoint& pos = wxDefaultPosition,
+        const wxSize& size = wxDefaultSize,
+        long style = wxDV_NO_HEADER,
+        const wxValidator& validator = wxDefaultValidator);
+
+    wxMetroDataViewTreeStore* GetStore()
+    {
+        return (wxMetroDataViewTreeStore*)GetModel();
+    }
+    const wxMetroDataViewTreeStore* GetStore() const
+    {
+        return (const wxMetroDataViewTreeStore*)GetModel();
+    }
+
+    bool IsContainer(const wxDataViewItem& item) const
+    {
+        return GetStore()->IsContainer(item);
+    }
+
+    wxDataViewItem AppendItem(const wxDataViewItem& parent,
+        const wxString& text, wxClientData* data = NULL);
+    wxDataViewItem PrependItem(const wxDataViewItem& parent,
+        const wxString& text, wxClientData* data = NULL);
+    wxDataViewItem InsertItem(const wxDataViewItem& parent, const wxDataViewItem& previous,
+        const wxString& text, wxClientData* data = NULL);
+
+    wxDataViewItem PrependContainer(const wxDataViewItem& parent,
+        const wxString& text,  wxClientData* data = NULL);
+    wxDataViewItem AppendContainer(const wxDataViewItem& parent,
+        const wxString& text,  wxClientData* data = NULL);
+    wxDataViewItem InsertContainer(const wxDataViewItem& parent, const wxDataViewItem& previous,
+        const wxString& text, wxClientData* data = NULL);
+
+    wxDataViewItem GetNthChild(const wxDataViewItem& parent, unsigned int pos) const
+    {
+        return GetStore()->GetNthChild(parent, pos);
+    }
+    int GetChildCount(const wxDataViewItem& parent) const
+    {
+        return GetStore()->GetChildCount(parent);
+    }
+    wxDataViewItem GetItemParent(wxDataViewItem item) const
+    {
+        return GetStore()->GetParent(item);
+    }
+
+    void SetItemText(const wxDataViewItem& item, const wxString& text);
+    wxString GetItemText(const wxDataViewItem& item) const
+    {
+        return GetStore()->GetItemText(item);
+    }
+    void SetItemData(const wxDataViewItem& item, wxClientData* data)
+    {
+        GetStore()->SetItemData(item, data);
+    }
+    wxClientData* GetItemData(const wxDataViewItem& item) const
+    {
+        return GetStore()->GetItemData(item);
+    }
+
+    void DeleteItem(const wxDataViewItem& item);
+    void DeleteChildren(const wxDataViewItem& item);
+    void DeleteAllItems();
+
+    void OnExpanded(wxDataViewEvent& event);
+    void OnCollapsed(wxDataViewEvent& event);
+    void OnSize(wxSizeEvent& event);
 
 private:
-    wxObjectDataPtr<wxMetroDataViewModel> m_model;
+    wxDECLARE_EVENT_TABLE();
+    wxDECLARE_DYNAMIC_CLASS_NO_ASSIGN(wxMetroDataViewTreeCtrl);
 };
 
 
