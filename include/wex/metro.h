@@ -502,7 +502,7 @@ public:
         return m_isExpanded;
     }
 
-    virtual bool IsContainer() wxOVERRIDE
+    virtual bool IsContainer() override
     {
         return true;
     }
@@ -557,17 +557,17 @@ public:
     // implement base methods
 
     virtual void GetValue(wxVariant& variant,
-        const wxDataViewItem& item, unsigned int col) const wxOVERRIDE;
+        const wxDataViewItem& item, unsigned int col) const override;
     virtual bool SetValue(const wxVariant& variant,
-        const wxDataViewItem& item, unsigned int col) wxOVERRIDE;
-    virtual wxDataViewItem GetParent(const wxDataViewItem& item) const wxOVERRIDE;
-    virtual bool IsContainer(const wxDataViewItem& item) const wxOVERRIDE;
-    virtual unsigned int GetChildren(const wxDataViewItem& item, wxDataViewItemArray& children) const wxOVERRIDE;
+        const wxDataViewItem& item, unsigned int col) override;
+    virtual wxDataViewItem GetParent(const wxDataViewItem& item) const override;
+    virtual bool IsContainer(const wxDataViewItem& item) const override;
+    virtual unsigned int GetChildren(const wxDataViewItem& item, wxDataViewItemArray& children) const override;
 
     virtual int Compare(const wxDataViewItem& item1, const wxDataViewItem& item2,
-        unsigned int column, bool ascending) const wxOVERRIDE;
+        unsigned int column, bool ascending) const override;
 
-    virtual bool HasDefaultCompare() const wxOVERRIDE
+    virtual bool HasDefaultCompare() const override
     {
         return true;
     }
