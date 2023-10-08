@@ -572,6 +572,10 @@ public:
         return true;
     }
 
+    virtual unsigned int GetColumnCount() const override { return 1; }
+    virtual wxString GetColumnType(unsigned int) const override { return wxString(); }
+
+
     wxMetroDataViewTreeStoreNode* FindNode(const wxDataViewItem& item) const;
     wxMetroDataViewTreeStoreContainerNode* FindContainerNode(const wxDataViewItem& item) const;
     wxMetroDataViewTreeStoreNode* GetRoot() const { return m_root; }
