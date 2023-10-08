@@ -1989,22 +1989,7 @@ wxMetroDataViewTreeStore::GetValue(wxVariant& variant,
 
     wxMetroDataViewTreeStoreNode* node = FindNode(item);
     if (!node) return;
-    /*
-    wxBitmapBundle bb;
-    if (node->IsContainer())
-    {
-        wxMetroDataViewTreeStoreContainerNode* container = (wxMetroDataViewTreeStoreContainerNode*)node;
-        if (container->IsExpanded())
-            bb = container->GetExpandedBitmapBundle();
-    }
 
-    if (!bb.IsOk())
-        bb = node->GetBitmapBundle();
-
-    wxDataViewIconText data(node->GetText(), bb);
-    
-    variant << data;
-    */
     variant = node->GetText();
 }
 
