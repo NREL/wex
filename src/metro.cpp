@@ -1892,6 +1892,24 @@ bool wxMetroDataViewTreeStore::IsContainer(const wxDataViewItem& item) const
 
     return node->IsContainer();
 }
+/*
+bool wxMetroDataViewTreeStore::HasContainerColumns(const wxDataViewItem& item)	const
+{
+    if (IsContainer(item))
+        return true;
+    else
+        return false;
+}
+
+bool wxMetroDataViewTreeStore::IsEnabled(const wxDataViewItem& item, unsigned int col) const
+{
+    if (IsContainer(item))
+        return false;
+    else
+        return true;
+
+}
+*/
 
 wxDataViewItem wxMetroDataViewTreeStore::GetNthChild(const wxDataViewItem& parent, unsigned int pos) const
 {

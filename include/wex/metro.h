@@ -567,6 +567,10 @@ public:
     virtual int Compare(const wxDataViewItem& item1, const wxDataViewItem& item2,
         unsigned int column, bool ascending) const override;
 
+ //   virtual bool HasContainerColumns(const wxDataViewItem& item) const override;
+ //   virtual bool IsEnabled(const wxDataViewItem& item, unsigned int col) const override;
+
+
     virtual bool HasDefaultCompare() const override
     {
         return true;
