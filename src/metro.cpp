@@ -2073,13 +2073,13 @@ int wxMetroDataViewTreeStore::Compare(const wxDataViewItem& item1, const wxDataV
 
     wxCHECK_MSG(node2->GetParent() == parent, 0,
         wxS("Comparing items with different parent."));
-
+/*
     if (node1->IsContainer() && !node2->IsContainer())
         return -1;
 
     if (node2->IsContainer() && !node1->IsContainer())
         return 1;
-
+*/
     wxMetroDataViewTreeStoreNodes::const_iterator iter;
     for (iter = parent->GetChildren().begin(); iter != parent->GetChildren().end(); ++iter)
     {
