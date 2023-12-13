@@ -97,6 +97,9 @@ endif ()
 #
 #####################################################################################################################
 
+# for rapidjson folder
+include_directories($ENV{RAPIDJSONDIR})
+
 add_subdirectory(src)
 if (NOT SAM_SKIP_TOOLS)
     add_subdirectory(tools)
