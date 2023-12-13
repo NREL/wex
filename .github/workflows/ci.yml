@@ -40,7 +40,7 @@ jobs:
 
     - name: Get git ref of sibling dependency LK
       run: |
-        ref=$(git ls-remote --exit-code git://github.com/NREL/lk.git refs/heads/patch | awk '{print $1}')
+        ref=$(git ls-remote --exit-code git://github.com/NREL/lk.git refs/heads/develop | awk '{print $1}')
         echo "ref_of_lk=$ref" | tee --append $GITHUB_ENV
     - name: Get cached build data of sibling dependency LK
       uses: actions/cache@v2
@@ -72,7 +72,7 @@ jobs:
         echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
     - name: Get git ref of sibling dependency SSC
       run: |
-        ref=$(git ls-remote --exit-code git://github.com/NREL/ssc.git refs/heads/patch | awk '{print $1}')
+        ref=$(git ls-remote --exit-code git://github.com/NREL/ssc.git refs/heads/develop | awk '{print $1}')
         echo "ref_of_ssc=$ref" | tee --append $GITHUB_ENV
     - name: Get cached build data of sibling dependency SSC
       uses: actions/cache@v2
