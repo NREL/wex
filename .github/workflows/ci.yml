@@ -135,6 +135,7 @@ jobs:
         cmake-version: '3.24.x'
 
     - name: Get git ref of sibling dependency LK
+      shell: bash
       run: |
         ref=$(git ls-remote --exit-code git://github.com/NREL/lk.git refs/heads/develop | awk '{print $1}')
         echo "ref_of_lk=$ref" | tee --append $GITHUB_ENV
