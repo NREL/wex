@@ -111,7 +111,6 @@ jobs:
     steps:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v2
-
     - name: Download wxWidgets
       shell: bash
       run: |
@@ -127,50 +126,49 @@ jobs:
         echo "WXMSW3=$WXMSW3" >> $GITHUB_ENV
         WXWIN=$GITHUB_WORKSPACE\\wxMSW-3.2.3_vc14x_x64_Dev
         echo "WXWIN=$WXWIN" >> $GITHUB_ENV
-    
     - name: Setup cmake
       uses: jwlawson/actions-setup-cmake@v2
       with:
         cmake-version: '3.24.x'
-
     - name: Checkout
       uses: actions/checkout@v2
       with:
         path: wex
-  
     - name: Get branch name
       shell: bash
       run:  |
           # Short name for current branch. base ref is set on push builds, head ref is for pull request builds
           if [ -z ${GITHUB_HEAD_REF+x} ]; then GIT_BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}; else GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}; fi
           echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
-
     - name: Determine branches for other repos
       shell: bash
       run: |
         echo "GITHUB_REPOSITORY_OWNER=${GITHUB_REPOSITORY_OWNER}" >> $GITHUB_ENV
         git ls-remote --heads --exit-code https://github.com/${GITHUB_REPOSITORY_OWNER}/lk.git $GIT_BRANCH
         if [[ $? != "0" ]]; then echo "LK_BRANCH=develop" >> $GITHUB_ENV; else echo "LK_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV; fi
-
     - name: Checkout lk     
       uses: actions/checkout@v2
       with:
         path: lk
         repository: ${{ env.GITHUB_REPOSITORY_OWNER }}/lk
         ref: ${{ env.LK_BRANCH }}
-
+    - name: Checkout ssc     
+      uses: actions/checkout@v2
+      with:
+        path: ssc
+        repository: ${{ env.GITHUB_REPOSITORY_OWNER }}/ssc
+        ref: ${{ env.SSC_BRANCH }}
     - name: Build LK
       if: steps.cachedlk.outputs.cache-hit != 'true'
       run: |
-        echo $env:GITHUB_WORKSPACE
-        ls $env:GITHUB_WORKSPACE
         cd $env:GITHUB_WORKSPACE/lk
         mkdir build
         cd build
         cmake -G "Visual Studio 17 2022" -DCMAKE_CONFIGURATION_TYPES="Release" -DCMAKE_SYSTEM_VERSION=10.0 -DSAM_SKIP_TOOLS=1 ..
         MSBuild.exe .\lk.sln /t:Build /p:Configuration=Release
         echo "LKDIR=$GITHUB_WORKSPACE/lk" >>$GITHUB_ENV
-        echo "LKD_LIB=$GITHUB_WORKSPACE/lk/build_linux" >>$GITHUB_ENV
+        echo "LKD_LIB=$GITHUB_WORKSPACE/lk/build/Release" >>$GITHUB_ENV
+        echo "LK_LIB=$GITHUB_WORKSPACE/lk/build/Release" >>$GITHUB_ENV
         echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
 
     - name: Build WEX
