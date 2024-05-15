@@ -127,13 +127,17 @@ jobs:
         echo "WXMSW3=$WXMSW3" >> $GITHUB_ENV
         WXWIN=$GITHUB_WORKSPACE\\wxMSW-3.2.3_vc14x_x64_Dev
         echo "WXWIN=$WXWIN" >> $GITHUB_ENV
-
     
     - name: Setup cmake
       uses: jwlawson/actions-setup-cmake@v2
       with:
         cmake-version: '3.24.x'
 
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        path: wex
+  
     - name: Get branch name
       shell: bash
       run:  |
@@ -158,7 +162,9 @@ jobs:
     - name: Build LK
       if: steps.cachedlk.outputs.cache-hit != 'true'
       run: |
-        cd $GITHUB_WORKSPACE/lk
+        echo $env:GITHUB_WORKSPACE
+        ls $env:GITHUB_WORKSPACE
+        cd $env:GITHUB_WORKSPACE/lk
         mkdir build
         cd build
         cmake -G "Visual Studio 17 2022" -DCMAKE_CONFIGURATION_TYPES="Release" -DCMAKE_SYSTEM_VERSION=10.0 -DSAM_SKIP_TOOLS=1 ..
@@ -166,15 +172,10 @@ jobs:
         echo "LKDIR=$GITHUB_WORKSPACE/lk" >>$GITHUB_ENV
         echo "LKD_LIB=$GITHUB_WORKSPACE/lk/build_linux" >>$GITHUB_ENV
         echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
-   
 
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        path: wex
     - name: Build WEX
       run: |
-        cd $GITHUB_WORKSPACE/wex
+        cd $env:GITHUB_WORKSPACE/wex
         mkdir build
         cd build
         cmake -G "Visual Studio 17 2022" -DCMAKE_CONFIGURATION_TYPES="Release" -DCMAKE_SYSTEM_VERSION=10.0 ..
