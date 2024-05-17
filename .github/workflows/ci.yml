@@ -27,10 +27,8 @@ jobs:
           libgtk2.0-dev \
           mesa-common-dev \
           unzip
-    - name: Get GCC version
-      run: gcc --version
-    - name: Get libc version
-      run: ldd --version
+    - name: Get Python version
+      run: which python
 
     - name: Install wxWidgets
       run: |
