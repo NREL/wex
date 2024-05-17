@@ -28,7 +28,9 @@ jobs:
           mesa-common-dev \
           unzip
     - name: Get Python version
-      run: which python
+      run: |
+        which python
+        python --version
 
     - name: Install wxWidgets
       run: |
