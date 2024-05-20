@@ -12,7 +12,7 @@ wx_dir_name = sys.argv[1]
 
 cwd = Path(os.getcwd())
 
-github_token = os.environ.get("GITHUB_TOKEN")
+github_token = os.environ.get("TOKEN_GITHUB")
 headers = {
     'Accept': 'application/vnd.github+json',
     'Authorization': f'Bearer {github_token}',
