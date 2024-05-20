@@ -33,6 +33,7 @@ jobs:
         path: wex
     - name: Download wxWidgets
       run: |
+        python --version
         python wex/.github/workflows/download_wx.py
         dir
         dir wx-3.2.3
