@@ -27,16 +27,27 @@ jobs:
           libgtk2.0-dev \
           mesa-common-dev \
           unzip
-    - name: Get Python version
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        path: wex
+    - name: Download wxWidgets
       run: |
-        which python
-        python --version
-
-    - name: Install wxWidgets
-      run: |
-        sudo apt-get install -y libwxgtk*-dev
-        sudo ln -s $(which wx-config) /usr/local/bin/wx-config-3
+        python .github/workflows/download_wx.py
+        dir
+        dir wx-3.2.3
+        echo "WXMSW3=$GITHUB_WORKSPACE/wx-3.2.3" >>$GITHUB_ENV
+        chmod +x wx-3.2.3/bin/wx-config
+        chmod +x wx-3.2.3/lib/wx/config/osx_cocoa-unicode-static-3.2
+        sudo ln -s $GITHUB_WORKSPACE/wx-3.2.3/bin/wx-config /usr/local/bin/wx-config-3
         wx-config-3 --cflags | grep I
+        echo ${GITHUB_WORKSPACE}/wx-3.2.3/bin >> $GITHUB_PATH
+
+    # - name: Install wxWidgets
+    #   run: |
+    #     sudo apt-get install -y libwxgtk*-dev
+    #     sudo ln -s $(which wx-config) /usr/local/bin/wx-config-3
+    #     wx-config-3 --cflags | grep I
 
     - name: Get git ref of sibling dependency LK
       run: |
@@ -60,7 +71,7 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/lk
         cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Debug
-        cmake --build build_linux -- -j
+        cmake --build build_linux -j4
     - name: Set LKDIR
       run: |
         echo "LKDIR=$GITHUB_WORKSPACE/lk" >>$GITHUB_ENV
@@ -88,10 +99,6 @@ jobs:
         path: ssc
         repository: NREL/ssc
 
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        path: wex
     - name: Build WEX
       run: |
         cd $GITHUB_WORKSPACE/wex
