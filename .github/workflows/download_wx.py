@@ -36,8 +36,9 @@ else:
 
 response = requests.get('https://api.github.com/repos/NREL/lk/actions/artifacts', headers=headers)
 r = response.json()
-if 'bad' in r['message']:
-    raise RuntimeError(r)
+if 'message' in r.keys():
+    print(r)
+    raise RuntimeError(r['message'])
 
 artifacts = r['artifacts']
 
