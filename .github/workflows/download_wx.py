@@ -12,7 +12,7 @@ wx_dir_name = sys.argv[1]
 
 cwd = Path(os.getcwd())
 
-github_token = os.environ.get("TOKEN_GITHUB")
+github_token = os.environ.get("GITHUB_TOKEN")
 headers = {
     'Accept': 'application/vnd.github+json',
     'Authorization': f'Bearer {github_token}',
@@ -36,7 +36,9 @@ else:
 
 response = requests.get('https://api.github.com/repos/NREL/lk/actions/artifacts', headers=headers)
 r = response.json()
-print(r)
+if 'bad' in r['message']:
+    raise RuntimeError(r)
+
 artifacts = r['artifacts']
 
 matching_artifacts = [art for art in artifacts if re.search(wx_name, art['name'])]
