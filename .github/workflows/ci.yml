@@ -214,8 +214,8 @@ jobs:
           python --version
           pip install requests
           python $GITHUB_WORKSPACE/.github/workflows/download_wx.py wx-3.2.3
-          dir
-          dir wx-3.2.3
+          ls
+          ls wx-3.2.3
           echo "WXMSW3=$HOME/wx-3.2.3" >>$GITHUB_ENV
           chmod +x wx-3.2.3/bin/wx-config
           sudo ln -s $HOME/wx-3.2.3/bin/wx-config /usr/local/bin/wx-config-3
