@@ -58,4 +58,4 @@ with open(cwd / 'wx.zip', 'wb') as f:
 with zipfile.ZipFile('wx.zip', "r") as zip_ref:
     zip_ref.extractall(cwd / f"{wx_dir_name}")
 
-print(f"Extracted to {str(cwd / f"{wx_dir_name}")}")
+print(f"Extracted to {str(cwd / wx_dir_name)}")

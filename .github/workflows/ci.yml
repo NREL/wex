@@ -14,19 +14,7 @@ jobs:
         cmake-version: '3.24.x'
     - name: Test cmake version
       run: cmake --version
-    - name: Install OS dependencies
-      run: |
-        sudo apt-get update --fix-missing
-        sudo apt-get install -y \
-          build-essential \
-          freeglut3-dev \
-          g++ \
-          libcurl4-openssl-dev \
-          libfontconfig-dev \
-          libgl1-mesa-dev \
-          libgtk2.0-dev \
-          mesa-common-dev \
-          unzip
+
     - name: Checkout
       uses: actions/checkout@v2
       with:
@@ -43,7 +31,19 @@ jobs:
         sudo ln -s $GITHUB_WORKSPACE/wx-3.2.3/bin/wx-config /usr/local/bin/wx-config-3
         wx-config-3 --cflags | grep I
         echo ${GITHUB_WORKSPACE}/wx-3.2.3/bin >> $GITHUB_PATH
-
+    - name: Install OS dependencies
+      run: |
+        sudo apt-get update --fix-missing
+        sudo apt-get install -y \
+          build-essential \
+          freeglut3-dev \
+          g++ \
+          libcurl4-openssl-dev \
+          libfontconfig-dev \
+          libgl1-mesa-dev \
+          libgtk2.0-dev \
+          mesa-common-dev \
+          unzip
     # - name: Install wxWidgets
     #   run: |
     #     sudo apt-get install -y libwxgtk*-dev
