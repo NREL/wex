@@ -36,6 +36,7 @@ else:
 
 response = requests.get('https://api.github.com/repos/NREL/lk/actions/artifacts', headers=headers)
 r = response.json()
+print(r)
 artifacts = r['artifacts']
 
 matching_artifacts = [art for art in artifacts if re.search(wx_name, art['name'])]
