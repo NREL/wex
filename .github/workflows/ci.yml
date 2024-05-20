@@ -30,7 +30,6 @@ jobs:
         dir wx-3.2.3
         echo "WXMSW3=$GITHUB_WORKSPACE/wx-3.2.3" >>$GITHUB_ENV
         chmod +x wx-3.2.3/bin/wx-config
-        chmod +x wx-3.2.3/lib/wx/config/osx_cocoa-unicode-static-3.2
         sudo ln -s $GITHUB_WORKSPACE/wx-3.2.3/bin/wx-config /usr/local/bin/wx-config-3
         wx-config-3 --cflags | grep I
         echo ${GITHUB_WORKSPACE}/wx-3.2.3/bin >> $GITHUB_PATH
