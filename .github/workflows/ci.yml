@@ -123,29 +123,23 @@ jobs:
     steps:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v2
-    - name: Download wxWidgets
-      shell: bash
-      run: |
-        curl -L https://github.com/wxWidgets/wxWidgets/releases/download/v3.2.3/wxMSW-3.2.3_vc14x_x64_Dev.7z -o wxMSW-3.2.3_vc14x_x64_Dev.7z
-        mkdir wxMSW-3.2.3_vc14x_x64_Dev
-        7z x wxMSW-3.2.3_vc14x_x64_Dev.7z -o$GITHUB_WORKSPACE/wxMSW-3.2.3_vc14x_x64_Dev
-        curl -L https://github.com/wxWidgets/wxWidgets/releases/download/v3.2.3/wxMSW-3.2.3_vc14x_x64_ReleaseDLL.7z -o wxMSW-3.2.3_vc14x_x64_ReleaseDLL.7z
-        7z x wxMSW-3.2.3_vc14x_x64_ReleaseDLL.7z -o$GITHUB_WORKSPACE/wxMSW-3.2.3_vc14x_x64_ReleaseDLL
-        cp wxMSW-3.2.3_vc14x_x64_ReleaseDLL/lib/vc14x_x64_dll/* wxMSW-3.2.3_vc14x_x64_Dev/lib/vc14x_x64_dll
-        curl -L https://github.com/wxWidgets/wxWidgets/releases/download/v3.2.3/wxWidgets-3.2.3-headers.7z -o wxWidgets-3.2.3-headers.7z
-        7z x wxWidgets-3.2.3-headers.7z -o$GITHUB_WORKSPACE/wxMSW-3.2.3_vc14x_x64_Dev
-        WXMSW3=$GITHUB_WORKSPACE\\wxMSW-3.2.3_vc14x_x64_Dev
-        echo "WXMSW3=$WXMSW3" >> $GITHUB_ENV
-        WXWIN=$GITHUB_WORKSPACE\\wxMSW-3.2.3_vc14x_x64_Dev
-        echo "WXWIN=$WXWIN" >> $GITHUB_ENV
-    - name: Setup cmake
-      uses: jwlawson/actions-setup-cmake@v2
-      with:
-        cmake-version: '3.24.x'
     - name: Checkout
       uses: actions/checkout@v2
       with:
         path: wex
+    - name: Download wxWidgets
+      shell: bash
+      run: |
+        cd $HOME
+        python --version
+        python $GITHUB_WORKSPACE/wex/.github/workflows/download_wx.py wx-3.2.3
+        dir
+        dir wx-3.2.3
+        echo "WXMSW3=$HOME/wx-3.2.3" >>$GITHUB_ENV
+    - name: Setup cmake
+      uses: jwlawson/actions-setup-cmake@v2
+      with:
+        cmake-version: '3.24.x'
     - name: Get branch name
       shell: bash
       run:  |
@@ -171,9 +165,7 @@ jobs:
         repository: ${{ env.GITHUB_REPOSITORY_OWNER }}/ssc
         ref: ${{ env.SSC_BRANCH }}
     - name: Build LK
-      if: steps.cachedlk.outputs.cache-hit != 'true'
       run: |
-        cd $env:GITHUB_WORKSPACE/lk
         mkdir build
         cd build
         cmake -G "Visual Studio 17 2022" -DCMAKE_CONFIGURATION_TYPES="Release;Debug" -DCMAKE_SYSTEM_VERSION=10.0 -DSAM_SKIP_TOOLS=1 ..
