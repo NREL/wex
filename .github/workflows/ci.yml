@@ -212,6 +212,7 @@ jobs:
         run: |
           cd $HOME
           python --version
+          pip install requests zipfile
           python $GITHUB_WORKSPACE/.github/workflows/download_wx.py wx-3.2.3
           dir
           dir wx-3.2.3
