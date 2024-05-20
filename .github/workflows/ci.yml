@@ -33,7 +33,7 @@ jobs:
         path: wex
     - name: Download wxWidgets
       run: |
-        python .github/workflows/download_wx.py
+        python wex/.github/workflows/download_wx.py
         dir
         dir wx-3.2.3
         echo "WXMSW3=$GITHUB_WORKSPACE/wx-3.2.3" >>$GITHUB_ENV
@@ -69,6 +69,8 @@ jobs:
     - name: Build LK
       if: steps.cachedlk.outputs.cache-hit != 'true'
       run: |
+        ls
+        ls $WXMSW3
         cd $GITHUB_WORKSPACE/lk
         cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Debug
         cmake --build build_linux -j4
