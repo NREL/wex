@@ -212,7 +212,7 @@ jobs:
         run: |
           cd $HOME
           python --version
-          python wex/.github/workflows/download_wx.py wx-3.2.3
+          python $GITHUB_WORKSPACE/.github/workflows/download_wx.py wx-3.2.3
           dir
           dir wx-3.2.3
           echo "WXMSW3=$HOME/wx-3.2.3" >>$GITHUB_ENV
