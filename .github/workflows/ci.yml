@@ -22,7 +22,7 @@ jobs:
     - name: Download wxWidgets
       run: |
         python --version
-        python wex/.github/workflows/download_wx.py
+        python wex/.github/workflows/download_wx.py wx-3.2.3
         dir
         dir wx-3.2.3
         echo "WXMSW3=$GITHUB_WORKSPACE/wx-3.2.3" >>$GITHUB_ENV
