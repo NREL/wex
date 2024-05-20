@@ -114,6 +114,8 @@ jobs:
 
   build-on-windows:
     runs-on: windows-latest
+    env: 
+      GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
     steps:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v2
