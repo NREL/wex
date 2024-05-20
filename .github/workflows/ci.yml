@@ -7,6 +7,9 @@ on:
 jobs:
   build-on-ubuntu:
     runs-on: ubuntu-latest
+    env: 
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     steps:
     - name: Setup cmake
       uses: jwlawson/actions-setup-cmake@v1.12
