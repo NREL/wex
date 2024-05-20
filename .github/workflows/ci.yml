@@ -63,14 +63,14 @@ jobs:
         path: ${{ env.GH_WORKSPACE }}/lk
         key: ${{ env.RUNS_ON }}-${{ env.ref_of_lk }}-LK
     - name: Clone sibling dependency LK
-      if: steps.cachedlk.outputs.cache-hit != 'true'
+      if: steps.cachedlk.outputs.cache-hit == 'true'
       uses: actions/checkout@v2
       with:
         ref: ${{ env.ref_of_lk }}
         path: lk
         repository: NREL/lk
     - name: Build LK
-      if: steps.cachedlk.outputs.cache-hit != 'true'
+      if: steps.cachedlk.outputs.cache-hit == 'true'
       run: |
         ls
         ls $WXMSW3
