@@ -12,7 +12,7 @@ jobs:
 
     steps:
     - name: Setup cmake
-      uses: jwlawson/actions-setup-cmake@v1.12
+      uses: jwlawson/actions-setup-cmake@v2
       with:
         cmake-version: '3.24.x'
     - name: Checkout
@@ -115,7 +115,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
     steps:
     - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v4
+      uses: microsoft/setup-msbuild@v2
     - name: Checkout
       uses: actions/checkout@v4
       with:
@@ -131,7 +131,7 @@ jobs:
         dir wx-3.2.3
         echo "WXMSW3=$HOME/wx-3.2.3" >>$GITHUB_ENV
     - name: Setup cmake
-      uses: jwlawson/actions-setup-cmake@v4
+      uses: jwlawson/actions-setup-cmake@v2
       with:
         cmake-version: '3.24.x'
     - name: Get branch name
@@ -160,6 +160,7 @@ jobs:
         ref: ${{ env.SSC_BRANCH }}
     - name: Build LK
       run: |
+        cd lk
         mkdir build
         cd build
         cmake .. -G "Visual Studio 17 2022" -DCMAKE_CONFIGURATION_TYPES="Release;Debug" -DCMAKE_SYSTEM_VERSION=10.0 -DSAM_SKIP_TOOLS=1
@@ -176,7 +177,7 @@ jobs:
 
     - name: Build WEX
       run: |
-        cd $env:GITHUB_WORKSPACE/wex
+        cd wex
         mkdir build
         cd build
         cmake -G "Visual Studio 17 2022" -DCMAKE_CONFIGURATION_TYPES="Release" -DCMAKE_SYSTEM_VERSION=10.0 ..
@@ -270,7 +271,7 @@ jobs:
           repository: NREL/ssc
 
       - name: Setup cmake
-        uses: jwlawson/actions-setup-cmake@v4
+        uses: jwlawson/actions-setup-cmake@v2
         with:
           cmake-version: '3.24.x'
 
