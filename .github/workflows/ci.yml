@@ -45,9 +45,9 @@ jobs:
           unzip
     - name: Get branch name
       run:  |
-          # Short name for current branch. base ref is set on push builds, head ref is for pull request builds
-          if [ -z ${GITHUB_HEAD_REF+x} ]; then GIT_BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}; else GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}; fi
-          echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
+        # Short name for current branch. base ref is set on push builds, head ref is for pull request builds
+        if [ -z ${GITHUB_HEAD_REF+x} ]; then GIT_BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}; else GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}; fi
+        echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
     - name: Get git ref of sibling dependency LK
       run: |
         ref=$(git ls-remote --exit-code https://github.com/NREL/lk.git refs/heads/$GIT_BRANCH | awk '{print $1}')
@@ -127,9 +127,9 @@ jobs:
     - name: Get branch name
       shell: bash
       run:  |
-          # Short name for current branch. base ref is set on push builds, head ref is for pull request builds
-          if [ -z ${GITHUB_HEAD_REF+x} ]; then GIT_BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}; else GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}; fi
-          echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
+        # Short name for current branch. base ref is set on push builds, head ref is for pull request builds
+        if [ -z ${GITHUB_HEAD_REF+x} ]; then GIT_BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}; else GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}; fi
+        echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
     - name: Determine branches for other repos
       shell: bash
       run: |
@@ -240,9 +240,9 @@ jobs:
           echo ${HOME}/wx-3.2.3/bin >> $GITHUB_PATH
       - name: Get branch name
         run:  |
-            # Short name for current branch. base ref is set on push builds, head ref is for pull request builds
-            if [ -z ${GITHUB_HEAD_REF+x} ]; then GIT_BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}; else GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}; fi
-            echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
+          # Short name for current branch. base ref is set on push builds, head ref is for pull request builds
+          if [ -z ${GITHUB_HEAD_REF+x} ]; then GIT_BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}; else GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}; fi
+          echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
       - name: Get git ref of sibling dependency LK
         run: |
           ref=$(git ls-remote --exit-code https://github.com/NREL/lk.git refs/heads/$GIT_BRANCH | awk '{print $1}')
@@ -252,7 +252,7 @@ jobs:
         id: cachedlk
         with:
           path: lk
-          key: ${{ env.matrix.os }}-${{ env.ref_of_lk }}-LK
+          key: ${{ matrix.os }}-${{ env.ref_of_lk }}-LK
       - name: Clone sibling dependency LK
         if: steps.cachedlk.outputs.cache-hit != 'true'
         uses: actions/checkout@v4
@@ -281,7 +281,7 @@ jobs:
         id: cachedssc
         with:
           path: ssc
-          key: ${{ env.matrix.os }}-${{ env.ref_of_ssc }}-SSC
+          key: ${{ matrix.os }}-${{ env.ref_of_ssc }}-SSC
       - name: Clone sibling dependency SSC
         if: steps.cachedssc.outputs.cache-hit != 'true'
         uses: actions/checkout@v4
