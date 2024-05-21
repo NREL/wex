@@ -43,6 +43,11 @@ if 'message' in r.keys():
 artifacts = r['artifacts']
 
 matching_artifacts = [art for art in artifacts if re.search(wx_name, art['name'])]
+
+if not len(matching_artifacts):
+    print([art['name'] for art in artifacts])
+    raise RuntimeError(f"Could not find matching artifact for os {wx_name}")
+
 artifact = matching_artifacts[0]
 
 headers = {
