@@ -16,7 +16,9 @@ jobs:
       with:
         cmake-version: '3.24.x'
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
+      with:
+        path: wex
     - name: Download wxWidgets
       run: |
         cd $HOME
@@ -52,20 +54,18 @@ jobs:
         ref=$(git ls-remote --exit-code https://github.com/NREL/lk.git refs/heads/develop | awk '{print $1}')
         echo "ref_of_lk=$ref" | tee --append $GITHUB_ENV
     - name: Get cached build data of sibling dependency LK
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       id: cachedlk
       with:
         path: ${{ env.GH_WORKSPACE }}/lk
         key: ${{ env.RUNS_ON }}-${{ env.ref_of_lk }}-LK
     - name: Clone sibling dependency LK
-      if: steps.cachedlk.outputs.cache-hit == 'true'
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         ref: ${{ env.ref_of_lk }}
         path: lk
         repository: NREL/lk
     - name: Build LK
-      if: steps.cachedlk.outputs.cache-hit == 'true'
       run: |
         ls
         ls $WXMSW3
@@ -83,14 +83,13 @@ jobs:
         ref=$(git ls-remote --exit-code https://github.com/NREL/ssc.git refs/heads/develop | awk '{print $1}')
         echo "ref_of_ssc=$ref" | tee --append $GITHUB_ENV
     - name: Get cached build data of sibling dependency SSC
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       id: cachedssc
       with:
         path: ${{ env.GH_WORKSPACE }}/ssc
         key: ${{ env.RUNS_ON }}-${{ env.ref_of_ssc }}-SSC
     - name: Clone sibling dependency SSC
-      if: steps.cachedssc.outputs.cache-hit != 'true'
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         ref: ${{ env.ref_of_ssc }}
         path: ssc
@@ -102,7 +101,7 @@ jobs:
         cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Debug
         cmake --build build_linux
     - name: Save static lib, Dview & wexsandbox
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: WEX-linux-x86_64
         path: |
@@ -116,9 +115,9 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
     steps:
     - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v2
+      uses: microsoft/setup-msbuild@v4
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         path: wex
     - name: Download wxWidgets
@@ -132,7 +131,7 @@ jobs:
         dir wx-3.2.3
         echo "WXMSW3=$HOME/wx-3.2.3" >>$GITHUB_ENV
     - name: Setup cmake
-      uses: jwlawson/actions-setup-cmake@v2
+      uses: jwlawson/actions-setup-cmake@v4
       with:
         cmake-version: '3.24.x'
     - name: Get branch name
@@ -148,13 +147,13 @@ jobs:
         git ls-remote --heads --exit-code https://github.com/${GITHUB_REPOSITORY_OWNER}/lk.git $GIT_BRANCH
         if [[ $? != "0" ]]; then echo "LK_BRANCH=develop" >> $GITHUB_ENV; else echo "LK_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV; fi
     - name: Checkout lk     
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         path: lk
         repository: ${{ env.GITHUB_REPOSITORY_OWNER }}/lk
         ref: ${{ env.LK_BRANCH }}
     - name: Checkout ssc     
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         path: ssc
         repository: ${{ env.GITHUB_REPOSITORY_OWNER }}/ssc
@@ -184,7 +183,7 @@ jobs:
         MSBuild.exe .\wex.sln /t:Build /p:Configuration=Release
 
     - name: Save static lib, Dview & wexsandbox
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: WEX-windows-x86_64
         path: |
@@ -207,13 +206,15 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
-  
+        with:
+          path: wex
+
       - name: Download wxWidgets
         run: |
           cd $HOME
           python --version
           pip install requests
-          python $GITHUB_WORKSPACE/.github/workflows/download_wx.py wx-3.2.3
+          python $GITHUB_WORKSPACE/wex/.github/workflows/download_wx.py wx-3.2.3
           ls
           ls wx-3.2.3
           echo "WXMSW3=$HOME/wx-3.2.3" >>$GITHUB_ENV
@@ -227,20 +228,18 @@ jobs:
           ref=$(git ls-remote --exit-code https://github.com/NREL/lk.git refs/heads/develop | awk '{print $1}')
           echo "ref_of_lk=$ref" | tee -a $GITHUB_ENV
       - name: Get cached build data of sibling dependency LK
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         id: cachedlk
         with:
           path: ${{ env.GH_WORKSPACE }}/lk
           key: ${{ env.RUNS_ON }}-${{ env.ref_of_lk }}-LK
       - name: Clone sibling dependency LK
-        if: steps.cachedlk.outputs.cache-hit == 'true'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: ${{ env.ref_of_lk }}
           path: lk
           repository: NREL/lk
       - name: Build LK
-        if: steps.cachedlk.outputs.cache-hit == 'true'
         run: |
           ls
           ls $WXMSW3
@@ -258,21 +257,20 @@ jobs:
           ref=$(git ls-remote --exit-code https://github.com/NREL/ssc.git refs/heads/develop | awk '{print $1}')
           echo "ref_of_ssc=$ref" | tee -a $GITHUB_ENV
       - name: Get cached build data of sibling dependency SSC
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         id: cachedssc
         with:
           path: ${{ env.GH_WORKSPACE }}/ssc
           key: ${{ env.RUNS_ON }}-${{ env.ref_of_ssc }}-SSC
       - name: Clone sibling dependency SSC
-        if: steps.cachedssc.outputs.cache-hit != 'true'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: ${{ env.ref_of_ssc }}
           path: ssc
           repository: NREL/ssc
 
       - name: Setup cmake
-        uses: jwlawson/actions-setup-cmake@v2
+        uses: jwlawson/actions-setup-cmake@v4
         with:
           cmake-version: '3.24.x'
 
@@ -282,7 +280,7 @@ jobs:
           cmake --build build_linux
 
       - name: Save static lib, Dview & wexsandbox
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: WEX-${{  matrix.os }}-x86_64
           path: |
