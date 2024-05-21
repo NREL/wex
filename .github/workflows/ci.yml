@@ -52,7 +52,7 @@ jobs:
       uses: actions/cache@v4
       id: cachedlk
       with:
-        path: ${{ env.GITHUB_WORKSPACE }}/lk
+        path: lk
         key: linux-${{ env.ref_of_lk }}-LK
     - name: Clone sibling dependency LK
       if: steps.cachedlk.outputs.cache-hit != 'true'
@@ -81,7 +81,7 @@ jobs:
       uses: actions/cache@v4
       id: cachedssc
       with:
-        path: ${{ env.GITHUB_WORKSPACE }}/ssc
+        path: ssc
         key: windows-${{ env.ref_of_ssc }}-SSC
     - name: Clone sibling dependency SSC
       if: steps.cachedssc.outputs.cache-hit != 'true'
