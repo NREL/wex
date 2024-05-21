@@ -76,10 +76,9 @@ jobs:
         echo "LKDIR=$GITHUB_WORKSPACE/lk" >>$GITHUB_ENV
         echo "LKD_LIB=$GITHUB_WORKSPACE/lk/build_linux" >>$GITHUB_ENV
         echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
-
     - name: Get git ref of sibling dependency SSC
       run: |
-        ref=$(git ls-remote --exit-code https://github.com/NREL/ssc.git refs/heads/$GIT_BRANCH | awk '{print $1}')
+        ref=$(git ls-remote --exit-code https://github.com/NREL/ssc.git refs/heads/develop | awk '{print $1}')
         echo "ref_of_ssc=$ref" | tee --append $GITHUB_ENV
     - name: Get cached build data of sibling dependency SSC
       uses: actions/cache@v4
@@ -94,7 +93,6 @@ jobs:
         ref: ${{ env.ref_of_ssc }}
         path: ssc
         repository: NREL/ssc
-
     - name: Build WEX
       run: |
         cd $GITHUB_WORKSPACE/wex
@@ -179,6 +177,10 @@ jobs:
         echo "LKD_LIB=$GITHUB_WORKSPACE/lk/build/Release" >>$GITHUB_ENV
         echo "LK_LIB=$GITHUB_WORKSPACE/lk/build/Release" >>$GITHUB_ENV
         echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
+    - name: Get git ref of sibling dependency SSC
+      run: |
+        ref=$(git ls-remote --exit-code https://github.com/NREL/ssc.git refs/heads/develop | awk '{print $1}')
+        echo "ref_of_ssc=$ref" | tee --append $GITHUB_ENV
     - name: Get cached build data of sibling dependency SSC
       uses: actions/cache@v4
       id: cachedssc
@@ -199,7 +201,6 @@ jobs:
         cd build
         cmake -G "Visual Studio 17 2022" -DCMAKE_CONFIGURATION_TYPES="Release" -DCMAKE_SYSTEM_VERSION=10 ..
         MSBuild.exe .\wex.sln /t:Build /p:Configuration=Release
-
     - name: Save static lib, Dview & wexsandbox
       uses: actions/upload-artifact@v4
       with:
@@ -221,12 +222,10 @@ jobs:
         run: | 
           WXMSW3=$HOME/wx-3.2.3
           echo "WXMSW3=$WXMSW3" >> $GITHUB_ENV
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
           path: wex
-
       - name: Download wxWidgets
         run: |
           cd $HOME
@@ -271,10 +270,9 @@ jobs:
           echo "LKDIR=$GITHUB_WORKSPACE/lk" >>$GITHUB_ENV
           echo "LKD_LIB=$GITHUB_WORKSPACE/lk/build_linux" >>$GITHUB_ENV
           echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
-
       - name: Get git ref of sibling dependency SSC
         run: |
-          ref=$(git ls-remote --exit-code https://github.com/NREL/ssc.git refs/heads/$GIT_BRANCH | awk '{print $1}')
+          ref=$(git ls-remote --exit-code https://github.com/NREL/ssc.git refs/heads/develop | awk '{print $1}')
           echo "ref_of_ssc=$ref" | tee -a $GITHUB_ENV
       - name: Get cached build data of sibling dependency SSC
         uses: actions/cache@v4
@@ -289,18 +287,15 @@ jobs:
           ref: ${{ env.ref_of_ssc }}
           path: ssc
           repository: NREL/ssc
-
       - name: Setup cmake
         uses: jwlawson/actions-setup-cmake@v2
         with:
           cmake-version: '3.24.x'
-
       - name: Build WEX
         run: |
           cd wex
           cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Debug
           cmake --build build_linux
-
       - name: Save static lib, Dview & wexsandbox
         uses: actions/upload-artifact@v4
         with:
