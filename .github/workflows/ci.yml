@@ -55,12 +55,14 @@ jobs:
         path: ${{ env.GITHUB_WORKSPACE }}/lk
         key: ${{ env.RUNS_ON }}-${{ env.ref_of_lk }}-LK
     - name: Clone sibling dependency LK
+      if: steps.cachedlk.outputs.cache-hit != 'true'
       uses: actions/checkout@v4
       with:
         ref: ${{ env.ref_of_lk }}
         path: lk
         repository: NREL/lk
     - name: Build LK
+      if: steps.cachedlk.outputs.cache-hit != 'true'
       run: |
         cd $GITHUB_WORKSPACE/lk
         cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Debug
@@ -82,6 +84,7 @@ jobs:
         path: ${{ env.GITHUB_WORKSPACE }}/ssc
         key: ${{ env.RUNS_ON }}-${{ env.ref_of_ssc }}-SSC
     - name: Clone sibling dependency SSC
+      if: steps.cachedssc.outputs.cache-hit != 'true'
       uses: actions/checkout@v4
       with:
         ref: ${{ env.ref_of_ssc }}
@@ -129,7 +132,18 @@ jobs:
         echo "GITHUB_REPOSITORY_OWNER=${GITHUB_REPOSITORY_OWNER}" >> $GITHUB_ENV
         git ls-remote --heads --exit-code https://github.com/${GITHUB_REPOSITORY_OWNER}/lk.git $GIT_BRANCH
         if [[ $? != "0" ]]; then echo "LK_BRANCH=develop" >> $GITHUB_ENV; else echo "LK_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV; fi
-    - name: Checkout lk     
+    - name: Get git ref of sibling dependency LK
+      run: |
+        ref=$(git ls-remote --exit-code https://github.com/NREL/lk.git refs/heads/develop | awk '{print $1}')
+        echo "ref_of_lk=$ref" | tee --append $GITHUB_ENV
+    - name: Get cached build data of sibling dependency LK
+      uses: actions/cache@v4
+      id: cachedlk
+      with:
+        path: ${{ env.GITHUB_WORKSPACE }}/lk
+        key: ${{ env.RUNS_ON }}-${{ env.ref_of_lk }}-LK
+    - name: Checkout lk
+      if: steps.cachedlk.outputs.cache-hit != 'true'
       uses: actions/checkout@v4
       with:
         path: lk
@@ -145,6 +159,7 @@ jobs:
         dir wx-3.2.3
         echo "WXMSW3=$GITHUB_WORKSPACE/wx-3.2.3" >>$GITHUB_ENV
     - name: Build LK
+      if: steps.cachedlk.outputs.cache-hit != 'true'
       run: |
         cd lk
         mkdir build
@@ -159,8 +174,14 @@ jobs:
         echo "LKD_LIB=$GITHUB_WORKSPACE/lk/build/Release" >>$GITHUB_ENV
         echo "LK_LIB=$GITHUB_WORKSPACE/lk/build/Release" >>$GITHUB_ENV
         echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
-
-    - name: Checkout ssc     
+    - name: Get cached build data of sibling dependency SSC
+      uses: actions/cache@v4
+      id: cachedssc
+      with:
+        path: ${{ env.GITHUB_WORKSPACE }}/ssc
+        key: ${{ env.RUNS_ON }}-${{ env.ref_of_ssc }}-SSC
+    - name: Checkout ssc
+      if: steps.cachedssc.outputs.cache-hit != 'true'
       uses: actions/checkout@v4
       with:
         path: ssc
@@ -224,12 +245,14 @@ jobs:
           path: ${{ env.GITHUB_WORKSPACE }}/lk
           key: ${{ env.RUNS_ON }}-${{ env.ref_of_lk }}-LK
       - name: Clone sibling dependency LK
+        if: steps.cachedlk.outputs.cache-hit != 'true'
         uses: actions/checkout@v4
         with:
           ref: ${{ env.ref_of_lk }}
           path: lk
           repository: NREL/lk
       - name: Build LK
+        if: steps.cachedlk.outputs.cache-hit != 'true'
         run: |
           cd $GITHUB_WORKSPACE/lk
           cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Debug
@@ -251,6 +274,7 @@ jobs:
           path: ${{ env.GITHUB_WORKSPACE }}/ssc
           key: ${{ env.RUNS_ON }}-${{ env.ref_of_ssc }}-SSC
       - name: Clone sibling dependency SSC
+        if: steps.cachedssc.outputs.cache-hit != 'true'
         uses: actions/checkout@v4
         with:
           ref: ${{ env.ref_of_ssc }}
