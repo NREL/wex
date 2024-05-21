@@ -120,16 +120,6 @@ jobs:
       uses: actions/checkout@v4
       with:
         path: wex
-    - name: Download wxWidgets
-      shell: bash
-      run: |
-        cd $HOME
-        python --version
-        pip install requests
-        python $GITHUB_WORKSPACE/wex/.github/workflows/download_wx.py wx-3.2.3
-        dir
-        dir wx-3.2.3
-        echo "WXMSW3=$HOME/wx-3.2.3" >>$GITHUB_ENV
     - name: Setup cmake
       uses: jwlawson/actions-setup-cmake@v2
       with:
@@ -152,22 +142,24 @@ jobs:
         path: lk
         repository: ${{ env.GITHUB_REPOSITORY_OWNER }}/lk
         ref: ${{ env.LK_BRANCH }}
-    - name: Checkout ssc     
-      uses: actions/checkout@v4
-      with:
-        path: ssc
-        repository: ${{ env.GITHUB_REPOSITORY_OWNER }}/ssc
-        ref: ${{ env.SSC_BRANCH }}
+    - name: Download wxWidgets
+      shell: bash
+      run: |
+        python --version
+        pip install requests
+        python $GITHUB_WORKSPACE/wex/.github/workflows/download_wx.py wx-3.2.3
+        dir
+        dir wx-3.2.3
+        echo "WXMSW3=$GITHUB_WORKSPACE/wx-3.2.3" >>$GITHUB_ENV
     - name: Build LK
       run: |
         cd lk
         mkdir build
         cd build
-        dir $WXMSW3
+        dir $env:WXMSW3
         cmake .. -G "Visual Studio 17 2022" -DCMAKE_CONFIGURATION_TYPES="Release;Debug" -DCMAKE_SYSTEM_VERSION=10 -DSAM_SKIP_TOOLS=1
         MSBuild.exe .\lk.sln /t:Build /p:Configuration=Release
         MSBuild.exe .\lk.sln /t:Build /p:Configuration=Debug
-
     - name: Set LK paths
       shell: bash
       run: |
@@ -176,6 +168,12 @@ jobs:
         echo "LK_LIB=$GITHUB_WORKSPACE/lk/build/Release" >>$GITHUB_ENV
         echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
 
+    - name: Checkout ssc     
+      uses: actions/checkout@v4
+      with:
+        path: ssc
+        repository: ${{ env.GITHUB_REPOSITORY_OWNER }}/ssc
+        ref: ${{ env.SSC_BRANCH }}
     - name: Build WEX
       run: |
         cd wex
