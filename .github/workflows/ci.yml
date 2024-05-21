@@ -43,11 +43,6 @@ jobs:
           libgtk2.0-dev \
           mesa-common-dev \
           unzip
-    # - name: Install wxWidgets
-    #   run: |
-    #     sudo apt-get install -y libwxgtk*-dev
-    #     sudo ln -s $(which wx-config) /usr/local/bin/wx-config-3
-    #     wx-config-3 --cflags | grep I
 
     - name: Get git ref of sibling dependency LK
       run: |
@@ -57,7 +52,7 @@ jobs:
       uses: actions/cache@v4
       id: cachedlk
       with:
-        path: ${{ env.GH_WORKSPACE }}/lk
+        path: ${{ env.GITHUB_WORKSPACE }}/lk
         key: ${{ env.RUNS_ON }}-${{ env.ref_of_lk }}-LK
     - name: Clone sibling dependency LK
       uses: actions/checkout@v4
@@ -67,8 +62,6 @@ jobs:
         repository: NREL/lk
     - name: Build LK
       run: |
-        ls
-        ls $WXMSW3
         cd $GITHUB_WORKSPACE/lk
         cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Debug
         cmake --build build_linux -j4
@@ -86,7 +79,7 @@ jobs:
       uses: actions/cache@v4
       id: cachedssc
       with:
-        path: ${{ env.GH_WORKSPACE }}/ssc
+        path: ${{ env.GITHUB_WORKSPACE }}/ssc
         key: ${{ env.RUNS_ON }}-${{ env.ref_of_ssc }}-SSC
     - name: Clone sibling dependency SSC
       uses: actions/checkout@v4
@@ -105,9 +98,9 @@ jobs:
       with:
         name: WEX-linux-x86_64
         path: |
-          ${{ env.GH_WORKSPACE }}/wex/build_linux/tools/DView*
-          ${{ env.GH_WORKSPACE }}/wex/build_linux/tools/wexsandbox*
-          ${{ env.GH_WORKSPACE }}/wex/build_linux/wex*.a
+          ${{ env.GITHUB_WORKSPACE }}/wex/build_linux/tools/DView*
+          ${{ env.GITHUB_WORKSPACE }}/wex/build_linux/tools/wexsandbox*
+          ${{ env.GITHUB_WORKSPACE }}/wex/build_linux/wex*.a
 
   build-on-windows:
     runs-on: windows-latest
@@ -156,7 +149,6 @@ jobs:
         cd lk
         mkdir build
         cd build
-        dir $env:WXMSW3
         cmake .. -G "Visual Studio 17 2022" -DCMAKE_CONFIGURATION_TYPES="Release;Debug" -DCMAKE_SYSTEM_VERSION=10 -DSAM_SKIP_TOOLS=1
         MSBuild.exe .\lk.sln /t:Build /p:Configuration=Release
         MSBuild.exe .\lk.sln /t:Build /p:Configuration=Debug
@@ -187,9 +179,9 @@ jobs:
       with:
         name: WEX-windows-x86_64
         path: |
-          ${{ env.GH_WORKSPACE }}/wex/build_linux/tools/DView*
-          ${{ env.GH_WORKSPACE }}/wex/build_linux/tools/wexsandbox*
-          ${{ env.GH_WORKSPACE }}/wex/build_linux/wex*.a
+          ${{ env.GITHUB_WORKSPACE }}/wex/build/tools/Release/tools/DView.exe
+          ${{ env.GITHUB_WORKSPACE }}/wex/build/tools/Release/tools/wexsandbox.exe
+          ${{ env.GITHUB_WORKSPACE }}/wex/build/Release/wex.lib
         
   build-on-mac:
     runs-on: ${{ matrix.os }}
@@ -215,8 +207,6 @@ jobs:
           python --version
           pip install requests
           python $GITHUB_WORKSPACE/wex/.github/workflows/download_wx.py wx-3.2.3
-          ls
-          ls wx-3.2.3
           echo "WXMSW3=$HOME/wx-3.2.3" >>$GITHUB_ENV
           chmod +x wx-3.2.3/bin/wx-config
           sudo ln -s $HOME/wx-3.2.3/bin/wx-config /usr/local/bin/wx-config-3
@@ -231,7 +221,7 @@ jobs:
         uses: actions/cache@v4
         id: cachedlk
         with:
-          path: ${{ env.GH_WORKSPACE }}/lk
+          path: ${{ env.GITHUB_WORKSPACE }}/lk
           key: ${{ env.RUNS_ON }}-${{ env.ref_of_lk }}-LK
       - name: Clone sibling dependency LK
         uses: actions/checkout@v4
@@ -241,8 +231,6 @@ jobs:
           repository: NREL/lk
       - name: Build LK
         run: |
-          ls
-          ls $WXMSW3
           cd $GITHUB_WORKSPACE/lk
           cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Debug
           cmake --build build_linux -j4
@@ -260,7 +248,7 @@ jobs:
         uses: actions/cache@v4
         id: cachedssc
         with:
-          path: ${{ env.GH_WORKSPACE }}/ssc
+          path: ${{ env.GITHUB_WORKSPACE }}/ssc
           key: ${{ env.RUNS_ON }}-${{ env.ref_of_ssc }}-SSC
       - name: Clone sibling dependency SSC
         uses: actions/checkout@v4
@@ -285,7 +273,7 @@ jobs:
         with:
           name: WEX-${{  matrix.os }}-x86_64
           path: |
-            ${{ env.GH_WORKSPACE }}/wex/build_linux/tools/DView*
-            ${{ env.GH_WORKSPACE }}/wex/build_linux/tools/wexsandbox*
-            ${{ env.GH_WORKSPACE }}/wex/build_linux/wex*.a
+            ${{ env.GITHUB_WORKSPACE }}/wex/build_linux/tools/DView*
+            ${{ env.GITHUB_WORKSPACE }}/wex/build_linux/tools/wexsandbox*
+            ${{ env.GITHUB_WORKSPACE }}/wex/build_linux/wex*.a
       
