@@ -277,6 +277,7 @@ jobs:
 
       - name: Build WEX
         run: |
+          cd wex
           cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Debug
           cmake --build build_linux
 
