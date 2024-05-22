@@ -101,7 +101,7 @@ jobs:
     - name: Set env vars
       run: |
         echo "LKDIR=$GITHUB_WORKSPACE/lk" >>$GITHUB_ENV
-        echo "LKD_LIB=$GITHUB_WORKSPACE/lk/build_linux" >>$GITHUB_ENV
+        echo "LK_LIB=$GITHUB_WORKSPACE/lk/build_linux" >>$GITHUB_ENV
         echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
     - name: Get git ref of sibling dependency SSC
       run: |
@@ -217,7 +217,7 @@ jobs:
       shell: bash
       run: |
         echo "LKDIR=$GITHUB_WORKSPACE/lk" >>$GITHUB_ENV
-        echo "LKD_LIB=$GITHUB_WORKSPACE/lk/build/Release" >>$GITHUB_ENV
+        echo "LKD_LIB=$GITHUB_WORKSPACE/lk/build/Debug" >>$GITHUB_ENV
         echo "LK_LIB=$GITHUB_WORKSPACE/lk/build/Release" >>$GITHUB_ENV
         echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
     - name: Get git ref of sibling dependency SSC
@@ -319,7 +319,7 @@ jobs:
       - name: Set env vars
         run: |
           echo "LKDIR=$GITHUB_WORKSPACE/lk" >>$GITHUB_ENV
-          echo "LKD_LIB=$GITHUB_WORKSPACE/lk/build_linux" >>$GITHUB_ENV
+          echo "LK_LIB=$GITHUB_WORKSPACE/lk/build_linux" >>$GITHUB_ENV
           echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
       - name: Get git ref of sibling dependency SSC
         run: |
