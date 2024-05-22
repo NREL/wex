@@ -96,7 +96,7 @@ jobs:
       if: steps.cachedlk.outputs.cache-hit != 'true'
       run: |
         cd $GITHUB_WORKSPACE/lk
-        cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Debug
+        cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Release
         cmake --build build_linux -j4
     - name: Set env vars
       run: |
@@ -123,7 +123,7 @@ jobs:
     - name: Build WEX
       run: |
         cd $GITHUB_WORKSPACE/wex
-        cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Debug
+        cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Release
         cmake --build build_linux
     - name: Save static lib, Dview & wexsandbox
       uses: actions/upload-artifact@v4
@@ -171,6 +171,9 @@ jobs:
       run: |
         cd wxWidgets-$env:WX_VERSION
         msbuild build/msw/wx_vc17.sln /t:Build /p:Configuration=Release /p:Platform=x64
+        mkdir $env:WXMSW3
+        cp -r wxWidgets-$WX_VERSION/include $env:WXMSW3
+        cp -r wxWidgets-$WX_VERSION/lib $env:WXMSW3
     - name: Get branch name
       shell: bash
       run:  |
@@ -311,7 +314,7 @@ jobs:
         if: steps.cachedlk.outputs.cache-hit != 'true'
         run: |
           cd $GITHUB_WORKSPACE/lk
-          cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Debug
+          cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Release
           cmake --build build_linux -j4
       - name: Set env vars
         run: |
@@ -342,7 +345,7 @@ jobs:
       - name: Build WEX
         run: |
           cd wex
-          cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Debug
+          cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Release
           cmake --build build_linux
       - name: Save static lib, Dview & wexsandbox
         uses: actions/upload-artifact@v4
