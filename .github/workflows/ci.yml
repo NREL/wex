@@ -172,8 +172,8 @@ jobs:
         cd wxWidgets-$env:WX_VERSION
         msbuild build/msw/wx_vc17.sln /t:Build /p:Configuration=Release /p:Platform=x64
         mkdir $env:WXMSW3
-        cp -r wxWidgets-$WX_VERSION/include $env:WXMSW3
-        cp -r wxWidgets-$WX_VERSION/lib $env:WXMSW3
+        cp -r include $env:WXMSW3
+        cp -r lib $env:WXMSW3
     - name: Get branch name
       shell: bash
       run:  |
