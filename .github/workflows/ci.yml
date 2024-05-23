@@ -6,6 +6,7 @@ on:
 
 env:
   WX_VERSION: '3.2.4'
+  DEFAULT_BRANCH: patch
 
 jobs:
   build-on-ubuntu:
@@ -105,7 +106,7 @@ jobs:
         echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
     - name: Get git ref of sibling dependency SSC
       run: |
-        ref=$(git ls-remote --exit-code https://github.com/NREL/ssc.git refs/heads/develop | awk '{print $1}')
+        ref=$(git ls-remote --exit-code https://github.com/NREL/ssc.git refs/heads/$DEFAULT_BRANCH | awk '{print $1}')
         echo "ref_of_ssc=$ref" | tee --append $GITHUB_ENV
     - name: Get cached build data of sibling dependency SSC
       uses: actions/cache@v4
@@ -186,7 +187,7 @@ jobs:
       run: |
         echo "GITHUB_REPOSITORY_OWNER=${GITHUB_REPOSITORY_OWNER}" >> $GITHUB_ENV
         git ls-remote --heads --exit-code https://github.com/${GITHUB_REPOSITORY_OWNER}/lk.git $GIT_BRANCH
-        if [[ $? != "0" ]]; then echo "LK_BRANCH=develop" >> $GITHUB_ENV; else echo "LK_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV; fi
+        if [[ $? != "0" ]]; then echo "LK_BRANCH=$DEFAULT_BRANCH" >> $GITHUB_ENV; else echo "LK_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV; fi
     - name: Get git ref of sibling dependency LK
       shell: bash
       run: |
@@ -224,7 +225,7 @@ jobs:
     - name: Get git ref of sibling dependency SSC
       shell: bash
       run: |
-        ref=$(git ls-remote --exit-code https://github.com/NREL/ssc.git refs/heads/develop | awk '{print $1}')
+        ref=$(git ls-remote --exit-code https://github.com/NREL/ssc.git refs/heads/$DEFAULT_BRANCH | awk '{print $1}')
         echo "ref_of_ssc=$ref" | tee --append $GITHUB_ENV
     - name: Get cached build data of sibling dependency SSC
       uses: actions/cache@v4
@@ -324,7 +325,7 @@ jobs:
           echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
       - name: Get git ref of sibling dependency SSC
         run: |
-          ref=$(git ls-remote --exit-code https://github.com/NREL/ssc.git refs/heads/develop | awk '{print $1}')
+          ref=$(git ls-remote --exit-code https://github.com/NREL/ssc.git refs/heads/$DEFAULT_BRANCH | awk '{print $1}')
           echo "ref_of_ssc=$ref" | tee -a $GITHUB_ENV
       - name: Get cached build data of sibling dependency SSC
         uses: actions/cache@v4
