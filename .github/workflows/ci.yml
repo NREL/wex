@@ -4,16 +4,31 @@ on:
   push:
   pull_request:
 
+env:
+  WX_VERSION: '3.2.4'
+  DEFAULT_BRANCH: develop
+
 jobs:
   build-on-ubuntu:
     runs-on: ubuntu-latest
+    env: 
+      GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+
     steps:
     - name: Setup cmake
-      uses: jwlawson/actions-setup-cmake@v1.12
+      uses: jwlawson/actions-setup-cmake@v2
       with:
         cmake-version: '3.24.x'
-    - name: Test cmake version
-      run: cmake --version
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        path: wex
+
+    - name: Set relative paths
+      run: | 
+        WXMSW3=$HOME/wx-$WX_VERSION
+        echo "WXMSW3=$WXMSW3" >> $GITHUB_ENV
+
     - name: Install OS dependencies
       run: |
         sudo apt-get update --fix-missing
@@ -27,30 +42,61 @@ jobs:
           libgtk2.0-dev \
           mesa-common-dev \
           unzip
-    - name: Get GCC version
-      run: gcc --version
-    - name: Get libc version
-      run: ldd --version
+
+    - name: Get cached build of wxWidgets
+      uses: actions/cache@v4
+      id: cachedwx
+      with:
+        path: ${{env.WXMSW3}}/
+        key: wxWidgets-${{ env.WX_VERSION }}-linux
 
     - name: Install wxWidgets
+      if: steps.cachedwx.outputs.cache-hit != 'true'
       run: |
-        sudo apt-get install -y libwxgtk*-dev
-        sudo ln -s $(which wx-config) /usr/local/bin/wx-config-3
-        wx-config-3 --cflags | grep I
+        curl -L https://github.com/wxWidgets/wxWidgets/releases/download/v$WX_VERSION/wxWidgets-$WX_VERSION.tar.bz2 -o wxWidgets-$WX_VERSION.tar.bz2
+        tar jxf wxWidgets-$WX_VERSION.tar.bz2
+        cd wxWidgets-$WX_VERSION
+        ./configure --prefix=$HOME/wx-$WX_VERSION --enable-shared=no --enable-debug=no --with-gtk=2 --with-libjpeg=builtin --with-libpng=builtin --with-regex=builtin --with-libtiff=builtin --with-zlib=builtin --with-expat=builtin --without-libjbig --without-liblzma --without-gtkprint --with-libnotify=no --with-libmspack=no --with-gnomevfs=no --with-opengl=yes --with-sdl=no --with-cxx=11 
+        make -j4
+        make install
+        sudo ln -s $HOME/wx-$WX_VERSION/bin/wx-config /usr/local/bin/wx-config-3
+        wx-config-3 --cflags
+        echo $HOME/wx-$WX_VERSION/bin >> $GITHUB_PATH
+
+    - name: Save wxWidgets build
+      if: steps.cachedwx.outputs.cache-hit != 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: wxWidgets-${{ env.WX_VERSION }}-linux
+        path: |
+          ${{ env.WXMSW3 }}
+
+    - name: Get branch name for pull request
+      if: ${{ github.event_name == 'pull_request' }}
+      run:  |
+        echo "GIT_BRANCH=$GITHUB_BASE_REF" >> $GITHUB_ENV
+
+    - name: Get branch name for push
+      if: ${{ github.event_name == 'push' }}
+      run:  |
+        echo "GIT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
 
     - name: Get git ref of sibling dependency LK
       run: |
-        ref=$(git ls-remote --exit-code git://github.com/NREL/lk.git refs/heads/develop | awk '{print $1}')
+        git ls-remote --heads --exit-code https://github.com/NREL/lk.git $GIT_BRANCH
+        if [[ $? != "0" ]]; then echo "LK_BRANCH=$DEFAULT_BRANCH" >> $GITHUB_ENV; else echo "LK_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV; fi
+        ref=$(git ls-remote --exit-code https://github.com/NREL/lk.git refs/heads/${LK_BRANCH} | awk '{print $1}')
         echo "ref_of_lk=$ref" | tee --append $GITHUB_ENV
+        
     - name: Get cached build data of sibling dependency LK
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       id: cachedlk
       with:
-        path: ${{ env.GH_WORKSPACE }}/lk
-        key: ${{ env.RUNS_ON }}-${{ env.ref_of_lk }}-LK
+        path: lk
+        key: linux-${{ env.ref_of_lk }}-LK
     - name: Clone sibling dependency LK
       if: steps.cachedlk.outputs.cache-hit != 'true'
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         ref: ${{ env.ref_of_lk }}
         path: lk
@@ -59,49 +105,266 @@ jobs:
       if: steps.cachedlk.outputs.cache-hit != 'true'
       run: |
         cd $GITHUB_WORKSPACE/lk
-        cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Debug
-        cmake --build build_linux -- -j
-    - name: Set LKDIR
+        cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Release
+        cmake --build build_linux -j4
+    - name: Set env vars
       run: |
         echo "LKDIR=$GITHUB_WORKSPACE/lk" >>$GITHUB_ENV
-    - name: Set LKD_LIB 
-      run: |
-        echo "LKD_LIB=$GITHUB_WORKSPACE/lk/build_linux" >>$GITHUB_ENV
-    - name: Set RAPIDJSONDIR
-      run: |
+        echo "LK_LIB=$GITHUB_WORKSPACE/lk/build_linux" >>$GITHUB_ENV
         echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
     - name: Get git ref of sibling dependency SSC
       run: |
-        ref=$(git ls-remote --exit-code git://github.com/NREL/ssc.git refs/heads/develop | awk '{print $1}')
+        git ls-remote --heads --exit-code https://github.com/NREL/ssc.git $GIT_BRANCH
+        if [[ $? != "0" ]]; then echo "SSC_BRANCH=$DEFAULT_BRANCH" >> $GITHUB_ENV; else echo "SSC_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV; fi
+        ref=$(git ls-remote --exit-code https://github.com/NREL/ssc.git refs/heads/${SSC_BRANCH} | awk '{print $1}')
         echo "ref_of_ssc=$ref" | tee --append $GITHUB_ENV
     - name: Get cached build data of sibling dependency SSC
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       id: cachedssc
       with:
-        path: ${{ env.GH_WORKSPACE }}/ssc
-        key: ${{ env.RUNS_ON }}-${{ env.ref_of_ssc }}-SSC
+        path: ssc
+        key: windows-${{ env.ref_of_ssc }}-SSC
     - name: Clone sibling dependency SSC
       if: steps.cachedssc.outputs.cache-hit != 'true'
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         ref: ${{ env.ref_of_ssc }}
         path: ssc
         repository: NREL/ssc
-
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        path: wex
     - name: Build WEX
       run: |
         cd $GITHUB_WORKSPACE/wex
-        cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Debug
+        cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Release
         cmake --build build_linux
     - name: Save static lib, Dview & wexsandbox
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
-        name: WEX-${{ env.RUNS_ON }}-x86_64
+        name: WEX-linux-x86_64
         path: |
-          ${{ env.GH_WORKSPACE }}/wex/build_linux/tools/DView*
-          ${{ env.GH_WORKSPACE }}/wex/build_linux/tools/wexsandbox*
-          ${{ env.GH_WORKSPACE }}/wex/build_linux/wex*.a
+          wex/build_linux/tools/DView*
+          wex/build_linux/tools/wexsandbox*
+          wex/build_linux/wex*.a
+
+  build-on-windows:
+    runs-on: windows-latest
+    env: 
+      GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+    steps:
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v2
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        path: wex
+    - name: Set relative paths
+      shell: bash
+      run: | 
+        WXMSW3=$GITHUB_WORKSPACE/wx-$WX_VERSION
+        echo "WXMSW3=$WXMSW3" >> $GITHUB_ENV
+    - name: Setup cmake
+      uses: jwlawson/actions-setup-cmake@v2
+      with:
+        cmake-version: '3.24.x'
+    - name: Get cached build of wxWidgets
+      uses: actions/cache@v4
+      id: cachedwx
+      with:
+        path: ${{env.WXMSW3}}/
+        key: wxWidgets-${{ env.WX_VERSION }}-windows
+    - name: Download wxWidgets
+      if: steps.cachedwx.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        curl -L https://github.com/wxWidgets/wxWidgets/releases/download/v$WX_VERSION/wxWidgets-$WX_VERSION.tar.bz2 -o wxWidgets-$WX_VERSION.tar.bz2
+        tar jxf wxWidgets-$WX_VERSION.tar.bz2
+    - name: Install wxWidgets
+      if: steps.cachedwx.outputs.cache-hit != 'true'
+      run: |
+        cd wxWidgets-$env:WX_VERSION
+        msbuild build/msw/wx_vc17.sln /t:Build /p:Configuration=Release /p:Platform=x64
+        mkdir $env:WXMSW3
+        cp -r include $env:WXMSW3
+        cp -r lib $env:WXMSW3
+    - name: Get branch name
+      shell: bash
+      run:  |
+        # Short name for current branch. base ref is set on push builds, head ref is for pull request builds
+        if [ -z ${GITHUB_HEAD_REF+x} ]; then GIT_BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}; else GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}; fi
+        echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
+    - name: Determine branches for other repos
+      continue-on-error: true
+      shell: bash
+      run: |
+        echo "GITHUB_REPOSITORY_OWNER=${GITHUB_REPOSITORY_OWNER}" >> $GITHUB_ENV
+        git ls-remote --heads --exit-code https://github.com/${GITHUB_REPOSITORY_OWNER}/lk.git $GIT_BRANCH
+        if [[ $? != "0" ]]; then echo "LK_BRANCH=$DEFAULT_BRANCH" >> $GITHUB_ENV; else echo "LK_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV; fi
+    - name: Get git ref of sibling dependency LK
+      shell: bash
+      run: |
+        ref=$(git ls-remote --exit-code https://github.com/NREL/lk.git refs/heads/$GIT_BRANCH | awk '{print $1}')
+        echo "ref_of_lk=$ref" | tee --append $GITHUB_ENV
+    - name: Get cached build data of sibling dependency LK
+      uses: actions/cache@v4
+      id: cachedlk
+      with:
+        path: lk
+        key: windows-${{ env.ref_of_lk }}-LK
+    - name: Checkout lk
+      if: steps.cachedlk.outputs.cache-hit != 'true'
+      uses: actions/checkout@v4
+      with:
+        path: lk
+        repository: ${{ env.GITHUB_REPOSITORY_OWNER }}/lk
+        ref: ${{ env.LK_BRANCH }}
+    - name: Build LK
+      if: steps.cachedlk.outputs.cache-hit != 'true'
+      run: |
+        cd lk
+        mkdir build
+        cd build
+        cmake .. -G "Visual Studio 17 2022" -DCMAKE_CONFIGURATION_TYPES="Release;Debug" -DCMAKE_SYSTEM_VERSION=10 -DSAM_SKIP_TOOLS=1
+        MSBuild.exe .\lk.sln /t:Build /p:Configuration=Release
+        MSBuild.exe .\lk.sln /t:Build /p:Configuration=Debug
+    - name: Set LK paths
+      shell: bash
+      run: |
+        echo "LKDIR=$GITHUB_WORKSPACE/lk" >>$GITHUB_ENV
+        echo "LKD_LIB=$GITHUB_WORKSPACE/lk/build/Debug" >>$GITHUB_ENV
+        echo "LK_LIB=$GITHUB_WORKSPACE/lk/build/Release" >>$GITHUB_ENV
+        echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
+    - name: Get git ref of sibling dependency SSC
+      shell: bash
+      run: |
+        ref=$(git ls-remote --exit-code https://github.com/NREL/ssc.git refs/heads/$DEFAULT_BRANCH | awk '{print $1}')
+        echo "ref_of_ssc=$ref" | tee --append $GITHUB_ENV
+    - name: Get cached build data of sibling dependency SSC
+      uses: actions/cache@v4
+      id: cachedssc
+      with:
+        path: ssc
+        key: windows-${{ env.ref_of_ssc }}-SSC
+    - name: Checkout ssc
+      if: steps.cachedssc.outputs.cache-hit != 'true'
+      uses: actions/checkout@v4
+      with:
+        path: ssc
+        repository: ${{ env.GITHUB_REPOSITORY_OWNER }}/ssc
+        ref: ${{ env.SSC_BRANCH }}
+    - name: Build WEX
+      run: |
+        cd wex
+        mkdir build
+        cd build
+        cmake -G "Visual Studio 17 2022" -DCMAKE_CONFIGURATION_TYPES="Release" -DCMAKE_SYSTEM_VERSION=10 ..
+        MSBuild.exe .\wex.sln /t:Build /p:Configuration=Release
+    - name: Save static lib, Dview & wexsandbox
+      uses: actions/upload-artifact@v4
+      with:
+        name: WEX-windows-x86_64
+        path: |
+          wex/build/tools/Release/tools/DView.exe
+          wex/build/tools/Release/tools/wexsandbox.exe
+          wex/build/Release/wex.lib
+        
+  build-on-mac:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-14-large, macos-latest]
+    env: 
+      GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+    steps:
+      - name: Set relative paths
+        run: | 
+          WXMSW3=$HOME/wx-$WX_VERSION
+          echo "WXMSW3=$WXMSW3" >> $GITHUB_ENV
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: wex
+      - name: Get cached build of wxWidgets
+        uses: actions/cache@v4
+        id: cachedwx
+        with:
+          path: ${{env.WXMSW3}}/
+          key: wxWidgets-${{ env.WX_VERSION }}-${{ matrix.os }}
+      - name: Install wxWidgets
+        if: steps.cachedwx.outputs.cache-hit != 'true'
+        run: |
+          curl -L https://github.com/wxWidgets/wxWidgets/releases/download/v$WX_VERSION/wxWidgets-$WX_VERSION.tar.bz2 -o wxWidgets-$WX_VERSION.tar.bz2
+          tar jxf wxWidgets-$WX_VERSION.tar.bz2
+          cd wxWidgets-$WX_VERSION
+          ./configure --prefix=$HOME/wx-$WX_VERSION --enable-stl=yes --enable-shared=no --disable-debug_flag --with-cocoa --enable-universal_binary=x86_64,arm64 --enable-unicode --enable-webview --disable-mediactrl --with-cxx=11 --with-macosx-version-min=10.15  --with-libjpeg=builtin --with-libpng=builtin --with-regex=builtin --with-libtiff=builtin --with-zlib=builtin --with-expat=builtin
+          make -j3
+          make install
+          sudo ln -s $HOME/wx-$WX_VERSION/bin/wx-config /usr/local/bin/wx-config-3
+          wx-config-3 --cflags
+          echo ${HOME}/wx-$WX_VERSION/bin >> $GITHUB_PATH
+      - name: Get branch name
+        run:  |
+          # Short name for current branch. base ref is set on push builds, head ref is for pull request builds
+          if [ -z ${GITHUB_HEAD_REF+x} ]; then GIT_BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}; else GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}; fi
+          echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
+      - name: Get git ref of sibling dependency LK
+        run: |
+          ref=$(git ls-remote --exit-code https://github.com/NREL/lk.git refs/heads/$GIT_BRANCH | awk '{print $1}')
+          echo "ref_of_lk=$ref" | tee -a $GITHUB_ENV
+      - name: Get cached build data of sibling dependency LK
+        uses: actions/cache@v4
+        id: cachedlk
+        with:
+          path: lk
+          key: ${{ matrix.os }}-${{ env.ref_of_lk }}-LK
+      - name: Clone sibling dependency LK
+        if: steps.cachedlk.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.ref_of_lk }}
+          path: lk
+          repository: NREL/lk
+      - name: Build LK
+        if: steps.cachedlk.outputs.cache-hit != 'true'
+        run: |
+          cd $GITHUB_WORKSPACE/lk
+          cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Release
+          cmake --build build_linux -j4
+      - name: Set env vars
+        run: |
+          echo "LKDIR=$GITHUB_WORKSPACE/lk" >>$GITHUB_ENV
+          echo "LK_LIB=$GITHUB_WORKSPACE/lk/build_linux" >>$GITHUB_ENV
+          echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
+      - name: Get git ref of sibling dependency SSC
+        run: |
+          ref=$(git ls-remote --exit-code https://github.com/NREL/ssc.git refs/heads/$DEFAULT_BRANCH | awk '{print $1}')
+          echo "ref_of_ssc=$ref" | tee -a $GITHUB_ENV
+      - name: Get cached build data of sibling dependency SSC
+        uses: actions/cache@v4
+        id: cachedssc
+        with:
+          path: ssc
+          key: ${{ matrix.os }}-${{ env.ref_of_ssc }}-SSC
+      - name: Clone sibling dependency SSC
+        if: steps.cachedssc.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.ref_of_ssc }}
+          path: ssc
+          repository: NREL/ssc
+      - name: Setup cmake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.24.x'
+      - name: Build WEX
+        run: |
+          cd wex
+          cmake -Bbuild_linux -DCMAKE_BUILD_TYPE=Release
+          cmake --build build_linux
+      - name: Save static lib, Dview & wexsandbox
+        uses: actions/upload-artifact@v4
+        with:
+          name: WEX-${{  matrix.os }}-x86_64
+          path: |
+            wex/build_linux/tools/DView*
+            wex/build_linux/tools/wexsandbox*
+            wex/build_linux/wex*.a
+      
