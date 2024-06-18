@@ -75,14 +75,14 @@ endif ()
 if (${CMAKE_PROJECT_NAME} STREQUAL system_advisor_model)
     target_link_libraries(wexsandbox lk)
 else ()
-    if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR MSVC)
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR "Debug" IN_LIST CMAKE_CONFIGURATION_TYPES)
         unset(LKD_LIB CACHE)
         find_library(LKD_LIB
                 NAMES lkd.a lkd.lib
                 PATHS $ENV{LKD_LIB} $ENV{LKDIR}/build $ENV{LKDIR}/build/Debug)
         target_link_libraries(wexsandbox debug ${LKD_LIB})
     endif ()
-    if (CMAKE_BUILD_TYPE STREQUAL "Release" OR MSVC)
+    if (CMAKE_BUILD_TYPE STREQUAL "Release" OR "Release" IN_LIST CMAKE_CONFIGURATION_TYPES)
         unset(LK_LIB CACHE)
         find_library(LK_LIB
                 NAMES lk.a lk.lib
