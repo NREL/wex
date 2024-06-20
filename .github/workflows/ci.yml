@@ -192,10 +192,12 @@ jobs:
         cp -r include $env:WXMSW3
         cp -r lib $env:WXMSW3
     - name: Get branch name for pull request
+      shell: bash
       if: ${{ github.event_name == 'pull_request' }}
       run:  |
         echo "GIT_BRANCH=$GITHUB_BASE_REF" >> $GITHUB_ENV
     - name: Get branch name for push
+      shell: bash
       if: ${{ github.event_name == 'push' }}
       run:  |
         echo "GIT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
