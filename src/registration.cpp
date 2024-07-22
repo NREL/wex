@@ -42,8 +42,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <wex/metro.h>
 #include <wex/utils.h>
-#include <wex/jsonreader.h>
+//#include <wex/jsonreader.h>
 #include <wex/easycurl.h>
+
+#include <rapidjson/document.h>
 
 #include <wex/registration.h>
 
@@ -234,8 +236,8 @@ bool wxOnlineRegistration::CheckInWithServer(int *usage_count) {
 
     if (usage_count) *usage_count = -999;
 
-    wxJSONValue root;
-    wxJSONReader reader;
+//    wxJSONValue root;
+//    wxJSONReader reader;
     wxString raw(curl.GetDataAsString());
 
     if (gs_enDebug) {
@@ -247,15 +249,18 @@ bool wxOnlineRegistration::CheckInWithServer(int *usage_count) {
         wxLogStatus("\tresponse: " + raw);
     }
 
-    if (reader.Parse(raw, &root) == 0) {
-        int code = root.Item("status").AsInt();
+    rapidjson::Document reader;
+    reader.Parse(raw.c_str());
+
+    if (reader.HasParseError()) {
+        int code = reader["status"].GetInt();
         if (gs_enDebug) {
             wxLogStatus("\tcode: %d", code);
         }
 
         if (code == 200) {
             gs_regData->WriteSetting("count-since-last-verify-" + GetVersionAndPlatform(), wxString::Format("%d", 0));
-            if (usage_count) *usage_count = root.Item("result").Item("usage_count").AsInt();
+            if (usage_count) *usage_count = reader["result"]["usage_count"].GetInt();
             return true;
         }
     }
@@ -413,10 +418,10 @@ void wxOnlineRegistration::OnRegister(wxCommandEvent &) {
     wxBusyCursor curs;
     wxEasyCurl curl(this, wxID_ANY);
     int code = -1;
-    wxJSONValue root;
-    wxJSONReader reader;
-
+ 
     m_output->SetForegroundColour(wxMetroTheme::Colour(wxMT_TEXT));
+
+    rapidjson::Document reader;
 
     if (m_register->GetLabel() == "Resend key") {
         //	https://developer.nrel.gov/api/sam/v1/tracker/resend_key?api_key=SAMAPIKEY&email=someusersemail@somedomain.com
@@ -426,8 +431,10 @@ void wxOnlineRegistration::OnRegister(wxCommandEvent &) {
         curl.Get(url);
 
         wxString raw(curl.GetDataAsString());
-        if (reader.Parse(raw, &root) == 0)
-            code = root.Item("status").AsInt();
+
+        reader.Parse(raw);
+        if (reader.HasParseError())
+            code = reader["status"].GetInt();
 
         if (gs_enDebug) {
             wxLogStatus("wxOnlineRegistration::OnRegister (Resend key)");
@@ -453,8 +460,10 @@ void wxOnlineRegistration::OnRegister(wxCommandEvent &) {
     curl.Get(url);
 
     wxString raw(curl.GetDataAsString());
-    if (reader.Parse(raw, &root) == 0)
-        code = root.Item("status").AsInt();
+    reader.Parse(raw);
+
+    if (reader.HasParseError())
+        code = reader["status"].GetInt();
 
     if (gs_enDebug) {
         wxLogStatus("wxOnlineRegistration::OnRegister (Resend key)");
