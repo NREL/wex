@@ -174,8 +174,7 @@ jobs:
         mkdir $env:WXMSW3
         cp -r include $env:WXMSW3
         cp -r lib $env:WXMSW3
-    - name: Get branch name
-      shell: bash
+   - name: Get branch name
       run:  |
         # Short name for current branch. base ref is set on push builds, head ref is for pull request builds
         if [ -z ${GITHUB_HEAD_REF+x} ]; then GIT_BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}; else GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}; fi
@@ -255,7 +254,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
     steps:
       - name: Set relative paths
-        run: | 
+        run: |
           WXMSW3=$HOME/wx-$WX_VERSION
           echo "WXMSW3=$WXMSW3" >> $GITHUB_ENV
       - name: Checkout
