@@ -80,7 +80,6 @@ jobs:
       if: ${{ github.event_name == 'push' }}
       run:  |
         echo "GIT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
-
     - name: Get git ref of sibling dependency LK
       run: |
         git ls-remote --heads --exit-code https://github.com/NREL/lk.git $GIT_BRANCH
