@@ -147,7 +147,7 @@ jobs:
         path: wex
     - name: Set relative paths
       shell: bash
-      run: | 
+      run: |
         WXMSW3=$GITHUB_WORKSPACE/wx-$WX_VERSION
         echo "WXMSW3=$WXMSW3" >> $GITHUB_ENV
     - name: Setup cmake
@@ -175,6 +175,7 @@ jobs:
         cp -r include $env:WXMSW3
         cp -r lib $env:WXMSW3
     - name: Get branch name
+      shell: bash
       run:  |
         # Short name for current branch. base ref is set on push builds, head ref is for pull request builds
         if [ -z ${GITHUB_HEAD_REF+x} ]; then GIT_BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}; else GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}; fi
