@@ -432,7 +432,7 @@ void wxOnlineRegistration::OnRegister(wxCommandEvent &) {
 
         wxString raw(curl.GetDataAsString());
 
-        reader.Parse(raw);
+        reader.Parse(raw.c_str());
         if (reader.HasParseError())
             code = reader["status"].GetInt();
 
@@ -460,7 +460,7 @@ void wxOnlineRegistration::OnRegister(wxCommandEvent &) {
     curl.Get(url);
 
     wxString raw(curl.GetDataAsString());
-    reader.Parse(raw);
+    reader.Parse(raw.c_str());
 
     if (reader.HasParseError())
         code = reader["status"].GetInt();
