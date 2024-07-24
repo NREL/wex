@@ -25,7 +25,7 @@ jobs:
         path: wex
 
     - name: Set relative paths
-      run: | 
+      run: |
         WXMSW3=$HOME/wx-$WX_VERSION
         echo "WXMSW3=$WXMSW3" >> $GITHUB_ENV
 
