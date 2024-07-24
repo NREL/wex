@@ -252,7 +252,7 @@ bool wxOnlineRegistration::CheckInWithServer(int *usage_count) {
     rapidjson::Document reader;
     reader.Parse(raw.c_str());
 
-    if (reader.HasParseError()) {
+    if (!reader.HasParseError()) {
         int code = reader["status"].GetInt();
         if (gs_enDebug) {
             wxLogStatus("\tcode: %d", code);
@@ -433,7 +433,7 @@ void wxOnlineRegistration::OnRegister(wxCommandEvent &) {
         wxString raw(curl.GetDataAsString());
 
         reader.Parse(raw.c_str());
-        if (reader.HasParseError())
+        if (!reader.HasParseError())
             code = reader["status"].GetInt();
 
         if (gs_enDebug) {
@@ -462,7 +462,7 @@ void wxOnlineRegistration::OnRegister(wxCommandEvent &) {
     wxString raw(curl.GetDataAsString());
     reader.Parse(raw.c_str());
 
-    if (reader.HasParseError())
+    if (!reader.HasParseError())
         code = reader["status"].GetInt();
 
     if (gs_enDebug) {
