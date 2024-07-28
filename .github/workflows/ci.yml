@@ -25,7 +25,7 @@ jobs:
         path: wex
 
     - name: Set relative paths
-      run: | 
+      run: |
         WXMSW3=$HOME/wx-$WX_VERSION
         echo "WXMSW3=$WXMSW3" >> $GITHUB_ENV
 
@@ -70,24 +70,15 @@ jobs:
         name: wxWidgets-${{ env.WX_VERSION }}-linux
         path: |
           ${{ env.WXMSW3 }}
-
-    - name: Get branch name for pull request
-      if: ${{ github.event_name == 'pull_request' }}
+    - name: Get branch name
       run:  |
-        echo "GIT_BRANCH=$GITHUB_BASE_REF" >> $GITHUB_ENV
-
-    - name: Get branch name for push
-      if: ${{ github.event_name == 'push' }}
-      run:  |
-        echo "GIT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
-
+        # Short name for current branch. base ref is set on push builds, head ref is for pull request builds
+        if [ -z ${GITHUB_HEAD_REF+x} ]; then GIT_BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}; else GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}; fi
+        echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
     - name: Get git ref of sibling dependency LK
       run: |
-        git ls-remote --heads --exit-code https://github.com/NREL/lk.git $GIT_BRANCH
-        if [[ $? != "0" ]]; then echo "LK_BRANCH=$DEFAULT_BRANCH" >> $GITHUB_ENV; else echo "LK_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV; fi
-        ref=$(git ls-remote --exit-code https://github.com/NREL/lk.git refs/heads/${LK_BRANCH} | awk '{print $1}')
-        echo "ref_of_lk=$ref" | tee --append $GITHUB_ENV
-        
+        ref=$(git ls-remote --exit-code https://github.com/NREL/lk.git refs/heads/$GIT_BRANCH | awk '{print $1}')
+        echo "ref_of_lk=$ref" | tee -a $GITHUB_ENV
     - name: Get cached build data of sibling dependency LK
       uses: actions/cache@v4
       id: cachedlk
@@ -114,9 +105,7 @@ jobs:
         echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
     - name: Get git ref of sibling dependency SSC
       run: |
-        git ls-remote --heads --exit-code https://github.com/NREL/ssc.git $GIT_BRANCH
-        if [[ $? != "0" ]]; then echo "SSC_BRANCH=$DEFAULT_BRANCH" >> $GITHUB_ENV; else echo "SSC_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV; fi
-        ref=$(git ls-remote --exit-code https://github.com/NREL/ssc.git refs/heads/${SSC_BRANCH} | awk '{print $1}')
+        ref=$(git ls-remote --exit-code https://github.com/NREL/ssc.git refs/heads/$DEFAULT_BRANCH | awk '{print $1}')
         echo "ref_of_ssc=$ref" | tee --append $GITHUB_ENV
     - name: Get cached build data of sibling dependency SSC
       uses: actions/cache@v4
@@ -158,7 +147,7 @@ jobs:
         path: wex
     - name: Set relative paths
       shell: bash
-      run: | 
+      run: |
         WXMSW3=$GITHUB_WORKSPACE/wx-$WX_VERSION
         echo "WXMSW3=$WXMSW3" >> $GITHUB_ENV
     - name: Setup cmake
@@ -191,18 +180,11 @@ jobs:
         # Short name for current branch. base ref is set on push builds, head ref is for pull request builds
         if [ -z ${GITHUB_HEAD_REF+x} ]; then GIT_BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}; else GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}; fi
         echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
-    - name: Determine branches for other repos
-      continue-on-error: true
-      shell: bash
-      run: |
-        echo "GITHUB_REPOSITORY_OWNER=${GITHUB_REPOSITORY_OWNER}" >> $GITHUB_ENV
-        git ls-remote --heads --exit-code https://github.com/${GITHUB_REPOSITORY_OWNER}/lk.git $GIT_BRANCH
-        if [[ $? != "0" ]]; then echo "LK_BRANCH=$DEFAULT_BRANCH" >> $GITHUB_ENV; else echo "LK_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV; fi
     - name: Get git ref of sibling dependency LK
       shell: bash
       run: |
-        ref=$(git ls-remote --exit-code https://github.com/NREL/lk.git refs/heads/$GIT_BRANCH | awk '{print $1}')
-        echo "ref_of_lk=$ref" | tee --append $GITHUB_ENV
+        ref=$(git ls-remote --exit-code https://github.com/NREL/lk.git refs/heads/patch | awk '{print $1}')
+        echo "ref_of_lk=$ref" | tee -a $GITHUB_ENV
     - name: Get cached build data of sibling dependency LK
       uses: actions/cache@v4
       id: cachedlk
@@ -275,7 +257,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
     steps:
       - name: Set relative paths
-        run: | 
+        run: |
           WXMSW3=$HOME/wx-$WX_VERSION
           echo "WXMSW3=$WXMSW3" >> $GITHUB_ENV
       - name: Checkout

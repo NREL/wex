@@ -50,7 +50,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 #include <wex/label.h>
-#include <wex/jsonreader.h>
 #include <wex/utils.h>
 #include <wex/csv.h>
 #include <wex/easycurl.h>
