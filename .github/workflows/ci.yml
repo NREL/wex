@@ -215,11 +215,9 @@ jobs:
         echo "LKD_LIB=$GITHUB_WORKSPACE/lk/build/Debug" >>$GITHUB_ENV
         echo "LK_LIB=$GITHUB_WORKSPACE/lk/build/Release" >>$GITHUB_ENV
         echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
-        
     - name: Get git ref of sibling dependency SSC
       shell: bash
       run: |
-#        ref=$(git ls-remote --exit-code https://github.com/NREL/ssc.git refs/heads/$DEFAULT_BRANCH | awk '{print $1}')
         ref=$(git ls-remote --exit-code https://github.com/NREL/ssc.git refs/heads/patch | awk '{print $1}')
         echo "ref_of_ssc=$ref" | tee --append $GITHUB_ENV
     - name: Get cached build data of sibling dependency SSC
