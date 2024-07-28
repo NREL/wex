@@ -230,9 +230,9 @@ jobs:
       if: steps.cachedssc.outputs.cache-hit != 'true'
       uses: actions/checkout@v4
       with:
+        ref: ${{ env.ref_of_ssc }}
         path: ssc
-        repository: ${{ env.GITHUB_REPOSITORY_OWNER }}/ssc
-        ref: ${{ env.SSC_BRANCH }}
+        repository: NREL/ssc
     - name: Build WEX
       run: |
         cd wex
