@@ -180,6 +180,7 @@ jobs:
         # Short name for current branch. base ref is set on push builds, head ref is for pull request builds
         if [ -z ${GITHUB_HEAD_REF+x} ]; then GIT_BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}; else GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}; fi
         echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
+# force patch dependency of lk for now since difference wex branches fail to find lk dependency for Windows        
     - name: Get git ref of sibling dependency LK
       shell: bash
       run: |
@@ -214,10 +215,12 @@ jobs:
         echo "LKD_LIB=$GITHUB_WORKSPACE/lk/build/Debug" >>$GITHUB_ENV
         echo "LK_LIB=$GITHUB_WORKSPACE/lk/build/Release" >>$GITHUB_ENV
         echo "RAPIDJSONDIR=$GITHUB_WORKSPACE/ssc" >>$GITHUB_ENV
+# force patch dependency of ssc for now since different wex branches fail to find ssc dependency for Windows        
     - name: Get git ref of sibling dependency SSC
       shell: bash
       run: |
-        ref=$(git ls-remote --exit-code https://github.com/NREL/ssc.git refs/heads/$DEFAULT_BRANCH | awk '{print $1}')
+#        ref=$(git ls-remote --exit-code https://github.com/NREL/ssc.git refs/heads/$DEFAULT_BRANCH | awk '{print $1}')
+        ref=$(git ls-remote --exit-code https://github.com/NREL/ssc.git refs/heads/patch | awk '{print $1}')
         echo "ref_of_ssc=$ref" | tee --append $GITHUB_ENV
     - name: Get cached build data of sibling dependency SSC
       uses: actions/cache@v4
