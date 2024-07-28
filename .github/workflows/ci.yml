@@ -180,7 +180,7 @@ jobs:
         # Short name for current branch. base ref is set on push builds, head ref is for pull request builds
         if [ -z ${GITHUB_HEAD_REF+x} ]; then GIT_BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}; else GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}; fi
         echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
-# force patch dependency of lk for now since difference wex branches fail to find lk dependency for Windows        
+# force patch dependency of lk for now since different wex branches fail to find lk dependency for Windows        
     - name: Get git ref of sibling dependency LK
       shell: bash
       run: |
