@@ -1796,7 +1796,7 @@ namespace ClipperLib {
     else if (e1->PolyTyp != e2->PolyTyp)
     {
       //toggle subj open path OutIdx on/off when Abs(clip.WndCnt) == 1 ...
-      if ((e1->WindDelta == 0) && abs(e2->WindCnt) == 1 &&
+      if ((e1->WindDelta == 0) && std::abs(e2->WindCnt) == 1 &&
         (m_ClipType != ctUnion || e2->WindCnt2 == 0))
       {
         AddOutPt(e1, Pt);
