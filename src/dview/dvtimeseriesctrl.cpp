@@ -76,7 +76,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 static const wxString NO_UNITS("ThereAreNoUnitsForThisAxis.");
 enum {
-    ID_TopCheckbox = wxID_HIGHEST + 1, ID_BottomCheckbox, ID_StatCheckbox, ID_Timer
+    ID_TopCheckbox = wxID_HIGHEST + 1, ID_BottomCheckbox, ID_StatCheckbox, ID_Timer, ID_CustomChoice
 };
 
 class wxDVTimeSeriesPlot : public wxPLPlottable {
@@ -829,11 +829,29 @@ wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, wxDVTime
     //Contains boxes to turn lines on or off.
     m_srchCtrl = new wxSearchCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxSize(150, -1), 0);
     m_dataSelector = new wxDVSelectionListCtrl(this, ID_DATA_CHANNEL_SELECTOR, 2);
+    mSteppedLines = new wxCheckBox(this, wxID_ANY, "Stepped lines");
+    mStackedArea = new wxCheckBox(this, wxID_ANY, "Stacked area on left Y axis");
+    mStatTypeCheck = new wxCheckBox(this, ID_StatCheckbox, "Show sum over time step");
+    wxStaticText* choiceLabel = new wxStaticText(this, wxID_ANY, wxT("Presets:"));
+    m_customChoice = new wxChoice(this, ID_CustomChoice);
+    m_customChoice->Append(wxT("Battery - Utility Rate - Load"));
+    m_customChoice->Append(wxT("Hybrid Mix"));
+    m_customChoice->SetSelection(0);
     wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+    //sizer->Add(mSteppedLines, 0, wxALL | wxEXPAND, 10);
+    //sizer->Add(mStackedArea, 0, wxALL | wxALIGN_CENTER, 10);
+    //sizer->Add(mStatTypeCheck, 0, wxALL | wxALIGN_CENTER, 10);
     sizer->Add(m_srchCtrl, 0, wxALL | wxEXPAND, 0);
     sizer->Add(m_dataSelector, 0, wxALL | wxALIGN_CENTER, 0);
-
+    
+    wxBoxSizer* options1Sizer = new wxBoxSizer(wxHORIZONTAL);
+    options1Sizer->Add(mSteppedLines, 0, wxALL | wxALIGN_CENTER_VERTICAL, 10);
+    options1Sizer->Add(mStackedArea, 0, wxALL | wxALIGN_CENTER_VERTICAL, 10);
+    options1Sizer->Add(mStatTypeCheck, 0, wxALL | wxALIGN_CENTER_VERTICAL, 10);
+    options1Sizer->Add(choiceLabel, 0, wxALIGN_CENTER, 0);
+    options1Sizer->Add(m_customChoice, 0, wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL | wxALL, 2);
     wxBoxSizer *graph_sizer = new wxBoxSizer(wxVERTICAL);
+    graph_sizer->Add(options1Sizer, 0, wxEXPAND, 0);
     graph_sizer->Add(m_plotSurface, 1, wxEXPAND | wxALL, 4);
     graph_sizer->Add(scrollerAndZoomSizer, 0, wxEXPAND | wxALL, 0);
 
@@ -1811,6 +1829,10 @@ void wxDVTimeSeriesCtrl::MakeXBoundsNice(double *xMin, double *xMax) {
     wxDVPlotHelper::SetRangeEndpointsToDays(xMin, xMax);
 }
 
+int wxDVTimeSeriesCtrl::GetPresetChoice() {
+    return m_customChoice->GetSelection();
+}
+
 void wxDVTimeSeriesCtrl::KeepNewBoundsWithinLimits(double *newMin, double *newMax) {
     if (m_plots.size() == 0) return;
 
@@ -2430,3 +2452,4 @@ void wxDVTimeSeriesCtrl::AutoscaleYAxisByPlot(bool IsLeftAxis, bool IsTopPlot, i
         }
     }
 }
+

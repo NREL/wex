@@ -210,6 +210,8 @@ public:
 
     void MakeXBoundsNice(double *xMin, double *xMax);
 
+    int GetPresetChoice();
+
     wxDVTimeSeriesType GetTimeSeriesType();
 
     wxDVStatType GetStatType();
@@ -313,6 +315,10 @@ private:
     bool m_stackingOnYLeft;
     wxDVTimeSeriesType m_seriesType;
     wxDVStatType m_statType;
+    wxCheckBox* mSteppedLines;
+    wxCheckBox* mStackedArea;
+    wxCheckBox* mStatTypeCheck;
+    wxChoice* m_customChoice;
 
     void AddGraphAfterChannelSelection(wxPLPlotCtrl::PlotPos pPos, int index);
 

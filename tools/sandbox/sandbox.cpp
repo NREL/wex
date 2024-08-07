@@ -1398,13 +1398,13 @@ public:
 //        TestFreeTypeText();
 //		TestPlotAnnotations(0);
 		TestWindPrufFigure2(0);
-//		TestWindPrufFigure5(0);
+		TestWindPrufFigure5(0);
 
         //wxFrame *frmgl = new wxFrame( NULL, wxID_ANY, "GL Easy Test", wxDefaultPosition, wxSize(700,700) );
         //new wxGLEasyCanvasTest( frmgl );
         //frmgl->Show();
 
-        return true;
+        //return true;
 
         ////TestFormDesigner();
         ////return true;
