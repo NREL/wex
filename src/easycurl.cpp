@@ -155,8 +155,15 @@ public:
             wxString encoded = uri.BuildURI();
             curl_easy_setopt(curl, CURLOPT_URL, (const char *) encoded.c_str());
 
-            if (!m_sc->m_postData.IsEmpty())
-                curl_easy_setopt(curl, CURLOPT_POSTFIELDS, (const char *) m_sc->m_postData.c_str());
+            if (!m_sc->m_postData.IsEmpty()) {
+// SAM issue 1830
+                auto len = m_sc->m_postData.length();
+                curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, len);
+                curl_easy_setopt(curl, CURLOPT_POSTFIELDS, (const char*)m_sc->m_postData.c_str());
+                //                wxURI uriPostdata(m_sc->m_postData);
+//                wxString encodedPostData = uriPostdata.BuildURI();
+//                curl_easy_setopt(curl, CURLOPT_POSTFIELDS, (const char*)encodedPostData.c_str());
+            }
 
             curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
             curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
