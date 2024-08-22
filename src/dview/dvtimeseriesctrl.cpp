@@ -767,6 +767,7 @@ BEGIN_EVENT_TABLE(wxDVTimeSeriesCtrl, wxPanel)
 
 END_EVENT_TABLE()
 
+
 /*Constructors and Destructors*/
 wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, wxDVTimeSeriesType seriesType,
                                        wxDVStatType statType)
@@ -829,14 +830,6 @@ wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, wxDVTime
     //Contains boxes to turn lines on or off.
     m_srchCtrl = new wxSearchCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxSize(150, -1), 0);
     m_dataSelector = new wxDVSelectionListCtrl(this, ID_DATA_CHANNEL_SELECTOR, 2);
-    mSteppedLines = new wxCheckBox(this, wxID_ANY, "Stepped lines");
-    mStackedArea = new wxCheckBox(this, wxID_ANY, "Stacked area on left Y axis");
-    mStatTypeCheck = new wxCheckBox(this, ID_StatCheckbox, "Show sum over time step");
-    wxStaticText* choiceLabel = new wxStaticText(this, wxID_ANY, wxT("Presets:"));
-    m_customChoice = new wxChoice(this, ID_CustomChoice);
-    m_customChoice->Append(wxT("Battery - Utility Rate - Load"));
-    m_customChoice->Append(wxT("Hybrid Mix"));
-    m_customChoice->SetSelection(0);
     wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
     //sizer->Add(mSteppedLines, 0, wxALL | wxEXPAND, 10);
     //sizer->Add(mStackedArea, 0, wxALL | wxALIGN_CENTER, 10);
@@ -844,14 +837,7 @@ wxDVTimeSeriesCtrl::wxDVTimeSeriesCtrl(wxWindow *parent, wxWindowID id, wxDVTime
     sizer->Add(m_srchCtrl, 0, wxALL | wxEXPAND, 0);
     sizer->Add(m_dataSelector, 0, wxALL | wxALIGN_CENTER, 0);
     
-    wxBoxSizer* options1Sizer = new wxBoxSizer(wxHORIZONTAL);
-    options1Sizer->Add(mSteppedLines, 0, wxALL | wxALIGN_CENTER_VERTICAL, 10);
-    options1Sizer->Add(mStackedArea, 0, wxALL | wxALIGN_CENTER_VERTICAL, 10);
-    options1Sizer->Add(mStatTypeCheck, 0, wxALL | wxALIGN_CENTER_VERTICAL, 10);
-    options1Sizer->Add(choiceLabel, 0, wxALIGN_CENTER, 0);
-    options1Sizer->Add(m_customChoice, 0, wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL | wxALL, 2);
     wxBoxSizer *graph_sizer = new wxBoxSizer(wxVERTICAL);
-    graph_sizer->Add(options1Sizer, 0, wxEXPAND, 0);
     graph_sizer->Add(m_plotSurface, 1, wxEXPAND | wxALL, 4);
     graph_sizer->Add(scrollerAndZoomSizer, 0, wxEXPAND | wxALL, 0);
 
@@ -1829,9 +1815,6 @@ void wxDVTimeSeriesCtrl::MakeXBoundsNice(double *xMin, double *xMax) {
     wxDVPlotHelper::SetRangeEndpointsToDays(xMin, xMax);
 }
 
-int wxDVTimeSeriesCtrl::GetPresetChoice() {
-    return m_customChoice->GetSelection();
-}
 
 void wxDVTimeSeriesCtrl::KeepNewBoundsWithinLimits(double *newMin, double *newMax) {
     if (m_plots.size() == 0) return;
@@ -2452,4 +2435,161 @@ void wxDVTimeSeriesCtrl::AutoscaleYAxisByPlot(bool IsLeftAxis, bool IsTopPlot, i
         }
     }
 }
+
+BEGIN_EVENT_TABLE(wxDVTimeSeriesCtrlSAM, wxPanel)
+    EVT_BUTTON(wxID_ZOOM_IN, wxDVTimeSeriesCtrlSAM::OnZoomIn)
+    EVT_BUTTON(wxID_ZOOM_OUT, wxDVTimeSeriesCtrlSAM::OnZoomOut)
+    EVT_BUTTON(wxID_ZOOM_FIT, wxDVTimeSeriesCtrlSAM::OnZoomFit)
+    EVT_BUTTON(wxID_PREFERENCES, wxDVTimeSeriesCtrlSAM::OnSettings)
+
+    EVT_MOUSEWHEEL(wxDVTimeSeriesCtrlSAM::OnMouseWheel)
+
+    EVT_PLOT_HIGHLIGHT(ID_PLOT_SURFACE, wxDVTimeSeriesCtrlSAM::OnHighlight)
+
+    EVT_DVSELECTIONLIST(ID_DATA_CHANNEL_SELECTOR, wxDVTimeSeriesCtrlSAM::OnDataChannelSelection)
+
+    EVT_COMMAND_SCROLL_THUMBTRACK(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrlSAM::OnGraphScroll)
+    EVT_COMMAND_SCROLL_LINEUP(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrlSAM::OnGraphScrollLineUp)
+    EVT_COMMAND_SCROLL_LINEDOWN(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrlSAM::OnGraphScrollLineDown)
+    //EVT_COMMAND_SCROLL_CHANGED(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrl::OnGraphScroll)
+    EVT_COMMAND_SCROLL_PAGEDOWN(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrlSAM::OnGraphScrollPageDown)
+    EVT_COMMAND_SCROLL_PAGEUP(ID_GRAPH_SCROLLBAR, wxDVTimeSeriesCtrlSAM::OnGraphScrollPageUp)
+    EVT_CHOICE(wxID_ANY, wxDVTimeSeriesCtrlSAM::OnPresetChoice)
+    //EVT_COMBOBOX(wxID_ANY, wxDVTimeSeriesCtrlSAM::OnSteppedLines)
+    //EVT_CHECKBOX(wxID_ANY, wxDVTimeSeriesCtrlSAM::OnSteppedLines)
+
+    EVT_TEXT(wxID_ANY, wxDVTimeSeriesCtrl::OnSearch)
+
+    EVT_TIMER(ID_Timer, wxDVTimeSeriesCtrl::OnTimer)
+
+END_EVENT_TABLE()
+    
+
+/*Constructors and Destructors*/
+wxDVTimeSeriesCtrlSAM::wxDVTimeSeriesCtrlSAM(wxWindow* parent, wxWindowID id, wxDVTimeSeriesType seriesType, wxDVStatType statType)
+    : wxDVTimeSeriesCtrl(parent, id, seriesType, statType)   
+{
+
+    mSteppedLines = new wxCheckBox(this, wxID_ANY, "Stepped lines");
+    mStackedArea = new wxCheckBox(this, wxID_ANY, "Stacked area on left Y axis");
+    mStatTypeCheck = new wxCheckBox(this, ID_StatCheckbox, "Show sum over time step");
+    wxStaticText* choiceLabel = new wxStaticText(this, wxID_ANY, wxT("Presets:"));
+    m_customChoice = new wxChoice(this, ID_CustomChoice);
+    m_customChoice->Append(wxT("Battery - Utility Rate - Load"));
+    m_customChoice->Append(wxT("Hybrid Mix"));
+    m_customChoice->SetSelection(0);
+    wxBoxSizer* options1Sizer = new wxBoxSizer(wxHORIZONTAL);
+    options1Sizer->Add(mSteppedLines, 0, wxALL | wxALIGN_CENTER_VERTICAL, 10);
+    options1Sizer->Add(mStackedArea, 0, wxALL | wxALIGN_CENTER_VERTICAL, 10);
+    options1Sizer->Add(mStatTypeCheck, 0, wxALL | wxALIGN_CENTER_VERTICAL, 10);
+    options1Sizer->Add(choiceLabel, 0, wxALIGN_CENTER, 0);
+    options1Sizer->Add(m_customChoice, 0, wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL | wxALL, 2);
+
+    /*
+    SetBackgroundColour(*wxWHITE);
+    m_srchCtrl = NULL;
+    m_stackingOnYLeft = false;
+    m_topAutoScale = false;
+    m_top2AutoScale = false;
+    m_bottomAutoScale = false;
+    m_bottom2AutoScale = false;
+    m_style = ((seriesType == wxDV_RAW || seriesType == wxDV_HOURLY) ? wxDV_NORMAL
+        : wxDV_STEPPED); // line, stepped, points
+    m_seriesType = seriesType;
+    m_statType = statType;
+
+    m_plotSurface = new wxPLPlotCtrl(this, ID_PLOT_SURFACE);
+    m_plotSurface->SetBackgroundColour(*wxWHITE);
+    m_plotSurface->SetHighlightMode(wxPLPlotCtrl::HIGHLIGHT_SPAN);
+    m_plotSurface->ShowTitle(false);
+    m_plotSurface->ShowLegend(false);
+    //m_plotSurface->SetLegendLocation( wxPLPlotCtrl::RIGHT );
+    m_plotSurface->SetIncludeLegendOnExport(true);
+    m_plotSurface->ShowGrid(true, true);
+    m_xAxis = new wxPLTimeAxis(0, 8760);
+    m_plotSurface->SetXAxis1(m_xAxis);
+
+    wxBoxSizer* scrollerAndZoomSizer = new wxBoxSizer(wxHORIZONTAL);
+    m_graphScrollBar = new wxScrollBar(this, ID_GRAPH_SCROLLBAR, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL);
+    scrollerAndZoomSizer->Add(m_graphScrollBar, 1, wxALL | wxALIGN_CENTER_VERTICAL, 3);
+
+    wxBitmapButton* zoom_in = new wxBitmapButton(this, wxID_ZOOM_IN, wxBITMAP_PNG_FROM_DATA(zoom_in));
+    zoom_in->SetToolTip("Zoom in");
+    scrollerAndZoomSizer->Add(zoom_in, 0, wxALL | wxEXPAND, 1);
+
+    wxBitmapButton* zoom_out = new wxBitmapButton(this, wxID_ZOOM_OUT, wxBITMAP_PNG_FROM_DATA(zoom_out));
+    zoom_out->SetToolTip("Zoom out");
+    scrollerAndZoomSizer->Add(zoom_out, 0, wxALL | wxEXPAND, 1);
+
+    wxBitmapButton* zoom_fit = new wxBitmapButton(this, wxID_ZOOM_FIT, wxBITMAP_PNG_FROM_DATA(zoom_fit));
+    zoom_fit->SetToolTip("Zoom fit");
+    scrollerAndZoomSizer->Add(zoom_fit, 0, wxALL | wxEXPAND, 1);
+
+    /* Remove settings button?
+    wxBitmapButton* pref_btn = new wxBitmapButton(this, wxID_PREFERENCES, wxBITMAP_PNG_FROM_DATA(preferences));
+    pref_btn->SetToolTip("Edit view settings and graph scaling...");
+    scrollerAndZoomSizer->Add(pref_btn, 0, wxALL | wxEXPAND, 1);
+    
+
+    //Contains boxes to turn lines on or off.
+    m_srchCtrl = new wxSearchCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxSize(150, -1), 0);
+    m_dataSelector = new wxDVSelectionListCtrl(this, ID_DATA_CHANNEL_SELECTOR, 2);
+    mSteppedLines = new wxCheckBox(this, wxID_ANY, "Stepped lines");
+    mStackedArea = new wxCheckBox(this, wxID_ANY, "Stacked area on left Y axis");
+    mStatTypeCheck = new wxCheckBox(this, ID_StatCheckbox, "Show sum over time step");
+    wxStaticText* choiceLabel = new wxStaticText(this, wxID_ANY, wxT("Presets:"));
+    m_customChoice = new wxChoice(this, ID_CustomChoice);
+    m_customChoice->Append(wxT("Battery - Utility Rate - Load"));
+    m_customChoice->Append(wxT("Hybrid Mix"));
+    m_customChoice->SetSelection(0);
+    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+    //sizer->Add(mSteppedLines, 0, wxALL | wxEXPAND, 10);
+    //sizer->Add(mStackedArea, 0, wxALL | wxALIGN_CENTER, 10);
+    //sizer->Add(mStatTypeCheck, 0, wxALL | wxALIGN_CENTER, 10);
+    sizer->Add(m_srchCtrl, 0, wxALL | wxEXPAND, 0);
+    sizer->Add(m_dataSelector, 0, wxALL | wxALIGN_CENTER, 0);
+
+    wxBoxSizer* options1Sizer = new wxBoxSizer(wxHORIZONTAL);
+    options1Sizer->Add(mSteppedLines, 0, wxALL | wxALIGN_CENTER_VERTICAL, 10);
+    options1Sizer->Add(mStackedArea, 0, wxALL | wxALIGN_CENTER_VERTICAL, 10);
+    options1Sizer->Add(mStatTypeCheck, 0, wxALL | wxALIGN_CENTER_VERTICAL, 10);
+    options1Sizer->Add(choiceLabel, 0, wxALIGN_CENTER, 0);
+    options1Sizer->Add(m_customChoice, 0, wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL | wxALL, 2);
+    wxBoxSizer* graph_sizer = new wxBoxSizer(wxVERTICAL);
+    graph_sizer->Add(options1Sizer, 0, wxEXPAND, 0);
+    graph_sizer->Add(m_plotSurface, 1, wxEXPAND | wxALL, 4);
+    graph_sizer->Add(scrollerAndZoomSizer, 0, wxEXPAND | wxALL, 0);
+
+    wxBoxSizer* top_sizer = new wxBoxSizer(wxHORIZONTAL);
+    top_sizer->Add(graph_sizer, 1, wxALL | wxEXPAND, 0);
+    top_sizer->Add(sizer, 0, wxEXPAND, 0);
+    SetSizer(top_sizer);
+
+    for (int i = 0; i < GRAPH_AXIS_POSITION_COUNT; i++)
+        m_selectedChannelIndices.push_back(new std::vector<int>());
+
+    UpdateScrollbarPosition();
+
+    m_timer = new wxTimer(this, ID_Timer);
+    */
+}
+
+wxDVTimeSeriesCtrlSAM::~wxDVTimeSeriesCtrlSAM(void) {
+    RemoveAllDataSets();
+
+    for (int i = 0; i < GRAPH_AXIS_POSITION_COUNT; i++)
+        delete m_selectedChannelIndices[i];
+}
+
+void wxDVTimeSeriesCtrlSAM::OnPresetChoice(wxCommandEvent&) {
+    PresetChoice();
+}
+
+void wxDVTimeSeriesCtrlSAM::PresetChoice() {
+    m_customChoice->SetSelection(0);
+    //m_plotSurface->GetYAxis1()->SetWorldMax(m_pdfPlot->GetNiceYMax());
+    //    m_y1MaxTextBox->SetValue(wxString::Format("%lg", m_pdfPlot->GetNiceYMax()));
+    
+}
+
 

@@ -71,6 +71,8 @@ class wxSearchCtrl;
 
 class wxTimer;
 
+class wxDVTimeSeriesCtrlSAM;
+
 enum wxDVStatType {
     wxDV_AVERAGE, wxDV_SUM
 };
@@ -130,6 +132,9 @@ public:
     void SetStacked(bool b);
 
     bool GetStacked();
+
+    friend class wxDVTimeSeriesCtrlSAM;
+
 
 protected:
     void OnClickTopHandler(wxCommandEvent &event);
@@ -210,7 +215,6 @@ public:
 
     void MakeXBoundsNice(double *xMin, double *xMax);
 
-    int GetPresetChoice();
 
     wxDVTimeSeriesType GetTimeSeriesType();
 
@@ -249,6 +253,8 @@ public:
     void ReadState(std::string filename);
 
     void WriteState(std::string filename);
+
+    friend class wxDVTimeSeriesCtrlSAM;
 
 protected:
 
@@ -352,6 +358,34 @@ private:
 
     double m_xAxixWorldMin;
     double m_xAxixWorldMax;
+
+DECLARE_EVENT_TABLE();
+};
+
+class wxDVTimeSeriesCtrlSAM : public wxDVTimeSeriesCtrl {
+public:
+    //Something
+    //Constructor
+    //wxDVTimeSeriesCtrlSAM();
+    wxDVTimeSeriesCtrlSAM(wxWindow* parent, wxWindowID id, wxDVTimeSeriesType seriesType, wxDVStatType statType);
+
+    virtual ~wxDVTimeSeriesCtrlSAM();
+
+    void OnPresetChoice(wxCommandEvent&);
+
+    void PresetChoice();
+
+    void SetPreset( int choice);
+
+
+
+
+
+private:
+    wxCheckBox* mSteppedLines;
+    wxCheckBox* mStackedArea;
+    wxCheckBox* mStatTypeCheck;
+    wxChoice* m_customChoice;
 
 DECLARE_EVENT_TABLE();
 };
