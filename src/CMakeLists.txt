@@ -33,9 +33,6 @@ set(WEX_SRC
         exttextstream.cpp
         exttree.cpp
         gleasy.cpp
-        jsonreader.cpp
-        jsonval.cpp
-        jsonwriter.cpp
         label.cpp
         lkscript.cpp
         metro.cpp
