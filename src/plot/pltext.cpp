@@ -890,7 +890,7 @@ wxFreeTypeDraw(wxRealPoint *offset, int ifnt, double points, unsigned int dpi, c
     }
 
     // create image surface of appropriate size
-    wxSize bounds(std::abs(max.x - min.x), fabs(max.y - min.y));
+    wxSize bounds(std::abs(max.x - min.x), std::fabs(max.y - min.y));
     wxImage img(bounds, false);
 
     // find offset coordinate for top-left placement
