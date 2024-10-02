@@ -2470,6 +2470,7 @@ wxDVTimeSeriesCtrlSAM::wxDVTimeSeriesCtrlSAM(wxWindow* parent, wxWindowID id, wx
     : wxDVTimeSeriesCtrl(parent, id, seriesType, statType)   
 {
 
+
     mSteppedLines = new wxCheckBox(this, wxID_ANY, "Stepped lines");
     mStackedArea = new wxCheckBox(this, wxID_ANY, "Stacked area on left Y axis");
     mStatTypeCheck = new wxCheckBox(this, ID_StatCheckbox, "Show sum over time step");
@@ -2484,6 +2485,45 @@ wxDVTimeSeriesCtrlSAM::wxDVTimeSeriesCtrlSAM(wxWindow* parent, wxWindowID id, wx
     options1Sizer->Add(mStatTypeCheck, 0, wxALL | wxALIGN_CENTER_VERTICAL, 10);
     options1Sizer->Add(choiceLabel, 0, wxALIGN_CENTER, 0);
     options1Sizer->Add(m_customChoice, 0, wxALIGN_CENTER | wxALIGN_CENTER_VERTICAL | wxALL, 2);
+
+    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+    //sizer->Add(mSteppedLines, 0, wxALL | wxEXPAND, 10);
+    //sizer->Add(mStackedArea, 0, wxALL | wxALIGN_CENTER, 10);
+    //sizer->Add(mStatTypeCheck, 0, wxALL | wxALIGN_CENTER, 10);
+
+    sizer->Add(m_srchCtrl, 0, wxALL | wxEXPAND, 0);
+    sizer->Add(m_dataSelector, 0, wxALL | wxALIGN_CENTER, 0);
+
+    wxBoxSizer* scrollerAndZoomSizer = new wxBoxSizer(wxHORIZONTAL);
+    //m_graphScrollBar = new wxScrollBar(this, ID_GRAPH_SCROLLBAR, wxDefaultPosition, wxDefaultSize, wxHORIZONTAL);
+    scrollerAndZoomSizer->Add(m_graphScrollBar, 1, wxALL | wxALIGN_CENTER_VERTICAL, 3);
+
+    wxBitmapButton* zoom_in = new wxBitmapButton(this, wxID_ZOOM_IN, wxBITMAP_PNG_FROM_DATA(zoom_in));
+    zoom_in->SetToolTip("Zoom in");
+    scrollerAndZoomSizer->Add(zoom_in, 0, wxALL | wxEXPAND, 1);
+
+    wxBitmapButton* zoom_out = new wxBitmapButton(this, wxID_ZOOM_OUT, wxBITMAP_PNG_FROM_DATA(zoom_out));
+    zoom_out->SetToolTip("Zoom out");
+    scrollerAndZoomSizer->Add(zoom_out, 0, wxALL | wxEXPAND, 1);
+
+    wxBitmapButton* zoom_fit = new wxBitmapButton(this, wxID_ZOOM_FIT, wxBITMAP_PNG_FROM_DATA(zoom_fit));
+    zoom_fit->SetToolTip("Zoom fit");
+    scrollerAndZoomSizer->Add(zoom_fit, 0, wxALL | wxEXPAND, 1);
+
+    wxBoxSizer* graph_sizer = new wxBoxSizer(wxVERTICAL);
+    graph_sizer->Add(options1Sizer, 1, wxEXPAND, 0);
+    graph_sizer->Add(m_plotSurface, 1, wxEXPAND | wxALL, 4);
+    graph_sizer->Add(scrollerAndZoomSizer, 0, wxEXPAND | wxALL, 0);
+
+    wxBoxSizer* top_sizer = new wxBoxSizer(wxHORIZONTAL);
+    top_sizer->Add(graph_sizer, 1, wxALL | wxEXPAND, 0);
+    top_sizer->Add(sizer, 0, wxEXPAND, 0);
+    SetSizer(top_sizer, true);
+
+    for (int i = 0; i < GRAPH_AXIS_POSITION_COUNT; i++)
+        m_selectedChannelIndices.push_back(new std::vector<int>());
+
+    UpdateScrollbarPosition();
 
     /*
     SetBackgroundColour(*wxWHITE);

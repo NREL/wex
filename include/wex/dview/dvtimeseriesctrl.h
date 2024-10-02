@@ -256,6 +256,13 @@ public:
 
     friend class wxDVTimeSeriesCtrlSAM;
 
+    wxPLPlotCtrl* m_plotSurface;
+    wxPLTimeAxis* m_xAxis;
+    wxScrollBar* m_graphScrollBar;
+    wxDVSelectionListCtrl* m_dataSelector;
+    wxSearchCtrl* m_srchCtrl;
+    
+
 protected:
 
     void StackUp(wxPLPlotCtrl::AxisPos yap, wxPLPlotCtrl::PlotPos ppos);
@@ -310,11 +317,13 @@ private:
     //This array contains the visible graphs associated with each axis position on each graph.
     std::vector<std::vector<int> *> m_selectedChannelIndices;
 
+    /*
     wxPLPlotCtrl *m_plotSurface;
     wxPLTimeAxis *m_xAxis;
     wxScrollBar *m_graphScrollBar;
     wxDVSelectionListCtrl *m_dataSelector;
     wxSearchCtrl *m_srchCtrl;
+    */
 
     bool m_topAutoScale, m_top2AutoScale, m_bottomAutoScale, m_bottom2AutoScale;
     wxDVTimeSeriesStyle m_style; // line, stepped
