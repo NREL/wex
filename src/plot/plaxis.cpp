@@ -669,6 +669,32 @@ void wxPLTimeAxis::RecalculateTicksAndLabel() {
     //We need to figure out whether we are looking at hours, days, or months, and label the graph appropriately.
     wxDateTime timeKeeper(1, wxDateTime::Jan, 1971, 0, 0, 0); // works all time zones
 
+    // leap year for min and max values
+    // both are tracked as hours since Jan 1, 1971 
+    int m_min_days_to_add = 0, m_max_days_to_add = 0;
+    int m_min_num_years = m_min / 8760;
+    int m_max_num_years = m_max / 8760;
+
+    wxDateTime m_min_dt = timeKeeper;
+    for (size_t i = 0; i < m_min_num_years; i++) {
+        //wxDateTime dt = timeKeeper.Add() later than Feb 28
+//        auto ndays = timeKeeper.GetNumberOfDays(i);
+        if (m_min_dt.IsLeapYear(i))// && m_min_dt.IsLaterThan(dt))
+            m_min_days_to_add++;
+//        m_min_dt.Add(wxTimeSpan::Days(ndays+1));
+    }
+    // can start with m_min_days_to_add
+    wxDateTime m_max_dt = timeKeeper;
+    for (size_t i = 0; i < m_max_num_years; i++) {
+        //wxDateTime dt = timeKeeper.Add() later than Feb 28
+        auto ndays = timeKeeper.GetNumberOfDays(i);
+        if (m_max_dt.IsLeapYear())// && m_min_dt.IsLaterThan(dt))
+            m_max_days_to_add++;
+        m_max_dt.Add(wxTimeSpan::Days(ndays +1));
+    }
+
+
+
     double world_len = m_max - m_min;
     double time = m_min;
     timeKeeper.Add(wxTimeSpan::Minutes(60 * time));
@@ -676,6 +702,9 @@ void wxPLTimeAxis::RecalculateTicksAndLabel() {
     // Handle DST.
     if (timeKeeper.IsDST())
         timeKeeper.Subtract(wxTimeSpan::Hour());
+
+    timeKeeper.Add(wxTimeSpan::Days(m_min_days_to_add));
+
 
     if (world_len <= 72) {
         if (floor(time) != time) {
@@ -701,10 +730,21 @@ void wxPLTimeAxis::RecalculateTicksAndLabel() {
             timeKeeper2.Add(wxTimeSpan::Hour());
         }
 
+        if ((timeKeeper.GetMonth() == wxDateTime::Feb && timeKeeper.GetDay() == 29))
+            timeKeeper.Add(wxTimeSpan::Hours(24));
+        if ((timeKeeper2.GetMonth() == wxDateTime::Feb && timeKeeper2.GetDay() == 29))
+            timeKeeper2.Add(wxTimeSpan::Hours(24));
+
+        //if (!(timeKeeper.GetMonth() == wxDateTime::Feb && timeKeeper.GetDay() == 29) 
+        //    && !(timeKeeper2.GetMonth() == wxDateTime::Feb && timeKeeper2.GetDay() == 29)) {
+        //    auto x = timeKeeper.GetMonth();
+        //    auto y = timeKeeper.GetDay();
+        //    auto z = x + y;
         if (timeKeeper.GetDay() == timeKeeper2.GetDay())
             m_timeLabel = timeKeeper.Format("%b %d");
         else
             m_timeLabel = timeKeeper.Format("%b %d") + "-" + timeKeeper2.Format("%d");
+        //}
 
         do {
             m_tickList.push_back(TickData(time, timeKeeper.Format("%H"), TickData::LARGE));
@@ -741,11 +781,14 @@ void wxPLTimeAxis::RecalculateTicksAndLabel() {
         }
 
         do {
-            m_tickList.push_back(TickData(time, timeKeeper.Format("%b %d"), TickData::NONE));
-            time += 12;
-            if (time < m_max)
-                m_tickList.push_back(TickData(time, wxEmptyString, TickData::LARGE)); // midnight
-            time += 12;
+            if (!(timeKeeper.GetMonth() == wxDateTime::Feb && timeKeeper.GetDay() == 29)) {
+                auto str = timeKeeper.Format("%b %d");
+                m_tickList.push_back(TickData(time, str, TickData::NONE));
+                time += 12;
+                if (time < m_max)
+                    m_tickList.push_back(TickData(time, wxEmptyString, TickData::LARGE)); // midnight
+                time += 12;
+            }
             timeKeeper.Add(wxTimeSpan::Hours(24));
         } while (time < m_max);
     } else {
