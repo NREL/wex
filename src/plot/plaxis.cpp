@@ -676,7 +676,6 @@ void wxPLTimeAxis::RecalculateTicksAndLabel() {
     // to skip leap years (SAM issue 289) - scale to first year
     int m_min_offset = m_min / 8760;
     double m_min_scaled = (double)((int)m_min % 8760); // m_min and m_max always based on 8760 (365 days with no leap years)
-    int m_max_offset = m_max / 8760;
     double m_max_scaled = (double)((int)m_max % 8760); // m_min and m_max always based on 8760 (365 days with no leap years)
     if (m_max_scaled <= m_min_scaled) m_max_scaled += 8760; // handle year end points
 
@@ -790,7 +789,7 @@ void wxPLTimeAxis::RecalculateTicksAndLabel() {
 //            m_tickList.push_back(
 //                TickData(time + (daysVisibleInMonth * 24.0f / 2.0f), timeKeeper.Format("%b"), TickData::NONE));
             m_tickList.push_back(
-                TickData(time + (daysVisibleInMonth * 24.0f / 2.0f) + m_min_offset * 8760, timeKeeper.Format("%b first"), TickData::NONE));
+                TickData(time + (daysVisibleInMonth * 24.0f / 2.0f) + m_min_offset * 8760, timeKeeper.Format("%b"), TickData::NONE));
         }
 
         timeKeeper2.SetDay(wxDateTime::GetNumberOfDays(timeKeeper2.GetMonth()) / 2); //Middle of the second month.
@@ -801,7 +800,7 @@ void wxPLTimeAxis::RecalculateTicksAndLabel() {
         //While end of month is visible.
         do {
 //            m_tickList.push_back(TickData(time, timeKeeper2.Format("%b"), TickData::NONE));
-            m_tickList.push_back(TickData(time + m_min_offset * 8760, timeKeeper2.Format("%b second"), TickData::NONE));
+            m_tickList.push_back(TickData(time + m_min_offset * 8760, timeKeeper2.Format("%b"), TickData::NONE));
             timeKeeper.Set(timeKeeper2.GetTicks()); //timeKeeper is position of last label.
             timeKeeper2.Add(wxDateSpan::Month());
             timeKeeper2.SetDay(1); //timeKeeper2 is day 1 of next month.
@@ -841,7 +840,7 @@ void wxPLTimeAxis::RecalculateTicksAndLabel() {
         if (daysVisibleInMonth >= 7) {
             //Label the month if it has more than seven days visible.
 //            m_tickList.push_back(TickData(time - (daysVisibleInMonth * 24.0f / 2.0f), timeKeeper.Format("%b"), TickData::NONE));
-            m_tickList.push_back(TickData(time - (daysVisibleInMonth * 24.0f / 2.0f) + m_min_offset * 8760, timeKeeper.Format("%b third"), TickData::NONE));
+            m_tickList.push_back(TickData(time - (daysVisibleInMonth * 24.0f / 2.0f) + m_min_offset * 8760, timeKeeper.Format("%b"), TickData::NONE));
         }
     }
 
