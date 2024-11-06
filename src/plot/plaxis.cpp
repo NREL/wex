@@ -668,33 +668,25 @@ void wxPLTimeAxis::RecalculateTicksAndLabel() {
 
     //We need to figure out whether we are looking at hours, days, or months, and label the graph appropriately.
     wxDateTime timeKeeper(1, wxDateTime::Jan, 1971, 0, 0, 0); // works all time zones
-    wxDateTime timeKeeperRef(1, wxDateTime::Jan, 1971, 0, 0, 0); // works all time zones
-
-    // leap year for min and max values
-    // both are tracked as hours since Jan 1, 1971 
-    int m_min_days_to_add = 0;
-    int m_min_num_years = m_min / 8760;
-    int m_max_num_years = m_max / 8760;
-
-    for (size_t i = 0; i < m_min_num_years; i++) {
-        //wxDateTime dt = timeKeeper.Add() later than Feb 28
-//        auto ndays = timeKeeper.GetNumberOfDays(i);
-        if (timeKeeperRef.IsLeapYear(i))// && m_min_dt.IsLaterThan(dt))
-            m_min_days_to_add++;
-//        m_min_dt.Add(wxTimeSpan::Days(ndays+1));
-    }
-
 
 
     double world_len = m_max - m_min;
     double time = m_min;
+
+    // to skip leap years (SAM issue 289) - scale to first year
+    int m_min_offset = m_min / 8760;
+    double m_min_scaled = (double)((int)m_min % 8760); // m_min and m_max always based on 8760 (365 days with no leap years)
+    int m_max_offset = m_max / 8760;
+    double m_max_scaled = (double)((int)m_max % 8760); // m_min and m_max always based on 8760 (365 days with no leap years)
+    if (m_max_scaled <= m_min_scaled) m_max_scaled += 8760; // handle year end points
+
+    time = m_min_scaled;
+
     timeKeeper.Add(wxTimeSpan::Minutes(60 * time));
 
     // Handle DST.
     if (timeKeeper.IsDST())
         timeKeeper.Subtract(wxTimeSpan::Hour());
-
-    timeKeeper.Add(wxTimeSpan::Days(m_min_days_to_add));
 
 
     if (world_len <= 72) {
@@ -714,31 +706,18 @@ void wxPLTimeAxis::RecalculateTicksAndLabel() {
         // Less than 2 days.  Need to label time.
 
         wxDateTime timeKeeper2(timeKeeper.GetTicks());
-        timeKeeper2.Add(wxTimeSpan::Minutes(60 * world_len));
+        timeKeeper2.Add(wxTimeSpan::Minutes(60 * world_len)); // TODO 289 - check scaling
         timeKeeper2.Subtract(wxTimeSpan::Minute()); //If it is 0:00 the next day, its really the same day.
         if (timeKeeper.IsDST() && !timeKeeper2.IsDST()) {
             timeKeeper.Add(wxTimeSpan::Hour());
             timeKeeper2.Add(wxTimeSpan::Hour());
         }
-
-        // TODO condition needs to be if leap year and day of year > 2/28 then add a day...
-        if ((timeKeeper.GetDayOfYear() > (31 + 27)) && (timeKeeperRef.IsLeapYear(m_min/8760)))
-//        if ((timeKeeper.GetMonth() == wxDateTime::Feb && timeKeeper.GetDay() == 29))
-            timeKeeper.Add(wxTimeSpan::Hours(24));
-//        if ((timeKeeper2.GetMonth() == wxDateTime::Feb && timeKeeper2.GetDay() == 29))
-        if ((timeKeeper2.GetDayOfYear() > (31 + 27)) && (timeKeeperRef.IsLeapYear(m_min / 8760)))
-            timeKeeper2.Add(wxTimeSpan::Hours(24));
-
-        //if (!(timeKeeper.GetMonth() == wxDateTime::Feb && timeKeeper.GetDay() == 29) 
-        //    && !(timeKeeper2.GetMonth() == wxDateTime::Feb && timeKeeper2.GetDay() == 29)) {
-        //    auto x = timeKeeper.GetMonth();
-        //    auto y = timeKeeper.GetDay();
-        //    auto z = x + y;
         if (timeKeeper.GetDay() == timeKeeper2.GetDay())
             m_timeLabel = timeKeeper.Format("%b %d");
+        else if (timeKeeper.GetMonth() == timeKeeper2.GetMonth())
+            m_timeLabel = timeKeeper.Format("%b %d") + "-" + timeKeeper2.Format("%d"); // TODO fix year 2 Feb 28-01 (always been the case)
         else
-            m_timeLabel = timeKeeper.Format("%b %d") + "-" + timeKeeper2.Format("%d");
-        //}
+            m_timeLabel = timeKeeper.Format("%b %d") + "-" + timeKeeper2.Format("%b %d");
 
         do {
             m_tickList.push_back(TickData(time, timeKeeper.Format("%H"), TickData::LARGE));
@@ -775,16 +754,18 @@ void wxPLTimeAxis::RecalculateTicksAndLabel() {
         }
 
         do {
-            if ((timeKeeper.GetMonth() == wxDateTime::Feb && timeKeeper.GetDay() == 29)) 
-                timeKeeper.Add(wxTimeSpan::Hours(24));
             auto str = timeKeeper.Format("%b %d");
-            m_tickList.push_back(TickData(time, str, TickData::NONE));
+//            m_tickList.push_back(TickData(time, str, TickData::NONE));
+            m_tickList.push_back(TickData(time + m_min_offset*8760, str, TickData::NONE));
             time += 12;
-            if (time < m_max)
-                m_tickList.push_back(TickData(time, wxEmptyString, TickData::LARGE)); // midnight
+//            if (time < m_max)
+            if (time < m_max_scaled)
+                m_tickList.push_back(TickData(time + m_min_offset * 8760, wxEmptyString, TickData::LARGE)); // midnight
+//                m_tickList.push_back(TickData(time, wxEmptyString, TickData::LARGE)); // midnight
             time += 12;
             timeKeeper.Add(wxTimeSpan::Hours(24));
-        } while (time < m_max);
+        } while (time < m_max_scaled);
+//        } while (time < m_max);
     } else {
         //Assume day endpoints.
         //Only Label Months
@@ -800,13 +781,16 @@ void wxPLTimeAxis::RecalculateTicksAndLabel() {
             timeKeeper2.Add(wxTimeSpan::Day());
         }
 
-        m_tickList.push_back(TickData(time + daysVisibleInMonth * 24.0f, wxEmptyString, TickData::LARGE));
+//        m_tickList.push_back(TickData(time + daysVisibleInMonth * 24.0f, wxEmptyString, TickData::LARGE));
+        m_tickList.push_back(TickData(time + daysVisibleInMonth * 24.0f + m_min_offset * 8760, wxEmptyString, TickData::LARGE));
         int endMonthHours = time + daysVisibleInMonth * 24.0f; //00:00 on first of next month.
 
         if (daysVisibleInMonth >= 7) {
             //Label the month if it has more than seven days visible.
+//            m_tickList.push_back(
+//                TickData(time + (daysVisibleInMonth * 24.0f / 2.0f), timeKeeper.Format("%b"), TickData::NONE));
             m_tickList.push_back(
-                    TickData(time + (daysVisibleInMonth * 24.0f / 2.0f), timeKeeper.Format("%b"), TickData::NONE));
+                TickData(time + (daysVisibleInMonth * 24.0f / 2.0f) + m_min_offset * 8760, timeKeeper.Format("%b first"), TickData::NONE));
         }
 
         timeKeeper2.SetDay(wxDateTime::GetNumberOfDays(timeKeeper2.GetMonth()) / 2); //Middle of the second month.
@@ -816,24 +800,27 @@ void wxPLTimeAxis::RecalculateTicksAndLabel() {
         //Loop, labeling months
         //While end of month is visible.
         do {
-            m_tickList.push_back(TickData(time, timeKeeper2.Format("%b"), TickData::NONE));
+//            m_tickList.push_back(TickData(time, timeKeeper2.Format("%b"), TickData::NONE));
+            m_tickList.push_back(TickData(time + m_min_offset * 8760, timeKeeper2.Format("%b second"), TickData::NONE));
             timeKeeper.Set(timeKeeper2.GetTicks()); //timeKeeper is position of last label.
             timeKeeper2.Add(wxDateSpan::Month());
             timeKeeper2.SetDay(1); //timeKeeper2 is day 1 of next month.
 
-            m_tickList.push_back(TickData(time + timeKeeper2.Subtract(timeKeeper).GetHours(), wxEmptyString,
-                                          TickData::LARGE)); //Adds tick at this pos. (start-month)
+//            m_tickList.push_back(TickData(time + timeKeeper2.Subtract(timeKeeper).GetHours(), wxEmptyString,
+//                TickData::LARGE)); //Adds tick at this pos. (start-month)
+            m_tickList.push_back(TickData(time + timeKeeper2.Subtract(timeKeeper).GetHours() + m_min_offset * 8760, wxEmptyString,
+                TickData::LARGE)); //Adds tick at this pos. (start-month)
             timeKeeper2.SetDay(wxDateTime::GetNumberOfDays(timeKeeper2.GetMonth()) / 2); //timeKeeper2 mid month
             time += timeKeeper2.Subtract(timeKeeper).GetHours(); //hours midMonth.
             endMonthHours += 24 * wxDateTime::GetNumberOfDays(timeKeeper2.GetMonth());
+//        } while (endMonthHours < m_max_scaled);
         } while (endMonthHours < m_max);
 
         //timeKeeper holds the middle of last month we actually labelled.
         //We still need to label the last month if it has more than 7 days showing.
         timeKeeper.Add(wxDateSpan::Month());
         timeKeeper.SetDay(1); // First not-yet-labeled month
-        time = endMonthHours -
-               24 * wxDateTime::GetNumberOfDays(timeKeeper.GetMonth()); //00:00 on first of not-yet-labeled month.
+        time = endMonthHours - 24 * wxDateTime::GetNumberOfDays(timeKeeper.GetMonth()); //00:00 on first of not-yet-labeled month.
 
         //Take care of fractional days at the max.
         timeKeeper2 = wxDateTime(01, wxDateTime::Jan, 1970, 00, 00, 00);
@@ -844,7 +831,8 @@ void wxPLTimeAxis::RecalculateTicksAndLabel() {
 
         time += daysVisibleInMonth * 24.0f;
         timeKeeper2.Add(wxTimeSpan::Minutes(daysVisibleInMonth * 24.0f * 60.0f));
-        while (time < m_max && timeKeeper2.GetMonth() == timeKeeper.GetMonth()) {
+//        while (time < m_max && timeKeeper2.GetMonth() == timeKeeper.GetMonth()) {
+        while (time < m_max_scaled && timeKeeper2.GetMonth() == timeKeeper.GetMonth()) {
             daysVisibleInMonth += 1;
             timeKeeper2.Add(wxTimeSpan::Day());
             time += 24;
@@ -852,8 +840,8 @@ void wxPLTimeAxis::RecalculateTicksAndLabel() {
 
         if (daysVisibleInMonth >= 7) {
             //Label the month if it has more than seven days visible.
-            m_tickList.push_back(
-                    TickData(time - (daysVisibleInMonth * 24.0f / 2.0f), timeKeeper.Format("%b"), TickData::NONE));
+//            m_tickList.push_back(TickData(time - (daysVisibleInMonth * 24.0f / 2.0f), timeKeeper.Format("%b"), TickData::NONE));
+            m_tickList.push_back(TickData(time - (daysVisibleInMonth * 24.0f / 2.0f) + m_min_offset * 8760, timeKeeper.Format("%b third"), TickData::NONE));
         }
     }
 
