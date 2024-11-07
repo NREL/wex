@@ -782,7 +782,7 @@ void wxPLTimeAxis::RecalculateTicksAndLabel() {
 
 //        m_tickList.push_back(TickData(time + daysVisibleInMonth * 24.0f, wxEmptyString, TickData::LARGE));
         m_tickList.push_back(TickData(time + daysVisibleInMonth * 24.0f + m_min_offset * 8760, wxEmptyString, TickData::LARGE));
-        int endMonthHours = time + daysVisibleInMonth * 24.0f; //00:00 on first of next month.
+        int endMonthHours = time + m_min_offset * 8760 + daysVisibleInMonth * 24.0f; //00:00 on first of next month.
 
         if (daysVisibleInMonth >= 7) {
             //Label the month if it has more than seven days visible.
@@ -830,8 +830,8 @@ void wxPLTimeAxis::RecalculateTicksAndLabel() {
 
         time += daysVisibleInMonth * 24.0f;
         timeKeeper2.Add(wxTimeSpan::Minutes(daysVisibleInMonth * 24.0f * 60.0f));
-//        while (time < m_max && timeKeeper2.GetMonth() == timeKeeper.GetMonth()) {
-        while (time < m_max_scaled && timeKeeper2.GetMonth() == timeKeeper.GetMonth()) {
+        while (time < m_max && timeKeeper2.GetMonth() == timeKeeper.GetMonth()) {
+//        while (time < m_max_scaled && timeKeeper2.GetMonth() == timeKeeper.GetMonth()) {
             daysVisibleInMonth += 1;
             timeKeeper2.Add(wxTimeSpan::Day());
             time += 24;
@@ -839,8 +839,8 @@ void wxPLTimeAxis::RecalculateTicksAndLabel() {
 
         if (daysVisibleInMonth >= 7) {
             //Label the month if it has more than seven days visible.
-//            m_tickList.push_back(TickData(time - (daysVisibleInMonth * 24.0f / 2.0f), timeKeeper.Format("%b"), TickData::NONE));
-            m_tickList.push_back(TickData(time - (daysVisibleInMonth * 24.0f / 2.0f) + m_min_offset * 8760, timeKeeper.Format("%b"), TickData::NONE));
+            m_tickList.push_back(TickData(time - (daysVisibleInMonth * 24.0f / 2.0f), timeKeeper.Format("%b"), TickData::NONE));
+//            m_tickList.push_back(TickData(time - (daysVisibleInMonth * 24.0f / 2.0f) + m_min_offset * 8760, timeKeeper.Format("%b third"), TickData::NONE));
         }
     }
 
