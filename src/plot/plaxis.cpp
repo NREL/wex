@@ -705,7 +705,7 @@ void wxPLTimeAxis::RecalculateTicksAndLabel() {
         // Less than 2 days.  Need to label time.
 
         wxDateTime timeKeeper2(timeKeeper.GetTicks());
-        timeKeeper2.Add(wxTimeSpan::Minutes(60 * world_len)); // TODO 289 - check scaling
+        timeKeeper2.Add(wxTimeSpan::Minutes(60 * world_len));
         timeKeeper2.Subtract(wxTimeSpan::Minute()); //If it is 0:00 the next day, its really the same day.
         if (timeKeeper.IsDST() && !timeKeeper2.IsDST()) {
             timeKeeper.Add(wxTimeSpan::Hour());
@@ -714,7 +714,7 @@ void wxPLTimeAxis::RecalculateTicksAndLabel() {
         if (timeKeeper.GetDay() == timeKeeper2.GetDay())
             m_timeLabel = timeKeeper.Format("%b %d");
         else if (timeKeeper.GetMonth() == timeKeeper2.GetMonth())
-            m_timeLabel = timeKeeper.Format("%b %d") + "-" + timeKeeper2.Format("%d"); // TODO fix year 2 Feb 28-01 (always been the case)
+            m_timeLabel = timeKeeper.Format("%b %d") + "-" + timeKeeper2.Format("%d");
         else
             m_timeLabel = timeKeeper.Format("%b %d") + "-" + timeKeeper2.Format("%b %d");
 
