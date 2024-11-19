@@ -262,7 +262,7 @@ void wxPLContourPlot::Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map) {
         // background set to min
         // assume RebuildMask has been called
         //wxColor bgc(m_cmap->ColourForValue(m_zMin));
-        wxColor bgc(*wxLIGHT_GREY);
+        wxColor bgc(*wxCONTOUR_BG);
         dc.Brush(bgc);
         wxRealPoint pos, size;
         map.GetDeviceExtents(&pos, &size);

@@ -41,6 +41,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "wex/plot/plplot.h"
 
+#define wxCONTOUR_BG  wxStockGDI::GetColour(wxStockGDI::COLOUR_LIGHTGREY)
+
 class wxPLColourMap : public wxPLSideWidgetBase {
 public:
     wxPLColourMap(double min = 0, double max = 1);
