@@ -143,9 +143,20 @@ void wxPLContourPlot::RebuildContours() {
             }
         }
     } else {
-        for (size_t k = 0; k < m_levels.size() - 1; k++) {
-            double zlow = m_levels[k];
-            double zhigh = m_levels[k + 1];
+        for (size_t k = 0; k < m_levels.size(); k++) {
+            double zlow = 0;
+            double zhigh = 0;
+            if (k == 0) {
+                zlow = m_levels[k] - (m_levels[1] - m_levels[0]);
+                zhigh = m_levels[k];
+            }
+            else {
+                zlow = m_levels[k-1];
+                zhigh = m_levels[k];
+            }
+
+            //double zlow = m_levels[k];
+            //double zhigh = m_levels[k + 1];
 
             std::vector<QuadContourGenerator::VertexCodes *> list;
             qcg.create_filled_contour(zlow, zhigh, list);
@@ -250,16 +261,17 @@ void wxPLContourPlot::Draw(wxPLOutputDevice &dc, const wxPLDeviceMapping &map) {
         dc.NoPen();
         // background set to min
         // assume RebuildMask has been called
-        wxColor bgc(m_cmap->ColourForValue(m_zMin));
+        //wxColor bgc(m_cmap->ColourForValue(m_zMin));
+        wxColor bgc(*wxCONTOUR_BG);
         dc.Brush(bgc);
         wxRealPoint pos, size;
         map.GetDeviceExtents(&pos, &size);
         dc.Rect(pos.x, pos.y, size.x, size.y);
         // end background
-
 //		int ipoly = 0;
         for (size_t i = 0; i < m_cPolys.size(); i++) {
             double zmid = 0.5 * (m_cPolys[i].z + m_cPolys[i].zmax);
+            //double zmid = m_cPolys[i].z;
             wxColour color(m_cmap->ColourForValue(zmid));
             dc.Pen(color, 2);
             dc.Brush(color);
