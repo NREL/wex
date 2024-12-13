@@ -6,7 +6,7 @@ on:
 
 env:
   WX_VERSION: '3.2.4'
-  DEFAULT_BRANCH: patch
+  DEFAULT_BRANCH: develop
 
 
 jobs:
