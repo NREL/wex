@@ -159,7 +159,7 @@ void wxPLColourMap::Render(wxPLOutputDevice &dc, const wxPLRealRect &geom) {
 }
 
 wxColour wxPLColourMap::ColourForValue(double val) {
-    if (m_colourList.size() == 0 || !(wxFinite(val))) return *wxBLACK;
+    if (m_colourList.size() == 0 || !(wxFinite(val))) return *wxCONTOUR_BG;
 
     int position =
             (int) (((double) m_colourList.size()) * (
