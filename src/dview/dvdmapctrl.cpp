@@ -125,8 +125,7 @@ public:
             int worldXDay = int(m_data->At(i).x) / 24; //x-res does not change with higher res data.
 
             double worldY = fmod(m_data->At(i).x, 24.0);
-            worldY -= fmod(worldY,
-                           m_data->GetTimeStep()); // This makes sure the entire plot doesn't shift up for something like 1/2 hour data.
+            worldY -= fmod(worldY, m_data->GetTimeStep()); // This makes sure the entire plot doesn't shift up for something like 1/2 hour data.
             if (worldY < wmin.y)
                 continue;
             if (worldY >= wmax.y)
@@ -134,15 +133,15 @@ public:
             worldY -= wmin.y;
 
             double x = pos.x + (worldXDay - wmin.x / 24) * dRectWidth;
-            double y = pos.y + size.y - dRectHeight * (worldY / m_data->GetTimeStep() +
-                                                       1); //+1 is because we have top corner, not bottom.
+            double y = pos.y + size.y - dRectHeight * (worldY / m_data->GetTimeStep() + 1); //+1 is because we have top corner, not bottom.
 
             dc.Brush(m_colourMap->ColourForValue(m_data->At(i).y));
 
             // increase rect dimensions by about 0.5 point to
             // make sure they render overlapped without white space
             // showing in between
-            dc.Rect(x, y, ceil(dRectWidth + 0.5), ceil(dRectHeight + 0.5)); //+1s cover empty spaces between rects.
+//            dc.Rect(x, y, ceil(dRectWidth + 0.5), ceil(dRectHeight + 0.5)); //+1s cover empty spaces between rects.
+            dc.Rect(x, y, ceil(dRectWidth + 0.5 / m_data->GetTimeStep()), ceil(dRectHeight + 0.5 / m_data->GetTimeStep())); //+1s cover empty spaces between rects.
         }
     }
 
