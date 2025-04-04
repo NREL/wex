@@ -100,8 +100,9 @@ public:
 
         dc.Pen(*wxWHITE, 0, wxPLOutputDevice::NONE);
         dc.Brush(*wxRED, wxPLOutputDevice::HATCH);
+        dc.Brush(m_colourMap->ColourForValue(m_data->At(0).y));
         dc.Rect(pos.x, pos.y, size.x + 1, size.y + 1);
-
+        
         wxRealPoint wmin = map.GetWorldMinimum();
         wxRealPoint wmax = map.GetWorldMaximum();
         double xlen = wmax.x - wmin.x;
@@ -140,8 +141,7 @@ public:
             // increase rect dimensions by about 0.5 point to
             // make sure they render overlapped without white space
             // showing in between
-//            dc.Rect(x, y, ceil(dRectWidth + 0.5), ceil(dRectHeight + 0.5)); //+1s cover empty spaces between rects.
-            dc.Rect(x, y, ceil(dRectWidth + 0.5 / m_data->GetTimeStep()), ceil(dRectHeight + 0.5 / m_data->GetTimeStep())); //+1s cover empty spaces between rects.
+            dc.Rect(x, y, ceil(dRectWidth + 1.0 / m_data->GetTimeStep()), ceil(dRectHeight + 1.0 / m_data->GetTimeStep())); // +- 1/timesteps to cover empty spaces between rects.
         }
     }
 
