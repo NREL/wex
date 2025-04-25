@@ -120,7 +120,7 @@ void wxIEHtmlWin::SetupBrowser() {
     m_webBrowser->put_RegisterAsBrowser(VARIANT_TRUE);
     m_webBrowser->put_RegisterAsDropTarget(VARIANT_TRUE);
 
-    m_webBrowser->Navigate(L"about:blank", NULL, NULL, NULL, NULL);
+    m_webBrowser->Navigate((BSTR)"about:blank", NULL, NULL, NULL, NULL);
 }
 
 

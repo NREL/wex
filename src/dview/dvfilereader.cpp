@@ -1013,7 +1013,7 @@ bool wxDVFileReader::ReadSQLFile(wxDVPlotCtrl *plotWin, const wxString &filename
                 dictionaryIndex = sqlite3_column_int(sqlStmtPtr, 0);
                 name = ColumnText(sqlite3_column_text(sqlStmtPtr, 1));
                 keyValue = ColumnText(sqlite3_column_text(sqlStmtPtr, 2)).length() ? ColumnText(
-                        sqlite3_column_text(sqlStmtPtr, 2)) : "Site";
+                        sqlite3_column_text(sqlStmtPtr, 2)) : wxString("Site");
                 rf = ColumnText(sqlite3_column_text(sqlStmtPtr, 3));
                 units = ColumnText(sqlite3_column_text(sqlStmtPtr, 4));
 

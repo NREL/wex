@@ -289,7 +289,7 @@ END_EVENT_TABLE()
 
 wxOnlineRegistration::wxOnlineRegistration(wxWindow *parent)
         : wxDialog(parent, wxID_ANY,
-                   gs_regData ? gs_regData->GetAppName() + " Registration" : "Software Registration",
+                   gs_regData ? gs_regData->GetAppName() + wxString(" Registration") : wxString("Software Registration"),
                    wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE) {
     wxFont font(wxMetroTheme::Font(wxMT_LIGHT, 12));
     SetBackgroundColour(wxMetroTheme::Colour(wxMT_FOREGROUND));
