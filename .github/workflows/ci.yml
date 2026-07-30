@@ -57,7 +57,7 @@ jobs:
         curl -L https://github.com/wxWidgets/wxWidgets/releases/download/v$WX_VERSION/wxWidgets-$WX_VERSION.tar.bz2 -o wxWidgets-$WX_VERSION.tar.bz2
         tar jxf wxWidgets-$WX_VERSION.tar.bz2
         cd wxWidgets-$WX_VERSION
-        ./configure --prefix=$HOME/wx-$WX_VERSION --enable-shared=no --enable-debug=no --with-gtk=2 --with-libjpeg=builtin --with-libpng=builtin --with-regex=builtin --with-libtiff=builtin --with-zlib=builtin --with-expat=builtin --without-libjbig --without-liblzma --without-gtkprint --with-libnotify=no --with-libmspack=no --with-gnomevfs=no --with-opengl=yes --with-sdl=no --with-cxx=11 
+        ./configure --prefix=$HOME/wx-$WX_VERSION --enable-shared=no --enable-debug=no --with-gtk=2 --with-libjpeg=builtin --with-libpng=builtin --with-regex=builtin --with-libtiff=builtin --with-zlib=builtin --with-expat=builtin --without-libjbig --without-liblzma --without-gtkprint --with-libnotify=no --with-libmspack=no --with-gnomevfs=no --with-opengl=yes --with-sdl=no --with-cxx=17 
         make -j4
         make install
         sudo ln -s $HOME/wx-$WX_VERSION/bin/wx-config /usr/local/bin/wx-config-3
@@ -303,7 +303,10 @@ jobs:
           curl -L https://github.com/wxWidgets/wxWidgets/releases/download/v$WX_VERSION/wxWidgets-$WX_VERSION.tar.bz2 -o wxWidgets-$WX_VERSION.tar.bz2
           tar jxf wxWidgets-$WX_VERSION.tar.bz2
           cd wxWidgets-$WX_VERSION
-          ./configure --prefix=$HOME/wx-$WX_VERSION --enable-stl=yes --enable-shared=no --disable-debug_flag --with-cocoa --enable-universal_binary=x86_64,arm64 --enable-unicode --enable-webview --disable-mediactrl --with-cxx=11 --with-macosx-version-min=12  --with-libjpeg=builtin --with-libpng=builtin --with-regex=builtin --with-libtiff=builtin --with-zlib=builtin --with-expat=builtin
+          if [ -f configure ]; then
+            sed -i '' 's/-framework AGL//g' configure
+          fi
+          ./configure --prefix=$HOME/wx-$WX_VERSION --enable-stl=yes --enable-shared=no --disable-debug_flag --with-cocoa --enable-universal_binary=x86_64,arm64 --enable-unicode --enable-webview --disable-mediactrl --with-cxx=17 --with-macosx-version-min=12  --with-libjpeg=builtin --with-libpng=builtin --with-regex=builtin --with-libtiff=builtin --with-zlib=builtin --with-expat=builtin
           make -j3
           make install
           sudo ln -s $HOME/wx-$WX_VERSION/bin/wx-config /usr/local/bin/wx-config-3
